@@ -3,13 +3,13 @@ import time
 import logging
 import pandas as pd  # type: ignore[import-untyped]
 import yfinance as yf  # type: ignore[import-untyped]
-from .base import ProviderError, EmptyDataError
+from .base import EtfDataProvider, ProviderError, EmptyDataError
 from ..etl.standardize import standardize_ohlc
 
 log = logging.getLogger(__name__)
 
 
-class YfinanceProvider:
+class YfinanceProvider(EtfDataProvider):
     """美股 ETF 数据源 (Yahoo Finance, 延迟 ~15 分钟).
 
     使用 auto_adjust=True, Close 列即复权后价格, 与 standardize_ohlc 的约定一致。

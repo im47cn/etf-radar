@@ -1,0 +1,136 @@
+themes:
+  - id: storage_dram
+    name: 存储芯片
+    us_etfs: [DRAM, SOXX, SMH]
+    primary_us: DRAM
+    tags: [DRAM, NAND, 半导体]
+    note: "A股无纯存储基金, 用半导体宽主题替代"
+    cn_etfs:
+      - {code: '512480', name: 半导体ETF国联安, tracking: 中证全指半导体, match_type: wide}
+      - {code: '512760', name: 芯片ETF, tracking: 中华半导体芯片, match_type: wide}
+
+  - id: semiconductor
+    name: 半导体
+    us_etfs: [SOXX, SMH, XSD]
+    primary_us: SOXX
+    tags: [半导体, 芯片]
+    note: ""
+    cn_etfs:
+      - {code: '512480', name: 半导体ETF国联安, tracking: 中证全指半导体, match_type: exact}
+      - {code: '159995', name: 芯片ETF华夏, tracking: 国证芯片, match_type: exact}
+
+  - id: cybersecurity
+    name: 网络安全
+    us_etfs: [CIBR, BUG]
+    primary_us: CIBR
+    tags: [网络安全, 计算机]
+    note: "A股无纯网络安全 ETF, 映射纯度低"
+    cn_etfs:
+      - {code: '512720', name: 计算机ETF国泰, tracking: 中证计算机, match_type: wide}
+
+  - id: ai_compute
+    name: AI算力
+    us_etfs: [THNQ, AIQ, QQQ]
+    primary_us: THNQ
+    tags: [AI, 人工智能, 算力]
+    note: ""
+    cn_etfs:
+      - {code: '515980', name: 人工智能ETF, tracking: 中证人工智能主题, match_type: exact}
+      - {code: '588000', name: 科创50ETF, tracking: 上证科创板50, match_type: wide}
+
+  - id: energy_oil
+    name: 原油/能源
+    us_etfs: [XLE, USO]
+    primary_us: XLE
+    tags: [原油, 能源]
+    note: ""
+    cn_etfs:
+      - {code: '162411', name: 华宝油气, tracking: 标普石油天然气上游, match_type: exact}
+      - {code: '515220', name: 煤炭ETF, tracking: 中证煤炭, match_type: wide}
+
+  - id: new_energy_vehicle
+    name: 新能源车/锂电
+    us_etfs: [DRIV, LIT, HAIL]
+    primary_us: DRIV
+    tags: [新能源车, 锂电池]
+    note: ""
+    cn_etfs:
+      - {code: '515030', name: 新能源车ETF, tracking: 中证新能源汽车, match_type: exact}
+      - {code: '159755', name: 电池ETF, tracking: 中证电池主题, match_type: exact}
+
+  - id: robotics
+    name: 机器人
+    us_etfs: [BOTZ, ROBO, ARKQ]
+    primary_us: BOTZ
+    tags: [机器人, 智能制造]
+    note: ""
+    cn_etfs:
+      - {code: '562500', name: 机器人ETF, tracking: 中证机器人, match_type: exact}
+
+  - id: gold_metals
+    name: 黄金/有色
+    us_etfs: [GLD, SLV, PICK]
+    primary_us: GLD
+    tags: [黄金, 贵金属, 有色]
+    note: ""
+    cn_etfs:
+      - {code: '518880', name: 黄金ETF, tracking: 上海黄金交易所黄金现货合约, match_type: exact}
+      - {code: '512400', name: 有色金属ETF, tracking: 中证有色金属, match_type: wide}
+
+  - id: china_internet
+    name: 中概互联网/港股
+    us_etfs: [KWEB, CQQQ]
+    primary_us: KWEB
+    tags: [中概, 港股, 互联网]
+    note: ""
+    cn_etfs:
+      - {code: '513050', name: 中概互联网ETF, tracking: 中证海外中国互联网, match_type: exact}
+      - {code: '513330', name: 恒生互联网科技业ETF, tracking: 恒生互联网科技业, match_type: exact}
+
+  - id: financial
+    name: 金融/券商银行
+    us_etfs: [XLF, KBE, KRE]
+    primary_us: XLF
+    tags: [金融, 银行, 券商]
+    note: ""
+    cn_etfs:
+      - {code: '512000', name: 券商ETF, tracking: 中证全指证券公司, match_type: exact}
+      - {code: '512800', name: 银行ETF, tracking: 中证银行, match_type: exact}
+
+  - id: solar_clean_energy
+    name: 光伏/清洁能源
+    us_etfs: [TAN, ICLN]
+    primary_us: TAN
+    tags: [光伏, 清洁能源]
+    note: ""
+    cn_etfs:
+      - {code: '515790', name: 光伏ETF, tracking: 中证光伏产业, match_type: exact}
+
+  - id: biotech
+    name: 生物科技/创新药
+    us_etfs: [IBB, XBI]
+    primary_us: XBI
+    tags: [生物科技, 创新药, 医药]
+    note: ""
+    cn_etfs:
+      - {code: '512290', name: 生物医药ETF, tracking: 中证生物医药, match_type: exact}
+      - {code: '159992', name: 创新药ETF, tracking: 中证创新药产业, match_type: exact}
+
+  - id: aerospace_defense
+    name: 航天军工
+    us_etfs: [ITA, UFO, ARKX]
+    primary_us: ITA
+    tags: [航天, 军工, 国防]
+    note: ""
+    cn_etfs:
+      - {code: '512660', name: 军工ETF, tracking: 中证军工, match_type: exact}
+      - {code: '512710', name: 军工龙头ETF, tracking: 中证军工龙头, match_type: exact}
+
+  - id: rare_earth
+    name: 稀土/新材料
+    us_etfs: [REMX, PICK]
+    primary_us: REMX
+    tags: [稀土, 新材料]
+    note: ""
+    cn_etfs:
+      - {code: '516780', name: 稀土ETF, tracking: 中证稀土产业, match_type: exact}

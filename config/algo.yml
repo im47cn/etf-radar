@@ -1,0 +1,29 @@
+strength:
+  k_sigmoid: 5.0
+  threshold: 0.0
+  days_in_dim:
+    short: 3
+    mid: 40
+    long: 180
+  composite_weights:
+    short: 0.2
+    mid: 0.4
+    long: 0.4
+
+mapping:
+  corr_window_days: 60
+  min_aligned_days: 30
+
+confidence:
+  exact: 90
+  wide: 60
+
+signal:
+  resonance:
+    max_strength_diff: 15
+    min_max_strength: 60
+  transmission:
+    min_strength_diff: 25
+    min_leader_strength: 65
+  divergence:
+    min_return_magnitude: 0.02

@@ -1,4 +1,10 @@
-"""把 yfinance / akshare 的 DataFrame 列名/时区/类型统一"""
+"""把 yfinance / akshare 的 DataFrame 列名/时区/类型统一
+
+调用方约定:
+- yfinance: 使用 `auto_adjust=True` 调用 Ticker.history(), 返回的 Close 列已是
+  复权后价格, 不会同时包含 'Adj Close' 列。
+- akshare: 使用 adjust='qfq' 调用 fund_etf_hist_em(), 返回前复权数据。
+"""
 from typing import Literal
 import pandas as pd  # type: ignore[import-untyped]
 
@@ -6,7 +12,8 @@ STANDARD_COLUMNS: list[str] = ['date', 'open', 'high', 'low', 'close', 'volume',
 
 YFINANCE_MAP: dict[str, str] = {
     'Date': 'date', 'Open': 'open', 'High': 'high', 'Low': 'low',
-    'Close': 'close', 'Adj Close': 'close', 'Volume': 'volume',
+    'Close': 'close', 'Volume': 'volume',
+    # 注: 不映射 'Adj Close' — 假设调用方使用 auto_adjust=True, Close 即复权价
 }
 
 AKSHARE_MAP: dict[str, str] = {

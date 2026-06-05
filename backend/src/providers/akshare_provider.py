@@ -1,0 +1,45 @@
+"""akshare 数据源 — A 股场内 ETF"""
+import time
+import logging
+from datetime import date, timedelta
+import pandas as pd  # type: ignore[import-untyped]
+import akshare as ak  # type: ignore[import-untyped]
+from .base import EtfDataProvider, ProviderError, EmptyDataError
+from ..etl.standardize import standardize_ohlc
+
+log = logging.getLogger(__name__)
+
+
+class AkshareProvider(EtfDataProvider):
+    """A 股场内 ETF 数据源 (东方财富, 通过 akshare)."""
+
+    name = 'akshare'
+
+    def __init__(self, max_retries: int = 3, base_delay: float = 2.0) -> None:
+        self.max_retries = max_retries
+        self.base_delay = base_delay
+
+    def fetch_ohlc(self, symbol: str, lookback_days: int) -> pd.DataFrame:
+        end = date.today()
+        start = end - timedelta(days=int(lookback_days * 1.6))  # 含周末缓冲
+        last_exc: Exception | None = None
+        for attempt in range(self.max_retries):
+            try:
+                df = ak.fund_etf_hist_em(
+                    symbol=symbol,
+                    period='daily',
+                    start_date=start.strftime('%Y%m%d'),
+                    end_date=end.strftime('%Y%m%d'),
+                    adjust='qfq',
+                )
+                if df is None or df.empty:
+                    raise EmptyDataError(f'akshare empty for {symbol}')
+                return standardize_ohlc(df, source='akshare')
+            except EmptyDataError:
+                raise
+            except Exception as e:
+                last_exc = e
+                log.warning(f'akshare attempt {attempt+1} failed for {symbol}: {e}')
+                if attempt < self.max_retries - 1:
+                    time.sleep(self.base_delay * (2 ** attempt))
+        raise ProviderError(f'akshare failed after {self.max_retries} retries: {last_exc}')

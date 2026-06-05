@@ -23,6 +23,7 @@ dev = [
     "responses>=0.24.0",
     "freezegun>=1.4.0",
     "jsonschema>=4.21.0",
+    "types-pyyaml>=6.0.12.20260518",
 ]
 
 [tool.pytest.ini_options]
@@ -37,8 +38,3 @@ target-version = "py311"
 [tool.mypy]
 python_version = "3.11"
 strict = true
-
-[dependency-groups]
-dev = [
-    "types-pyyaml>=6.0.12.20260518",
-]

@@ -1,13 +1,15 @@
 """akshare 数据源 — A 股场内 ETF"""
 import time
 import logging
-from datetime import date, timedelta
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import pandas as pd  # type: ignore[import-untyped]
 import akshare as ak  # type: ignore[import-untyped]
 from .base import EtfDataProvider, ProviderError, EmptyDataError
 from ..etl.standardize import standardize_ohlc
 
 log = logging.getLogger(__name__)
+BJT = ZoneInfo('Asia/Shanghai')
 
 
 class AkshareProvider(EtfDataProvider):
@@ -20,8 +22,9 @@ class AkshareProvider(EtfDataProvider):
         self.base_delay = base_delay
 
     def fetch_ohlc(self, symbol: str, lookback_days: int) -> pd.DataFrame:
-        end = date.today()
-        start = end - timedelta(days=int(lookback_days * 1.6))  # 含周末缓冲
+        # 用 BJT 时区确定 A 股市场的"今天" (避免 UTC 服务器 off-by-one)
+        end = datetime.now(tz=BJT).date()
+        start = end - timedelta(days=int(lookback_days * 1.6))  # 含周末+节假日缓冲
         last_exc: Exception | None = None
         for attempt in range(self.max_retries):
             try:

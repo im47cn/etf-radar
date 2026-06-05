@@ -74,3 +74,16 @@ def test_empty_data_not_retried(mock_hist: MagicMock, mock_sleep: MagicMock) -> 
         p.fetch_ohlc('999999', 5)
     assert mock_hist.call_count == 1
     assert mock_sleep.call_count == 0
+
+
+@patch('src.providers.akshare_provider.ak.fund_etf_hist_em')
+def test_adjust_qfq_passed(mock_hist: MagicMock) -> None:
+    """确保调用 akshare 时使用 adjust='qfq' (前复权契约, 与 standardize_ohlc 假设一致)"""
+    mock_hist.return_value = pd.DataFrame()
+    p = AkshareProvider()
+    try:
+        p.fetch_ohlc('512480', 5)
+    except EmptyDataError:
+        pass
+    _, kwargs = mock_hist.call_args
+    assert kwargs['adjust'] == 'qfq'

@@ -1,7 +1,8 @@
-from datetime import date, datetime, timezone, timedelta
+from datetime import date, datetime, timezone
 from src.etl.calendar import (
     is_cn_trading_day, is_us_trading_day,
-    is_cn_session_active,
+    is_cn_session_active, is_us_session_active,
+    BJT,
 )
 
 
@@ -21,18 +22,27 @@ def test_cn_normal_workday_is_trading() -> None:
 
 
 def test_cn_session_active_during_morning() -> None:
-    BJT = timezone(timedelta(hours=8))
     dt = datetime(2026, 6, 8, 10, 0, tzinfo=BJT)
     assert is_cn_session_active(dt)
 
 
 def test_cn_session_inactive_during_lunch() -> None:
-    BJT = timezone(timedelta(hours=8))
     dt = datetime(2026, 6, 8, 12, 0, tzinfo=BJT)
     assert not is_cn_session_active(dt)
 
 
 def test_cn_session_inactive_before_open() -> None:
-    BJT = timezone(timedelta(hours=8))
     dt = datetime(2026, 6, 8, 9, 0, tzinfo=BJT)
     assert not is_cn_session_active(dt)
+
+
+def test_us_session_active_during_trading() -> None:
+    # 周一 14:00 UTC = NYSE ET 10:00 / 09:00 (取决于夏令时), 应该开市
+    dt = datetime(2026, 6, 8, 14, 0, tzinfo=timezone.utc)
+    assert is_us_session_active(dt)
+
+
+def test_us_session_inactive_after_close() -> None:
+    # 周一 21:00 UTC = NYSE ET 17:00 / 16:00, 收市
+    dt = datetime(2026, 6, 8, 21, 0, tzinfo=timezone.utc)
+    assert not is_us_session_active(dt)

@@ -13,7 +13,11 @@ CN_AFTERNOON_CLOSE = time(15, 0)
 
 
 def is_cn_trading_day(d: date) -> bool:
-    return chinese_calendar.is_workday(d) and not chinese_calendar.is_holiday(d)
+    try:
+        return chinese_calendar.is_workday(d) and not chinese_calendar.is_holiday(d)
+    except NotImplementedError:
+        # chinese_calendar 暂无该年份数据, 保守返回 False
+        return False
 
 
 def is_us_trading_day(d: date) -> bool:
@@ -31,7 +35,7 @@ def is_cn_session_active(now_bjt: datetime) -> bool:
 
 def is_us_session_active(now_utc: datetime) -> bool:
     """美股盘中: ET 09:30-16:00 (UTC-5/-4)"""
-    d = now_utc.date()
+    d = now_utc.astimezone(timezone.utc).date()
     sched = NYSE.schedule(start_date=d, end_date=d)
     if sched.empty:
         return False

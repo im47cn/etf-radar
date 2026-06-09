@@ -40,7 +40,16 @@ def strength_per_dim(
     k: float,
     days_in_dim: int,
 ) -> int:
-    """单维度双轨强度: 0.5×百分位 + 0.5×sigmoid, 返回 0-99 整数 (上限 99 留 100 给完美样本)"""
+    """单维度双轨强度: 0.5×百分位 + 0.5×sigmoid, 返回 0-99 整数
+
+    上限 99 是硬约束 (min(99, ...)), 100 不会出现; 设计意图是给出
+    "几乎完美但不绝对"的语义边界, 避免 UI 上 100 显得过于绝对。
+
+    Raises:
+        ValueError: 当 pool_dim_returns 为空 (percentileofscore 返回 NaN, round 会崩溃)
+    """
+    if not pool_dim_returns:
+        raise ValueError("pool_dim_returns must not be empty")
     P = percentile_rank(own_dim_return, pool_dim_returns)
     M = sigmoid_momentum(own_dim_return, k=k, days_in_dim=days_in_dim)
     raw = 0.5 * P + 0.5 * M
@@ -55,4 +64,6 @@ def composite_strength(
     w_mid: float,
     w_long: float,
 ) -> int:
+    assert abs(w_short + w_mid + w_long - 1.0) < 1e-9, \
+        f"weights must sum to 1.0, got {w_short + w_mid + w_long}"
     return round(w_short * short + w_mid * mid + w_long * long)

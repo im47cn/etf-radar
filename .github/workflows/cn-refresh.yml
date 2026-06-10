@@ -1,0 +1,49 @@
+name: CN Refresh
+
+on:
+  schedule:
+    - cron: '15 1 * * 1-5'              # 09:15 BJT 全量
+    - cron: '30,45 1 * * 1-5'           # 09:30, 09:45 BJT (盘中刷价)
+    - cron: '*/15 2-3 * * 1-5'          # 10:00-11:45 BJT 每 15min (盘中刷价)
+    - cron: '*/15 5-7 * * 1-5'          # 13:00-15:45 BJT 每 15min (盘中刷价)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v3
+      - run: cd backend && uv sync --extra dev
+      - name: Decide mode
+        id: mode
+        run: |
+          # 仅 01:15 UTC (09:15 BJT) 跑 full 模式; 其余 intraday
+          UTC_HOUR=$(date -u +%-H)
+          UTC_MIN=$(date -u +%-M)
+          if [ "$UTC_HOUR" = "1" ] && [ "$UTC_MIN" -ge "10" ] && [ "$UTC_MIN" -lt "25" ]; then
+            echo "mode=full" >> $GITHUB_OUTPUT
+          else
+            echo "mode=intraday" >> $GITHUB_OUTPUT
+          fi
+      - name: Run pipeline
+        run: cd backend && uv run python -m src.pipeline --mode=${{ steps.mode.outputs.mode }} --data-root=../data --config-dir=../config
+        continue-on-error: true
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+          git add data/latest/
+          git diff --staged --quiet || git commit -m "data: CN ${{ steps.mode.outputs.mode }} $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push

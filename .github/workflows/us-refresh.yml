@@ -1,0 +1,36 @@
+name: US Refresh
+
+on:
+  schedule:
+    - cron: '30 22 * * 1-5'  # 工作日 BJT 06:30 (UTC 22:30 前一天)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v3
+      - name: Install backend deps
+        run: cd backend && uv sync --extra dev
+      - name: Run pipeline (full)
+        run: cd backend && uv run python -m src.pipeline --mode=full --data-root=../data --config-dir=../config
+        continue-on-error: true
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+          git add data/latest/
+          git diff --staged --quiet || git commit -m "data: US refresh $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ETFs file (data/latest/etfs.json)",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "etfs"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "etfs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "name", "tracking_index", "returns", "amount_yi", "price", "strength"],
+        "properties": {
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "tracking_index": { "type": "string" },
+          "returns": {
+            "type": "object",
+            "required": ["r_1d", "r_5d", "r_20d", "r_60d", "r_120d", "r_ytd"],
+            "properties": {
+              "r_1d":   { "type": ["number", "null"] },
+              "r_5d":   { "type": ["number", "null"] },
+              "r_20d":  { "type": ["number", "null"] },
+              "r_60d":  { "type": ["number", "null"] },
+              "r_120d": { "type": ["number", "null"] },
+              "r_ytd":  { "type": ["number", "null"] }
+            }
+          },
+          "amount_yi": { "type": ["number", "null"], "minimum": 0 },
+          "price":     { "type": ["number", "null"], "exclusiveMinimum": 0 },
+          "strength": {
+            "type": "object",
+            "required": ["short", "mid", "long", "composite"],
+            "properties": {
+              "short":     { "type": "integer", "minimum": 0, "maximum": 99 },
+              "mid":       { "type": "integer", "minimum": 0, "maximum": 99 },
+              "long":      { "type": "integer", "minimum": 0, "maximum": 99 },
+              "composite": { "type": "integer", "minimum": 0, "maximum": 99 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

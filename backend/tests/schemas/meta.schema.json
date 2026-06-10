@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Meta file (data/latest/meta.json)",
+  "type": "object",
+  "required": ["schema_version", "last_full_refresh", "last_intraday_refresh", "providers", "failed_symbols", "stale_minutes", "calendar"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "last_full_refresh": {
+      "type": "object",
+      "required": ["us", "cn"],
+      "properties": {
+        "us": { "type": ["string", "null"] },
+        "cn": { "type": ["string", "null"] }
+      }
+    },
+    "last_intraday_refresh": { "type": ["string", "null"] },
+    "providers": {
+      "type": "object",
+      "required": ["us", "cn"],
+      "properties": {
+        "us": {
+          "type": "object",
+          "required": ["status", "name"],
+          "properties": {
+            "status": { "enum": ["ok", "degraded", "stale"] },
+            "name":   { "type": "string" }
+          }
+        },
+        "cn": {
+          "type": "object",
+          "required": ["status", "name"],
+          "properties": {
+            "status": { "enum": ["ok", "degraded", "stale"] },
+            "name":   { "type": "string" }
+          }
+        }
+      }
+    },
+    "failed_symbols": { "type": "array", "items": { "type": "string" } },
+    "stale_minutes": { "type": "integer", "minimum": 0 },
+    "calendar": {
+      "type": "object",
+      "required": ["us_trading_today", "cn_trading_today", "us_session_active", "cn_session_active"],
+      "properties": {
+        "us_trading_today":  { "type": "boolean" },
+        "cn_trading_today":  { "type": "boolean" },
+        "us_session_active": { "type": "boolean" },
+        "cn_session_active": { "type": "boolean" }
+      }
+    }
+  }
+}

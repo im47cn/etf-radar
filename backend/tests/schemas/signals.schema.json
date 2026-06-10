@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Signals file (data/latest/signals.json)",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "summary", "theme_signals", "pair_signals"],
+  "definitions": {
+    "signalType": { "enum": ["resonance", "transmission", "divergence", null] },
+    "votes": {
+      "type": "object",
+      "required": ["short", "mid", "long"],
+      "properties": {
+        "short": { "$ref": "#/definitions/signalType" },
+        "mid":   { "$ref": "#/definitions/signalType" },
+        "long":  { "$ref": "#/definitions/signalType" }
+      }
+    }
+  },
+  "properties": {
+    "schema_version": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "summary": {
+      "type": "object",
+      "required": ["themes_total", "etfs_total", "resonance_count", "transmission_count", "divergence_count", "top_theme"],
+      "properties": {
+        "themes_total":       { "type": "integer", "minimum": 0 },
+        "etfs_total":         { "type": "integer", "minimum": 0 },
+        "resonance_count":    { "type": "integer", "minimum": 0 },
+        "transmission_count": { "type": "integer", "minimum": 0 },
+        "divergence_count":   { "type": "integer", "minimum": 0 },
+        "top_theme": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["id", "name", "primary_us", "composite_strength"],
+              "properties": {
+                "id":   { "type": "string" },
+                "name": { "type": "string" },
+                "primary_us": { "type": "string" },
+                "composite_strength": { "type": "integer", "minimum": 0, "maximum": 99 }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "theme_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["theme_id", "signal", "trigger_cn_etf", "votes", "description"],
+        "properties": {
+          "theme_id":       { "type": "string" },
+          "signal":         { "$ref": "#/definitions/signalType" },
+          "trigger_cn_etf": { "type": ["string", "null"] },
+          "votes":          { "$ref": "#/definitions/votes" },
+          "description":    { "type": "string" }
+        }
+      }
+    },
+    "pair_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["theme_id", "cn_code", "mapping_score", "confidence", "signal", "votes"],
+        "properties": {
+          "theme_id":      { "type": "string" },
+          "cn_code":       { "type": "string" },
+          "mapping_score": { "type": ["integer", "null"], "minimum": 0, "maximum": 100 },
+          "confidence":    { "type": "integer", "minimum": 0, "maximum": 100 },
+          "signal":        { "$ref": "#/definitions/signalType" },
+          "votes":         { "$ref": "#/definitions/votes" }
+        }
+      }
+    }
+  }
+}

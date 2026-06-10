@@ -1,12 +1,27 @@
-function App() {
+import { DataProvider } from '@/providers/DataProvider';
+import { UIStateProvider } from '@/providers/UIStateProvider';
+import { Header } from '@/components/Header';
+import { FilterBar } from '@/components/FilterBar';
+import { ThemeList } from '@/components/ThemeList';
+import { ThemeDetail } from '@/components/ThemeDetail';
+import { CnEtfTable } from '@/components/CnEtfTable';
+
+export default function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">ETF Radar</h1>
-        <p className="text-muted-foreground">Phase 6 scaffold — Phase 7 will wire up data</p>
-      </div>
-    </div>
+    <DataProvider>
+      <UIStateProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <FilterBar />
+          <main className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ThemeList />
+            <ThemeDetail />
+          </main>
+          <div className="px-4 pb-8">
+            <CnEtfTable />
+          </div>
+        </div>
+      </UIStateProvider>
+    </DataProvider>
   );
 }
-
-export default App;

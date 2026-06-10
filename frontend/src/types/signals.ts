@@ -14,16 +14,16 @@ export const TopThemeSchema = z.object({
   id: z.string(),
   name: z.string(),
   primary_us: z.string(),
-  composite_strength: z.number(),
+  composite_strength: z.number().int().min(0).max(99),
 });
 export type TopTheme = z.infer<typeof TopThemeSchema>;
 
 export const SignalsSummarySchema = z.object({
-  themes_total: z.number(),
-  etfs_total: z.number(),
-  resonance_count: z.number(),
-  transmission_count: z.number(),
-  divergence_count: z.number(),
+  themes_total: z.number().int().nonnegative(),
+  etfs_total: z.number().int().nonnegative(),
+  resonance_count: z.number().int().nonnegative(),
+  transmission_count: z.number().int().nonnegative(),
+  divergence_count: z.number().int().nonnegative(),
   top_theme: TopThemeSchema.nullable(),
 });
 export type SignalsSummary = z.infer<typeof SignalsSummarySchema>;
@@ -40,8 +40,8 @@ export type ThemeSignal = z.infer<typeof ThemeSignalSchema>;
 export const PairSignalSchema = z.object({
   theme_id: z.string(),
   cn_code: z.string(),
-  mapping_score: z.number().nullable(),
-  confidence: z.number(),
+  mapping_score: z.number().int().min(0).max(100).nullable(),  // 0-100 整数
+  confidence: z.number().int().min(0).max(100),  // hardcode 档: 60 or 90
   signal: SignalTypeSchema.nullable(),
   votes: VotesSchema,
 });

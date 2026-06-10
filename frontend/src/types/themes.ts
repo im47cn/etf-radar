@@ -13,19 +13,26 @@ export const ReturnsSchema = z.object({
 });
 export type Returns = z.infer<typeof ReturnsSchema>;
 
+// Backend Pydantic uses Field(ge=0, le=100). Implementation clamps to 99
+// (留 100 给"完美样本"). Allow 0..99 here; if backend ever emits 100 it'll error.
+const StrengthScore = z.number().int().min(0).max(99);
+
 export const StrengthSchema = z.object({
-  short: z.number(),
-  mid: z.number(),
-  long: z.number(),
-  composite: z.number(),
+  short: StrengthScore,
+  mid: StrengthScore,
+  long: StrengthScore,
+  composite: StrengthScore,
 });
 export type Strength = z.infer<typeof StrengthSchema>;
 
+// Rank 1..N (theme 池大小, 当前 14). 严格要求正整数.
+const RankPosition = z.number().int().positive();
+
 export const RankSchema = z.object({
-  short: z.number(),
-  mid: z.number(),
-  long: z.number(),
-  composite: z.number(),
+  short: RankPosition,
+  mid: RankPosition,
+  long: RankPosition,
+  composite: RankPosition,
 });
 export type Rank = z.infer<typeof RankSchema>;
 

@@ -21,7 +21,7 @@ export const MetaFileSchema = z.object({
     cn: ProviderInfoSchema,
   }),
   failed_symbols: z.array(z.string()),
-  stale_minutes: z.number(),
+  stale_minutes: z.number().int().nonnegative(),
   calendar: z.object({
     us_trading_today: z.boolean(),
     cn_trading_today: z.boolean(),

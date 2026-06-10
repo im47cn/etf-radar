@@ -6,8 +6,8 @@ export const EtfSchema = z.object({
   name: z.string(),
   tracking_index: z.string(),
   returns: ReturnsSchema,
-  amount_yi: z.number().nullable(),
-  price: z.number().nullable(),
+  amount_yi: z.number().nonnegative().nullable(),  // 亿元成交额, 不为负
+  price: z.number().positive().nullable(),  // ETF 价格必须 > 0
   strength: StrengthSchema,
 });
 export type Etf = z.infer<typeof EtfSchema>;

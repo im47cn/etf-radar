@@ -121,3 +121,91 @@ describe('EtfsFileSchema', () => {
     expect(parsed.etfs[0].amount_yi).toBeNull();
   });
 });
+
+// ----- 数值约束 (立场 B): 数值越界一律拒绝 -----
+
+const validTheme = {
+  id: 'x', name: 'X', us_etfs: ['A'], primary_us: 'A',
+  tags: [], note: '',
+  returns: { r_1d: null, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
+  strength: { short: 0, mid: 0, long: 0, composite: 0 },
+  rank: { short: 1, mid: 1, long: 1, composite: 1 },
+};
+const validThemesFile = {
+  schema_version: '1.0', generated_at: '2026-06-10T00:00:00Z', themes: [validTheme],
+};
+
+describe('Strength constraints', () => {
+  it('rejects negative score', () => {
+    const bad = { ...validThemesFile, themes: [{ ...validTheme, strength: { ...validTheme.strength, short: -1 } }] };
+    expect(() => ThemesFileSchema.parse(bad)).toThrow();
+  });
+  it('rejects score > 99 (上限 99, 留 100 给"完美样本")', () => {
+    const bad = { ...validThemesFile, themes: [{ ...validTheme, strength: { ...validTheme.strength, short: 150 } }] };
+    expect(() => ThemesFileSchema.parse(bad)).toThrow();
+  });
+  it('rejects non-integer score', () => {
+    const bad = { ...validThemesFile, themes: [{ ...validTheme, strength: { ...validTheme.strength, short: 50.5 } }] };
+    expect(() => ThemesFileSchema.parse(bad)).toThrow();
+  });
+  it('accepts boundary values 0 and 99', () => {
+    const ok = { ...validThemesFile, themes: [{ ...validTheme, strength: { short: 0, mid: 99, long: 50, composite: 0 } }] };
+    expect(() => ThemesFileSchema.parse(ok)).not.toThrow();
+  });
+});
+
+describe('Rank constraints', () => {
+  it('rejects rank 0 (must be ≥1)', () => {
+    const bad = { ...validThemesFile, themes: [{ ...validTheme, rank: { short: 0, mid: 1, long: 1, composite: 1 } }] };
+    expect(() => ThemesFileSchema.parse(bad)).toThrow();
+  });
+  it('rejects fractional rank', () => {
+    const bad = { ...validThemesFile, themes: [{ ...validTheme, rank: { short: 1.5, mid: 1, long: 1, composite: 1 } }] };
+    expect(() => ThemesFileSchema.parse(bad)).toThrow();
+  });
+});
+
+describe('MetaFile constraints', () => {
+  const validMeta = {
+    schema_version: '1.0',
+    last_full_refresh: { us: null, cn: null },
+    last_intraday_refresh: null,
+    providers: {
+      us: { status: 'ok' as const, name: 'yfinance' },
+      cn: { status: 'ok' as const, name: 'akshare' },
+    },
+    failed_symbols: [],
+    stale_minutes: 0,
+    calendar: { us_trading_today: true, cn_trading_today: true, us_session_active: false, cn_session_active: false },
+  };
+  it('rejects negative stale_minutes', () => {
+    expect(() => MetaFileSchema.parse({ ...validMeta, stale_minutes: -10 })).toThrow();
+  });
+  it('rejects non-integer stale_minutes', () => {
+    expect(() => MetaFileSchema.parse({ ...validMeta, stale_minutes: 5.5 })).toThrow();
+  });
+});
+
+describe('Etf price/amount constraints', () => {
+  const baseEtfFile = {
+    schema_version: '1.0',
+    generated_at: '2026-06-10T01:00:00+08:00',
+    etfs: [{
+      code: '512480',
+      name: 'X',
+      tracking_index: 'Y',
+      returns: { r_1d: null, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
+      amount_yi: 0,
+      price: 1.234,
+      strength: { short: 0, mid: 0, long: 0, composite: 0 },
+    }],
+  };
+  it('rejects negative amount_yi', () => {
+    const bad = { ...baseEtfFile, etfs: [{ ...baseEtfFile.etfs[0], amount_yi: -1.5 }] };
+    expect(() => EtfsFileSchema.parse(bad)).toThrow();
+  });
+  it('rejects zero or negative price', () => {
+    const bad = { ...baseEtfFile, etfs: [{ ...baseEtfFile.etfs[0], price: 0 }] };
+    expect(() => EtfsFileSchema.parse(bad)).toThrow();
+  });
+});

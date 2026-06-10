@@ -1,21 +1,32 @@
-export type ProviderStatus = 'ok' | 'degraded' | 'stale';
+import { z } from 'zod';
 
-export interface ProviderInfo {
-  status: ProviderStatus;
-  name: string;
-}
+export const ProviderStatusSchema = z.enum(['ok', 'degraded', 'stale']);
+export type ProviderStatus = z.infer<typeof ProviderStatusSchema>;
 
-export interface MetaFile {
-  schema_version: string;
-  last_full_refresh: { us: string | null; cn: string | null };
-  last_intraday_refresh: string | null;
-  providers: { us: ProviderInfo; cn: ProviderInfo };
-  failed_symbols: string[];
-  stale_minutes: number;
-  calendar: {
-    us_trading_today: boolean;
-    cn_trading_today: boolean;
-    us_session_active: boolean;
-    cn_session_active: boolean;
-  };
-}
+export const ProviderInfoSchema = z.object({
+  status: ProviderStatusSchema,
+  name: z.string(),
+});
+export type ProviderInfo = z.infer<typeof ProviderInfoSchema>;
+
+export const MetaFileSchema = z.object({
+  schema_version: z.string(),
+  last_full_refresh: z.object({
+    us: z.string().nullable(),
+    cn: z.string().nullable(),
+  }),
+  last_intraday_refresh: z.string().nullable(),
+  providers: z.object({
+    us: ProviderInfoSchema,
+    cn: ProviderInfoSchema,
+  }),
+  failed_symbols: z.array(z.string()),
+  stale_minutes: z.number(),
+  calendar: z.object({
+    us_trading_today: z.boolean(),
+    cn_trading_today: z.boolean(),
+    us_session_active: z.boolean(),
+    cn_session_active: z.boolean(),
+  }),
+});
+export type MetaFile = z.infer<typeof MetaFileSchema>;

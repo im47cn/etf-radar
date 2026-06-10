@@ -1,17 +1,20 @@
-import type { Returns, Strength } from './themes';
+import { z } from 'zod';
+import { ReturnsSchema, StrengthSchema } from './themes';
 
-export interface Etf {
-  code: string;
-  name: string;
-  tracking_index: string;
-  returns: Returns;
-  amount_yi: number | null;
-  price: number | null;
-  strength: Strength;
-}
+export const EtfSchema = z.object({
+  code: z.string(),
+  name: z.string(),
+  tracking_index: z.string(),
+  returns: ReturnsSchema,
+  amount_yi: z.number().nullable(),
+  price: z.number().nullable(),
+  strength: StrengthSchema,
+});
+export type Etf = z.infer<typeof EtfSchema>;
 
-export interface EtfsFile {
-  schema_version: string;
-  generated_at: string;
-  etfs: Etf[];
-}
+export const EtfsFileSchema = z.object({
+  schema_version: z.string(),
+  generated_at: z.string(),
+  etfs: z.array(EtfSchema),
+});
+export type EtfsFile = z.infer<typeof EtfsFileSchema>;

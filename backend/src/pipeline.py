@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import argparse
 import logging
+import random
+import time
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
@@ -85,18 +87,48 @@ def _collect_us_ohlc(
 def _collect_cn_ohlc(
     themes: list[ThemeConfig], provider: EtfDataProvider,
 ) -> tuple[dict[str, pd.DataFrame], list[str]]:
+    """
+    A 股 ETF 数据采集。
+
+    抗失败策略:
+    1. 请求间 jitter sleep (0.3-1.0s 随机) - 避免触发对端反爬/频控。
+    2. 失败 symbol 末尾 second pass (等 60s 后单独重试一遍, jitter 加倍) -
+       捞回临时网络抖动失败的 symbol。
+    详见 https://github.com/im47cn/etf-radar/issues (RemoteDisconnected 失败模式)
+    """
     out: dict[str, pd.DataFrame] = {}
     failed: list[str] = []
     codes: set[str] = set()
     for t in themes:
         for cn in t.cn_etfs:
             codes.add(cn.code)
+
+    # First pass: 顺序 fetch, jitter 放在 fetch 后 (避免下次请求背靠背触发频控)
     for code in sorted(codes):
         try:
             out[code] = provider.fetch_ohlc(code, lookback_days=400)
         except (ProviderError, EmptyDataError) as e:
             log.warning(f'CN fetch failed {code}: {e}')
             failed.append(code)
+        time.sleep(random.uniform(0.3, 1.0))
+
+    # Second pass: 失败 symbol 等 60s 后重试一遍 (网络抖动恢复窗口)
+    if failed:
+        log.info(f'CN second pass starting: {len(failed)} symbols, waiting 60s')
+        time.sleep(60)
+        recovered: list[str] = []
+        still_failed: list[str] = []
+        for code in failed:
+            try:
+                out[code] = provider.fetch_ohlc(code, lookback_days=400)
+                recovered.append(code)
+            except (ProviderError, EmptyDataError) as e:
+                log.warning(f'CN second-pass still failed {code}: {e}')
+                still_failed.append(code)
+            time.sleep(random.uniform(0.5, 1.5))  # 更大 jitter, 进一步避免频控
+        log.info(f'CN second pass: recovered {len(recovered)}/{len(failed)} ({recovered})')
+        failed = still_failed
+
     return out, failed
 
 

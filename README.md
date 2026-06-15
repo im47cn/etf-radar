@@ -4,7 +4,8 @@
 
 ## 在线访问
 
-部署在 GitHub Pages: <https://im47cn.github.io/etf-radar/>
+- 主域: <https://im47.cn/etf-radar/> (自定义域名)
+- 备用: <https://im47cn.github.io/etf-radar/> (GitHub Pages 默认)
 
 ## 工作原理
 
@@ -75,11 +76,11 @@ python scripts/archive_cleanup.py
 
 ## 部署
 
-### 首次启用 GitHub Pages
-
-1. 仓库 Settings → Pages → Source = **`gh-pages` branch / `(root)`**
-2. 等待第一次 `deploy-frontend.yml` 运行 (push 触发)
-3. 访问 `https://im47cn.github.io/etf-radar/`
+- GitHub Pages Source = **GitHub Actions** (用 `actions/deploy-pages`, 不走 Jekyll/`gh-pages` 分支)
+- `deploy-frontend.yml` 触发条件: push 到 main 时 `frontend/**` 或 `data/latest/**` 有变更
+- 数据 refresh workflow (cn/us-refresh) 结尾显式 `gh workflow run deploy-frontend.yml` 触发部署
+  - 原因: `GITHUB_TOKEN` 推送的 commit 不触发下游 workflow (anti-loop 安全策略)
+- Custom domain (可选): 当前配置为 `im47.cn`, 在 Settings → Pages → Custom domain 修改
 
 ## 关键文档
 

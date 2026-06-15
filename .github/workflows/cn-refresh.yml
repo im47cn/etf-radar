@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: data-refresh
@@ -43,7 +44,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
           git add data/latest/
-          git diff --staged --quiet || git commit -m "data: CN ${{ steps.mode.outputs.mode }} $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          if git diff --staged --quiet; then
+            echo "no data changes, skip commit"
+            exit 0
+          fi
+          git commit -m "data: CN ${{ steps.mode.outputs.mode }} $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git pull --rebase
           git push
+      - name: Trigger deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-frontend.yml --ref main

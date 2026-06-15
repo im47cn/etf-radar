@@ -34,22 +34,22 @@ const DataContext = createContext<DataContextValue | null>(null);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const themes = useSWR<ThemesFile>(
-    `${BASE}data/latest/themes.json`,
+    `${BASE}latest/themes.json`,
     (url: string) => fetchAndParse(url, ThemesFileSchema),
     { refreshInterval: 300_000 },
   );
   const etfs = useSWR<EtfsFile>(
-    `${BASE}data/latest/etfs.json`,
+    `${BASE}latest/etfs.json`,
     (url: string) => fetchAndParse(url, EtfsFileSchema),
     { refreshInterval: 300_000 },
   );
   const signals = useSWR<SignalsFile>(
-    `${BASE}data/latest/signals.json`,
+    `${BASE}latest/signals.json`,
     (url: string) => fetchAndParse(url, SignalsFileSchema),
     { refreshInterval: 300_000 },
   );
   const meta = useSWR<MetaFile>(
-    `${BASE}data/latest/meta.json`,
+    `${BASE}latest/meta.json`,
     (url: string) => fetchAndParse(url, MetaFileSchema),
     { refreshInterval: 60_000 },
   );

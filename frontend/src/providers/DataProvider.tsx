@@ -32,7 +32,14 @@ interface DataContextValue {
 
 const DataContext = createContext<DataContextValue | null>(null);
 
-export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// SWRConfig 必须包在使用 useSWR 的组件外层, 否则全局配置不生效
+export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <SWRConfig value={{ revalidateOnFocus: false }}>
+    <DataProviderInner>{children}</DataProviderInner>
+  </SWRConfig>
+);
+
+const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const themes = useSWR<ThemesFile>(
     `${BASE}latest/themes.json`,
     (url: string) => fetchAndParse(url, ThemesFileSchema),
@@ -64,20 +71,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     null;
 
   return (
-    <SWRConfig value={{ revalidateOnFocus: false }}>
-      <DataContext.Provider
-        value={{
-          themes: themes.data,
-          etfs: etfs.data,
-          signals: signals.data,
-          meta: meta.data,
-          isLoading,
-          error,
-        }}
-      >
-        {children}
-      </DataContext.Provider>
-    </SWRConfig>
+    <DataContext.Provider
+      value={{
+        themes: themes.data,
+        etfs: etfs.data,
+        signals: signals.data,
+        meta: meta.data,
+        isLoading,
+        error,
+      }}
+    >
+      {children}
+    </DataContext.Provider>
   );
 };
 

@@ -158,3 +158,4 @@ class MetaInfo(BaseModel):
     failed_symbols: list[str] = Field(default_factory=list)
     stale_minutes: int = 0
     calendar: CalendarInfo
+    backfilled: bool = False

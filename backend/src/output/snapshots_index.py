@@ -26,6 +26,10 @@ def build_snapshots_index(data_root: Path) -> dict[str, Any]:
                 continue
             if not _DATE_RE.match(d.name):
                 continue
+            try:
+                datetime.strptime(d.name, '%Y-%m-%d')
+            except ValueError:
+                continue
             if not (d / 'themes.json').exists():
                 continue
             snapshots.append({

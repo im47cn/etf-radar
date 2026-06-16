@@ -47,6 +47,21 @@ def test_build_index_skips_invalid_dirs():
         assert dates == ['2026-06-15']
 
 
+def test_build_index_skips_invalid_date_values():
+    """目录名格式像 YYYY-MM-DD 但日期值非法（如 2026-02-31）应被跳过"""
+    with tempfile.TemporaryDirectory() as d:
+        data_root = Path(d)
+        snap_root = data_root / 'snapshots'
+        _touch_snapshot(snap_root, '2026-06-15')
+        # 格式合法但日期不存在
+        _touch_snapshot(snap_root, '2026-02-31')
+        _touch_snapshot(snap_root, '2026-13-01')
+
+        idx = build_snapshots_index(data_root)
+        dates = [s['date'] for s in idx['snapshots']]
+        assert dates == ['2026-06-15']
+
+
 def test_build_index_empty_dir():
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)

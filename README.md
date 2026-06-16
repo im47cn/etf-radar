@@ -72,6 +72,22 @@ cd backend && uv run python ../scripts/calibrate_algo.py
 python scripts/archive_cleanup.py
 ```
 
+### 历史快照回填 (Phase B 时间轴动画的数据基础)
+
+`backend/scripts/backfill_snapshots.py` 可在不修改任何评分逻辑的前提下, 一次性重建过去 N 个交易日的 snapshots, 用于驱动 `/rotation` 时间轴动画。原理: `compute_outputs()` 接受 `asof_bjt` 锚点, 对内存中的 OHLC DataFrame 按日切片, 复用相同评分函数; meta.json 标记 `backfilled=true` 区分回填产物与实时归档。
+
+```bash
+cd backend && uv run --all-extras python -m scripts.backfill_snapshots \
+  --start 2026-01-02 --end 2026-06-13 \
+  --data-root ../data --config-dir ../config
+```
+
+- `--skip-existing` (默认开启) 保护既有归档, 不会覆盖真实 cron 产出
+- `--force` 强制重写
+- 输出: `data/snapshots/<YYYY-MM-DD>/{themes,signals,etfs,meta}.json` + `data/latest/snapshots-index.json`
+- 全量 ~120 个交易日耗时 1-2 分钟 (网络拉取一次 + 内存切片)
+- akshare 偶发限流, 失败的 CN ETF 会被记入 `meta.providers.cn.failed_symbols` 且整体 status 降为 `degraded`, 不影响其他主题
+
 ## 数据源 & 容灾
 
 - 美股: **yfinance** (Yahoo Finance, 延迟 ~15 分钟)

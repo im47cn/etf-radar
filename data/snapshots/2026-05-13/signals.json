@@ -1,0 +1,463 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-13T16:00:00+08:00",
+  "summary": {
+    "themes_total": 14,
+    "etfs_total": 23,
+    "resonance_count": 5,
+    "transmission_count": 4,
+    "divergence_count": 0,
+    "top_theme": {
+      "id": "storage_dram",
+      "name": "存储芯片",
+      "primary_us": "DRAM",
+      "composite_strength": 99
+    }
+  },
+  "theme_signals": [
+    {
+      "theme_id": "storage_dram",
+      "signal": "transmission",
+      "trigger_cn_etf": "512480",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "transmission"
+      },
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "semiconductor",
+      "signal": "resonance",
+      "trigger_cn_etf": "159995",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "resonance"
+      },
+      "description": "美股半导体中长期走强"
+    },
+    {
+      "theme_id": "cybersecurity",
+      "signal": "resonance",
+      "trigger_cn_etf": "512720",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": null
+      },
+      "description": "美股网络安全中长期走强"
+    },
+    {
+      "theme_id": "ai_compute",
+      "signal": "transmission",
+      "trigger_cn_etf": "588000",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "transmission"
+      },
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "energy_oil",
+      "signal": "resonance",
+      "trigger_cn_etf": "162411",
+      "votes": {
+        "short": "transmission",
+        "mid": "resonance",
+        "long": "resonance"
+      },
+      "description": "美股原油/能源动量观察中"
+    },
+    {
+      "theme_id": "new_energy_vehicle",
+      "signal": "transmission",
+      "trigger_cn_etf": "515030",
+      "votes": {
+        "short": "transmission",
+        "mid": "resonance",
+        "long": "transmission"
+      },
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "robotics",
+      "signal": "resonance",
+      "trigger_cn_etf": "562500",
+      "votes": {
+        "short": "resonance",
+        "mid": null,
+        "long": "resonance"
+      },
+      "description": "美股机器人动量观察中"
+    },
+    {
+      "theme_id": "gold_metals",
+      "signal": "transmission",
+      "trigger_cn_etf": "512400",
+      "votes": {
+        "short": "transmission",
+        "mid": null,
+        "long": "transmission"
+      },
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "china_internet",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股中概互联网/港股动量观察中"
+    },
+    {
+      "theme_id": "financial",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股金融/券商银行动量观察中"
+    },
+    {
+      "theme_id": "solar_clean_energy",
+      "signal": "resonance",
+      "trigger_cn_etf": "515790",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": null
+      },
+      "description": "美股光伏/清洁能源动量观察中"
+    },
+    {
+      "theme_id": "biotech",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股生物科技/创新药动量观察中"
+    },
+    {
+      "theme_id": "aerospace_defense",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股航天军工动量观察中"
+    },
+    {
+      "theme_id": "rare_earth",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股稀土/新材料动量观察中"
+    }
+  ],
+  "pair_signals": [
+    {
+      "theme_id": "storage_dram",
+      "cn_code": "512480",
+      "mapping_score": null,
+      "confidence": 60,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "storage_dram",
+      "cn_code": "512760",
+      "mapping_score": null,
+      "confidence": 60,
+      "signal": "resonance",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "semiconductor",
+      "cn_code": "512480",
+      "mapping_score": null,
+      "confidence": 90,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "semiconductor",
+      "cn_code": "159995",
+      "mapping_score": 26,
+      "confidence": 90,
+      "signal": "resonance",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "cybersecurity",
+      "cn_code": "512720",
+      "mapping_score": 3,
+      "confidence": 60,
+      "signal": "resonance",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "ai_compute",
+      "cn_code": "515980",
+      "mapping_score": 28,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": "resonance",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "ai_compute",
+      "cn_code": "588000",
+      "mapping_score": null,
+      "confidence": 60,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "energy_oil",
+      "cn_code": "162411",
+      "mapping_score": 41,
+      "confidence": 90,
+      "signal": "resonance",
+      "votes": {
+        "short": "transmission",
+        "mid": "resonance",
+        "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "energy_oil",
+      "cn_code": "515220",
+      "mapping_score": 46,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": "transmission",
+        "mid": "resonance",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "new_energy_vehicle",
+      "cn_code": "515030",
+      "mapping_score": 33,
+      "confidence": 90,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "resonance",
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "new_energy_vehicle",
+      "cn_code": "159755",
+      "mapping_score": null,
+      "confidence": 90,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "robotics",
+      "cn_code": "562500",
+      "mapping_score": 54,
+      "confidence": 90,
+      "signal": "resonance",
+      "votes": {
+        "short": "resonance",
+        "mid": null,
+        "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "gold_metals",
+      "cn_code": "518880",
+      "mapping_score": 43,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "gold_metals",
+      "cn_code": "512400",
+      "mapping_score": 49,
+      "confidence": 60,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": null,
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "china_internet",
+      "cn_code": "513050",
+      "mapping_score": 40,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "china_internet",
+      "cn_code": "513330",
+      "mapping_score": 41,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": "resonance",
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "financial",
+      "cn_code": "512000",
+      "mapping_score": 4,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "financial",
+      "cn_code": "512800",
+      "mapping_score": 0,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "solar_clean_energy",
+      "cn_code": "515790",
+      "mapping_score": 23,
+      "confidence": 90,
+      "signal": "resonance",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "biotech",
+      "cn_code": "512290",
+      "mapping_score": 17,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "biotech",
+      "cn_code": "159992",
+      "mapping_score": null,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "aerospace_defense",
+      "cn_code": "512660",
+      "mapping_score": null,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "aerospace_defense",
+      "cn_code": "512710",
+      "mapping_score": 42,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "rare_earth",
+      "cn_code": "516780",
+      "mapping_score": 59,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": "transmission",
+        "mid": "resonance",
+        "long": null
+      }
+    }
+  ]
+}

@@ -33,19 +33,33 @@ def config():
     return themes, algo
 
 
-def test_compute_outputs_asof_date_reflects_in_generated_at(config):
+def test_compute_outputs_asof_reflects_in_generated_at(config):
+    """asof_bjt 应作为 generated_at 时间戳源"""
     themes, algo = config
     us_ohlc = {sym: _make_ohlc('2025-01-01', 200) for t in themes for sym in t.us_etfs}
     cn_ohlc = {cn.code: _make_ohlc('2025-01-01', 200) for t in themes for cn in t.cn_etfs}
     asof = datetime(2026, 4, 15, 16, 0, tzinfo=BJT)
 
-    themes_json, _, _, meta_json = compute_outputs(
+    themes_json, _, _, _ = compute_outputs(
         themes, us_ohlc, cn_ohlc, [], [], algo, asof_bjt=asof, mode=PipelineMode.FULL,
     )
 
     assert themes_json['generated_at'].startswith('2026-04-15T16:00')
-    # calendar.cn_trading_today 应基于 asof 日期 (2026-04-15 是周三, 工作日)
-    assert meta_json['calendar']['cn_trading_today'] is True
+
+
+def test_compute_outputs_calendar_reflects_asof_date(config):
+    """calendar.cn_trading_today 应基于 asof_bjt 日期判定"""
+    themes, algo = config
+    us_ohlc = {sym: _make_ohlc('2025-01-01', 200) for t in themes for sym in t.us_etfs}
+    cn_ohlc = {cn.code: _make_ohlc('2025-01-01', 200) for t in themes for cn in t.cn_etfs}
+    # 2026-06-06 是周六, 必定非交易日, 不依赖任何节假日数据库
+    asof = datetime(2026, 6, 6, 16, 0, tzinfo=BJT)
+
+    _, _, _, meta_json = compute_outputs(
+        themes, us_ohlc, cn_ohlc, [], [], algo, asof_bjt=asof, mode=PipelineMode.FULL,
+    )
+
+    assert meta_json['calendar']['cn_trading_today'] is False
 
 
 def test_compute_outputs_returns_reflect_asof_truncation(config):
@@ -90,16 +104,12 @@ def test_compute_outputs_ytd_crosses_year_boundary(config):
     )
 
     actual = themes_json['themes'][0]['returns']['r_ytd']
-    # 跨年验证: r_ytd 应基于 2026 第一个数据点, 应该是正数 (close 单调递增)
     assert actual is not None
-    assert actual > 0
-    # 进一步断言: 当年起点 vs 跨 2025 起点差距明显
-    # 跨 2025 全跨度 ln(close[-1]/close[0]) 应该 > r_ytd, 因为序列单调递增, 起点越早值越大
-    full_span_return = math.log(
-        sliced_us[next(iter(sliced_us))]['close'].iloc[-1]
-        / sliced_us[next(iter(sliced_us))]['close'].iloc[0]
-    )
-    assert actual < full_span_return  # r_ytd 不应回退到 2025
+    # 收紧断言: 用 _ytd_return 的实际行为（same_year.iloc[0]['close']）手算期望值
+    sym0_df = sliced_us[next(iter(sliced_us))]
+    first_2026 = sym0_df[sym0_df['date'].dt.year == 2026].iloc[0]
+    expected_ytd = math.log(sym0_df['close'].iloc[-1] / first_2026['close'])
+    assert abs(actual - expected_ytd) < 1e-6
 
 
 def test_compute_outputs_backfilled_flag_propagates(config):
@@ -135,3 +145,4 @@ def test_compute_outputs_handles_empty_cache(config):
     assert themes_json['themes'][0]['returns']['r_1d'] is None
     assert themes_json['themes'][0]['strength']['composite'] == 0
     assert meta_json['providers']['us']['status'] == 'degraded'
+    assert meta_json['providers']['cn']['status'] == 'degraded'

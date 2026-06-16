@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-16T10:07:58.723926+08:00",
+  "generated_at": "2026-06-16T10:29:09.571192+08:00",
   "summary": {
     "themes_total": 14,
     "etfs_total": 23,
-    "resonance_count": 5,
-    "transmission_count": 4,
+    "resonance_count": 4,
+    "transmission_count": 5,
     "divergence_count": 0,
     "top_theme": {
       "id": "storage_dram",
@@ -116,11 +116,11 @@
     },
     {
       "theme_id": "financial",
-      "signal": "resonance",
-      "trigger_cn_etf": "512800",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "resonance",
-        "mid": "resonance",
+        "short": null,
+        "mid": null,
         "long": null
       },
       "description": "美股金融/券商银行动量观察中"
@@ -149,14 +149,14 @@
     },
     {
       "theme_id": "aerospace_defense",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "512710",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       },
-      "description": "美股航天军工动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "rare_earth",
@@ -380,9 +380,9 @@
       "cn_code": "512800",
       "mapping_score": 2,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "resonance",
         "long": null
       }
@@ -438,13 +438,13 @@
     {
       "theme_id": "aerospace_defense",
       "cn_code": "512710",
-      "mapping_score": 32,
+      "mapping_score": null,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
-        "long": "divergence"
+        "long": null
       }
     },
     {

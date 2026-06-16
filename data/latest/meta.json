@@ -1,21 +1,23 @@
 {
   "schema_version": "1.0",
   "last_full_refresh": {
-    "us": "2026-06-16T10:07:58.723926+08:00",
-    "cn": "2026-06-16T10:07:58.723926+08:00"
+    "us": "2026-06-16T10:29:09.571192+08:00",
+    "cn": "2026-06-16T10:29:09.571192+08:00"
   },
-  "last_intraday_refresh": "2026-06-16T10:07:58.723926+08:00",
+  "last_intraday_refresh": "2026-06-16T10:29:09.571192+08:00",
   "providers": {
     "us": {
       "status": "ok",
       "name": "yfinance"
     },
     "cn": {
-      "status": "ok",
+      "status": "degraded",
       "name": "akshare"
     }
   },
-  "failed_symbols": [],
+  "failed_symbols": [
+    "512710"
+  ],
   "stale_minutes": 0,
   "calendar": {
     "us_trading_today": true,

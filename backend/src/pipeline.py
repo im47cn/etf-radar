@@ -27,6 +27,7 @@ from .etl.calendar import (
     is_us_trading_day,
 )
 from .models import (
+    AlgoConfig,
     CalendarInfo,
     DimName,
     FullRefreshTimes,
@@ -170,7 +171,7 @@ def compute_outputs(
     返回顺序: (themes_json, etfs_json, signals_json, meta_json)
     """
     today_bjt = asof_bjt.date()
-    now_utc = asof_bjt.astimezone(timezone.utc)
+    asof_utc = asof_bjt.astimezone(timezone.utc)
 
     # 1) 每个主题的收益
     theme_returns: dict[str, Returns] = {t.id: _theme_returns(t, us_ohlc) for t in themes}
@@ -384,7 +385,7 @@ def compute_outputs(
         calendar=CalendarInfo(
             us_trading_today=is_us_trading_day(today_bjt),
             cn_trading_today=is_cn_trading_day(today_bjt),
-            us_session_active=is_us_session_active(now_utc),
+            us_session_active=is_us_session_active(asof_utc),
             cn_session_active=is_cn_session_active(asof_bjt),
         ),
         backfilled=backfilled,

@@ -150,20 +150,27 @@ def _strength_for_pool(
     return strength_per_dim(own_dim_ret, pool_dim_rets, k=k, days_in_dim=days)
 
 
-def run_pipeline(
+def compute_outputs(
+    themes: list[ThemeConfig],
+    us_ohlc: dict[str, pd.DataFrame],
+    cn_ohlc: dict[str, pd.DataFrame],
+    us_failed: list[str],
+    cn_failed: list[str],
+    algo: AlgoConfig,
+    asof_bjt: datetime,
     mode: PipelineMode,
-    data_root: Path,
-    config_dir: Path,
-) -> None:
-    log.info(f'pipeline start mode={mode}')
-    themes = load_themes(config_dir / 'themes.yml')
-    algo = load_algo_config(config_dir / 'algo.yml')
+    backfilled: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """从已采集的 OHLC 数据计算并构造 4 个输出 JSON（themes/etfs/signals/meta）。
 
-    yf_provider = YfinanceProvider()
-    ak_provider = AkshareProvider()
+    asof_bjt 是 as-of 锚定时间（BJT, 带时区）。所有 calendar 字段、generated_at
+    均基于此时间。pipeline.run_pipeline 调用时传 datetime.now(tz=BJT)，
+    backfill 脚本调用时传该 D 当晚 16:00 BJT。
 
-    us_ohlc, us_failed = _collect_us_ohlc(themes, yf_provider)
-    cn_ohlc, cn_failed = _collect_cn_ohlc(themes, ak_provider)
+    返回顺序: (themes_json, etfs_json, signals_json, meta_json)
+    """
+    today_bjt = asof_bjt.date()
+    now_utc = asof_bjt.astimezone(timezone.utc)
 
     # 1) 每个主题的收益
     theme_returns: dict[str, Returns] = {t.id: _theme_returns(t, us_ohlc) for t in themes}
@@ -309,14 +316,10 @@ def run_pipeline(
         top_theme=top_theme,
     )
 
-    # 9) 落盘
-    now_utc = datetime.now(timezone.utc)
-    now_bjt = now_utc.astimezone(BJT)
-    today_bjt = now_bjt.date()
-
+    # 9) 构造 JSON
     themes_json: dict[str, Any] = {
         'schema_version': '1.0',
-        'generated_at': now_bjt.isoformat(),
+        'generated_at': asof_bjt.isoformat(),
         'themes': [
             {
                 'id': t.id, 'name': t.name, 'us_etfs': t.us_etfs,
@@ -330,7 +333,6 @@ def run_pipeline(
             } for t in themes
         ],
     }
-    atomic_write_json(data_root / 'latest' / 'themes.json', themes_json)
 
     etfs_list: list[dict[str, Any]] = []
     cn_codes_seen: set[str] = set()
@@ -356,22 +358,23 @@ def run_pipeline(
                     cn.code, Strength(short=0, mid=0, long=0, composite=0),
                 ).model_dump(),
             })
-    atomic_write_json(data_root / 'latest' / 'etfs.json',
-                      {'schema_version': '1.0', 'generated_at': now_bjt.isoformat(),
-                       'etfs': etfs_list})
+    etfs_json: dict[str, Any] = {
+        'schema_version': '1.0',
+        'generated_at': asof_bjt.isoformat(),
+        'etfs': etfs_list,
+    }
 
     signals_json: dict[str, Any] = {
         'schema_version': '1.0',
-        'generated_at': now_bjt.isoformat(),
+        'generated_at': asof_bjt.isoformat(),
         'summary': summary.model_dump(),
         'theme_signals': [ts.model_dump() for ts in theme_signals],
         'pair_signals': [ps.model_dump() for ps in pair_signals],
     }
-    atomic_write_json(data_root / 'latest' / 'signals.json', signals_json)
 
     meta = MetaInfo(
-        last_full_refresh=FullRefreshTimes(us=now_bjt.isoformat(), cn=now_bjt.isoformat()),
-        last_intraday_refresh=now_bjt.isoformat() if mode == PipelineMode.INTRADAY else None,
+        last_full_refresh=FullRefreshTimes(us=asof_bjt.isoformat(), cn=asof_bjt.isoformat()),
+        last_intraday_refresh=asof_bjt.isoformat() if mode == PipelineMode.INTRADAY else None,
         providers={
             'us': ProviderInfo(status='ok' if not us_failed else 'degraded', name='yfinance'),
             'cn': ProviderInfo(status='ok' if not cn_failed else 'degraded', name='akshare'),
@@ -382,10 +385,41 @@ def run_pipeline(
             us_trading_today=is_us_trading_day(today_bjt),
             cn_trading_today=is_cn_trading_day(today_bjt),
             us_session_active=is_us_session_active(now_utc),
-            cn_session_active=is_cn_session_active(now_bjt),
+            cn_session_active=is_cn_session_active(asof_bjt),
         ),
+        backfilled=backfilled,
     )
-    atomic_write_json(data_root / 'latest' / 'meta.json', meta.model_dump())
+    meta_json: dict[str, Any] = meta.model_dump()
+
+    return themes_json, etfs_json, signals_json, meta_json
+
+
+def run_pipeline(
+    mode: PipelineMode,
+    data_root: Path,
+    config_dir: Path,
+) -> None:
+    log.info(f'pipeline start mode={mode}')
+    themes = load_themes(config_dir / 'themes.yml')
+    algo = load_algo_config(config_dir / 'algo.yml')
+
+    yf_provider = YfinanceProvider()
+    ak_provider = AkshareProvider()
+
+    us_ohlc, us_failed = _collect_us_ohlc(themes, yf_provider)
+    cn_ohlc, cn_failed = _collect_cn_ohlc(themes, ak_provider)
+
+    now_utc = datetime.now(timezone.utc)
+    now_bjt = now_utc.astimezone(BJT)
+    themes_json, etfs_json, signals_json, meta_json = compute_outputs(
+        themes, us_ohlc, cn_ohlc, us_failed, cn_failed, algo,
+        asof_bjt=now_bjt, mode=mode,
+    )
+
+    atomic_write_json(data_root / 'latest' / 'themes.json', themes_json)
+    atomic_write_json(data_root / 'latest' / 'etfs.json', etfs_json)
+    atomic_write_json(data_root / 'latest' / 'signals.json', signals_json)
+    atomic_write_json(data_root / 'latest' / 'meta.json', meta_json)
     log.info(f'pipeline done, failed={len(us_failed) + len(cn_failed)}')
 
 

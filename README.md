@@ -7,6 +7,11 @@
 - 主域: <https://im47.cn/etf-radar/> (自定义域名)
 - 备用: <https://im47cn.github.io/etf-radar/> (GitHub Pages 默认)
 
+## 页面 (v0.2+)
+
+- `/` 跨市雷达 (默认) — 14 主题列表 + 信号详情 + A 股 ETF 映射
+- `/rotation` 主题轮动 — 散点象限图, X=长期强度 Y=短期强度, 中线 50 切四象限, 气泡大小=综合排名
+
 ## 工作原理
 
 1. GitHub Actions 按调度时间触发 Python 流水线 (`backend/src/pipeline.py`)

@@ -5,9 +5,12 @@ from datetime import date
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import jsonschema  # type: ignore[import-untyped]
 import pandas as pd  # type: ignore[import-untyped]
 
 from scripts.backfill_snapshots import backfill
+
+CONFIG_DIR = Path(__file__).parents[3] / 'config'
 
 
 def _make_history(n: int = 300, base: float = 100.0) -> pd.DataFrame:
@@ -32,19 +35,18 @@ def test_backfill_writes_snapshots_and_index(
 
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)
-        config_dir = Path(__file__).parent.parent.parent.parent / 'config'
 
         # 回填 3 天 (其中至少包含 1 个交易日)
         backfill(
             start=date(2026, 1, 5), end=date(2026, 1, 8),
-            data_root=data_root, config_dir=config_dir,
+            data_root=data_root, config_dir=CONFIG_DIR,
             lookback_days=300, skip_existing=False,
         )
 
         snap_root = data_root / 'snapshots'
         snapshot_dirs = sorted(d.name for d in snap_root.iterdir() if d.is_dir())
         # 2026-01-05 (周一) 至 2026-01-08 (周四) 都是工作日
-        assert len(snapshot_dirs) >= 3
+        assert len(snapshot_dirs) == 4
 
         # 每个 snapshot 含 4 个文件
         for date_str in snapshot_dirs:
@@ -79,12 +81,11 @@ def test_backfill_skip_existing(
 
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)
-        config_dir = Path(__file__).parent.parent.parent.parent / 'config'
 
         # 第一次回填: 写 2 天
         backfill(
             start=date(2026, 1, 5), end=date(2026, 1, 6),
-            data_root=data_root, config_dir=config_dir,
+            data_root=data_root, config_dir=CONFIG_DIR,
             lookback_days=300, skip_existing=False,
         )
         first_count = sum(1 for _ in (data_root / 'snapshots').iterdir())
@@ -96,7 +97,7 @@ def test_backfill_skip_existing(
         # 第二次回填, skip_existing=True
         backfill(
             start=date(2026, 1, 5), end=date(2026, 1, 8),
-            data_root=data_root, config_dir=config_dir,
+            data_root=data_root, config_dir=CONFIG_DIR,
             lookback_days=300, skip_existing=True,
         )
 
@@ -104,7 +105,7 @@ def test_backfill_skip_existing(
         assert sentinel_path.read_text(encoding='utf-8') == 'SENTINEL'
         # 新增 2026-01-07, 2026-01-08
         new_count = sum(1 for _ in (data_root / 'snapshots').iterdir())
-        assert new_count > first_count
+        assert new_count == first_count + 2
 
 
 @patch('scripts.backfill_snapshots.AkshareProvider')
@@ -113,8 +114,6 @@ def test_backfill_output_schemas_valid(
     mock_yf: MagicMock, mock_ak: MagicMock,
 ) -> None:
     """回填产物应通过现有 JSON schemas 校验"""
-    import jsonschema  # type: ignore[import-untyped]
-
     mock_yf.return_value.fetch_ohlc.return_value = _make_history()
     mock_yf.return_value.name = 'yfinance'
     mock_ak.return_value.fetch_ohlc.return_value = _make_history()
@@ -122,12 +121,11 @@ def test_backfill_output_schemas_valid(
 
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)
-        config_dir = Path(__file__).parent.parent.parent.parent / 'config'
         schemas_root = Path(__file__).parent.parent / 'schemas'
 
         backfill(
             start=date(2026, 1, 5), end=date(2026, 1, 6),
-            data_root=data_root, config_dir=config_dir,
+            data_root=data_root, config_dir=CONFIG_DIR,
             lookback_days=300, skip_existing=False,
         )
 

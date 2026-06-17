@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { SWRConfig } from 'swr';
+import React from 'react';
 import { RotationPage } from '../RotationPage';
 
 vi.mock('recharts', async () => {
@@ -30,10 +32,38 @@ vi.mock('@/providers/DataProvider', () => ({
   useDataContext: () => mockUseDataContext(),
 }));
 
+// Mock useSnapshotsTimeline to return index-error state (falls back to RotationScatter with fallbackThemes)
+vi.mock('@/hooks/useSnapshotsTimeline', () => ({
+  useSnapshotsTimeline: () => ({
+    index: undefined,
+    currentDate: undefined,
+    frame: undefined,
+    setDate: vi.fn(),
+    prefetch: vi.fn(),
+    status: 'index-error',
+    error: undefined,
+  }),
+}));
+
+vi.mock('@/hooks/useTimelinePlayer', () => ({
+  useTimelinePlayer: () => ({
+    dates: [],
+    playing: false,
+    speed: 1,
+    animationDuration: 500,
+    play: vi.fn(),
+    pause: vi.fn(),
+    stop: vi.fn(),
+    setSpeed: vi.fn(),
+  }),
+}));
+
 const renderPage = () =>
   render(
     <MemoryRouter>
-      <RotationPage />
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+        <RotationPage />
+      </SWRConfig>
     </MemoryRouter>,
   );
 

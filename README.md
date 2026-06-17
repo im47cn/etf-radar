@@ -66,6 +66,21 @@ cd backend && uv run python ../scripts/calibrate_algo.py
 
 输出不同 K 值下的强度分布, 偏差 ≤15% 标 ✓。根据结果调整 `config/algo.yml`。
 
+### 数据归档与回填
+
+每日 cron (`30 7 * * 1-5`, 即北京时间 15:30) 自动把 `data/latest/` 归档到 `data/snapshots/<BJT-date>/`，
+供 Phase B 时间轴回放使用。`data/latest/snapshots-index.json` 由归档/回填脚本维护，前端 Phase B 据此发现可用日期。
+
+**首次回填（一次性）**: 如果 snapshots 历史不足，运行回填脚本生成历史数据：
+
+```bash
+cd backend
+uv run --all-extras python -m scripts.backfill_snapshots --start 2026-01-02 --end 2026-06-13
+```
+
+回填产物的 `meta.json` 含 `backfilled: true` 标记，区分自动归档。
+`--skip-existing` 默认开启，保护已归档的真实数据。
+
 ### 归档清理 (>2 年自动删除, 通常不需要手动跑)
 
 ```bash

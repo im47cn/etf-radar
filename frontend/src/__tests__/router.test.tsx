@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { SWRConfig } from 'swr';
+import React from 'react';
 import { RadarPage } from '@/pages/RadarPage';
 import { RotationPage } from '@/pages/RotationPage';
 
@@ -61,13 +63,41 @@ vi.mock('@/providers/UIStateProvider', () => ({
   }),
 }));
 
+// Mock useSnapshotsTimeline to return index-error state
+vi.mock('@/hooks/useSnapshotsTimeline', () => ({
+  useSnapshotsTimeline: () => ({
+    index: undefined,
+    currentDate: undefined,
+    frame: undefined,
+    setDate: vi.fn(),
+    prefetch: vi.fn(),
+    status: 'index-error',
+    error: undefined,
+  }),
+}));
+
+vi.mock('@/hooks/useTimelinePlayer', () => ({
+  useTimelinePlayer: () => ({
+    dates: [],
+    playing: false,
+    speed: 1,
+    animationDuration: 500,
+    play: vi.fn(),
+    pause: vi.fn(),
+    stop: vi.fn(),
+    setSpeed: vi.fn(),
+  }),
+}));
+
 const renderAt = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/" element={<RadarPage />} />
-        <Route path="/rotation" element={<RotationPage />} />
-      </Routes>
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+        <Routes>
+          <Route path="/" element={<RadarPage />} />
+          <Route path="/rotation" element={<RotationPage />} />
+        </Routes>
+      </SWRConfig>
     </MemoryRouter>,
   );
 

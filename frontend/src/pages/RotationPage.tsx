@@ -1,5 +1,5 @@
 import { useDataContext } from '@/providers/DataProvider';
-import { RotationScatter } from '@/components/rotation/RotationScatter';
+import { RotationTimelinePlayer } from '@/components/rotation/RotationTimelinePlayer';
 import { QuadrantLegend } from '@/components/rotation/QuadrantLegend';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -31,7 +31,7 @@ export const RotationPage = () => {
         <p className="text-xs text-gray-600 mb-4">
           X 轴为长期强度 (60d), Y 轴为短期强度 (1d), 中线 50 切四象限。气泡大小反映综合排名。
         </p>
-        <RotationScatter themes={themes.themes} />
+        <RotationTimelinePlayer fallbackThemes={themes.themes} />
         <QuadrantLegend />
       </div>
     </main>

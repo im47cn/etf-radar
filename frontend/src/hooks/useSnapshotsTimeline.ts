@@ -22,8 +22,10 @@ export interface UseSnapshotsTimelineResult {
 }
 
 const BASE = import.meta.env.BASE_URL ?? '/';
-const INDEX_URL = `${BASE}data/latest/snapshots-index.json`;
-const frameUrl = (path: string) => `${BASE}data/${path}`;
+// publicDir 将 ../data 内容平铺到 dist 根 (latest/ 与 snapshots/ 直接在根下),
+// 因此 URL 不带 data/ 前缀. themes_path 已是 "snapshots/<date>/themes.json" 形式.
+const INDEX_URL = `${BASE}latest/snapshots-index.json`;
+const frameUrl = (path: string) => `${BASE}${path}`;
 const CACHE_MAX = 20;
 const PREFETCH_RECENT = 10;
 const FRAME_MAX_RETRIES = 3;

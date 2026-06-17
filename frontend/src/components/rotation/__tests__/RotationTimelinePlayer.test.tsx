@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
@@ -73,5 +73,25 @@ describe('RotationTimelinePlayer (integration)', () => {
       () => expect((slider as HTMLInputElement).value).not.toBe(initialValue),
       { timeout: 2000 },
     );
+  });
+
+  // fake-timer 变体: 消除 CI 上 2000ms timeout 的时序抖动. 通过 shouldAdvanceTime
+  // 让 fake timer 在等待 SWR/MSW promise chain 时自动微步推进, 同时由 advanceTimersByTimeAsync
+  // 精确控制 setInterval (DURATIONS[1x]=300ms) 的触发节奏.
+  it('smoke (fake-timer): clicking play advances slider deterministically', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, shouldAdvanceTimeDelta: 5 });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTimeAsync.bind(vi) });
+    try {
+      renderPlayer();
+      const slider = await screen.findByRole('slider');
+      const initialValue = (slider as HTMLInputElement).value;
+      await user.click(screen.getByLabelText('播放'));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(400);
+      });
+      expect((slider as HTMLInputElement).value).not.toBe(initialValue);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

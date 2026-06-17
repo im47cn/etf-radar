@@ -25,7 +25,7 @@ export const mkThemes = (n = 14): Theme[] =>
 
 export const mkIndex = (n = 5): SnapshotsIndex => {
   const snapshots = Array.from({ length: n }, (_, i) => {
-    const date = new Date(2026, 0, 2 + i).toISOString().slice(0, 10);
+    const date = new Date(Date.UTC(2026, 0, 2 + i)).toISOString().slice(0, 10);
     return { date, themes_path: `snapshots/${date}/themes.json` };
   });
   return {

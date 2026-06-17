@@ -24,14 +24,13 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => (
   </SWRConfig>
 );
 
-// mkIndex(5) 在 GMT+8 时区生成 2026-01-01..2026-01-05 (toISOString 转 UTC 后切日期)
-// 所以 latest = 2026-01-05, frame-error 测试用 2026-01-02 (有效日期)
+// mkIndex(5) 用 Date.UTC 稳定生成 2026-01-02..2026-01-06 (不受运行时区影响)
 describe('useSnapshotsTimeline', () => {
   it('initializes to latest date once index loads', async () => {
     const { result } = renderHook(() => useSnapshotsTimeline(), { wrapper: Wrapper });
     await waitFor(() => expect(result.current.status).toBe('ready'));
-    expect(result.current.currentDate).toBe('2026-01-05');
-    expect(result.current.frame?.date).toBe('2026-01-05');
+    expect(result.current.currentDate).toBe('2026-01-06');
+    expect(result.current.frame?.date).toBe('2026-01-06');
   });
 
   it('transitions to index-error when index fetch fails', async () => {
@@ -49,11 +48,11 @@ describe('useSnapshotsTimeline', () => {
     );
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const { result } = renderHook(() => useSnapshotsTimeline(), { wrapper: Wrapper });
-    // 启动时 latest=2026-01-05 应该 ready (2026-01-02 prefetch 静默失败)
+    // 启动时 latest=2026-01-06 应该 ready (2026-01-02 prefetch 静默失败)
     await waitFor(() => expect(result.current.status).toBe('ready'));
     const initialFrame = result.current.frame;
     expect(initialFrame).toBeDefined();
-    expect(initialFrame?.date).toBe('2026-01-05');
+    expect(initialFrame?.date).toBe('2026-01-06');
 
     // 推进启动 prefetch 中失败帧的 retry 退避 (5s + 10s = 15s), 等 inflight 释放
     await vi.advanceTimersByTimeAsync(60_000);
@@ -85,8 +84,8 @@ describe('useSnapshotsTimeline', () => {
     // 等待 startup prefetch 完成 (recent 10, 但 index 只有 5)
     await waitFor(() => expect(frameFetches).toBeGreaterThanOrEqual(5));
     const before = frameFetches;
-    act(() => result.current.setDate('2026-01-05'));
-    await waitFor(() => expect(result.current.frame?.date).toBe('2026-01-05'));
+    act(() => result.current.setDate('2026-01-06'));
+    await waitFor(() => expect(result.current.frame?.date).toBe('2026-01-06'));
     expect(frameFetches).toBe(before);
   });
 
@@ -108,10 +107,10 @@ describe('useSnapshotsTimeline', () => {
     // 启动 prefetch 已拉全部 5 帧 (≥5), 等其完成
     await waitFor(() => expect(frameFetches.length).toBeGreaterThanOrEqual(5));
     const before = frameFetches.length;
-    act(() => result.current.prefetch(['2026-01-02', '2026-01-03']));
+    act(() => result.current.prefetch(['2026-01-03', '2026-01-04']));
     // 已缓存 ⇒ prefetch 不再发请求, 验证缓存确实命中: setDate 同步切 frame
-    act(() => result.current.setDate('2026-01-02'));
-    await waitFor(() => expect(result.current.frame?.date).toBe('2026-01-02'));
+    act(() => result.current.setDate('2026-01-03'));
+    await waitFor(() => expect(result.current.frame?.date).toBe('2026-01-03'));
     expect(frameFetches.length).toBe(before);
   });
 

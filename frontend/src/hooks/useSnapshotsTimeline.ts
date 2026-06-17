@@ -16,6 +16,7 @@ export interface UseSnapshotsTimelineResult {
   frame: SnapshotFrame | undefined;
   setDate: (date: string) => void;
   prefetch: (dates: string[]) => void;
+  getCachedFrame: (date: string) => SnapshotFrame | undefined;
   status: TimelineStatus;
   error: string | undefined;
 }
@@ -146,6 +147,11 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
     [fetchFrame],
   );
 
+  const getCachedFrame = useCallback(
+    (date: string): SnapshotFrame | undefined => cacheRef.current.get(date),
+    [],
+  );
+
   const status: TimelineStatus = indexError
     ? 'index-error'
     : !index
@@ -154,5 +160,14 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
         ? 'frame-error'
         : 'ready';
 
-  return { index, currentDate, frame, setDate, prefetch, status, error: frameError };
+  return {
+    index,
+    currentDate,
+    frame,
+    setDate,
+    prefetch,
+    getCachedFrame,
+    status,
+    error: frameError,
+  };
 }

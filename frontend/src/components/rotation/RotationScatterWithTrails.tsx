@@ -28,10 +28,13 @@ export const RotationScatterWithTrails = ({
   showTrails,
   height = 500,
 }: Props) => {
-  const points = themesToRotationPoints(themes).map(p => ({
-    ...p,
-    _bubbleSize: computeBubbleSize(p.size),
-  }));
+  const points = useMemo(
+    () => themesToRotationPoints(themes).map(p => ({
+      ...p,
+      _bubbleSize: computeBubbleSize(p.size),
+    })),
+    [themes],
+  );
   const themeById = useMemo(() => new Map(themes.map(t => [t.id, t])), [themes]);
 
   const trails = useMemo(

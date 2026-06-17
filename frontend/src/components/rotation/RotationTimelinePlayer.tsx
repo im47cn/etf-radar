@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSnapshotsTimeline } from '@/hooks/useSnapshotsTimeline';
 import { useTimelinePlayer } from '@/hooks/useTimelinePlayer';
 import { pickTopByComposite } from '@/lib/trailGradient';
@@ -40,9 +40,20 @@ export const RotationTimelinePlayer = ({ fallbackThemes }: Props) => {
     () => pickTopByComposite(frame.themes, TOP_N),
     [frame.themes],
   );
-  const trailFrames: SnapshotFrame[] = showTrails
-    ? collectTrailFrames(tl, dates, TRAIL_WINDOW)
-    : [];
+  const trailWindow = useMemo<TrailWindowResult>(
+    () => (showTrails ? computeTrailWindow(tl, dates, TRAIL_WINDOW) : { frames: [], missing: [] }),
+    // tl 对象引用可能稳定也可能不稳定, 用核心字段做依赖
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [showTrails, tl.currentDate, tl.frame, dates.join('|')],
+  );
+  const trailFrames = trailWindow.frames;
+  const missingKey = trailWindow.missing.join('|');
+
+  // cache miss 时触发后台 prefetch, 让下次渲染命中完整尾迹窗口
+  useEffect(() => {
+    if (trailWindow.missing.length > 0) tl.prefetch(trailWindow.missing);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [missingKey]);
 
   // Branch only on render output
   if (tl.status === 'index-error') {
@@ -93,15 +104,29 @@ export const RotationTimelinePlayer = ({ fallbackThemes }: Props) => {
   );
 };
 
-function collectTrailFrames(
+interface TrailWindowResult {
+  frames: SnapshotFrame[];
+  missing: string[];
+}
+
+function computeTrailWindow(
   tl: ReturnType<typeof useSnapshotsTimeline>,
   dates: string[],
   window: number,
-): SnapshotFrame[] {
-  if (!tl.currentDate || !tl.frame) return [];
+): TrailWindowResult {
+  if (!tl.currentDate || !tl.frame) return { frames: [], missing: [] };
   const idx = dates.indexOf(tl.currentDate);
-  if (idx === -1) return [];
+  if (idx === -1) return { frames: [tl.frame], missing: [] };
   const startIdx = Math.max(0, idx - window + 1);
-  void dates.slice(startIdx, idx + 1); // v1: only current frame returned
-  return [tl.frame];
+  const targetDates = dates.slice(startIdx, idx + 1);
+  // 聚合已 cache 命中的历史帧 (老→新), 未命中记入 missing 让上层触发后台 prefetch
+  const frames: SnapshotFrame[] = [];
+  const missing: string[] = [];
+  for (const d of targetDates) {
+    const f = tl.getCachedFrame(d);
+    if (f) frames.push(f);
+    else missing.push(d);
+  }
+  if (frames.length === 0) frames.push(tl.frame);
+  return { frames, missing };
 }

@@ -79,7 +79,7 @@ describe('RotationTimelinePlayer (integration)', () => {
   // 让 fake timer 在等待 SWR/MSW promise chain 时自动微步推进, 同时由 advanceTimersByTimeAsync
   // 精确控制 setInterval (DURATIONS[1x]=300ms) 的触发节奏.
   it('smoke (fake-timer): clicking play advances slider deterministically', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true, shouldAdvanceTimeDelta: 5 });
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTimeAsync.bind(vi) });
     try {
       renderPlayer();

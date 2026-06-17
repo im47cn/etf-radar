@@ -8,17 +8,32 @@ set -eu
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 BACKEND="$REPO_ROOT/backend"
 
-# 仅当 backend/ 有改动 (commits 待 push 涉及) 时才跑后端检查, 节省时间
-remote="$1"
-remote_sha=$(git rev-parse --verify "$remote/$(git rev-parse --abbrev-ref HEAD)" 2>/dev/null || echo "")
-if [ -n "$remote_sha" ]; then
-  CHANGED=$(git diff --name-only "$remote_sha" HEAD -- backend/)
-else
-  # remote 分支不存在 (首次 push), 跑完整检查
-  CHANGED="full"
-fi
+# Pre-push 协议: stdin 每行一条待 push 的 ref:
+#   <local_ref> <local_sha> <remote_ref> <remote_sha>
+# 推导 baseline 必须基于实际 push 的 ref, 不能假设是当前 HEAD 分支
+# (否则 `git push origin foo:bar` / refspec / 多 ref push 会用错 baseline).
+NULL_SHA="0000000000000000000000000000000000000000"
+RUN_FULL=0
+CHANGED=""
 
-if [ -z "$CHANGED" ]; then
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # 跳过删除远端分支的 push (local_sha 全 0)
+  if [ "$local_sha" = "$NULL_SHA" ]; then
+    continue
+  fi
+  # 首次 push 该 ref: 远端不存在, 跑完整检查
+  if [ "$remote_sha" = "$NULL_SHA" ]; then
+    RUN_FULL=1
+    break
+  fi
+  # 累加该 ref 涉及的 backend/ 变更文件 (合集)
+  ref_changed=$(git diff --name-only "$remote_sha" "$local_sha" -- backend/ 2>/dev/null || echo "")
+  if [ -n "$ref_changed" ]; then
+    CHANGED="$CHANGED"$'\n'"$ref_changed"
+  fi
+done
+
+if [ "$RUN_FULL" -eq 0 ] && [ -z "${CHANGED//[$'\n ']/}" ]; then
   echo "[pre-push] no backend changes, skip ruff/pytest"
   exit 0
 fi

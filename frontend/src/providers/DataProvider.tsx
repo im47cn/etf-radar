@@ -5,8 +5,7 @@ import { ThemesFileSchema, type ThemesFile } from '@/types/themes';
 import { EtfsFileSchema, type EtfsFile } from '@/types/etfs';
 import { SignalsFileSchema, type SignalsFile } from '@/types/signals';
 import { MetaFileSchema, type MetaFile } from '@/types/meta';
-
-const BASE = import.meta.env.BASE_URL;
+import { LATEST_URLS } from '@/lib/dataUrls';
 
 /**
  * Fetch + zod 验证. 解析失败抛 ZodError, SWR 暴露给上层 error.
@@ -41,22 +40,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const themes = useSWR<ThemesFile>(
-    `${BASE}latest/themes.json`,
+    LATEST_URLS.themes,
     (url: string) => fetchAndParse(url, ThemesFileSchema),
     { refreshInterval: 300_000 },
   );
   const etfs = useSWR<EtfsFile>(
-    `${BASE}latest/etfs.json`,
+    LATEST_URLS.etfs,
     (url: string) => fetchAndParse(url, EtfsFileSchema),
     { refreshInterval: 300_000 },
   );
   const signals = useSWR<SignalsFile>(
-    `${BASE}latest/signals.json`,
+    LATEST_URLS.signals,
     (url: string) => fetchAndParse(url, SignalsFileSchema),
     { refreshInterval: 300_000 },
   );
   const meta = useSWR<MetaFile>(
-    `${BASE}latest/meta.json`,
+    LATEST_URLS.meta,
     (url: string) => fetchAndParse(url, MetaFileSchema),
     { refreshInterval: 60_000 },
   );

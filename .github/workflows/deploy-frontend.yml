@@ -32,7 +32,7 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Install frontend deps
         run: cd frontend && npm ci
-      - name: Build (Vite copies ../data to dist/data via publicDir)
+      - name: Build (Vite publicDir flattens ../data contents to dist root)
         run: cd frontend && npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -49,3 +49,48 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    # 烟雾测试: 直接 curl 真实生产 URL 验证 200, 防止 publicDir 平铺结构与 fetch URL
+    # 前缀错配导致的 404 类 bug 再次潜伏 (MSW 通配匹配掩盖了单测).
+    # - 双域名: im47.cn (自定义域) + im47cn.github.io (Pages 原生域), 两者均需 200 才算 pass.
+    #   单域名失败可能只是 DNS/Cloudflare 问题, 双域名同时挂才能判定为部署本身坏了.
+    # - 轮询而非 sleep: GitHub Pages 偶发 60-90s 才生效新 artifact, 固定 sleep 易假阴性.
+    steps:
+      - name: Smoke test deployed URLs (poll + dual-domain)
+        run: |
+          set -eu
+          # 5 个数据契约 URL (来自 lib/dataUrls.ts), 与 dist/ 平铺结构对齐
+          PATHS=(
+            "latest/snapshots-index.json"
+            "latest/themes.json"
+            "latest/etfs.json"
+            "latest/signals.json"
+            "latest/meta.json"
+          )
+          DOMAINS=(
+            "https://im47.cn/etf-radar"
+            "https://im47cn.github.io/etf-radar"
+          )
+          check_url() {
+            local url="$1"
+            for attempt in 1 2 3 4 5; do
+              if curl -fsS --max-time 15 "$url" > /dev/null; then
+                echo "OK [$attempt] $url"
+                return 0
+              fi
+              echo "RETRY [$attempt/5] $url"
+              sleep 15
+            done
+            echo "FAIL $url" >&2
+            return 1
+          }
+          failed=0
+          for domain in "${DOMAINS[@]}"; do
+            for path in "${PATHS[@]}"; do
+              check_url "$domain/$path" || failed=1
+            done
+          done
+          exit $failed

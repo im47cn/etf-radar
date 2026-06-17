@@ -7,6 +7,7 @@ import {
   type SnapshotFrame,
 } from '@/types/snapshots';
 import { createLRU } from '@/lib/snapshotsCache';
+import { LATEST_URLS, frameUrl } from '@/lib/dataUrls';
 
 export type TimelineStatus = 'loading' | 'ready' | 'index-error' | 'frame-error';
 
@@ -21,11 +22,9 @@ export interface UseSnapshotsTimelineResult {
   error: string | undefined;
 }
 
-const BASE = import.meta.env.BASE_URL ?? '/';
-// publicDir 将 ../data 内容平铺到 dist 根 (latest/ 与 snapshots/ 直接在根下),
-// 因此 URL 不带 data/ 前缀. themes_path 已是 "snapshots/<date>/themes.json" 形式.
-const INDEX_URL = `${BASE}latest/snapshots-index.json`;
-const frameUrl = (path: string) => `${BASE}${path}`;
+// URL 构造已集中到 lib/dataUrls.ts, 配合契约测试杜绝 publicDir 平铺结构与
+// fetch URL 前缀错配 (详见该模块顶部注释).
+const INDEX_URL = LATEST_URLS.snapshotsIndex;
 const CACHE_MAX = 20;
 const PREFETCH_RECENT = 10;
 const FRAME_MAX_RETRIES = 3;

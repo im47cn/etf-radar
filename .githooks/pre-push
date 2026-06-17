@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Pre-push hook: 本地拦截会让 CI 变红的 backend 改动.
+# 启用: git config core.hooksPath .githooks  (或运行 scripts/setup-hooks.sh)
+# 紧急绕过: git push --no-verify
+
+set -eu
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+BACKEND="$REPO_ROOT/backend"
+
+# 仅当 backend/ 有改动 (commits 待 push 涉及) 时才跑后端检查, 节省时间
+remote="$1"
+remote_sha=$(git rev-parse "$remote/$(git rev-parse --abbrev-ref HEAD)" 2>/dev/null || echo "")
+if [ -n "$remote_sha" ]; then
+  CHANGED=$(git diff --name-only "$remote_sha" HEAD -- backend/)
+else
+  # remote 分支不存在 (首次 push), 跑完整检查
+  CHANGED="full"
+fi
+
+if [ -z "$CHANGED" ]; then
+  echo "[pre-push] no backend changes, skip ruff/pytest"
+  exit 0
+fi
+
+cd "$BACKEND"
+
+echo "[pre-push] ruff check..."
+if ! uv run ruff check src tests; then
+  echo ""
+  echo "[pre-push] BLOCKED by Ruff. Fix with: cd backend && uv run ruff check src tests --fix"
+  echo "[pre-push] Emergency bypass: git push --no-verify"
+  exit 1
+fi
+
+echo "[pre-push] pytest (failed-first + exit-on-first-fail)..."
+# -x: 第一个红就停 (快速反馈)
+# --ff: 优先跑上次失败的测试 (缓存命中时通常 5-10s 内出结果)
+# 首次跑或无失败历史时, 行为等同全跑 (~90s on 101 tests)
+if ! uv run pytest --tb=short -q -x --ff; then
+  echo ""
+  echo "[pre-push] BLOCKED by failing tests."
+  echo "[pre-push] Emergency bypass: git push --no-verify"
+  exit 1
+fi
+
+echo "[pre-push] OK"

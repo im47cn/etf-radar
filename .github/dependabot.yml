@@ -1,0 +1,78 @@
+version: 2
+
+# 设计原则:
+# - weekly + 周一早 06:00 BJT: 不打扰白天工作, 周一上班即见 PR
+# - 分组合并: 同生态系统的小升级合一个 PR, 防收件箱被淹
+# - 忽略 npm major: 容易破坏, 留人工评估; GHA major 允许 (官方仓库稳定)
+# - 限制 PR 上限: 防止积压
+
+updates:
+  # GitHub Actions: 这次 Node 20 弃用就是被动反应, 启用后下次提前几个月就能看到 PR
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns: ["*"]
+    labels:
+      - "deps"
+      - "ci"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Frontend npm: ignore major (React/Vite/Recharts major 升级风险高, 留人工决策)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+    labels:
+      - "deps"
+      - "frontend"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Backend Python: 读 pyproject.toml 依赖项; uv.lock 由 CI uv sync 自动同步
+  # ignore major: 数据栈 (pandas/akshare/yfinance) major 升级常含破坏性变更
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
+    groups:
+      pip-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+    labels:
+      - "deps"
+      - "backend"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"

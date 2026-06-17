@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - uses: astral-sh/setup-uv@v8
+      - uses: astral-sh/setup-uv@v8.2.0
       - run: cd backend && uv sync --extra dev
       - name: Archive latest → snapshots/<today-bjt>
         run: cd backend && uv run python -m src.pipeline --mode=archive --data-root=../data --config-dir=../config

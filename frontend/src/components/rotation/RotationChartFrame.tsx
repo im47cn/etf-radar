@@ -1,12 +1,11 @@
 import {
   ResponsiveContainer, ScatterChart, XAxis, YAxis,
-  CartesianGrid, ReferenceLine, ReferenceArea, Tooltip,
+  CartesianGrid, ReferenceLine, ReferenceArea,
 } from 'recharts';
 import { QUADRANT_COLORS } from '@/lib/rotation';
 
 interface Props {
   height: number;
-  tooltipContent: (props: any) => React.ReactNode | null;
   /** Scatter 元素必须作为直接 children, Recharts 通过 children walk 提取 */
   children: React.ReactNode;
 }
@@ -14,10 +13,10 @@ interface Props {
 export const computeBubbleSize = (composite: number): number => 8 + (composite / 99) * 12;
 
 /**
- * 散点图静态 frame: 坐标轴 / 网格 / 象限分割线 / 象限色块 / Tooltip 容器.
- * 抽出消除 RotationScatter 与 RotationScatterWithTrails 共有的 ~17 行 chart frame JSX.
+ * 散点图静态 frame: 坐标轴 / 网格 / 象限分割线 / 象限色块.
+ * Tooltip 已下线 (新版 with-trails 视图用 FocusedThemePanel 承载详情).
  */
-export const RotationChartFrame = ({ height, tooltipContent, children }: Props) => (
+export const RotationChartFrame = ({ height, children }: Props) => (
   <ResponsiveContainer width="100%" height={height}>
     <ScatterChart margin={{ top: 24, right: 24, bottom: 48, left: 24 }}>
       <CartesianGrid strokeDasharray="3 3" />
@@ -35,7 +34,6 @@ export const RotationChartFrame = ({ height, tooltipContent, children }: Props) 
       <ReferenceArea x1={0}  x2={50}  y1={50} y2={100} fill={QUADRANT_COLORS.rising}  fillOpacity={0.05} />
       <ReferenceArea x1={0}  x2={50}  y1={0}  y2={50}  fill={QUADRANT_COLORS.lagging} fillOpacity={0.05} />
       <ReferenceArea x1={50} x2={100} y1={0}  y2={50}  fill={QUADRANT_COLORS.fading}  fillOpacity={0.05} />
-      <Tooltip cursor={{ strokeDasharray: '3 3' }} content={tooltipContent} />
       {children}
     </ScatterChart>
   </ResponsiveContainer>

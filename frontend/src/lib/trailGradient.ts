@@ -1,4 +1,3 @@
-import type { Theme } from '@/types/themes';
 import type { SnapshotFrame } from '@/types/snapshots';
 
 const OPACITY_MIN = 0.05;
@@ -10,12 +9,6 @@ export function trailOpacity(i: number, total: number): number {
   return OPACITY_MIN + (OPACITY_MAX - OPACITY_MIN) * t;
 }
 
-export function pickTopByComposite(themes: Theme[], n: number): Set<string> {
-  if (n <= 0) return new Set();
-  const sorted = [...themes].sort((a, b) => b.strength.composite - a.strength.composite);
-  return new Set(sorted.slice(0, n).map(t => t.id));
-}
-
 export interface TrailPoint {
   x: number;
   y: number;
@@ -23,13 +16,29 @@ export interface TrailPoint {
   date: string;
 }
 
+export interface BuildTrailsOptions {
+  themeIds?: Set<string>;
+}
+
 export function buildTrails(
   frames: SnapshotFrame[],
-  topN: Set<string>,
+  opts?: BuildTrailsOptions,
 ): Map<string, TrailPoint[]> {
   const result = new Map<string, TrailPoint[]>();
   const total = frames.length;
-  for (const themeId of topN) {
+  if (total === 0) return result;
+
+  let candidates: Set<string>;
+  if (opts?.themeIds) {
+    candidates = opts.themeIds;
+  } else {
+    candidates = new Set<string>();
+    for (const frame of frames) {
+      for (const theme of frame.themes) candidates.add(theme.id);
+    }
+  }
+
+  for (const themeId of candidates) {
     const points: TrailPoint[] = [];
     frames.forEach((frame, i) => {
       const theme = frame.themes.find(t => t.id === themeId);

@@ -71,21 +71,10 @@ vi.mock('@/hooks/useSnapshotsTimeline', () => ({
     frame: undefined,
     setDate: vi.fn(),
     prefetch: vi.fn(),
+    getCachedFrame: vi.fn(),
+    snapshotsFrames: [],
     status: 'index-error',
     error: undefined,
-  }),
-}));
-
-vi.mock('@/hooks/useTimelinePlayer', () => ({
-  useTimelinePlayer: () => ({
-    dates: [],
-    playing: false,
-    speed: 1,
-    animationDuration: 500,
-    play: vi.fn(),
-    pause: vi.fn(),
-    stop: vi.fn(),
-    setSpeed: vi.fn(),
   }),
 }));
 

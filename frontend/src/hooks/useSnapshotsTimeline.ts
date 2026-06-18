@@ -18,6 +18,7 @@ export interface UseSnapshotsTimelineResult {
   setDate: (date: string) => void;
   prefetch: (dates: string[]) => void;
   getCachedFrame: (date: string) => SnapshotFrame | undefined;
+  snapshotsFrames: SnapshotFrame[];
   status: TimelineStatus;
   error: string | undefined;
 }
@@ -54,6 +55,8 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
   const [currentDate, setCurrentDate] = useState<string | undefined>();
   const [frame, setFrame] = useState<SnapshotFrame | undefined>();
   const [frameError, setFrameError] = useState<string | undefined>();
+  // bump on every successful cache.put — triggers snapshotsFrames recompute
+  const [loadedRevision, setLoadedRevision] = useState(0);
   const inflight = useRef<Set<string>>(new Set());
 
   const pathByDate = useMemo(() => {
@@ -76,6 +79,7 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
         try {
           const fetched = await frameFetcher(path, date);
           cacheRef.current.put(date, fetched);
+          setLoadedRevision((v) => v + 1);
           inflight.current.delete(date);
           return fetched;
         } catch (e) {
@@ -153,6 +157,20 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
     [],
   );
 
+  // Ordered list of all currently-cached frames (old → new) following index order.
+  // Recomputes when index changes or a new frame is put into cache.
+  const snapshotsFrames = useMemo<SnapshotFrame[]>(() => {
+    if (!index) return [];
+    // Reference loadedRevision so useMemo re-runs after each cache.put
+    void loadedRevision;
+    const out: SnapshotFrame[] = [];
+    for (const s of index.snapshots) {
+      const f = cacheRef.current.get(s.date);
+      if (f) out.push(f);
+    }
+    return out;
+  }, [index, loadedRevision]);
+
   const status: TimelineStatus = indexError
     ? 'index-error'
     : !index
@@ -168,6 +186,7 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
     setDate,
     prefetch,
     getCachedFrame,
+    snapshotsFrames,
     status,
     error: frameError,
   };

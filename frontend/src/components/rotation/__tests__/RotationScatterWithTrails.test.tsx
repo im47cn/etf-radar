@@ -1,21 +1,37 @@
+import { render, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import type { ReactElement, ReactNode } from 'react';
 import { RotationScatterWithTrails } from '../RotationScatterWithTrails';
-import { mkThemes, mkFrame } from '@/__fixtures__/snapshots';
+import type { Theme } from '@/types/themes';
+import type { SnapshotFrame } from '@/types/snapshots';
 
 vi.mock('recharts', async () => {
   const actual = await vi.importActual<typeof import('recharts')>('recharts');
   return {
     ...actual,
-    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    ResponsiveContainer: ({ children }: { children: ReactNode }) => (
       <div data-testid="rc-container" style={{ width: 800, height: 500 }}>{children}</div>
     ),
-    ScatterChart: ({ children }: { children: React.ReactNode }) => (
+    ScatterChart: ({ children }: { children: ReactNode }) => (
       <svg data-testid="scatter-chart">{children}</svg>
     ),
-    Scatter: ({ children, name }: { children?: React.ReactNode; name?: string }) => (
-      <g data-testid="scatter" data-name={name}>{children}</g>
+    Scatter: ({ children, name, onClick }: { children?: ReactNode; name?: string; onClick?: (a: unknown) => void }) => (
+      <g
+        data-testid="scatter"
+        data-name={name}
+        onClick={() => onClick?.({ themeId: 'ai' })}
+      >
+        {children}
+      </g>
+    ),
+    Cell: ({ fill, fillOpacity, stroke }: { fill?: string; fillOpacity?: number; stroke?: string }) => (
+      <g
+        data-testid="cell"
+        data-fill={fill}
+        fill-opacity={fillOpacity}
+        data-stroke={stroke}
+      />
     ),
     XAxis: () => null,
     YAxis: () => null,
@@ -23,55 +39,85 @@ vi.mock('recharts', async () => {
     ReferenceLine: () => null,
     ReferenceArea: () => null,
     Tooltip: () => null,
-    Cell: () => null,
     LabelList: () => null,
   };
 });
 
-const renderWithRouter = (ui: React.ReactNode) =>
-  render(<MemoryRouter>{ui}</MemoryRouter>);
+const mkTheme = (id: string, long: number, short: number): Theme => ({
+  id,
+  name: id.toUpperCase(),
+  us_etfs: [],
+  primary_us: '',
+  tags: [],
+  note: '',
+  returns: { r_1d: 0, r_5d: 0, r_20d: 0, r_60d: 0, r_120d: 0, r_ytd: 0 },
+  strength: { short, mid: 50, long, composite: 50 },
+  rank: { short: 1, mid: 1, long: 1, composite: 1 },
+});
 
-describe('RotationScatterWithTrails', () => {
-  it('renders only main scatter when showTrails=false', () => {
-    const themes = mkThemes(14);
-    renderWithRouter(
+const themes = [mkTheme('ai', 70, 80), mkTheme('semi', 30, 40)];
+const trailFrames: SnapshotFrame[] = [
+  { date: '2026-01-01', themes: [mkTheme('ai', 65, 75), mkTheme('semi', 25, 35)] },
+  { date: '2026-01-02', themes },
+];
+
+const wrap = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
+
+describe('RotationScatterWithTrails (rewritten)', () => {
+  it('renders one main bubble cell per theme (all themes, not top-N)', () => {
+    const { container } = wrap(
       <RotationScatterWithTrails
         themes={themes}
         trailFrames={[]}
-        topThemeIds={new Set()}
-        animationDuration={300}
-        showTrails={false}
+        focusedId={null}
+        onFocus={() => {}}
       />,
     );
-    expect(screen.getAllByTestId('scatter')).toHaveLength(1);
+    const mainScatter = container.querySelector('[data-name="current"]');
+    expect(mainScatter).not.toBeNull();
+    const cells = mainScatter!.querySelectorAll('[data-testid="cell"]');
+    expect(cells.length).toBe(2);
   });
 
-  it('renders 1 main + N trail scatters when showTrails=true', () => {
-    const themes = mkThemes(14);
-    const trailFrames = [mkFrame('2026-01-01'), mkFrame('2026-01-02')];
-    const topThemeIds = new Set(['t0', 't1', 't2', 't3', 't4']);
-    renderWithRouter(
+  it('calls onFocus(themeId) when clicking the scatter', () => {
+    const onFocus = vi.fn();
+    const { container } = wrap(
       <RotationScatterWithTrails
         themes={themes}
         trailFrames={trailFrames}
-        topThemeIds={topThemeIds}
-        animationDuration={300}
-        showTrails={true}
+        focusedId={null}
+        onFocus={onFocus}
       />,
     );
-    expect(screen.getAllByTestId('scatter')).toHaveLength(6);
+    const mainScatter = container.querySelector('[data-name="current"]');
+    expect(mainScatter).not.toBeNull();
+    fireEvent.click(mainScatter!);
+    expect(onFocus).toHaveBeenCalledWith('ai');
   });
 
-  it('handles empty themes without crash', () => {
-    renderWithRouter(
+  it('dims other (non-focused) themes when focusedId is set', () => {
+    const { container } = wrap(
       <RotationScatterWithTrails
-        themes={[]}
-        trailFrames={[]}
-        topThemeIds={new Set()}
-        animationDuration={300}
-        showTrails={false}
+        themes={themes}
+        trailFrames={trailFrames}
+        focusedId="ai"
+        onFocus={() => {}}
       />,
     );
-    expect(screen.getByTestId('rc-container')).toBeInTheDocument();
+    const mainScatter = container.querySelector('[data-name="current"]')!;
+    const dimmed = mainScatter.querySelectorAll('[fill-opacity="0.2"]');
+    expect(dimmed.length).toBe(1);
+  });
+
+  it('renders without crashing when trailFrames is empty', () => {
+    const { container } = wrap(
+      <RotationScatterWithTrails
+        themes={themes}
+        trailFrames={[]}
+        focusedId={null}
+        onFocus={() => {}}
+      />,
+    );
+    expect(container.querySelector('[data-testid="rc-container"]')).not.toBeNull();
   });
 });

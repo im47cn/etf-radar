@@ -8,8 +8,8 @@ import { RotationPage } from '@/pages/RotationPage';
 export default function App() {
   return (
     <DataProvider>
-      <UIStateProvider>
-        <HashRouter>
+      <HashRouter>
+        <UIStateProvider>
           <div className="min-h-screen bg-gray-50">
             <Header />
             <Routes>
@@ -17,8 +17,8 @@ export default function App() {
               <Route path="/rotation" element={<RotationPage />} />
             </Routes>
           </div>
-        </HashRouter>
-      </UIStateProvider>
+        </UIStateProvider>
+      </HashRouter>
     </DataProvider>
   );
 }

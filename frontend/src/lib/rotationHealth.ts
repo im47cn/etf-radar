@@ -1,4 +1,4 @@
-import type { RotationPoint, Quadrant } from '@/types/rotation';
+import type { RotationPoint, Quadrant, HealthGrade } from '@/types/rotation';
 
 /**
  * 覆盖度: 四象限主题数的香农熵, 归一到 0-100.
@@ -47,4 +47,25 @@ export function computeRobustness(points: RotationPoint[]): number {
     if (xNearEdge || yNearEdge) fragileCount++;
   }
   return (1 - fragileCount / points.length) * 100;
+}
+
+/**
+ * 覆盖度档位: 基于 123 个历史快照 (2026-01 ~ 2026-06) 的实测分位数.
+ * P50=80, P25=74. 详见 spec §10.
+ */
+export function gradeCoverage(score: number, n: number): HealthGrade {
+  if (n < 2) return 'insufficient';
+  if (score >= 80) return 'healthy';
+  if (score >= 74) return 'caution';
+  return 'imbalanced';
+}
+
+/**
+ * 鲁棒度档位: 基于 123 个历史快照的实测分位数. P50=77, P25=69.
+ */
+export function gradeRobustness(score: number, n: number): HealthGrade {
+  if (n < 1) return 'insufficient';
+  if (score >= 77) return 'healthy';
+  if (score >= 69) return 'caution';
+  return 'imbalanced';
 }

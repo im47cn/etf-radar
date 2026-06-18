@@ -95,3 +95,48 @@ describe('computeRobustness', () => {
     expect(EDGE_THRESHOLD).toBe(10);
   });
 });
+
+import { gradeCoverage, gradeRobustness } from '../rotationHealth';
+
+describe('gradeCoverage', () => {
+  it('returns insufficient when n < 2', () => {
+    expect(gradeCoverage(50, 0)).toBe('insufficient');
+    expect(gradeCoverage(50, 1)).toBe('insufficient');
+  });
+
+  it('returns healthy when score >= 80', () => {
+    expect(gradeCoverage(80, 10)).toBe('healthy');
+    expect(gradeCoverage(95, 10)).toBe('healthy');
+  });
+
+  it('returns caution when 74 <= score < 80', () => {
+    expect(gradeCoverage(74, 10)).toBe('caution');
+    expect(gradeCoverage(79.9, 10)).toBe('caution');
+  });
+
+  it('returns imbalanced when score < 74', () => {
+    expect(gradeCoverage(73.9, 10)).toBe('imbalanced');
+    expect(gradeCoverage(0, 10)).toBe('imbalanced');
+  });
+});
+
+describe('gradeRobustness', () => {
+  it('returns insufficient when n < 1', () => {
+    expect(gradeRobustness(50, 0)).toBe('insufficient');
+  });
+
+  it('returns healthy when score >= 77', () => {
+    expect(gradeRobustness(77, 10)).toBe('healthy');
+    expect(gradeRobustness(100, 10)).toBe('healthy');
+  });
+
+  it('returns caution when 69 <= score < 77', () => {
+    expect(gradeRobustness(69, 10)).toBe('caution');
+    expect(gradeRobustness(76.9, 10)).toBe('caution');
+  });
+
+  it('returns imbalanced when score < 69', () => {
+    expect(gradeRobustness(68.9, 10)).toBe('imbalanced');
+    expect(gradeRobustness(0, 10)).toBe('imbalanced');
+  });
+});

@@ -15,9 +15,12 @@ export const RotationPage = () => {
   // themes.themes 变化时自动重算 (滑动时间轴 / 数据刷新).
   // 注: 当前 RotationPage 无时间轴 slider, 数据源为 dataContext (=最新快照).
   // 未来加 slider 时改用 useSnapshotsTimeline().frame?.themes 即可.
+  // 提取到局部变量是为了让 react-hooks/preserve-manual-memoization 推断的依赖
+  // 与手写依赖一致 (否则 optional chaining 会被推断为更宽的 `themes`).
+  const themesArr = themes?.themes;
   const health = useMemo(
-    () => (themes?.themes ? computeRotationHealth(themes.themes) : null),
-    [themes?.themes],
+    () => (themesArr ? computeRotationHealth(themesArr) : null),
+    [themesArr],
   );
 
   if (isLoading) {

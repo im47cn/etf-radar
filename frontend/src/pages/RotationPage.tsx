@@ -1,4 +1,4 @@
-import { useDataContext } from '@/providers/DataProvider';
+import { useDataContext } from '@/providers/dataContext';
 import { useSnapshotsTimeline } from '@/hooks/useSnapshotsTimeline';
 import { RotationTrailsOverlay } from '@/components/rotation/RotationTrailsOverlay';
 import { QuadrantLegend } from '@/components/rotation/QuadrantLegend';

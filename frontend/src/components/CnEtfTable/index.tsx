@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useDataContext } from '@/providers/DataProvider';
-import { useUIState } from '@/providers/UIStateProvider';
+import { useDataContext } from '@/providers/dataContext';
+import { useUIState } from '@/providers/uiStateContext';
 import { EtfRow } from './EtfRow';
 import type { Etf } from '@/types/etfs';
 import type { PairSignal } from '@/types/signals';

@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import { UIStateProvider, useUIState } from '../UIStateProvider';
+import { UIStateProvider } from '../UIStateProvider';
+import { useUIState } from '../uiStateContext';
 
 const StateProbe = () => {
   const { state, dispatch } = useUIState();

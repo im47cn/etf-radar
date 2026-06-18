@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React from 'react';
 import useSWR, { SWRConfig } from 'swr';
 import type { z } from 'zod';
 import { ThemesFileSchema, type ThemesFile } from '@/types/themes';
@@ -6,6 +6,7 @@ import { EtfsFileSchema, type EtfsFile } from '@/types/etfs';
 import { SignalsFileSchema, type SignalsFile } from '@/types/signals';
 import { MetaFileSchema, type MetaFile } from '@/types/meta';
 import { LATEST_URLS } from '@/lib/dataUrls';
+import { DataContext } from './dataContext';
 
 /**
  * Fetch + zod 验证. 解析失败抛 ZodError, SWR 暴露给上层 error.
@@ -19,17 +20,6 @@ const fetchAndParse = async <S extends z.ZodTypeAny>(
   const json = await r.json();
   return schema.parse(json);
 };
-
-interface DataContextValue {
-  themes?: ThemesFile;
-  etfs?: EtfsFile;
-  signals?: SignalsFile;
-  meta?: MetaFile;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-const DataContext = createContext<DataContextValue | null>(null);
 
 // SWRConfig 必须包在使用 useSWR 的组件外层, 否则全局配置不生效
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -83,10 +73,4 @@ const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({ children }
       {children}
     </DataContext.Provider>
   );
-};
-
-export const useDataContext = (): DataContextValue => {
-  const ctx = useContext(DataContext);
-  if (!ctx) throw new Error('useDataContext must be inside DataProvider');
-  return ctx;
 };

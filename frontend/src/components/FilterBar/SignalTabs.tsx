@@ -1,4 +1,4 @@
-import { useUIState } from '@/providers/UIStateProvider';
+import { useUIState } from '@/providers/uiStateContext';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { SignalType } from '@/types/signals';
 

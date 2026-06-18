@@ -1,4 +1,4 @@
-import { useDataContext } from '@/providers/DataProvider';
+import { useDataContext } from '@/providers/dataContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const StaleBanner = () => {

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useDataContext } from '@/providers/DataProvider';
-import { useUIState } from '@/providers/UIStateProvider';
+import { useDataContext } from '@/providers/dataContext';
+import { useUIState } from '@/providers/uiStateContext';
 import { useThemeSignalsMap } from '@/hooks/useData';
 import { MappingPanel } from './MappingPanel';
 import { PeriodReturns } from './PeriodReturns';

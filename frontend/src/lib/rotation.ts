@@ -3,6 +3,13 @@ import type { Quadrant, RotationPoint } from '@/types/rotation';
 
 const QUADRANT_THRESHOLD = 50;
 
+/**
+ * 气泡大小映射: composite (0-99) → 半径 (8-20px).
+ * 8 是最小可见, 12 是 0→99 的增量斜率 (= 99/99 * 12).
+ */
+export const computeBubbleSize = (composite: number): number =>
+  8 + (composite / 99) * 12;
+
 export const QUADRANT_COLORS: Record<Quadrant, string> = {
   leading: '#10b981',
   rising:  '#3b82f6',

@@ -90,7 +90,7 @@ describe('useSnapshotsTimeline', () => {
   });
 
   it('prefetch loads requested dates into cache', async () => {
-    let frameFetches: string[] = [];
+    const frameFetches: string[] = [];
     server.use(
       http.get('*/snapshots/:date/themes.json', ({ params }) => {
         const date = params.date as string;

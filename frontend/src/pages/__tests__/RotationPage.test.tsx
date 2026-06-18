@@ -83,4 +83,45 @@ describe('RotationPage', () => {
     expect(screen.getByTestId('trails-overlay').getAttribute('data-theme-count')).toBe('1');
     expect(screen.getByText(/轨迹长度/)).toBeInTheDocument();
   });
+
+  it('renders health bar when themes are ready', () => {
+    mockUseDataContext.mockReturnValue({
+      themes: {
+        schema_version: '1.0',
+        generated_at: '',
+        themes: [mkTheme('ai'), mkTheme('semi')],
+      },
+      isLoading: false,
+      error: null,
+    });
+    renderPage();
+    expect(screen.getByText('覆盖度')).toBeInTheDocument();
+    expect(screen.getByText('鲁棒度')).toBeInTheDocument();
+  });
+
+  it('does not render health bar when loading', () => {
+    mockUseDataContext.mockReturnValue({ themes: undefined, isLoading: true, error: null });
+    renderPage();
+    expect(screen.queryByText('覆盖度')).not.toBeInTheDocument();
+  });
+
+  it('does not render health bar on error', () => {
+    mockUseDataContext.mockReturnValue({
+      themes: undefined,
+      isLoading: false,
+      error: new Error('boom'),
+    });
+    renderPage();
+    expect(screen.queryByText('覆盖度')).not.toBeInTheDocument();
+  });
+
+  it('does not render health bar when themes empty', () => {
+    mockUseDataContext.mockReturnValue({
+      themes: { schema_version: '1.0', generated_at: '', themes: [] },
+      isLoading: false,
+      error: null,
+    });
+    renderPage();
+    expect(screen.queryByText('覆盖度')).not.toBeInTheDocument();
+  });
 });

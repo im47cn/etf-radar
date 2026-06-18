@@ -1,12 +1,24 @@
+import { useMemo } from 'react';
 import { useDataContext } from '@/providers/dataContext';
 import { useSnapshotsTimeline } from '@/hooks/useSnapshotsTimeline';
 import { RotationTrailsOverlay } from '@/components/rotation/RotationTrailsOverlay';
 import { QuadrantLegend } from '@/components/rotation/QuadrantLegend';
+import { RotationHealthBar } from '@/components/rotation/RotationHealthBar';
+import { computeRotationHealth } from '@/lib/rotationHealth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const RotationPage = () => {
   const { themes, isLoading, error } = useDataContext();
   const { snapshotsFrames } = useSnapshotsTimeline();
+
+  // Health 必须在所有 hooks 调用完成后计算 (即便提前 return). 用 useMemo 缓存,
+  // themes.themes 变化时自动重算 (滑动时间轴 / 数据刷新).
+  // 注: 当前 RotationPage 无时间轴 slider, 数据源为 dataContext (=最新快照).
+  // 未来加 slider 时改用 useSnapshotsTimeline().frame?.themes 即可.
+  const health = useMemo(
+    () => (themes?.themes ? computeRotationHealth(themes.themes) : null),
+    [themes?.themes],
+  );
 
   if (isLoading) {
     return <div data-testid="rotation-skeleton" className="h-[500px] animate-pulse bg-gray-100 rounded m-4" />;
@@ -33,6 +45,7 @@ export const RotationPage = () => {
         <p className="text-xs text-gray-600 mb-4">
           X 轴为长期强度 (60d), Y 轴为短期强度 (1d), 中线 50 切四象限。气泡大小反映综合排名。
         </p>
+        {health && <RotationHealthBar health={health} />}
         <RotationTrailsOverlay themes={themes.themes} snapshots={snapshotsFrames} />
         <QuadrantLegend />
       </div>

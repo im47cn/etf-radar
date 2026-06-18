@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-# Pre-push hook: 本地拦截 backend lint 错误以减少 CI 噪音.
+# Pre-push hook: 本地拦截 lint 错误以减少 CI 噪音 (backend + frontend 对称).
 #
-# 设计取舍 (2026-06): 仅跑 ruff (~3s), pytest 留给 CI.
+# 设计取舍 (2026-06): 只跑 lint, 测试留给 CI.
 #   - lint 失败是 typo 类廉价修复, 本地拦截价值高
-#   - pytest 全跑 ~90s 阻塞心流, 收益 < 成本
-#   - CI 是单元测试 source of truth, push 后由 GitHub Actions 验证
+#   - 测试全跑阻塞心流, 收益 < 成本 (backend pytest ~90s, frontend vitest ~10s)
+#   - CI 是 source of truth, push 后由 GitHub Actions 验证
+#
+# 触发规则: 仅当对应目录有改动时跑对应工具 (与 CI 不同 path 触发条件一致).
+#   - backend/  变动 → ruff check
+#   - frontend/ 变动 → npm run lint
+#   - 两者皆无 → 全跳过
 #
 # 启用: git config core.hooksPath .githooks  (或运行 scripts/setup-hooks.sh)
 # 紧急绕过: git push --no-verify
@@ -13,6 +18,7 @@ set -eu
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 BACKEND="$REPO_ROOT/backend"
+FRONTEND="$REPO_ROOT/frontend"
 
 # Pre-push 协议: stdin 每行一条待 push 的 ref:
 #   <local_ref> <local_sha> <remote_ref> <remote_sha>
@@ -20,7 +26,8 @@ BACKEND="$REPO_ROOT/backend"
 # (否则 `git push origin foo:bar` / refspec / 多 ref push 会用错 baseline).
 NULL_SHA="0000000000000000000000000000000000000000"
 RUN_FULL=0
-CHANGED=""
+BACKEND_CHANGED=""
+FRONTEND_CHANGED=""
 
 while read -r local_ref local_sha remote_ref remote_sha; do
   # 跳过删除远端分支的 push (local_sha 全 0)
@@ -32,26 +39,52 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     RUN_FULL=1
     break
   fi
-  # 累加该 ref 涉及的 backend/ 变更文件 (合集)
-  ref_changed=$(git diff --name-only "$remote_sha" "$local_sha" -- backend/ 2>/dev/null || echo "")
-  if [ -n "$ref_changed" ]; then
-    CHANGED="$CHANGED"$'\n'"$ref_changed"
+  # 累加该 ref 涉及的 backend/ 和 frontend/ 变更文件 (合集)
+  be_changed=$(git diff --name-only "$remote_sha" "$local_sha" -- backend/ 2>/dev/null || echo "")
+  if [ -n "$be_changed" ]; then
+    BACKEND_CHANGED="$BACKEND_CHANGED"$'\n'"$be_changed"
+  fi
+  fe_changed=$(git diff --name-only "$remote_sha" "$local_sha" -- frontend/ 2>/dev/null || echo "")
+  if [ -n "$fe_changed" ]; then
+    FRONTEND_CHANGED="$FRONTEND_CHANGED"$'\n'"$fe_changed"
   fi
 done
 
-if [ "$RUN_FULL" -eq 0 ] && [ -z "${CHANGED//[$'\n ']/}" ]; then
-  echo "[pre-push] no backend changes, skip ruff"
+# 决定跑哪些工具 (RUN_FULL=1 时两个都跑)
+RUN_BACKEND=$RUN_FULL
+RUN_FRONTEND=$RUN_FULL
+if [ "$RUN_FULL" -eq 0 ]; then
+  if [ -n "${BACKEND_CHANGED//[$'\n ']/}" ]; then RUN_BACKEND=1; fi
+  if [ -n "${FRONTEND_CHANGED//[$'\n ']/}" ]; then RUN_FRONTEND=1; fi
+fi
+
+if [ "$RUN_BACKEND" -eq 0 ] && [ "$RUN_FRONTEND" -eq 0 ]; then
+  echo "[pre-push] no lintable changes, skip"
   exit 0
 fi
 
-cd "$BACKEND"
-
-echo "[pre-push] ruff check..."
-if ! uv run ruff check src tests; then
-  echo ""
-  echo "[pre-push] BLOCKED by Ruff. Fix with: cd backend && uv run ruff check src tests --fix"
-  echo "[pre-push] Emergency bypass: git push --no-verify"
-  exit 1
+if [ "$RUN_BACKEND" -eq 1 ]; then
+  echo "[pre-push] ruff check..."
+  if ! (cd "$BACKEND" && uv run ruff check src tests); then
+    echo ""
+    echo "[pre-push] BLOCKED by Ruff. Fix with: cd backend && uv run ruff check src tests --fix"
+    echo "[pre-push] Emergency bypass: git push --no-verify"
+    exit 1
+  fi
+else
+  echo "[pre-push] no backend changes, skip ruff"
 fi
 
-echo "[pre-push] OK (pytest deferred to CI)"
+if [ "$RUN_FRONTEND" -eq 1 ]; then
+  echo "[pre-push] eslint..."
+  if ! (cd "$FRONTEND" && npm run -s lint); then
+    echo ""
+    echo "[pre-push] BLOCKED by ESLint. Fix with: cd frontend && npm run lint -- --fix"
+    echo "[pre-push] Emergency bypass: git push --no-verify"
+    exit 1
+  fi
+else
+  echo "[pre-push] no frontend changes, skip eslint"
+fi
+
+echo "[pre-push] OK (tests deferred to CI)"

@@ -51,3 +51,47 @@ describe('computeCoverage', () => {
     expect(computeCoverage([mkPoint(80, 80)])).toBe(0);
   });
 });
+
+import { computeRobustness, EDGE_THRESHOLD } from '../rotationHealth';
+
+describe('computeRobustness', () => {
+  it('returns 100 when all points are far from boundaries', () => {
+    const points = [mkPoint(10, 10), mkPoint(10, 10), mkPoint(10, 10)];
+    expect(computeRobustness(points)).toBe(100);
+  });
+
+  it('returns 0 when all points are on boundaries', () => {
+    const points = [mkPoint(50, 50), mkPoint(50, 50), mkPoint(50, 50)];
+    expect(computeRobustness(points)).toBe(0);
+  });
+
+  it('returns 50 when half points are fragile', () => {
+    const points = [
+      mkPoint(10, 10), mkPoint(10, 10), mkPoint(10, 10), mkPoint(10, 10), mkPoint(10, 10),
+      mkPoint(50, 50), mkPoint(50, 50), mkPoint(50, 50), mkPoint(50, 50), mkPoint(50, 50),
+    ];
+    expect(computeRobustness(points)).toBe(50);
+  });
+
+  it('treats x-near-boundary as fragile even if y is far', () => {
+    const points = [mkPoint(50, 80)];
+    expect(computeRobustness(points)).toBe(0);
+  });
+
+  it('uses strict < at threshold boundary', () => {
+    // 距边界恰好 = EDGE_THRESHOLD: 不算脆弱 (开区间)
+    const pSafe = mkPoint(50 + EDGE_THRESHOLD, 80);
+    expect(computeRobustness([pSafe])).toBe(100);
+    // 距边界 < EDGE_THRESHOLD: 算脆弱
+    const pFragile = mkPoint(50 + EDGE_THRESHOLD - 0.01, 80);
+    expect(computeRobustness([pFragile])).toBe(0);
+  });
+
+  it('returns 0 for empty array', () => {
+    expect(computeRobustness([])).toBe(0);
+  });
+
+  it('exports EDGE_THRESHOLD = 10', () => {
+    expect(EDGE_THRESHOLD).toBe(10);
+  });
+});

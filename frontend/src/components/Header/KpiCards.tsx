@@ -1,4 +1,4 @@
-import { useDataContext } from '@/providers/DataProvider';
+import { useDataContext } from '@/providers/dataContext';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 

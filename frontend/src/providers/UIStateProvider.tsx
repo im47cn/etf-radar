@@ -1,28 +1,13 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { DimNameSchema, type DimName } from '@/types/themes';
-import { SignalTypeSchema, type SignalType } from '@/types/signals';
-
-type SignalFilter = 'all' | SignalType;
-
-interface UIState {
-  selectedThemeId: string | null;
-  dimension: DimName;
-  signalFilter: SignalFilter;
-  searchQuery: string;
-}
-
-type Action =
-  | { type: 'SELECT_THEME'; id: string | null }
-  | { type: 'SET_DIM'; dim: DimName }
-  | { type: 'SET_SIGNAL_FILTER'; v: SignalFilter }
-  | { type: 'SET_SEARCH'; q: string };
+import { SignalTypeSchema } from '@/types/signals';
+import {
+  UIContext,
+  type SignalFilter,
+  type UIState,
+  type UIStateAction,
+} from './uiStateContext';
 
 const DEFAULT_DIM: DimName = 'short';
 const DEFAULT_SIG: SignalFilter = 'all';
@@ -38,11 +23,6 @@ function parseSig(s: string | null): SignalFilter {
   const r = SignalTypeSchema.safeParse(s);
   return r.success ? r.data : DEFAULT_SIG;
 }
-
-const UIContext = createContext<{
-  state: UIState;
-  dispatch: React.Dispatch<Action>;
-} | null>(null);
 
 /**
  * URL 作为 selectedTheme / dim / sig 的单一事实来源,
@@ -78,7 +58,7 @@ export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
     [themeParam, dimParam, sigParam, searchQuery],
   );
 
-  const dispatch = useCallback<React.Dispatch<Action>>(
+  const dispatch = useCallback<React.Dispatch<UIStateAction>>(
     (a) => {
       if (a.type === 'SET_SEARCH') {
         setSearchQuery(a.q);
@@ -116,13 +96,4 @@ export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <UIContext.Provider value={contextValue}>{children}</UIContext.Provider>
   );
-};
-
-export const useUIState = (): {
-  state: UIState;
-  dispatch: React.Dispatch<Action>;
-} => {
-  const c = useContext(UIContext);
-  if (!c) throw new Error('useUIState must be inside UIStateProvider');
-  return c;
 };

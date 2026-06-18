@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useDataContext } from '@/providers/DataProvider';
+import { useDataContext } from '@/providers/dataContext';
 import type { ThemeSignal } from '@/types/signals';
 
 /**

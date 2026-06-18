@@ -10,8 +10,6 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const computeBubbleSize = (composite: number): number => 8 + (composite / 99) * 12;
-
 /**
  * 散点图静态 frame: 坐标轴 / 网格 / 象限分割线 / 象限色块.
  * Tooltip 已下线 (新版 with-trails 视图用 FocusedThemePanel 承载详情).

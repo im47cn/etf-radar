@@ -28,7 +28,7 @@ vi.mock('recharts', async () => {
   };
 });
 
-vi.mock('@/providers/DataProvider', () => ({
+vi.mock('@/providers/dataContext', () => ({
   useDataContext: () => ({
     themes: {
       schema_version: '1.0', generated_at: '',
@@ -51,17 +51,23 @@ vi.mock('@/providers/DataProvider', () => ({
   }),
 }));
 
-vi.mock('@/providers/UIStateProvider', () => ({
-  useUIState: () => ({
-    state: {
-      selectedThemeId: null,
-      dimension: 'composite',
-      signalFilter: 'all',
-      searchQuery: '',
-    },
-    dispatch: vi.fn(),
-  }),
-}));
+vi.mock('@/providers/uiStateContext', async () => {
+  const actual = await vi.importActual<typeof import('@/providers/uiStateContext')>(
+    '@/providers/uiStateContext',
+  );
+  return {
+    ...actual,
+    useUIState: () => ({
+      state: {
+        selectedThemeId: null,
+        dimension: 'composite',
+        signalFilter: 'all',
+        searchQuery: '',
+      },
+      dispatch: vi.fn(),
+    }),
+  };
+});
 
 // Mock useSnapshotsTimeline to return index-error state
 vi.mock('@/hooks/useSnapshotsTimeline', () => ({

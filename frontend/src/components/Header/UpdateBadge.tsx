@@ -1,4 +1,4 @@
-import { useDataContext } from '@/providers/DataProvider';
+import { useDataContext } from '@/providers/dataContext';
 import { formatRelativeTime } from '@/lib/format';
 
 export const UpdateBadge = () => {

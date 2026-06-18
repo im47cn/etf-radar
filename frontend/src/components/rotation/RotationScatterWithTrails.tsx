@@ -1,9 +1,9 @@
 import { memo, useMemo } from 'react';
 import { Scatter, Cell, LabelList, Customized, useXAxisScale, useYAxisScale } from 'recharts';
-import { themesToRotationPoints, QUADRANT_COLORS } from '@/lib/rotation';
+import { themesToRotationPoints, QUADRANT_COLORS, computeBubbleSize } from '@/lib/rotation';
 import { buildTrails, type TrailPoint } from '@/lib/trailGradient';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { RotationChartFrame, computeBubbleSize } from './RotationChartFrame';
+import { RotationChartFrame } from './RotationChartFrame';
 import type { Theme } from '@/types/themes';
 import type { SnapshotFrame } from '@/types/snapshots';
 

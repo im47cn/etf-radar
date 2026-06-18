@@ -5,7 +5,7 @@ import { RotationPage } from '../RotationPage';
 import type { Theme } from '@/types/themes';
 
 const mockUseDataContext = vi.fn();
-vi.mock('@/providers/DataProvider', () => ({
+vi.mock('@/providers/dataContext', () => ({
   useDataContext: () => mockUseDataContext(),
 }));
 

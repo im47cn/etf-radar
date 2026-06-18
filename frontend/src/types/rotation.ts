@@ -9,3 +9,15 @@ export interface RotationPoint {
   quadrant: Quadrant;
   tags: string[];
 }
+
+export type HealthGrade = 'healthy' | 'caution' | 'imbalanced' | 'insufficient';
+
+export interface HealthMetric {
+  score: number;
+  grade: HealthGrade;
+}
+
+export interface HealthScore {
+  coverage: HealthMetric;
+  robustness: HealthMetric;
+}

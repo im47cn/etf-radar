@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-# Pre-push hook: 本地拦截会让 CI 变红的 backend 改动.
+# Pre-push hook: 本地拦截 backend lint 错误以减少 CI 噪音.
+#
+# 设计取舍 (2026-06): 仅跑 ruff (~3s), pytest 留给 CI.
+#   - lint 失败是 typo 类廉价修复, 本地拦截价值高
+#   - pytest 全跑 ~90s 阻塞心流, 收益 < 成本
+#   - CI 是单元测试 source of truth, push 后由 GitHub Actions 验证
+#
 # 启用: git config core.hooksPath .githooks  (或运行 scripts/setup-hooks.sh)
 # 紧急绕过: git push --no-verify
 
@@ -34,7 +40,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
 done
 
 if [ "$RUN_FULL" -eq 0 ] && [ -z "${CHANGED//[$'\n ']/}" ]; then
-  echo "[pre-push] no backend changes, skip ruff/pytest"
+  echo "[pre-push] no backend changes, skip ruff"
   exit 0
 fi
 
@@ -48,15 +54,4 @@ if ! uv run ruff check src tests; then
   exit 1
 fi
 
-echo "[pre-push] pytest (failed-first + exit-on-first-fail)..."
-# -x: 第一个红就停 (快速反馈)
-# --ff: 优先跑上次失败的测试 (缓存命中时通常 5-10s 内出结果)
-# 首次跑或无失败历史时, 行为等同全跑 (~90s on 101 tests)
-if ! uv run pytest --tb=short -q -x --ff; then
-  echo ""
-  echo "[pre-push] BLOCKED by failing tests."
-  echo "[pre-push] Emergency bypass: git push --no-verify"
-  exit 1
-fi
-
-echo "[pre-push] OK"
+echo "[pre-push] OK (pytest deferred to CI)"

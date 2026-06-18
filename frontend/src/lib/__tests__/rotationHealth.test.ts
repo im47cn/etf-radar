@@ -140,3 +140,59 @@ describe('gradeRobustness', () => {
     expect(gradeRobustness(0, 10)).toBe('imbalanced');
   });
 });
+
+import { computeRotationHealth } from '../rotationHealth';
+import type { Theme } from '@/types/themes';
+
+const mkTheme = (id: string, longStr: number, shortStr: number): Theme => ({
+  id,
+  name: id.toUpperCase(),
+  us_etfs: ['SOXX'],
+  primary_us: 'SOXX',
+  tags: [],
+  note: '',
+  returns: { r_1d: 0, r_5d: 0, r_20d: 0, r_60d: 0, r_120d: 0, r_ytd: 0 },
+  strength: { short: shortStr, mid: 50, long: longStr, composite: 50 },
+  rank: { short: 1, mid: 1, long: 1, composite: 1 },
+});
+
+describe('computeRotationHealth', () => {
+  it('returns complete structure with both metrics', () => {
+    const themes: Theme[] = [
+      mkTheme('a', 80, 80), mkTheme('b', 80, 80), mkTheme('c', 80, 80),
+      mkTheme('d', 20, 80), mkTheme('e', 20, 80), mkTheme('f', 20, 80),
+      mkTheme('g', 20, 20), mkTheme('h', 20, 20), mkTheme('i', 20, 20),
+      mkTheme('j', 80, 20), mkTheme('k', 80, 20), mkTheme('l', 80, 20),
+    ];
+    const h = computeRotationHealth(themes);
+    expect(h.coverage.score).toBeCloseTo(100, 0);
+    expect(h.coverage.grade).toBe('healthy');
+    expect(h.robustness.score).toBe(100);
+    expect(h.robustness.grade).toBe('healthy');
+  });
+
+  it('handles empty themes array', () => {
+    const h = computeRotationHealth([]);
+    expect(h.coverage.score).toBe(0);
+    expect(h.coverage.grade).toBe('insufficient');
+    expect(h.robustness.score).toBe(0);
+    expect(h.robustness.grade).toBe('insufficient');
+  });
+
+  it('handles single-theme array (coverage insufficient, robustness computed)', () => {
+    const h = computeRotationHealth([mkTheme('a', 10, 10)]);
+    expect(h.coverage.grade).toBe('insufficient');
+    expect(h.robustness.score).toBe(100); // (10,10) 远离边界
+    expect(h.robustness.grade).toBe('healthy');
+  });
+
+  it('rounds scores to integers in returned structure', () => {
+    const themes: Theme[] = [
+      mkTheme('a', 80, 80), mkTheme('b', 80, 80), mkTheme('c', 80, 80),
+      mkTheme('d', 20, 20), mkTheme('e', 20, 20), mkTheme('f', 20, 20),
+    ];
+    const h = computeRotationHealth(themes);
+    expect(Number.isInteger(h.coverage.score)).toBe(true);
+    expect(Number.isInteger(h.robustness.score)).toBe(true);
+  });
+});

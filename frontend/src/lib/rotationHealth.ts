@@ -1,4 +1,6 @@
-import type { RotationPoint, Quadrant, HealthGrade } from '@/types/rotation';
+import type { RotationPoint, Quadrant, HealthGrade, HealthScore } from '@/types/rotation';
+import type { Theme } from '@/types/themes';
+import { themesToRotationPoints } from './rotation';
 
 /**
  * 覆盖度: 四象限主题数的香农熵, 归一到 0-100.
@@ -68,4 +70,26 @@ export function gradeRobustness(score: number, n: number): HealthGrade {
   if (score >= 77) return 'healthy';
   if (score >= 69) return 'caution';
   return 'imbalanced';
+}
+
+/**
+ * 一站式入口: 主题数组 → 完整 HealthScore. 分数取整, 档位由 grade* 函数判定.
+ */
+export function computeRotationHealth(themes: Theme[]): HealthScore {
+  const points = themesToRotationPoints(themes);
+  const n = points.length;
+
+  const coverageScore = Math.round(computeCoverage(points));
+  const robustnessScore = Math.round(computeRobustness(points));
+
+  return {
+    coverage: {
+      score: coverageScore,
+      grade: gradeCoverage(coverageScore, n),
+    },
+    robustness: {
+      score: robustnessScore,
+      grade: gradeRobustness(robustnessScore, n),
+    },
+  };
 }

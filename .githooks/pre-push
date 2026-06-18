@@ -10,7 +10,7 @@ BACKEND="$REPO_ROOT/backend"
 
 # 仅当 backend/ 有改动 (commits 待 push 涉及) 时才跑后端检查, 节省时间
 remote="$1"
-remote_sha=$(git rev-parse "$remote/$(git rev-parse --abbrev-ref HEAD)" 2>/dev/null || echo "")
+remote_sha=$(git rev-parse --verify "$remote/$(git rev-parse --abbrev-ref HEAD)" 2>/dev/null || echo "")
 if [ -n "$remote_sha" ]; then
   CHANGED=$(git diff --name-only "$remote_sha" HEAD -- backend/)
 else

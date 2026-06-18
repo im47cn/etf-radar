@@ -1,69 +1,46 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { SWRConfig } from 'swr';
-import React from 'react';
 import { RotationPage } from '../RotationPage';
-
-vi.mock('recharts', async () => {
-  const actual = await vi.importActual<typeof import('recharts')>('recharts');
-  return {
-    ...actual,
-    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="rc-container" style={{ width: 800, height: 500 }}>{children}</div>
-    ),
-    ScatterChart: ({ children }: { children: React.ReactNode }) => (
-      <svg data-testid="scatter-chart">{children}</svg>
-    ),
-    Scatter: ({ children }: { children: React.ReactNode }) => <g>{children}</g>,
-    XAxis: () => null,
-    YAxis: () => null,
-    CartesianGrid: () => null,
-    ReferenceLine: () => null,
-    ReferenceArea: () => null,
-    Tooltip: () => null,
-    Cell: () => null,
-    LabelList: () => null,
-  };
-});
+import type { Theme } from '@/types/themes';
 
 const mockUseDataContext = vi.fn();
 vi.mock('@/providers/DataProvider', () => ({
   useDataContext: () => mockUseDataContext(),
 }));
 
-// Mock useSnapshotsTimeline to return index-error state (falls back to RotationScatter with fallbackThemes)
 vi.mock('@/hooks/useSnapshotsTimeline', () => ({
   useSnapshotsTimeline: () => ({
-    index: undefined,
-    currentDate: undefined,
-    frame: undefined,
-    setDate: vi.fn(),
-    prefetch: vi.fn(),
-    status: 'index-error',
-    error: undefined,
+    snapshotsFrames: [],
+    status: 'ready',
   }),
 }));
 
-vi.mock('@/hooks/useTimelinePlayer', () => ({
-  useTimelinePlayer: () => ({
-    dates: [],
-    playing: false,
-    speed: 1,
-    animationDuration: 500,
-    play: vi.fn(),
-    pause: vi.fn(),
-    stop: vi.fn(),
-    setSpeed: vi.fn(),
-  }),
+// Mock the overlay so the page test stays focused on wiring (not chart internals)
+vi.mock('@/components/rotation/RotationTrailsOverlay', () => ({
+  RotationTrailsOverlay: ({ themes }: { themes: Theme[] }) => (
+    <div data-testid="trails-overlay" data-theme-count={themes.length}>
+      <div>轨迹长度</div>
+    </div>
+  ),
 }));
+
+const mkTheme = (id: string): Theme => ({
+  id,
+  name: id.toUpperCase(),
+  us_etfs: ['SOXX'],
+  primary_us: 'SOXX',
+  tags: [],
+  note: '',
+  returns: { r_1d: 0, r_5d: 0, r_20d: 0, r_60d: 0, r_120d: 0, r_ytd: 0 },
+  strength: { short: 80, mid: 70, long: 60, composite: 70 },
+  rank: { short: 1, mid: 1, long: 1, composite: 1 },
+});
 
 const renderPage = () =>
   render(
     <MemoryRouter>
-      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
-        <RotationPage />
-      </SWRConfig>
+      <RotationPage />
     </MemoryRouter>,
   );
 
@@ -75,7 +52,11 @@ describe('RotationPage', () => {
   });
 
   it('renders error alert when error', () => {
-    mockUseDataContext.mockReturnValue({ themes: undefined, isLoading: false, error: new Error('boom') });
+    mockUseDataContext.mockReturnValue({
+      themes: undefined,
+      isLoading: false,
+      error: new Error('boom'),
+    });
     renderPage();
     expect(screen.getByText(/数据加载失败/)).toBeInTheDocument();
   });
@@ -83,27 +64,23 @@ describe('RotationPage', () => {
   it('renders empty alert when no themes', () => {
     mockUseDataContext.mockReturnValue({
       themes: { schema_version: '1.0', generated_at: '', themes: [] },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     });
     renderPage();
     expect(screen.getByText(/暂无主题数据/)).toBeInTheDocument();
   });
 
-  it('renders scatter and legend when data ready', () => {
+  it('renders RotationTrailsOverlay when data is ready', () => {
     mockUseDataContext.mockReturnValue({
-      themes: {
-        schema_version: '1.0', generated_at: '',
-        themes: [{
-          id: 't1', name: 'T1', us_etfs: ['X'], primary_us: 'X', tags: [], note: '',
-          returns: { r_1d: null, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
-          strength: { short: 80, mid: 50, long: 80, composite: 90 },
-          rank: { short: 1, mid: 1, long: 1, composite: 1 },
-        }],
-      },
-      isLoading: false, error: null,
+      themes: { schema_version: '1.0', generated_at: '', themes: [mkTheme('ai')] },
+      isLoading: false,
+      error: null,
     });
     renderPage();
-    expect(screen.getByTestId('rc-container')).toBeInTheDocument();
-    expect(screen.getByText(/持续强势/)).toBeInTheDocument();
+    expect(screen.getByText(/主题轮动象限图/)).toBeInTheDocument();
+    expect(screen.getByTestId('trails-overlay')).toBeInTheDocument();
+    expect(screen.getByTestId('trails-overlay').getAttribute('data-theme-count')).toBe('1');
+    expect(screen.getByText(/轨迹长度/)).toBeInTheDocument();
   });
 });

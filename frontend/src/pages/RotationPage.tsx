@@ -1,10 +1,12 @@
 import { useDataContext } from '@/providers/DataProvider';
-import { RotationTimelinePlayer } from '@/components/rotation/RotationTimelinePlayer';
+import { useSnapshotsTimeline } from '@/hooks/useSnapshotsTimeline';
+import { RotationTrailsOverlay } from '@/components/rotation/RotationTrailsOverlay';
 import { QuadrantLegend } from '@/components/rotation/QuadrantLegend';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const RotationPage = () => {
   const { themes, isLoading, error } = useDataContext();
+  const { snapshotsFrames } = useSnapshotsTimeline();
 
   if (isLoading) {
     return <div data-testid="rotation-skeleton" className="h-[500px] animate-pulse bg-gray-100 rounded m-4" />;
@@ -31,7 +33,7 @@ export const RotationPage = () => {
         <p className="text-xs text-gray-600 mb-4">
           X 轴为长期强度 (60d), Y 轴为短期强度 (1d), 中线 50 切四象限。气泡大小反映综合排名。
         </p>
-        <RotationTimelinePlayer fallbackThemes={themes.themes} />
+        <RotationTrailsOverlay themes={themes.themes} snapshots={snapshotsFrames} />
         <QuadrantLegend />
       </div>
     </main>

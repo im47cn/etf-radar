@@ -103,7 +103,15 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
   const fetchFrame = useCallback(
     async (date: string): Promise<SnapshotFrame | undefined> => {
       const cached = cacheReadRef.current.get(date);
-      if (cached) return cached;
+      if (cached) {
+        // 缓存命中也需提升 stableFrame, 否则用户切到已缓存日期 (跳过 fetch)
+        // 再切到失败日期时, fallback 会回退到更早的帧而非"刚刚展示"的帧.
+        // 仅当 date 是当前查看日期时才更新, 防止预取的 cache hit 污染 fallback.
+        if (date === currentDateRef.current) {
+          setStableFrame(cached);
+        }
+        return cached;
+      }
       if (inflight.current.has(date)) return undefined;
       const path = pathByDate.get(date);
       if (!path) return undefined;
@@ -164,14 +172,7 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
     currentDate && errorDates.has(currentDate) ? currentDate : undefined;
 
   // currentDate 变化 / 启动 prefetch: 触发帧拉取. 错误状态由 fetchFrame 内部更新,
-  // effect 自身不再 setState.
-  //
-  // eslint react-hooks/set-state-in-effect 误报: 规则跨函数追踪到 fetchFrame 内的
-  // setCache / setErrorDates 调用并视为 effect setState. 实际上:
-  // - effect deps 不含 cache / errorDates
-  // - fetchFrame 内的 setState 仅改变 cache / errorDates → 不触发 effect 重跑
-  // - 不存在 cascading rerender. 此 disable 是规则局限性而非代码问题.
-  /* eslint-disable react-hooks/set-state-in-effect */
+  // effect 自身不再 setState (cache/errorDates 写入封装在异步回调里, 与 effect 解耦).
   useEffect(() => {
     if (!currentDate) return;
     currentDateRef.current = currentDate;
@@ -187,10 +188,12 @@ export function useSnapshotsTimeline(): UseSnapshotsTimelineResult {
       fetchFrame(d).catch(() => {});
     });
   }, [index, fetchFrame]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const setDate = useCallback(
     (date: string) => {
+      // 同步更新 currentDateRef, 防止 fetchFrame 在 useEffect rerender 之前
+      // 用旧 ref 跳过 stableFrame 更新 (cache hit 同步路径会立刻判读 ref).
+      currentDateRef.current = date;
       setOverrideDate(date);
       // frame 派生; 仅需触发 fetchFrame, 错误状态由其内部更新
       fetchFrame(date).catch(() => {});

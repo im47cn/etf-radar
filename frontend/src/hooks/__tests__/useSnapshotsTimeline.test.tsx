@@ -114,6 +114,42 @@ describe('useSnapshotsTimeline', () => {
     expect(frameFetches.length).toBe(before);
   });
 
+  it('cache-hit setDate promotes stableFrame for subsequent error fallback', async () => {
+    // 回归: cache hit 路径必须同步更新 stableFrame, 否则切到已缓存帧后再切到失败帧时,
+    // fallback 会越过"刚展示的帧"指向更早的 stableFrame.
+    //
+    // 构造: 2026-01-02 服务端始终失败 → 启动 prefetch 这帧静默 retry-fail
+    //   (此时 currentDate=2026-01-06, stableFrame=2026-01-06, errorDates={'2026-01-02'}).
+    // 然后 setDate('2026-01-05') 走 cache hit (启动 prefetch 已成功拉过) →
+    //   stableFrame 必须提升为 2026-01-05.
+    // 最后 setDate('2026-01-02') 走 inflight=false + cache miss + path 存在 → 重试 fail
+    //   → frame-error, frame 派生 cache miss 时 fallback 到 stableFrame.
+    // 断言: fallback frame === 2026-01-05 (而非启动初的 2026-01-06).
+    server.use(
+      http.get('*/snapshots/2026-01-02/themes.json', () => HttpResponse.error()),
+    );
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const { result } = renderHook(() => useSnapshotsTimeline(), { wrapper: Wrapper });
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    await waitFor(() => expect(result.current.getCachedFrame('2026-01-05')).toBeDefined());
+
+    // 推进启动 prefetch 中失败帧的 retry 退避 (5s + 10s), 等 inflight 释放
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    // cache hit 路径; 修复后会提升 stableFrame=2026-01-05
+    act(() => result.current.setDate('2026-01-05'));
+    await waitFor(() => expect(result.current.frame?.date).toBe('2026-01-05'));
+    const frameAt05 = result.current.frame;
+
+    // 切到 fail 日期; retry 失败后 frame 派生 fallback 到 stableFrame
+    act(() => result.current.setDate('2026-01-02'));
+    await vi.advanceTimersByTimeAsync(60_000);
+    await waitFor(() => expect(result.current.status).toBe('frame-error'));
+    // 关键: fallback 是"刚展示的 2026-01-05", 不是启动初的 2026-01-06
+    expect(result.current.frame).toBe(frameAt05);
+    vi.useRealTimers();
+  }, 30_000);
+
   it('startup prefetches recent 10 frames (or all if fewer)', async () => {
     const prefetched: string[] = [];
     server.use(

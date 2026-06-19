@@ -2,6 +2,7 @@ import pytest
 from pydantic import ValidationError
 from src.models import (
     ThemeConfig, CnEtfConfig, Returns, Strength, PairSignal,
+    ThemeOutput, TopTheme, Rank,
 )
 
 
@@ -73,3 +74,42 @@ def test_theme_config_mapped_backward_compat():
                     tags=['半导体'], cn_etfs=[_cn()])
     assert t.primary_us == 'SOXX'
     assert t.primary_cn is None
+
+
+# ── Task 2: ThemeOutput / TopTheme 扩展 ───────────────────────────────────
+def _s(c=50):
+    return Strength(short=c, mid=c, long=c, composite=c)
+
+
+def _rk():
+    return Rank(short=1, mid=1, long=1, composite=1)
+
+
+def test_theme_output_mapped_carries_us_strength():
+    """映射主题可携带 us_strength / cn_strength 分项强度。"""
+    t = ThemeOutput(
+        id='m', name='M', us_etfs=['SOXX'], primary_us='SOXX',
+        primary_cn=None, tags=[], note='',
+        returns=Returns(), strength=_s(),
+        us_strength=_s(60), cn_strength=_s(40), rank=_rk(),
+    )
+    assert t.us_strength.composite == 60
+    assert t.cn_strength.composite == 40
+
+
+def test_theme_output_cn_only_has_no_us_strength():
+    """纯 A 股主题：primary_us=None，us_strength=None，cn_strength 正常。"""
+    t = ThemeOutput(
+        id='cn_x', name='X', us_etfs=[], primary_us=None,
+        primary_cn='000001', tags=[], note='',
+        returns=Returns(), strength=_s(40),
+        us_strength=None, cn_strength=_s(40), rank=_rk(),
+    )
+    assert t.us_strength is None
+    assert t.cn_strength.composite == 40
+
+
+def test_top_theme_allows_null_primary_us():
+    """纯 A 股主题登顶时 primary_us 可为 None。"""
+    top = TopTheme(id='cn_x', name='X', primary_us=None, composite_strength=80)
+    assert top.primary_us is None

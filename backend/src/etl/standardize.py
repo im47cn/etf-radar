@@ -3,7 +3,8 @@
 调用方约定:
 - yfinance: 使用 `auto_adjust=True` 调用 Ticker.history(), 返回的 Close 列已是
   复权后价格, 不会同时包含 'Adj Close' 列。
-- akshare: 使用 adjust='qfq' 调用 fund_etf_hist_em(), 返回前复权数据。
+- akshare (EM): 使用 adjust='qfq' 调用 fund_etf_hist_em(), 返回前复权数据。
+- akshare-sina: 调用 fund_etf_hist_sina(), 返回**不复权**数据，列名已为英文。
 """
 from typing import Literal
 import pandas as pd  # type: ignore[import-untyped]
@@ -21,15 +22,22 @@ AKSHARE_MAP: dict[str, str] = {
     '收盘': 'close', '成交量': 'volume', '成交额': 'amount',
 }
 
+AKSHARE_SINA_MAP: dict[str, str] = {
+    'date': 'date', 'open': 'open', 'high': 'high', 'low': 'low',
+    'close': 'close', 'volume': 'volume', 'amount': 'amount',
+}
+
 
 def standardize_ohlc(
     df: pd.DataFrame,
-    source: Literal['yfinance', 'akshare'],
+    source: Literal['yfinance', 'akshare', 'akshare-sina'],
 ) -> pd.DataFrame:
     if source == 'yfinance':
         mapping = YFINANCE_MAP
     elif source == 'akshare':
         mapping = AKSHARE_MAP
+    elif source == 'akshare-sina':
+        mapping = AKSHARE_SINA_MAP
     else:
         raise ValueError(f'unknown source: {source}')
 

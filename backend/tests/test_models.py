@@ -1,3 +1,5 @@
+import pytest
+from pydantic import ValidationError
 from src.models import (
     ThemeConfig, CnEtfConfig, Returns, Strength, PairSignal,
 )
@@ -40,3 +42,34 @@ def test_pair_signal_minimal() -> None:
         signal='resonance', votes={'short': 'resonance', 'mid': 'resonance', 'long': None},
     )
     assert p.signal == 'resonance'
+
+
+# ── Task 1: ThemeConfig 扩展 —— cn_only 主题支持 ──────────────────────────
+def _cn(code='000001'):
+    return CnEtfConfig(code=code, name='测试ETF', tracking='测试指数', match_type='exact')
+
+
+def test_theme_config_cn_only_minimal():
+    """纯 A 股主题：无 us_etfs/primary_us，只需 primary_cn。"""
+    t = ThemeConfig(id='cn_x', name='测试', tags=[], primary_cn='000001', cn_etfs=[_cn()])
+    assert t.primary_us is None
+    assert t.us_etfs == []
+    assert t.primary_cn == '000001'
+
+
+def test_theme_config_requires_at_least_one_primary():
+    with pytest.raises(ValidationError, match='primary_us or primary_cn required'):
+        ThemeConfig(id='cn_x', name='测试', tags=[], cn_etfs=[_cn()])
+
+
+def test_theme_config_primary_us_must_be_in_us_etfs():
+    with pytest.raises(ValidationError, match='primary_us must be in us_etfs'):
+        ThemeConfig(id='m', name='M', us_etfs=['A'], primary_us='B', tags=[], cn_etfs=[_cn()])
+
+
+def test_theme_config_mapped_backward_compat():
+    """现有映射主题加载仍正常。"""
+    t = ThemeConfig(id='m', name='M', us_etfs=['SOXX'], primary_us='SOXX',
+                    tags=['半导体'], cn_etfs=[_cn()])
+    assert t.primary_us == 'SOXX'
+    assert t.primary_cn is None

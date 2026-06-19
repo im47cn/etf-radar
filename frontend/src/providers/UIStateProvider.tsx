@@ -40,6 +40,7 @@ export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [params, setParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const [onlyCnOnly, setOnlyCnOnly] = useState(false);
 
   // 关键: useSearchParams 每次 render 都返回新的 URLSearchParams 引用.
   // 直接以 params 作为 useMemo deps 等同于每 render 重算, memo 完全失效.
@@ -54,14 +55,19 @@ export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
       dimension: parseDim(dimParam),
       signalFilter: parseSig(sigParam),
       searchQuery,
+      onlyCnOnly,
     }),
-    [themeParam, dimParam, sigParam, searchQuery],
+    [themeParam, dimParam, sigParam, searchQuery, onlyCnOnly],
   );
 
   const dispatch = useCallback<React.Dispatch<UIStateAction>>(
     (a) => {
       if (a.type === 'SET_SEARCH') {
         setSearchQuery(a.q);
+        return;
+      }
+      if (a.type === 'SET_ONLY_CN_ONLY') {
+        setOnlyCnOnly(a.v);
         return;
       }
       setParams(

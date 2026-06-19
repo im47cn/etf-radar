@@ -24,9 +24,14 @@ export const ThemeList = () => {
     );
   }, [themes, state.dimension]);
 
+  const visible = useMemo(
+    () => (state.onlyCnOnly ? sorted.filter((t) => t.primary_us === null) : sorted),
+    [sorted, state.onlyCnOnly],
+  );
+
   const filtered = useMemo(
-    () => filterThemes(sorted, sigMap, state.signalFilter, state.searchQuery),
-    [sorted, sigMap, state.signalFilter, state.searchQuery],
+    () => filterThemes(visible, sigMap, state.signalFilter, state.searchQuery),
+    [visible, sigMap, state.signalFilter, state.searchQuery],
   );
 
   return (

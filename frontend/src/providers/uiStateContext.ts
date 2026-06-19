@@ -9,13 +9,15 @@ export interface UIState {
   dimension: DimName;
   signalFilter: SignalFilter;
   searchQuery: string;
+  onlyCnOnly: boolean;
 }
 
 export type UIStateAction =
   | { type: 'SELECT_THEME'; id: string | null }
   | { type: 'SET_DIM'; dim: DimName }
   | { type: 'SET_SIGNAL_FILTER'; v: SignalFilter }
-  | { type: 'SET_SEARCH'; q: string };
+  | { type: 'SET_SEARCH'; q: string }
+  | { type: 'SET_ONLY_CN_ONLY'; v: boolean };
 
 export const UIContext = createContext<{
   state: UIState;

@@ -11,10 +11,13 @@ export const mkTheme = (
   name: id.toUpperCase(),
   us_etfs: ['X'],
   primary_us: 'X',
+  primary_cn: null,
   tags: [],
   note: '',
   returns: { r_1d: null, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
   strength: { short, mid: 50, long, composite },
+  us_strength: null,
+  cn_strength: null,
   rank: { short: 1, mid: 1, long: 1, composite: 1 },
 });
 

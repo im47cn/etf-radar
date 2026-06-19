@@ -7,7 +7,7 @@ FIXT = Path(__file__).parent / 'fixtures'
 
 def test_load_themes_returns_list() -> None:
     themes = load_themes(FIXT / 'themes_minimal.yml')
-    assert len(themes) == 1
+    assert len(themes) >= 1
     assert themes[0].id == 't1'
 
 

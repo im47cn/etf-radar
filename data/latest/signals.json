@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-19T11:45:29.550902+08:00",
+  "generated_at": "2026-06-19T21:57:30.386345+08:00",
   "summary": {
-    "themes_total": 14,
-    "etfs_total": 23,
-    "resonance_count": 3,
-    "transmission_count": 7,
+    "themes_total": 21,
+    "etfs_total": 30,
+    "resonance_count": 4,
+    "transmission_count": 6,
     "divergence_count": 0,
     "top_theme": {
       "id": "storage_dram",
@@ -72,14 +72,14 @@
     },
     {
       "theme_id": "new_energy_vehicle",
-      "signal": "transmission",
-      "trigger_cn_etf": "515030",
+      "signal": "resonance",
+      "trigger_cn_etf": "159755",
       "votes": {
-        "short": null,
-        "mid": "transmission",
-        "long": "transmission"
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "resonance"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股新能源车/锂电中长期走强"
     },
     {
       "theme_id": "robotics",
@@ -168,6 +168,83 @@
         "long": "transmission"
       },
       "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "cn_liquor",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer_staples",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "主要消费（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_medical_devices",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "医疗器械（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_home_appliances",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "家电（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_real_estate",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "房地产（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_media",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "传媒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_dividend",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "红利（A 股本土赛道）"
     }
   ],
   "pair_signals": [
@@ -284,11 +361,11 @@
       "cn_code": "515030",
       "mapping_score": 23,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": null,
-        "mid": "transmission",
-        "long": "transmission"
+        "short": "resonance",
+        "mid": null,
+        "long": null
       }
     },
     {
@@ -296,11 +373,11 @@
       "cn_code": "159755",
       "mapping_score": 25,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": null,
-        "long": null
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -406,7 +483,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": "transmission",
         "long": "divergence"
       }

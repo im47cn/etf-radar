@@ -15,7 +15,7 @@
           "id": { "type": "string" },
           "name": { "type": "string" },
           "us_etfs": { "type": "array", "items": { "type": "string" } },
-          "primary_us": { "type": "string" },
+          "primary_us": { "type": ["string", "null"] },
           "tags": { "type": "array", "items": { "type": "string" } },
           "note": { "type": "string" },
           "returns": {

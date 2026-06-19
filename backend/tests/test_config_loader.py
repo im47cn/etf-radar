@@ -25,4 +25,27 @@ def test_load_themes_missing_file() -> None:
 def test_real_themes_yml_has_14() -> None:
     real = Path(__file__).parent.parent.parent / 'config' / 'themes.yml'
     themes = load_themes(real)
-    assert len(themes) == 14
+    assert len(themes) == 21  # 原 14 个 + 新增 7 个 A 股独立行业
+
+
+def test_load_themes_includes_cn_only_count():
+    real = Path(__file__).parent.parent.parent / 'config' / 'themes.yml'
+    themes = load_themes(real)
+    cn_only = [t for t in themes if t.primary_us is None]
+    assert len(cn_only) >= 7, f"expected >=7 cn_only themes, got {len(cn_only)}"
+    expected_ids = {
+        'cn_liquor', 'cn_consumer_staples', 'cn_medical_devices',
+        'cn_home_appliances', 'cn_real_estate', 'cn_media', 'cn_dividend',
+    }
+    actual = {t.id for t in cn_only}
+    assert expected_ids.issubset(actual), f"missing: {expected_ids - actual}"
+
+
+def test_load_themes_cn_only_have_primary_cn():
+    real = Path(__file__).parent.parent.parent / 'config' / 'themes.yml'
+    themes = load_themes(real)
+    for t in themes:
+        if t.primary_us is None:
+            assert t.primary_cn is not None, f"{t.id} missing primary_cn"
+            assert any(cn.code == t.primary_cn for cn in t.cn_etfs), \
+                f"{t.id}: primary_cn {t.primary_cn} not in cn_etfs"

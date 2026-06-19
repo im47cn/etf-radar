@@ -149,10 +149,13 @@ const mkTheme = (id: string, longStr: number, shortStr: number): Theme => ({
   name: id.toUpperCase(),
   us_etfs: ['SOXX'],
   primary_us: 'SOXX',
+  primary_cn: null,
   tags: [],
   note: '',
   returns: { r_1d: 0, r_5d: 0, r_20d: 0, r_60d: 0, r_120d: 0, r_ytd: 0 },
   strength: { short: shortStr, mid: 50, long: longStr, composite: 50 },
+  us_strength: { short: shortStr, mid: 50, long: longStr, composite: 50 },
+  cn_strength: null,
   rank: { short: 1, mid: 1, long: 1, composite: 1 },
 });
 

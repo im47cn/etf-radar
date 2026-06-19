@@ -7,10 +7,13 @@ const mkTheme = (id: string, long: number, short: number, composite: number): Th
   name: id,
   us_etfs: ['X'],
   primary_us: 'X',
+  primary_cn: null,
   tags: [],
   note: '',
   returns: { r_1d: null, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
   strength: { short, mid: 50, long, composite },
+  us_strength: { short, mid: 50, long, composite },
+  cn_strength: null,
   rank: { short: 1, mid: 1, long: 1, composite: 1 },
 });
 
@@ -57,5 +60,44 @@ describe('themesToRotationPoints', () => {
 describe('QUADRANT_COLORS', () => {
   it('exposes 4 quadrant colors', () => {
     expect(Object.keys(QUADRANT_COLORS).sort()).toEqual(['fading', 'lagging', 'leading', 'rising']);
+  });
+});
+
+const baseTheme: Theme = {
+  id: 'm', name: 'M',
+  us_etfs: ['SOXX'], primary_us: 'SOXX', primary_cn: null,
+  tags: [], note: '',
+  returns: { r_1d: null, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
+  strength: { short: 50, mid: 50, long: 50, composite: 50 },
+  us_strength: { short: 70, mid: 70, long: 70, composite: 70 },
+  cn_strength: { short: 30, mid: 30, long: 30, composite: 30 },
+  rank: { short: 1, mid: 1, long: 1, composite: 1 },
+};
+
+const cnOnly: Theme = {
+  ...baseTheme, id: 'cn_x', name: 'X',
+  us_etfs: [], primary_us: null, primary_cn: '000001',
+  us_strength: null,
+  cn_strength: { short: 80, mid: 80, long: 80, composite: 80 },
+};
+
+describe('themesToRotationPoints with mode', () => {
+  it('default us mode filters out cn-only themes', () => {
+    const pts = themesToRotationPoints([baseTheme, cnOnly], 'us');
+    expect(pts).toHaveLength(1);
+    expect(pts[0].themeId).toBe('m');
+    expect(pts[0].x).toBe(70); // us_strength.long
+  });
+
+  it('cn mode includes all themes with cn_strength', () => {
+    const pts = themesToRotationPoints([baseTheme, cnOnly], 'cn');
+    expect(pts).toHaveLength(2);
+    const x = pts.find(p => p.themeId === 'cn_x');
+    expect(x?.x).toBe(80);
+  });
+
+  it('default param is us (backward compat)', () => {
+    const pts = themesToRotationPoints([baseTheme, cnOnly]);
+    expect(pts).toHaveLength(1);
   });
 });

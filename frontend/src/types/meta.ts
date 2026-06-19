@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const ProviderStatusSchema = z.enum(['ok', 'degraded', 'stale']);
+export const ProviderStatusSchema = z.enum(['ok', 'fallback', 'degraded', 'stale']);
 export type ProviderStatus = z.infer<typeof ProviderStatusSchema>;
 
 export const ProviderInfoSchema = z.object({
@@ -21,6 +21,7 @@ export const MetaFileSchema = z.object({
     cn: ProviderInfoSchema,
   }),
   failed_symbols: z.array(z.string()),
+  fallback_symbols: z.record(z.string(), z.string()).default({}),
   stale_minutes: z.number().int().nonnegative(),
   calendar: z.object({
     us_trading_today: z.boolean(),

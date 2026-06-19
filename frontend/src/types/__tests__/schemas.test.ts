@@ -79,24 +79,44 @@ describe('SignalsFileSchema', () => {
 });
 
 describe('MetaFileSchema', () => {
+  const baseMeta = {
+    schema_version: '1.1',
+    last_full_refresh: { us: '2026-06-10T06:30:00+08:00', cn: null },
+    last_intraday_refresh: null,
+    providers: {
+      us: { status: 'ok' as const, name: 'yfinance' },
+      cn: { status: 'degraded' as const, name: 'akshare-em' },
+    },
+    failed_symbols: ['512720'],
+    stale_minutes: 0,
+    calendar: {
+      us_trading_today: true, cn_trading_today: true,
+      us_session_active: false, cn_session_active: true,
+    },
+  };
+
   it('parses valid meta', () => {
-    const valid = {
-      schema_version: '1.0',
-      last_full_refresh: { us: '2026-06-10T06:30:00+08:00', cn: null },
-      last_intraday_refresh: null,
-      providers: {
-        us: { status: 'ok' as const, name: 'yfinance' },
-        cn: { status: 'degraded' as const, name: 'akshare' },
-      },
-      failed_symbols: ['512720'],
-      stale_minutes: 0,
-      calendar: {
-        us_trading_today: true, cn_trading_today: true,
-        us_session_active: false, cn_session_active: true,
-      },
-    };
-    const parsed = MetaFileSchema.parse(valid);
+    const parsed = MetaFileSchema.parse(baseMeta);
     expect(parsed.providers.cn.status).toBe('degraded');
+  });
+
+  it('accepts fallback status', () => {
+    const meta = {
+      ...baseMeta,
+      providers: { ...baseMeta.providers, cn: { status: 'fallback' as const, name: 'akshare-em' } },
+    };
+    const parsed = MetaFileSchema.parse(meta);
+    expect(parsed.providers.cn.status).toBe('fallback');
+  });
+
+  it('parses meta with fallback_symbols map', () => {
+    const m = MetaFileSchema.parse({ ...baseMeta, fallback_symbols: { '159755': 'akshare-sina' } });
+    expect(m.fallback_symbols).toEqual({ '159755': 'akshare-sina' });
+  });
+
+  it('defaults fallback_symbols to {} when missing', () => {
+    const m = MetaFileSchema.parse(baseMeta);
+    expect(m.fallback_symbols).toEqual({});
   });
 });
 

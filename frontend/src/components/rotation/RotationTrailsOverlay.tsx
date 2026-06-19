@@ -6,13 +6,15 @@ import { RotationScatterWithTrails } from './RotationScatterWithTrails';
 import { FocusedThemePanel } from './FocusedThemePanel';
 import type { Theme } from '@/types/themes';
 import type { SnapshotFrame } from '@/types/snapshots';
+import type { RotationMode } from '@/lib/rotation';
 
 interface Props {
   themes: Theme[];
   snapshots: SnapshotFrame[];
+  mode?: RotationMode;
 }
 
-export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
+export const RotationTrailsOverlay = ({ themes, snapshots, mode }: Props) => {
   const { range, setRange } = useTrailRange();
 
   const validThemeIds = useMemo(() => new Set(themes.map(t => t.id)), [themes]);
@@ -50,6 +52,7 @@ export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
         trailFrames={trailFrames}
         focusedId={focusedId}
         onFocus={toggle}
+        mode={mode ?? 'us'}
       />
       <FocusedThemePanel theme={focusedTheme} onClose={() => setFocused(null)} />
     </div>

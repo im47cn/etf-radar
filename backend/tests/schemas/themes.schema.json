@@ -3,19 +3,32 @@
   "title": "Themes file (data/latest/themes.json)",
   "type": "object",
   "required": ["schema_version", "generated_at", "themes"],
+  "$defs": {
+    "strength": {
+      "type": "object",
+      "required": ["short", "mid", "long", "composite"],
+      "properties": {
+        "short":     { "type": "integer", "minimum": 0, "maximum": 99 },
+        "mid":       { "type": "integer", "minimum": 0, "maximum": 99 },
+        "long":      { "type": "integer", "minimum": 0, "maximum": 99 },
+        "composite": { "type": "integer", "minimum": 0, "maximum": 99 }
+      }
+    }
+  },
   "properties": {
-    "schema_version": { "type": "string" },
+    "schema_version": { "const": "1.1" },
     "generated_at": { "type": "string" },
     "themes": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name", "us_etfs", "primary_us", "tags", "note", "returns", "strength", "rank"],
+        "required": ["id", "name", "us_etfs", "primary_us", "primary_cn", "tags", "note", "returns", "strength", "us_strength", "cn_strength", "rank"],
         "properties": {
           "id": { "type": "string" },
           "name": { "type": "string" },
           "us_etfs": { "type": "array", "items": { "type": "string" } },
           "primary_us": { "type": ["string", "null"] },
+          "primary_cn": { "type": ["string", "null"] },
           "tags": { "type": "array", "items": { "type": "string" } },
           "note": { "type": "string" },
           "returns": {
@@ -30,15 +43,18 @@
               "r_ytd":  { "type": ["number", "null"] }
             }
           },
-          "strength": {
-            "type": "object",
-            "required": ["short", "mid", "long", "composite"],
-            "properties": {
-              "short":     { "type": "integer", "minimum": 0, "maximum": 99 },
-              "mid":       { "type": "integer", "minimum": 0, "maximum": 99 },
-              "long":      { "type": "integer", "minimum": 0, "maximum": 99 },
-              "composite": { "type": "integer", "minimum": 0, "maximum": 99 }
-            }
+          "strength": { "$ref": "#/$defs/strength" },
+          "us_strength": {
+            "oneOf": [
+              { "$ref": "#/$defs/strength" },
+              { "type": "null" }
+            ]
+          },
+          "cn_strength": {
+            "oneOf": [
+              { "$ref": "#/$defs/strength" },
+              { "type": "null" }
+            ]
           },
           "rank": {
             "type": "object",

@@ -7,3 +7,9 @@ themes:
     note: ''
     cn_etfs:
       - {code: '000001', name: ETF1, tracking: I1, match_type: exact}
+  - id: cn_test_sector
+    name: 测试本土赛道
+    tags: [测试]
+    primary_cn: '999999'
+    cn_etfs:
+      - {code: '999999', name: 测试ETF, tracking: 测试指数, match_type: exact}

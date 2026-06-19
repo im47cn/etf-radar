@@ -22,7 +22,7 @@ def test_load_themes_missing_file() -> None:
         load_themes(FIXT / 'nope.yml')
 
 
-def test_real_themes_yml_has_14() -> None:
+def test_real_themes_yml_count() -> None:
     real = Path(__file__).parent.parent.parent / 'config' / 'themes.yml'
     themes = load_themes(real)
     assert len(themes) == 21  # 原 14 个 + 新增 7 个 A 股独立行业

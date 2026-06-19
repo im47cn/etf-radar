@@ -271,9 +271,9 @@ def compute_outputs(
 
     # 6) 排名（基于 display_strengths：mapped 优先 US 端，cn_only 用 CN 端）
     display_strengths: dict[str, Strength] = {
-        t.id: (theme_strengths.get(t.id) or cn_theme_strengths.get(t.id))
+        t.id: (theme_strengths[t.id] if t.id in theme_strengths else cn_theme_strengths[t.id])
         for t in themes
-        if theme_strengths.get(t.id) or cn_theme_strengths.get(t.id)
+        if t.id in theme_strengths or t.id in cn_theme_strengths
     }
     sorted_ids = sorted(display_strengths.keys(),
                         key=lambda i: display_strengths[i].composite, reverse=True)

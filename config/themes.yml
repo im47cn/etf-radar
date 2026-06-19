@@ -134,3 +134,53 @@ themes:
     note: ""
     cn_etfs:
       - {code: '516780', name: 稀土ETF, tracking: 中证稀土产业, match_type: exact}
+
+  # ── A 股独立行业主题（无对应 US ETF）──────────────────────────────────
+  - id: cn_liquor
+    name: 白酒
+    tags: [白酒, 主要消费]
+    primary_cn: '512690'
+    cn_etfs:
+      - {code: '512690', name: 酒ETF, tracking: 中证酒, match_type: exact}
+
+  - id: cn_consumer_staples
+    name: 主要消费
+    tags: [消费, 食品饮料]
+    primary_cn: '159928'
+    cn_etfs:
+      - {code: '159928', name: 消费ETF, tracking: 中证主要消费, match_type: exact}
+
+  - id: cn_medical_devices
+    name: 医疗器械
+    tags: [医疗器械, 医药]
+    primary_cn: '159883'
+    cn_etfs:
+      - {code: '159883', name: 医疗器械ETF, tracking: 中证全指医疗器械, match_type: exact}
+
+  - id: cn_home_appliances
+    name: 家电
+    tags: [家电, 可选消费]
+    primary_cn: '159996'
+    cn_etfs:
+      - {code: '159996', name: 家电ETF, tracking: 中证全指家电, match_type: exact}
+
+  - id: cn_real_estate
+    name: 房地产
+    tags: [地产]
+    primary_cn: '512200'
+    cn_etfs:
+      - {code: '512200', name: 地产ETF, tracking: 中证800地产, match_type: exact}
+
+  - id: cn_media
+    name: 传媒
+    tags: [传媒, 游戏, TMT]
+    primary_cn: '159805'
+    cn_etfs:
+      - {code: '159805', name: 传媒ETF, tracking: 中证传媒, match_type: exact}
+
+  - id: cn_dividend
+    name: 红利
+    tags: [红利, 高股息]
+    primary_cn: '510880'
+    cn_etfs:
+      - {code: '510880', name: 红利ETF, tracking: 上证红利, match_type: exact}

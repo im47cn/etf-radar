@@ -1,12 +1,29 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+from datetime import datetime, timezone, timedelta
+
 from src.config_loader import load_algo_config
-from src.models import Strength
+from src.models import Strength, ThemeConfig, CnEtfConfig
+from src.pipeline import compute_outputs, PipelineMode
 from src.scoring.signals import (
     judge_per_period,
     signal_for_pair,
     signal_for_theme,
 )
+
+BJT = timezone(timedelta(hours=8))
+
+
+def _fake_ohlc(n=200, base=100.0):
+    rng = np.random.default_rng(7)
+    closes = base * np.cumprod(1 + rng.normal(0.001, 0.01, n))
+    return pd.DataFrame({
+        'date': pd.date_range('2025-01-01', periods=n, freq='B', tz='UTC'),
+        'open': closes, 'high': closes * 1.01, 'low': closes * 0.99,
+        'close': closes, 'volume': 1.0, 'amount': 1e8,
+    })
 
 CFG = load_algo_config(Path(__file__).parent / 'fixtures' / 'algo_minimal.yml')
 
@@ -142,3 +159,24 @@ def test_signal_for_theme_no_candidates_returns_none() -> None:
     assert sig is None
     assert code is None
     assert votes == {}
+
+
+def test_cn_only_theme_has_null_signal():
+    themes = [
+        ThemeConfig(id='cn_x', name='X', primary_cn='000001', tags=[],
+                    cn_etfs=[CnEtfConfig(code='000001', name='Y', tracking='T', match_type='exact')]),
+    ]
+    cn_ohlc = {'000001': _fake_ohlc(base=10)}
+    algo = load_algo_config(Path(__file__).parent.parent.parent / 'config' / 'algo.yml')
+    asof = datetime(2025, 6, 19, 16, 0, tzinfo=BJT)
+    _, _, signals_json, _ = compute_outputs(
+        themes, {}, cn_ohlc, [], [], algo, asof, PipelineMode.ARCHIVE,
+    )
+
+    ts = [s for s in signals_json['theme_signals'] if s['theme_id'] == 'cn_x'][0]
+    assert ts['signal'] is None
+    assert ts['trigger_cn_etf'] is None or ts['trigger_cn_etf'] == '000001'
+    summary = signals_json['summary']
+    assert summary['resonance_count'] == 0
+    assert summary['transmission_count'] == 0
+    assert summary['divergence_count'] == 0

@@ -283,6 +283,14 @@ def compute_outputs(
     pair_signals: list[PairSignal] = []
     theme_signals: list[ThemeSignal] = []
     for t in themes:
+        if not t.primary_us:
+            theme_signals.append(ThemeSignal(
+                theme_id=t.id, signal=None, trigger_cn_etf=None,
+                votes={'short': None, 'mid': None, 'long': None},
+                description=f"{t.name}（A 股本土赛道）",
+            ))
+            continue
+
         us_df = us_ohlc.get(t.primary_us)
         candidates: list[dict[str, Any]] = []
         for cn in t.cn_etfs:
@@ -304,10 +312,6 @@ def compute_outputs(
                 'code': cn.code, 'mapping_score': ms, 'confidence': conf,
                 'cn_strength': cn_str_obj, 'cn_dim_returns': cn_dim_returns_dict,
             })
-
-        # cn_only 主题没有 US 端强度，暂跳过信号计算（Task 5 补全）
-        if not t.primary_us:
-            continue
 
         us_str_obj = theme_strengths[t.id]
         us_r = theme_returns[t.id]

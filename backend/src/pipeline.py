@@ -122,7 +122,7 @@ def _collect_cn_ohlc(
 
         if success_provider is None:
             failed.append(code)
-        elif success_provider is not providers[0]:
+        elif success_provider.name != providers[0].name:
             fallback_map[code] = success_provider.name
 
         time.sleep(random.uniform(0.3, 1.0))

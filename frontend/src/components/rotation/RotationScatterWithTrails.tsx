@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { Scatter, Cell, LabelList, Customized, useXAxisScale, useYAxisScale } from 'recharts';
 import { themesToRotationPoints, QUADRANT_COLORS, computeBubbleSize } from '@/lib/rotation';
+import type { RotationMode } from '@/lib/rotation';
 import { buildTrails, type TrailPoint } from '@/lib/trailGradient';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { RotationChartFrame } from './RotationChartFrame';
@@ -13,6 +14,7 @@ interface Props {
   focusedId: string | null;
   onFocus: (themeId: string) => void;
   height?: number;
+  mode?: RotationMode;
 }
 
 interface ScatterClickArg {
@@ -72,18 +74,19 @@ const TrailLines = ({ series }: { series: TrailLineSeries[] }) => {
   );
 };
 
-const Impl = ({ themes, trailFrames, focusedId, onFocus, height }: Props) => {
+const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) => {
   const isMobile = useIsMobile();
   const effectiveHeight = height ?? (isMobile ? 360 : 500);
   const labelFontSize = isMobile ? 9 : 11;
+  const effectiveMode: RotationMode = mode ?? 'us';
 
   const points = useMemo(
     () =>
-      themesToRotationPoints(themes).map(p => ({
+      themesToRotationPoints(themes, effectiveMode).map(p => ({
         ...p,
         _bubbleSize: computeBubbleSize(p.size),
       })),
-    [themes],
+    [themes, effectiveMode],
   );
 
   const trails = useMemo(() => buildTrails(trailFrames), [trailFrames]);
@@ -170,5 +173,6 @@ export const RotationScatterWithTrails = memo(
     prev.trailFrames === next.trailFrames &&
     prev.focusedId === next.focusedId &&
     prev.height === next.height &&
-    prev.onFocus === next.onFocus,
+    prev.onFocus === next.onFocus &&
+    prev.mode === next.mode,
 );

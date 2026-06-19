@@ -49,7 +49,14 @@ export const ThemeRow = ({ index, theme, signal, dimension, selected, onClick }:
         </span>
       </td>
       <td className="px-2 py-2">
-        <div className="font-medium">{theme.name}</div>
+        <div className="font-medium">
+          {theme.name}
+          {theme.primary_us === null && (
+            <span className="ml-2 inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 text-slate-600 border border-slate-200">
+              A股专属
+            </span>
+          )}
+        </div>
         <div className="text-xs text-gray-500">{theme.us_etfs.join(' / ')}</div>
       </td>
       <td className="px-2 py-2 text-xs">{theme.primary_us}</td>

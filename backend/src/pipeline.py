@@ -34,6 +34,7 @@ from .models import (
     MetaInfo,
     PairSignal,
     ProviderInfo,
+    ProviderStatus,
     Rank,
     Returns,
     SignalsSummary,
@@ -45,6 +46,7 @@ from .models import (
 from .output.descriptions import theme_dynamic_description
 from .output.writer import atomic_write_json
 from .providers.akshare_em_provider import AkshareEmProvider
+from .providers.akshare_sina_provider import AkshareSinaProvider
 from .providers.base import EmptyDataError, EtfDataProvider, ProviderError
 from .providers.yfinance_provider import YfinanceProvider
 from .scoring.mapping import mapping_score
@@ -86,51 +88,45 @@ def _collect_us_ohlc(
 
 
 def _collect_cn_ohlc(
-    themes: list[ThemeConfig], provider: EtfDataProvider,
-) -> tuple[dict[str, pd.DataFrame], list[str]]:
-    """
-    A 股 ETF 数据采集。
+    themes: list[ThemeConfig],
+    providers: list[EtfDataProvider],
+) -> tuple[dict[str, pd.DataFrame], dict[str, str], list[str]]:
+    """A 股 ETF 数据采集 (provider chain).
 
-    抗失败策略:
-    1. 请求间 jitter sleep (0.3-1.0s 随机) - 避免触发对端反爬/频控。
-    2. 失败 symbol 末尾 second pass (等 60s 后单独重试一遍, jitter 加倍) -
-       捞回临时网络抖动失败的 symbol。
-    详见 https://github.com/im47cn/etf-radar/issues (RemoteDisconnected 失败模式)
+    单 symbol 内按 providers 顺序即时切换：首选失败立即试下一个，
+    第一个成功即停止。所有 provider 都失败的 symbol 进 failed 列表。
+
+    返回:
+      out: 成功获取的 OHLC 数据
+      fallback_map: {symbol: provider.name} 走了非首选 provider 的 symbol
+      failed: 所有 provider 都失败的 symbol
     """
     out: dict[str, pd.DataFrame] = {}
+    fallback_map: dict[str, str] = {}
     failed: list[str] = []
     codes: set[str] = set()
     for t in themes:
         for cn in t.cn_etfs:
             codes.add(cn.code)
 
-    # First pass: 顺序 fetch, jitter 放在 fetch 后 (避免下次请求背靠背触发频控)
     for code in sorted(codes):
-        try:
-            out[code] = provider.fetch_ohlc(code, lookback_days=400)
-        except (ProviderError, EmptyDataError) as e:
-            log.warning(f'CN fetch failed {code}: {e}')
-            failed.append(code)
-        time.sleep(random.uniform(0.3, 1.0))
-
-    # Second pass: 失败 symbol 等 60s 后重试一遍 (网络抖动恢复窗口)
-    if failed:
-        log.info(f'CN second pass starting: {len(failed)} symbols, waiting 60s')
-        time.sleep(60)
-        recovered: list[str] = []
-        still_failed: list[str] = []
-        for code in failed:
+        success_provider: EtfDataProvider | None = None
+        for provider in providers:
             try:
                 out[code] = provider.fetch_ohlc(code, lookback_days=400)
-                recovered.append(code)
+                success_provider = provider
+                break
             except (ProviderError, EmptyDataError) as e:
-                log.warning(f'CN second-pass still failed {code}: {e}')
-                still_failed.append(code)
-            time.sleep(random.uniform(0.5, 1.5))  # 更大 jitter, 进一步避免频控
-        log.info(f'CN second pass: recovered {len(recovered)}/{len(failed)} ({recovered})')
-        failed = still_failed
+                log.warning(f'CN fetch failed [{provider.name}] {code}: {e}')
+                continue
 
-    return out, failed
+        if success_provider is None:
+            failed.append(code)
+        elif success_provider is not providers[0]:
+            fallback_map[code] = success_provider.name
+
+        time.sleep(random.uniform(0.3, 1.0))
+    return out, fallback_map, failed
 
 
 def _theme_returns(t: ThemeConfig, us_ohlc: dict[str, pd.DataFrame]) -> Returns:
@@ -161,6 +157,7 @@ def compute_outputs(
     asof_bjt: datetime,
     mode: PipelineMode,
     backfilled: bool = False,
+    cn_fallback_map: dict[str, str] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     """从已采集的 OHLC 数据计算并构造 4 个输出 JSON（themes/etfs/signals/meta）。
 
@@ -168,8 +165,13 @@ def compute_outputs(
     均基于此时间。pipeline.run_pipeline 调用时传 datetime.now(tz=BJT)，
     backfill 脚本调用时传该 D 当晚 16:00 BJT。
 
+    cn_fallback_map: {symbol: provider_name} 走了非首选 provider 的 symbol。
+        当 cn_fallback_map 非空且 cn_failed 为空时，cn provider status = 'fallback'。
+
     返回顺序: (themes_json, etfs_json, signals_json, meta_json)
     """
+    if cn_fallback_map is None:
+        cn_fallback_map = {}
     today_bjt = asof_bjt.date()
     asof_utc = asof_bjt.astimezone(timezone.utc)
 
@@ -373,14 +375,22 @@ def compute_outputs(
         'pair_signals': [ps.model_dump() for ps in pair_signals],
     }
 
+    if cn_failed:
+        cn_status: ProviderStatus = 'degraded'
+    elif cn_fallback_map:
+        cn_status = 'fallback'
+    else:
+        cn_status = 'ok'
+
     meta = MetaInfo(
         last_full_refresh=FullRefreshTimes(us=asof_bjt.isoformat(), cn=asof_bjt.isoformat()),
         last_intraday_refresh=asof_bjt.isoformat() if mode == PipelineMode.INTRADAY else None,
         providers={
             'us': ProviderInfo(status='ok' if not us_failed else 'degraded', name='yfinance'),
-            'cn': ProviderInfo(status='ok' if not cn_failed else 'degraded', name='akshare'),
+            'cn': ProviderInfo(status=cn_status, name='akshare-em'),
         },
         failed_symbols=us_failed + cn_failed,
+        fallback_symbols=cn_fallback_map,
         stale_minutes=0,
         calendar=CalendarInfo(
             us_trading_today=is_us_trading_day(today_bjt),
@@ -405,16 +415,19 @@ def run_pipeline(
     algo = load_algo_config(config_dir / 'algo.yml')
 
     yf_provider = YfinanceProvider()
-    ak_provider = AkshareEmProvider()
+    cn_providers: list[EtfDataProvider] = [
+        AkshareEmProvider(),
+        AkshareSinaProvider(),
+    ]
 
     us_ohlc, us_failed = _collect_us_ohlc(themes, yf_provider)
-    cn_ohlc, cn_failed = _collect_cn_ohlc(themes, ak_provider)
+    cn_ohlc, cn_fallback_map, cn_failed = _collect_cn_ohlc(themes, cn_providers)
 
     now_utc = datetime.now(timezone.utc)
     now_bjt = now_utc.astimezone(BJT)
     themes_json, etfs_json, signals_json, meta_json = compute_outputs(
         themes, us_ohlc, cn_ohlc, us_failed, cn_failed, algo,
-        asof_bjt=now_bjt, mode=mode,
+        asof_bjt=now_bjt, mode=mode, cn_fallback_map=cn_fallback_map,
     )
 
     atomic_write_json(data_root / 'latest' / 'themes.json', themes_json)

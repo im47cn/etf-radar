@@ -17,15 +17,18 @@ def _make_fake_ohlc(n: int = 200, base: float = 100.0) -> pd.DataFrame:
     })
 
 
+@patch('src.pipeline.AkshareSinaProvider')
 @patch('src.pipeline.AkshareEmProvider')
 @patch('src.pipeline.YfinanceProvider')
 def test_pipeline_full_mode_creates_files(
-    mock_yf: MagicMock, mock_ak: MagicMock,
+    mock_yf: MagicMock, mock_ak: MagicMock, mock_sina: MagicMock,
 ) -> None:
     mock_yf.return_value.fetch_ohlc.return_value = _make_fake_ohlc()
     mock_yf.return_value.name = 'yfinance'
     mock_ak.return_value.fetch_ohlc.return_value = _make_fake_ohlc()
-    mock_ak.return_value.name = 'akshare'
+    mock_ak.return_value.name = 'akshare-em'
+    mock_sina.return_value.fetch_ohlc.return_value = _make_fake_ohlc()
+    mock_sina.return_value.name = 'akshare-sina'
 
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)
@@ -53,17 +56,20 @@ def test_pipeline_full_mode_creates_files(
         assert meta['failed_symbols'] == []
 
 
+@patch('src.pipeline.AkshareSinaProvider')
 @patch('src.pipeline.AkshareEmProvider')
 @patch('src.pipeline.YfinanceProvider')
 def test_pipeline_marks_failed_providers(
-    mock_yf: MagicMock, mock_ak: MagicMock,
+    mock_yf: MagicMock, mock_ak: MagicMock, mock_sina: MagicMock,
 ) -> None:
     """模拟 US fetch 全部失败, meta.providers.us.status 应为 'degraded'"""
     from src.providers.base import ProviderError
     mock_yf.return_value.fetch_ohlc.side_effect = ProviderError('network')
     mock_yf.return_value.name = 'yfinance'
     mock_ak.return_value.fetch_ohlc.return_value = _make_fake_ohlc()
-    mock_ak.return_value.name = 'akshare'
+    mock_ak.return_value.name = 'akshare-em'
+    mock_sina.return_value.fetch_ohlc.return_value = _make_fake_ohlc()
+    mock_sina.return_value.name = 'akshare-sina'
 
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)

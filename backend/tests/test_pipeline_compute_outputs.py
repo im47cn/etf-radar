@@ -146,3 +146,20 @@ def test_compute_outputs_handles_empty_cache(config):
     assert themes_json['themes'][0]['strength']['composite'] == 0
     assert meta_json['providers']['us']['status'] == 'degraded'
     assert meta_json['providers']['cn']['status'] == 'degraded'
+
+
+def test_compute_outputs_cn_fallback_status(config):
+    """cn_failed=[], cn_fallback_map 非空时，cn provider status 应为 'fallback'"""
+    themes, algo = config
+    us_ohlc = {sym: _make_ohlc('2025-01-01', 200) for t in themes for sym in t.us_etfs}
+    cn_ohlc = {cn.code: _make_ohlc('2025-01-01', 200) for t in themes for cn in t.cn_etfs}
+    asof = datetime(2026, 4, 15, 16, 0, tzinfo=BJT)
+
+    _, _, _, meta_json = compute_outputs(
+        themes, us_ohlc, cn_ohlc, [], [], algo, asof_bjt=asof, mode=PipelineMode.FULL,
+        cn_fallback_map={'159755': 'akshare-sina'},
+    )
+
+    assert meta_json['providers']['cn']['status'] == 'fallback'
+    assert meta_json['fallback_symbols'] == {'159755': 'akshare-sina'}
+    assert meta_json['providers']['cn']['name'] == 'akshare-em'

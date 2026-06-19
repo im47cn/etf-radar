@@ -175,7 +175,8 @@ def test_cn_only_theme_has_null_signal():
 
     ts = [s for s in signals_json['theme_signals'] if s['theme_id'] == 'cn_x'][0]
     assert ts['signal'] is None
-    assert ts['trigger_cn_etf'] is None or ts['trigger_cn_etf'] == '000001'
+    assert ts['trigger_cn_etf'] is None
+    assert "A 股本土赛道" in ts['description']
     summary = signals_json['summary']
     assert summary['resonance_count'] == 0
     assert summary['transmission_count'] == 0

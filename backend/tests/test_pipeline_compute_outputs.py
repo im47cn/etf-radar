@@ -157,9 +157,9 @@ def test_compute_outputs_cn_fallback_status(config):
 
     _, _, _, meta_json = compute_outputs(
         themes, us_ohlc, cn_ohlc, [], [], algo, asof_bjt=asof, mode=PipelineMode.FULL,
-        cn_fallback_map={'159755': 'akshare-sina'},
+        cn_fallback_map={'159755': 'akshare-em'},
     )
 
     assert meta_json['providers']['cn']['status'] == 'fallback'
-    assert meta_json['fallback_symbols'] == {'159755': 'akshare-sina'}
-    assert meta_json['providers']['cn']['name'] == 'akshare-em'
+    assert meta_json['fallback_symbols'] == {'159755': 'akshare-em'}
+    assert meta_json['providers']['cn']['name'] == 'akshare-sina'

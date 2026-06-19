@@ -387,7 +387,7 @@ def compute_outputs(
         last_intraday_refresh=asof_bjt.isoformat() if mode == PipelineMode.INTRADAY else None,
         providers={
             'us': ProviderInfo(status='ok' if not us_failed else 'degraded', name='yfinance'),
-            'cn': ProviderInfo(status=cn_status, name='akshare-em'),
+            'cn': ProviderInfo(status=cn_status, name='akshare-sina'),
         },
         failed_symbols=us_failed + cn_failed,
         fallback_symbols=cn_fallback_map,
@@ -415,9 +415,11 @@ def run_pipeline(
     algo = load_algo_config(config_dir / 'algo.yml')
 
     yf_provider = YfinanceProvider()
+    # CN provider chain: sina 优先（稳定但不复权），em 兜底（前复权但东财对部分热门 ETF 间歇失败）
+    # 决策见 06-19 fallback 调查：23 个核心主题 ETF 对 em 长期失败 → 牺牲复权一致性换稳定性
     cn_providers: list[EtfDataProvider] = [
-        AkshareEmProvider(),
         AkshareSinaProvider(),
+        AkshareEmProvider(),
     ]
 
     us_ohlc, us_failed = _collect_us_ohlc(themes, yf_provider)

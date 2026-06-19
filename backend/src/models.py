@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 MatchType = Literal['exact', 'wide']
 SignalType = Literal['resonance', 'transmission', 'divergence']
-ProviderStatus = Literal['ok', 'degraded', 'stale']
+ProviderStatus = Literal['ok', 'fallback', 'degraded', 'stale']
 DimName = Literal['short', 'mid', 'long']
 
 
@@ -151,11 +151,12 @@ class FullRefreshTimes(BaseModel):
 
 
 class MetaInfo(BaseModel):
-    schema_version: str = '1.0'
+    schema_version: str = '1.1'
     last_full_refresh: FullRefreshTimes
     last_intraday_refresh: Optional[str] = None
     providers: dict[str, ProviderInfo]
     failed_symbols: list[str] = Field(default_factory=list)
+    fallback_symbols: dict[str, str] = Field(default_factory=dict)
     stale_minutes: int = 0
     calendar: CalendarInfo
     backfilled: bool = False

@@ -32,7 +32,7 @@ from src.etl.calendar import BJT, is_cn_trading_day, is_us_trading_day
 from src.output.snapshots_index import write_snapshots_index
 from src.output.writer import atomic_write_json
 from src.pipeline import PipelineMode, compute_outputs
-from src.providers.akshare_provider import AkshareProvider
+from src.providers.akshare_em_provider import AkshareEmProvider
 from src.providers.base import EmptyDataError, EtfDataProvider, ProviderError
 from src.providers.yfinance_provider import YfinanceProvider
 
@@ -104,7 +104,7 @@ def backfill(
     )
     log.info(f'fetching {len(cn_codes)} CN codes (with jitter)')
     cn_cache, cn_failed_init = _collect_history(
-        cn_codes, AkshareProvider(), lookback_days, 'CN', jitter_range=(0.3, 1.0),
+        cn_codes, AkshareEmProvider(), lookback_days, 'CN', jitter_range=(0.3, 1.0),
     )
     log.info(f'US fetched={len(us_cache)}, failed={len(us_failed_init)}')
     log.info(f'CN fetched={len(cn_cache)}, failed={len(cn_failed_init)}')

@@ -44,7 +44,7 @@ from .models import (
 )
 from .output.descriptions import theme_dynamic_description
 from .output.writer import atomic_write_json
-from .providers.akshare_provider import AkshareProvider
+from .providers.akshare_em_provider import AkshareEmProvider
 from .providers.base import EmptyDataError, EtfDataProvider, ProviderError
 from .providers.yfinance_provider import YfinanceProvider
 from .scoring.mapping import mapping_score
@@ -405,7 +405,7 @@ def run_pipeline(
     algo = load_algo_config(config_dir / 'algo.yml')
 
     yf_provider = YfinanceProvider()
-    ak_provider = AkshareProvider()
+    ak_provider = AkshareEmProvider()
 
     us_ohlc, us_failed = _collect_us_ohlc(themes, yf_provider)
     cn_ohlc, cn_failed = _collect_cn_ohlc(themes, ak_provider)

@@ -17,7 +17,7 @@ def _make_fake_ohlc(n: int = 200, base: float = 100.0) -> pd.DataFrame:
     })
 
 
-@patch('src.pipeline.AkshareProvider')
+@patch('src.pipeline.AkshareEmProvider')
 @patch('src.pipeline.YfinanceProvider')
 def test_pipeline_full_mode_creates_files(
     mock_yf: MagicMock, mock_ak: MagicMock,
@@ -53,7 +53,7 @@ def test_pipeline_full_mode_creates_files(
         assert meta['failed_symbols'] == []
 
 
-@patch('src.pipeline.AkshareProvider')
+@patch('src.pipeline.AkshareEmProvider')
 @patch('src.pipeline.YfinanceProvider')
 def test_pipeline_marks_failed_providers(
     mock_yf: MagicMock, mock_ak: MagicMock,

@@ -12,10 +12,10 @@ log = logging.getLogger(__name__)
 BJT = ZoneInfo('Asia/Shanghai')
 
 
-class AkshareProvider(EtfDataProvider):
+class AkshareEmProvider(EtfDataProvider):
     """A 股场内 ETF 数据源 (东方财富, 通过 akshare)."""
 
-    name = 'akshare'
+    name = 'akshare-em'
 
     def __init__(self, max_retries: int = 3, base_delay: float = 2.0) -> None:
         self.max_retries = max_retries

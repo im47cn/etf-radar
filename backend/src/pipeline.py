@@ -77,7 +77,8 @@ def _collect_us_ohlc(
     failed: list[str] = []
     symbols: set[str] = set()
     for t in themes:
-        symbols.update(t.us_etfs)
+        if t.us_etfs:  # cn_only 主题 us_etfs 为空列表，跳过
+            symbols.update(t.us_etfs)
     for sym in sorted(symbols):
         try:
             out[sym] = provider.fetch_ohlc(sym, lookback_days=400)
@@ -130,6 +131,9 @@ def _collect_cn_ohlc(
 
 
 def _theme_returns(t: ThemeConfig, us_ohlc: dict[str, pd.DataFrame]) -> Returns:
+    # cn_only 主题没有美股锚点，直接返回空 Returns
+    if not t.primary_us:
+        return Returns()
     df = us_ohlc.get(t.primary_us)
     if df is None or df.empty:
         return Returns()
@@ -184,9 +188,13 @@ def compute_outputs(
     }
 
     # 3) 池内 dim aggregate (过滤 None)
+    # US 池：只含有 primary_us 的 mapped 主题
     theme_dim_rets: dict[DimName, list[float]] = {
         dim: [
-            r for r in (dim_aggregate_return(theme_returns[t.id], dim) for t in themes)
+            r for r in (
+                dim_aggregate_return(theme_returns[t.id], dim)
+                for t in themes if t.primary_us
+            )
             if r is not None
         ]
         for dim in DIMS
@@ -199,12 +207,14 @@ def compute_outputs(
         for dim in DIMS
     }
 
-    # 4) 主题强度
+    # 4) US 主题池强度（仅 mapped 主题参与）
     k = algo.strength.k_sigmoid
     days = algo.strength.days_in_dim
     cw = algo.strength.composite_weights
     theme_strengths: dict[str, Strength] = {}
     for t in themes:
+        if not t.primary_us:
+            continue  # cn_only 主题不参与 US 池
         r = theme_returns[t.id]
         s = _strength_for_pool(dim_aggregate_return(r, 'short'),
                                theme_dim_rets['short'], k, days['short'])
@@ -228,9 +238,45 @@ def compute_outputs(
         c = composite_strength(s, m, long_s, cw['short'], cw['mid'], cw['long'])
         cn_strengths[code] = Strength(short=s, mid=m, long=long_s, composite=c)
 
-    # 6) 排名 (按综合)
-    sorted_ids = sorted(theme_strengths.keys(),
-                        key=lambda i: theme_strengths[i].composite, reverse=True)
+    # 5b) CN 主题池强度（全主题双算：用 primary_cn 或首个 cn_etf 作代表）
+    cn_theme_primary: dict[str, str] = {}
+    cn_theme_returns: dict[str, Returns] = {}
+    for t in themes:
+        code = t.primary_cn or (t.cn_etfs[0].code if t.cn_etfs else None)
+        if code is None:
+            continue
+        cn_theme_primary[t.id] = code
+        cn_theme_returns[t.id] = cn_returns.get(code, Returns())
+
+    cn_theme_dim_rets: dict[DimName, list[float]] = {
+        dim: [
+            r for r in (
+                dim_aggregate_return(cn_theme_returns[tid], dim)
+                for tid in cn_theme_returns
+            )
+            if r is not None
+        ]
+        for dim in DIMS
+    }
+    cn_theme_strengths: dict[str, Strength] = {}
+    for tid, r in cn_theme_returns.items():
+        s = _strength_for_pool(dim_aggregate_return(r, 'short'),
+                               cn_theme_dim_rets['short'], k, days['short'])
+        m = _strength_for_pool(dim_aggregate_return(r, 'mid'),
+                               cn_theme_dim_rets['mid'], k, days['mid'])
+        long_s = _strength_for_pool(dim_aggregate_return(r, 'long'),
+                                    cn_theme_dim_rets['long'], k, days['long'])
+        c = composite_strength(s, m, long_s, cw['short'], cw['mid'], cw['long'])
+        cn_theme_strengths[tid] = Strength(short=s, mid=m, long=long_s, composite=c)
+
+    # 6) 排名（基于 display_strengths：mapped 优先 US 端，cn_only 用 CN 端）
+    display_strengths: dict[str, Strength] = {
+        t.id: (theme_strengths.get(t.id) or cn_theme_strengths.get(t.id))
+        for t in themes
+        if theme_strengths.get(t.id) or cn_theme_strengths.get(t.id)
+    }
+    sorted_ids = sorted(display_strengths.keys(),
+                        key=lambda i: display_strengths[i].composite, reverse=True)
     theme_ranks: dict[str, int] = {tid: i + 1 for i, tid in enumerate(sorted_ids)}
 
     # 7) 映射分 + 信号
@@ -258,6 +304,10 @@ def compute_outputs(
                 'code': cn.code, 'mapping_score': ms, 'confidence': conf,
                 'cn_strength': cn_str_obj, 'cn_dim_returns': cn_dim_returns_dict,
             })
+
+        # cn_only 主题没有 US 端强度，暂跳过信号计算（Task 5 补全）
+        if not t.primary_us:
+            continue
 
         us_str_obj = theme_strengths[t.id]
         us_r = theme_returns[t.id]
@@ -302,7 +352,7 @@ def compute_outputs(
         top_t = next(t for t in themes if t.id == top_id)
         top_theme = TopTheme(
             id=top_id, name=top_t.name, primary_us=top_t.primary_us,
-            composite_strength=theme_strengths[top_id].composite,
+            composite_strength=display_strengths[top_id].composite,
         )
 
     cn_codes_unique: set[str] = set()
@@ -319,21 +369,33 @@ def compute_outputs(
         top_theme=top_theme,
     )
 
-    # 9) 构造 JSON
+    # 9) 构造 JSON（schema 1.1：加 us_strength / cn_strength / primary_cn）
+    def _strength_dump(s: Strength | None) -> dict[str, Any] | None:
+        return s.model_dump() if s else None
+
     themes_json: dict[str, Any] = {
-        'schema_version': '1.0',
+        'schema_version': '1.1',
         'generated_at': asof_bjt.isoformat(),
         'themes': [
             {
                 'id': t.id, 'name': t.name, 'us_etfs': t.us_etfs,
-                'primary_us': t.primary_us, 'tags': t.tags, 'note': t.note,
-                'returns': theme_returns[t.id].model_dump(),
-                'strength': theme_strengths[t.id].model_dump(),
+                'primary_us': t.primary_us,
+                'primary_cn': t.primary_cn or cn_theme_primary.get(t.id),
+                'tags': t.tags, 'note': t.note,
+                # returns：mapped 用 US 端，cn_only 用 CN 端
+                'returns': (
+                    theme_returns[t.id].model_dump() if t.primary_us
+                    else cn_theme_returns.get(t.id, Returns()).model_dump()
+                ),
+                # strength：display（排名依据），us_strength / cn_strength 双端
+                'strength': display_strengths[t.id].model_dump(),
+                'us_strength': _strength_dump(theme_strengths.get(t.id)),
+                'cn_strength': _strength_dump(cn_theme_strengths.get(t.id)),
                 'rank': Rank(
                     short=theme_ranks[t.id], mid=theme_ranks[t.id],
                     long=theme_ranks[t.id], composite=theme_ranks[t.id],
                 ).model_dump(),
-            } for t in themes
+            } for t in themes if t.id in display_strengths
         ],
     }
 
@@ -401,6 +463,11 @@ def compute_outputs(
         backfilled=backfilled,
     )
     meta_json: dict[str, Any] = meta.model_dump()
+    # schema 1.1 新增：统计 mapped / cn_only 主题数
+    meta_json['theme_kinds'] = {
+        'mapped': sum(1 for t in themes if t.primary_us),
+        'cn_only': sum(1 for t in themes if not t.primary_us),
+    }
 
     return themes_json, etfs_json, signals_json, meta_json
 

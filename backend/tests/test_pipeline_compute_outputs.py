@@ -8,6 +8,7 @@ import pandas as pd  # type: ignore[import-untyped]
 import pytest
 
 from src.config_loader import load_algo_config, load_themes
+from src.models import ThemeConfig
 from src.pipeline import PipelineMode, compute_outputs
 
 BJT = ZoneInfo('Asia/Shanghai')
@@ -163,3 +164,91 @@ def test_compute_outputs_cn_fallback_status(config):
     assert meta_json['providers']['cn']['status'] == 'fallback'
     assert meta_json['fallback_symbols'] == {'159755': 'akshare-sina'}
     assert meta_json['providers']['cn']['name'] == 'akshare-em'
+
+
+# ── Task 4 新增测试 ────────────────────────────────────────────────────────────
+
+import numpy as np
+from src.models import CnEtfConfig
+
+
+def _fake_ohlc(n: int = 200, base: float = 100.0, drift: float = 0.001) -> pd.DataFrame:
+    """生成带随机游走的合成 OHLC，用于 cn_only 主题测试。"""
+    rng = np.random.default_rng(42)
+    closes = base * np.cumprod(1 + rng.normal(drift, 0.01, n))
+    dates = pd.date_range('2025-01-01', periods=n, freq='B', tz='UTC')
+    return pd.DataFrame(
+        {'open': closes, 'high': closes * 1.001, 'low': closes * 0.999,
+         'close': closes, 'volume': 1.0, 'amount': 1e8},
+        index=dates,
+    ).reset_index().rename(columns={'index': 'date'})
+
+
+def test_compute_outputs_cn_only_theme_no_us_strength():
+    """纯 A 股主题：us_strength 应为 None，cn_strength 非空，strength == cn_strength。"""
+    config_dir = Path(__file__).parent.parent.parent / 'config'
+    algo = load_algo_config(config_dir / 'algo.yml')
+
+    themes = [
+        ThemeConfig(
+            id='mapped', name='M',
+            us_etfs=['SOXX'], primary_us='SOXX', tags=[],
+            cn_etfs=[CnEtfConfig(code='000001', name='X', tracking='T', match_type='exact')],
+        ),
+        ThemeConfig(
+            id='cn_x', name='X',
+            primary_cn='000002', tags=[],
+            cn_etfs=[CnEtfConfig(code='000002', name='Y', tracking='T2', match_type='exact')],
+        ),
+    ]
+    us_ohlc = {'SOXX': _fake_ohlc(base=100)}
+    cn_ohlc = {'000001': _fake_ohlc(base=10), '000002': _fake_ohlc(base=20)}
+    asof = datetime(2025, 6, 19, 16, 0, tzinfo=BJT)
+
+    themes_json, etfs_json, signals_json, meta_json = compute_outputs(
+        themes, us_ohlc, cn_ohlc, [], [], algo,
+        asof_bjt=asof, mode=PipelineMode.ARCHIVE,
+    )
+
+    by_id = {t['id']: t for t in themes_json['themes']}
+    mapped = by_id['mapped']
+    cn_only = by_id['cn_x']
+
+    # mapped 主题双端都有
+    assert mapped['us_strength'] is not None
+    assert mapped['cn_strength'] is not None
+
+    # cn_only 主题：us 无，cn 有，整体 strength == cn_strength
+    assert cn_only['us_strength'] is None
+    assert cn_only['cn_strength'] is not None
+    assert cn_only['strength'] == cn_only['cn_strength']
+
+
+def test_compute_outputs_schema_version_bumped():
+    """themes_json.schema_version 应升至 '1.1'，meta_json 应含 theme_kinds。"""
+    config_dir = Path(__file__).parent.parent.parent / 'config'
+    algo = load_algo_config(config_dir / 'algo.yml')
+
+    themes = [
+        ThemeConfig(
+            id='m', name='M',
+            us_etfs=['SOXX'], primary_us='SOXX', tags=[],
+            cn_etfs=[CnEtfConfig(code='000001', name='X', tracking='T', match_type='exact')],
+        ),
+        ThemeConfig(
+            id='cn_y', name='Y',
+            primary_cn='000002', tags=[],
+            cn_etfs=[CnEtfConfig(code='000002', name='Z', tracking='T2', match_type='exact')],
+        ),
+    ]
+    us_ohlc = {'SOXX': _fake_ohlc()}
+    cn_ohlc = {'000001': _fake_ohlc(), '000002': _fake_ohlc(base=50)}
+    asof = datetime(2025, 6, 19, 16, 0, tzinfo=BJT)
+
+    themes_json, _, _, meta_json = compute_outputs(
+        themes, us_ohlc, cn_ohlc, [], [], algo,
+        asof_bjt=asof, mode=PipelineMode.ARCHIVE,
+    )
+
+    assert themes_json['schema_version'] == '1.1'
+    assert meta_json['theme_kinds'] == {'mapped': 1, 'cn_only': 1}

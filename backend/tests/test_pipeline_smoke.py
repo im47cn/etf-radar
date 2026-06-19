@@ -44,7 +44,7 @@ def test_pipeline_full_mode_creates_files(
 
         themes = json.loads((latest / 'themes.json').read_text(encoding='utf-8'))
         assert len(themes['themes']) == 21  # 14 原始 + 7 A 股独立行业
-        assert themes['schema_version'] == '1.0'
+        assert themes['schema_version'] == '1.1'
 
         signals = json.loads((latest / 'signals.json').read_text(encoding='utf-8'))
         assert signals['summary']['themes_total'] == 21

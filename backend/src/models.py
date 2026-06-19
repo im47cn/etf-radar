@@ -1,6 +1,6 @@
 """Pydantic 模型 — 与 JSON Schema 1:1 对应"""
 from typing import Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 MatchType = Literal['exact', 'wide']
 SignalType = Literal['resonance', 'transmission', 'divergence']
@@ -18,11 +18,20 @@ class CnEtfConfig(BaseModel):
 class ThemeConfig(BaseModel):
     id: str
     name: str
-    us_etfs: list[str]
-    primary_us: str
+    us_etfs: list[str] = Field(default_factory=list)
+    primary_us: Optional[str] = None
+    primary_cn: Optional[str] = None
     tags: list[str] = Field(default_factory=list)
     note: str = ''
     cn_etfs: list[CnEtfConfig]
+
+    @model_validator(mode='after')
+    def _validate_primaries(self) -> 'ThemeConfig':
+        if not self.primary_us and not self.primary_cn:
+            raise ValueError(f"theme {self.id}: primary_us or primary_cn required")
+        if self.primary_us and self.primary_us not in self.us_etfs:
+            raise ValueError(f"theme {self.id}: primary_us must be in us_etfs")
+        return self
 
 
 class StrengthSubConfig(BaseModel):

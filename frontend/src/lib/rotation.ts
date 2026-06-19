@@ -31,14 +31,26 @@ export function classifyQuadrant(x: number, y: number): Quadrant {
   return 'fading';
 }
 
-export function themesToRotationPoints(themes: Theme[]): RotationPoint[] {
-  return themes.map(t => ({
-    themeId: t.id,
-    themeName: t.name,
-    x: t.strength.long,
-    y: t.strength.short,
-    size: t.strength.composite,
-    quadrant: classifyQuadrant(t.strength.long, t.strength.short),
-    tags: t.tags,
-  }));
+export type RotationMode = 'us' | 'cn';
+
+export function themesToRotationPoints(
+  themes: Theme[],
+  mode: RotationMode = 'us',
+): RotationPoint[] {
+  const pickField = mode === 'us' ? 'us_strength' : 'cn_strength';
+  return themes
+    .map(t => {
+      const s = t[pickField];
+      if (!s) return null;
+      return {
+        themeId: t.id,
+        themeName: t.name,
+        x: s.long,
+        y: s.short,
+        size: s.composite,
+        quadrant: classifyQuadrant(s.long, s.short),
+        tags: t.tags,
+      };
+    })
+    .filter((p): p is RotationPoint => p !== null);
 }

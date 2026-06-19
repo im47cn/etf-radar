@@ -48,10 +48,13 @@ const mkTheme = (id: string, long: number, short: number): Theme => ({
   name: id.toUpperCase(),
   us_etfs: [],
   primary_us: '',
+  primary_cn: null,
   tags: [],
   note: '',
   returns: { r_1d: 0, r_5d: 0, r_20d: 0, r_60d: 0, r_120d: 0, r_ytd: 0 },
   strength: { short, mid: 50, long, composite: 50 },
+  us_strength: { short, mid: 50, long, composite: 50 },
+  cn_strength: null,
   rank: { short: 1, mid: 1, long: 1, composite: 1 },
 });
 

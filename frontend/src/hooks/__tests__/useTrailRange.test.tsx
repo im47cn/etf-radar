@@ -14,10 +14,10 @@ describe('useTrailRange', () => {
     expect(result.current.range).toEqual({ startOffset: -30, endOffset: 0 });
   });
 
-  it('clamps startOffset to lower bound -60', () => {
+  it('clamps startOffset to lower bound -30', () => {
     const { result } = renderHook(() => useTrailRange());
     act(() => result.current.setRange({ startOffset: -100, endOffset: 0 }));
-    expect(result.current.range.startOffset).toBe(-60);
+    expect(result.current.range.startOffset).toBe(-30);
   });
 
   it('clamps endOffset to upper bound 0', () => {

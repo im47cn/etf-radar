@@ -1,5 +1,5 @@
 import { Slider } from '@base-ui/react/slider';
-import type { TrailRange } from '@/hooks/useTrailRange';
+import { MAX_TRAIL_DAYS, type TrailRange } from '@/hooks/useTrailRange';
 
 interface Props {
   range: TrailRange;
@@ -10,7 +10,7 @@ interface Props {
 export const TrailRangeSlider = ({ range, onChange, maxDays }: Props) => {
   // 当 maxDays===0 (无数据) 时, min 必须为 0 才能让 Base-UI 接受 disabled slider; 否则
   // min=-1 与 max=0 会让 Thumb 视觉偏移. 同时所有派生值 (startValue/endValue) 被钳进 [min,max].
-  const min = maxDays === 0 ? 0 : -Math.min(60, Math.max(1, maxDays));
+  const min = maxDays === 0 ? 0 : -Math.min(MAX_TRAIL_DAYS, Math.max(1, maxDays));
   const max = 0;
   // Clamp display value into [min, max] so the Thumb never escapes the track
   // when range.startOffset < min (e.g., default -10 still safe with only 10 prefetched frames).

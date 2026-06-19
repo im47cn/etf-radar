@@ -11,8 +11,11 @@ export interface UseTrailRangeReturn {
   reset: () => void;
 }
 
-const DEFAULT_RANGE: TrailRange = { startOffset: -10, endOffset: 0 };
-const MIN_START = -60;
+export const MAX_TRAIL_DAYS = 30;
+export const DEFAULT_TRAIL_DAYS = 10;
+
+const DEFAULT_RANGE: TrailRange = { startOffset: -DEFAULT_TRAIL_DAYS, endOffset: 0 };
+const MIN_START = -MAX_TRAIL_DAYS;
 const MAX_END = 0;
 
 export function useTrailRange(): UseTrailRangeReturn {

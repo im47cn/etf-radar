@@ -40,11 +40,14 @@ export const ThemeSchema = z.object({
   id: z.string(),
   name: z.string(),
   us_etfs: z.array(z.string()),
-  primary_us: z.string(),
+  primary_us: z.string().nullable(),
+  primary_cn: z.string().nullable(),
   tags: z.array(z.string()),
   note: z.string(),
   returns: ReturnsSchema,
   strength: StrengthSchema,
+  us_strength: StrengthSchema.nullable(),
+  cn_strength: StrengthSchema.nullable(),
   rank: RankSchema,
 });
 export type Theme = z.infer<typeof ThemeSchema>;

@@ -15,6 +15,7 @@ describe('ThemesFileSchema', () => {
           name: '存储芯片',
           us_etfs: ['DRAM', 'SOXX'],
           primary_us: 'DRAM',
+          primary_cn: null,
           tags: ['DRAM'],
           note: '',
           returns: {
@@ -22,6 +23,8 @@ describe('ThemesFileSchema', () => {
             r_120d: null, r_ytd: null,
           },
           strength: { short: 77, mid: 99, long: 99, composite: 95 },
+          us_strength: null,
+          cn_strength: null,
           rank: { short: 1, mid: 1, long: 1, composite: 1 },
         },
       ],
@@ -145,10 +148,12 @@ describe('EtfsFileSchema', () => {
 // ----- 数值约束 (立场 B): 数值越界一律拒绝 -----
 
 const validTheme = {
-  id: 'x', name: 'X', us_etfs: ['A'], primary_us: 'A',
+  id: 'x', name: 'X', us_etfs: ['A'], primary_us: 'A', primary_cn: null,
   tags: [], note: '',
   returns: { r_1d: null, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
   strength: { short: 0, mid: 0, long: 0, composite: 0 },
+  us_strength: null,
+  cn_strength: null,
   rank: { short: 1, mid: 1, long: 1, composite: 1 },
 };
 const validThemesFile = {

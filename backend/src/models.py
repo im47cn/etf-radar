@@ -90,12 +90,15 @@ class Rank(BaseModel):
 class ThemeOutput(BaseModel):
     id: str
     name: str
-    us_etfs: list[str]
-    primary_us: str
+    us_etfs: list[str] = Field(default_factory=list)
+    primary_us: Optional[str] = None   # 纯 A 股主题无美股锚点
+    primary_cn: Optional[str] = None   # 纯 A 股主题的主力 ETF 代码
     tags: list[str]
     note: str
     returns: Returns
     strength: Strength
+    us_strength: Optional[Strength] = None  # 仅美股端强度
+    cn_strength: Optional[Strength] = None  # 仅 A 股端强度
     rank: Rank
 
 
@@ -129,7 +132,7 @@ class ThemeSignal(BaseModel):
 class TopTheme(BaseModel):
     id: str
     name: str
-    primary_us: str
+    primary_us: Optional[str] = None   # 纯 A 股主题登顶时可为 None
     composite_strength: int
 
 

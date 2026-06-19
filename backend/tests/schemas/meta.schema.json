@@ -22,7 +22,7 @@
           "type": "object",
           "required": ["status", "name"],
           "properties": {
-            "status": { "enum": ["ok", "degraded", "stale"] },
+            "status": { "enum": ["ok", "fallback", "degraded", "stale"] },
             "name":   { "type": "string" }
           }
         },
@@ -30,13 +30,17 @@
           "type": "object",
           "required": ["status", "name"],
           "properties": {
-            "status": { "enum": ["ok", "degraded", "stale"] },
+            "status": { "enum": ["ok", "fallback", "degraded", "stale"] },
             "name":   { "type": "string" }
           }
         }
       }
     },
     "failed_symbols": { "type": "array", "items": { "type": "string" } },
+    "fallback_symbols": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
     "stale_minutes": { "type": "integer", "minimum": 0 },
     "calendar": {
       "type": "object",

@@ -9,9 +9,9 @@ export const pickStrength = (t: Theme, mv: MarketView): Strength | null =>
   mv === 'us' ? t.us_strength : t.cn_strength;
 
 export const themeMatchesView = (t: Theme, mv: MarketView): boolean => {
-  if (mv === 'us') return !isCnOnly(t);
-  if (mv === 'cn-only') return isCnOnly(t);
-  return true; // cn-all
+  if (mv === 'us')      return !isCnOnly(t) && t.us_strength != null;
+  if (mv === 'cn-only') return  isCnOnly(t) && t.cn_strength != null;
+  return t.cn_strength != null; // cn-all
 };
 
 export const marketViewToRotationMode = (mv: MarketView): RotationMode =>

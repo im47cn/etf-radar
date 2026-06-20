@@ -9,10 +9,13 @@ const themeAI: Theme = {
   name: 'AI 主题',
   us_etfs: ['SOXX', 'SMH'],
   primary_us: 'SOXX',
+  primary_cn: null,
   tags: ['tech'],
   note: '',
   returns: { r_1d: 0.01, r_5d: 0.05, r_20d: 0.32, r_60d: 0.1, r_120d: 0.2, r_ytd: 0.4 },
   strength: { short: 90, mid: 85, long: 80, composite: 97 },
+  us_strength: { short: 90, mid: 85, long: 80, composite: 97 },
+  cn_strength: null,
   rank: { short: 1, mid: 2, long: 3, composite: 1 },
 };
 

@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 import type { DimName } from '@/types/themes';
 import type { SignalType } from '@/types/signals';
+import type { MarketView } from '@/lib/marketView';
 
 export type SignalFilter = 'all' | SignalType;
 
@@ -9,7 +10,7 @@ export interface UIState {
   dimension: DimName;
   signalFilter: SignalFilter;
   searchQuery: string;
-  onlyCnOnly: boolean;
+  marketView: MarketView;
 }
 
 export type UIStateAction =
@@ -17,7 +18,7 @@ export type UIStateAction =
   | { type: 'SET_DIM'; dim: DimName }
   | { type: 'SET_SIGNAL_FILTER'; v: SignalFilter }
   | { type: 'SET_SEARCH'; q: string }
-  | { type: 'SET_ONLY_CN_ONLY'; v: boolean };
+  | { type: 'SET_MARKET_VIEW'; v: MarketView };
 
 export const UIContext = createContext<{
   state: UIState;

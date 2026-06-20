@@ -25,13 +25,14 @@ vi.mock('recharts', async () => {
         {children}
       </g>
     ),
-    Cell: ({ fill, fillOpacity, stroke, strokeWidth }: { fill?: string; fillOpacity?: number; stroke?: string; strokeWidth?: number }) => (
+    Cell: ({ fill, fillOpacity, stroke, strokeWidth, r }: { fill?: string; fillOpacity?: number; stroke?: string; strokeWidth?: number; r?: number }) => (
       <g
         data-testid="cell"
         data-fill={fill}
         fill-opacity={fillOpacity}
         data-stroke={stroke}
         data-stroke-width={strokeWidth}
+        data-r={r}
       />
     ),
     XAxis: () => null,
@@ -152,6 +153,24 @@ describe('RotationScatterWithTrails (rewritten)', () => {
     ).find(c => c.getAttribute('data-stroke') === '#000');
     expect(focusedCell).toBeDefined();
     expect(focusedCell!.getAttribute('data-stroke-width')).toBe('2');
+  });
+
+  it('main bubbles receive explicit r prop (>=8px) to ensure touch hit-area', () => {
+    const { container } = wrap(
+      <RotationScatterWithTrails
+        themes={themes}
+        trailFrames={[]}
+        focusedId={null}
+        onFocus={() => {}}
+      />,
+    );
+    const mainScatter = container.querySelector('[data-name="current"]')!;
+    const cells = Array.from(mainScatter.querySelectorAll('[data-testid="cell"]'));
+    cells.forEach(c => {
+      const r = Number(c.getAttribute('data-r'));
+      // 桌面端最小 8px (computeBubbleSize(0) === 8); 不允许走 Recharts 默认 ~4.5px
+      expect(r).toBeGreaterThanOrEqual(8);
+    });
   });
 
   it('renders without crashing when trailFrames is empty', () => {

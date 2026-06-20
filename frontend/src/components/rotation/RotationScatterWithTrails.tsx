@@ -81,13 +81,14 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
   const labelFontSize = isMobile ? 9 : 11;
   const effectiveMode: RotationMode = mode ?? 'us';
 
+  // 移动端把最小半径放大到 14px (~28px 直径), 满足 WCAG/iOS HIG ≥24px 触摸目标
   const points = useMemo(
     () =>
       themesToRotationPoints(themes, effectiveMode).map(p => ({
         ...p,
-        _bubbleSize: computeBubbleSize(p.size),
+        _bubbleSize: Math.max(computeBubbleSize(p.size), isMobile ? 14 : 8),
       })),
-    [themes, effectiveMode],
+    [themes, effectiveMode, isMobile],
   );
 
   // 当帧 mid 三分位; 用于将非聚焦气泡按 mid 周期强度映射到 LOW/MID/HIGH 三档线宽
@@ -142,6 +143,7 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
               fillOpacity={isOtherFocused ? 0.2 : 1}
               stroke={stroke}
               strokeWidth={strokeWidth}
+              r={p._bubbleSize}
             />
           );
         })}

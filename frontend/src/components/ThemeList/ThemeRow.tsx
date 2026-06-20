@@ -1,5 +1,9 @@
+// FIXME(market-view-global): returns 列暂仍取 theme.returns (主 ETF 数据);
+// cn-* 视角下严格应为 primary_cn 的 returns, 需新增 returns_us/returns_cn 字段, 超出本 PR 范围.
 import type { Theme, DimName } from '@/types/themes';
 import type { ThemeSignal, SignalType } from '@/types/signals';
+import type { MarketView } from '@/lib/marketView';
+import { isCnOnly, pickStrength } from '@/lib/marketView';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { formatPct, formatStrength } from '@/lib/format';
@@ -10,6 +14,7 @@ interface Props {
   theme: Theme;
   signal: ThemeSignal | undefined;
   dimension: DimName;
+  marketView: MarketView;
   selected: boolean;
   onClick: () => void;
 }
@@ -26,10 +31,11 @@ const signalVariant = (s: SignalType | null | undefined): 'default' | 'secondary
   return 'default';
 };
 
-export const ThemeRow = ({ index, theme, signal, dimension, selected, onClick }: Props) => {
-  const strength = theme.strength[dimension];
+export const ThemeRow = ({ index, theme, signal, dimension, marketView, selected, onClick }: Props) => {
+  const strength = pickStrength(theme, marketView)?.[dimension];
   const r1d = theme.returns.r_1d;
   const r5d = theme.returns.r_5d;
+  const primaryEtf = marketView === 'us' ? theme.primary_us : theme.primary_cn;
   return (
     <tr
       onClick={onClick}
@@ -51,7 +57,7 @@ export const ThemeRow = ({ index, theme, signal, dimension, selected, onClick }:
       <td className="px-2 py-2">
         <div className="font-medium">
           {theme.name}
-          {theme.primary_us === null && (
+          {isCnOnly(theme) && (
             <span className="ml-2 inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 text-slate-600 border border-slate-200">
               A股专属
             </span>
@@ -59,10 +65,10 @@ export const ThemeRow = ({ index, theme, signal, dimension, selected, onClick }:
         </div>
         <div className="text-xs text-gray-500">{theme.us_etfs.join(' / ')}</div>
       </td>
-      <td className="px-2 py-2 text-xs">{theme.primary_us}</td>
+      <td className="px-2 py-2 text-xs">{primaryEtf ?? '—'}</td>
       <td className="px-2 py-2 w-32">
         <div className="flex items-center gap-2">
-          <Progress value={strength} className="h-2 flex-1" />
+          <Progress value={strength ?? 0} className="h-2 flex-1" />
           <span className="text-sm font-medium w-8 text-right">{formatStrength(strength)}</span>
         </div>
       </td>

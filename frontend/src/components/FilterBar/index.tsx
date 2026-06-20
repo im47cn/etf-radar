@@ -2,13 +2,13 @@ import { DimensionTabs } from './DimensionTabs';
 import { SignalTabs } from './SignalTabs';
 import { SearchInput } from './SearchInput';
 import { Legend } from './Legend';
-import { OnlyCnOnlyToggle } from './OnlyCnOnlyToggle';
+import { MarketViewSelector } from './MarketViewSelector';
 
 export const FilterBar = () => (
   <div className="bg-white border-b p-3 flex flex-wrap items-center gap-4">
     <DimensionTabs />
     <SignalTabs />
-    <OnlyCnOnlyToggle />
+    <MarketViewSelector />
     <Legend />
     <div className="ml-auto">
       <SearchInput />

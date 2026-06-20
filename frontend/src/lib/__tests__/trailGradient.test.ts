@@ -162,4 +162,30 @@ describe('buildTrails mode-aware', () => {
     const m = buildTrails(frames, 'us');
     expect(m.get('ai')).toBeUndefined();
   });
+
+  it('us-only 主题在 mode=cn 时跳过 (对称镜像)', () => {
+    const usOnly: Theme = {
+      ...mapped(50, 50), primary_cn: null,
+      us_strength: mkS(70, 70), cn_strength: null,
+    };
+    const frames = [f('d1', [usOnly])];
+    const m = buildTrails(frames, 'cn');
+    expect(m.get('ai')).toBeUndefined();
+  });
+
+  it('多帧部分跳过: 3 帧含 1 帧 cn-only, mode=us → trail 长度=2', () => {
+    const cnOnlyFrame: Theme = {
+      ...mapped(50, 50), primary_us: null, us_strength: null,
+      cn_strength: mkS(70, 70),
+    };
+    const frames = [
+      f('d1', [mapped(50, 50)]),     // us_strength 有值 → 计入
+      f('d2', [cnOnlyFrame]),         // us_strength=null & cn_strength!=null → 跳过
+      f('d3', [mapped(55, 55)]),     // us_strength 有值 → 计入
+    ];
+    const m = buildTrails(frames, 'us');
+    const pts = m.get('ai');
+    expect(pts).toHaveLength(2);
+    expect(pts?.map(p => p.date)).toEqual(['d1', 'd3']);
+  });
 });

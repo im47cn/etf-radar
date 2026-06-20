@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactElement } from 'react';
 import { RotationTrailsOverlay } from '../RotationTrailsOverlay';
+import { UIStateProvider } from '@/providers/UIStateProvider';
 import type { Theme } from '@/types/themes';
 import type { SnapshotFrame } from '@/types/snapshots';
 
@@ -50,7 +51,12 @@ const snapshots: SnapshotFrame[] = Array.from({ length: 20 }, (_, i) => ({
   themes,
 }));
 
-const wrap = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
+const wrap = (ui: ReactElement) =>
+  render(
+    <MemoryRouter>
+      <UIStateProvider>{ui}</UIStateProvider>
+    </MemoryRouter>,
+  );
 
 describe('RotationTrailsOverlay', () => {
   it('renders TrailRangeSlider + scatter + no panel by default', () => {

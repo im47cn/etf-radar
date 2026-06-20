@@ -94,15 +94,20 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
     [trailFrames, effectiveMode],
   );
 
+  // 性能优化(方案 C):仅在 focused 时渲染 trail,避免 N 主题 × M 帧 = N*M Cell
+  // 全量重渲染。默认无聚焦状态完全不渲染 trail,与 FocusedThemePanel 范式一致。
   const trailLineSeries = useMemo<TrailLineSeries[]>(() => {
-    const out: TrailLineSeries[] = [];
-    for (const [themeId, pts] of trails) {
-      const isFocused = focusedId === themeId;
-      const isOtherFocused = focusedId !== null && !isFocused;
-      if (isOtherFocused || pts.length < 2) continue;
-      out.push({ themeId, points: pts, isFocused });
-    }
-    return out;
+    if (focusedId === null) return [];
+    const pts = trails.get(focusedId);
+    if (!pts || pts.length < 2) return [];
+    return [{ themeId: focusedId, points: pts, isFocused: true }];
+  }, [trails, focusedId]);
+
+  const focusedTrail = useMemo(() => {
+    if (focusedId === null) return null;
+    const pts = trails.get(focusedId);
+    if (!pts || pts.length === 0) return null;
+    return { themeId: focusedId, pts };
   }, [trails, focusedId]);
 
   return (
@@ -133,15 +138,12 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
         <LabelList dataKey="themeName" position="top" style={{ fontSize: labelFontSize }} />
       </Scatter>
 
-      {Array.from(trails.entries()).map(([themeId, pts]) => {
-        const isFocused = focusedId === themeId;
-        const isOtherFocused = focusedId !== null && !isFocused;
-        if (isOtherFocused || pts.length === 0) return null;
+      {focusedTrail && (() => {
+        const { themeId, pts } = focusedTrail;
         const total = pts.length;
-        // Recharts uses `opacity` field in data as SVG path opacity, overriding
-        // Cell's fillOpacity. Override to 0.9 for the focused trail so the
-        // blue→red gradient stays visible.
-        const data = isFocused ? pts.map(pt => ({ ...pt, opacity: 0.9 })) : pts;
+        // Recharts 将 data 中的 `opacity` 当作 SVG path opacity,覆盖 Cell 的 fillOpacity。
+        // 焦点 trail 统一覆为 0.9,蓝→红渐变才不被淡出。
+        const data = pts.map(pt => ({ ...pt, opacity: 0.9 }));
         return (
           <Scatter
             key={`trail-${themeId}`}
@@ -149,22 +151,21 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
             data={data}
             isAnimationActive={false}
           >
-            {pts.map((pt, i) => {
+            {pts.map((_pt, i) => {
               const t = total <= 1 ? 0 : i / (total - 1);
-              const color = isFocused ? interpolateColor(t) : '#94a3b8';
               return (
                 <Cell
                   key={`${themeId}-${i}`}
-                  fill={color}
-                  fillOpacity={isFocused ? 0.9 : pt.opacity}
-                  r={isFocused ? 5 : 4}
+                  fill={interpolateColor(t)}
+                  fillOpacity={0.9}
+                  r={5}
                   pointerEvents="none"
                 />
               );
             })}
           </Scatter>
         );
-      })}
+      })()}
     </RotationChartFrame>
   );
 };

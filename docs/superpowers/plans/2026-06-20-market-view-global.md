@@ -1141,3 +1141,40 @@ Plan 已完成,保存到 `docs/superpowers/plans/2026-06-20-market-view-global.m
 两种执行方式:
 1. **Subagent-Driven (推荐)** — 每 task 派 fresh implementer + 双阶段评审,适合本 plan (8 task 相互独立性高)。
 2. **Inline Execution** — 同会话批量执行,需要在每 checkpoint review。
+
+---
+
+## Execution Log
+
+执行日期: 2026-06-20
+执行方式: Subagent-Driven Development
+分支: feat/cn-sector-themes
+
+| Task | Commit SHA | 说明 |
+|---|---|---|
+| 1 | 14cbd8d | MarketView 基础设施 (marketView.ts + uiStateContext) |
+| 2 | 20a786d | UIStateProvider 接 mv URL 参数 |
+| 3 | 33a5b90 | MarketViewSelector 替换 OnlyCnOnlyToggle |
+| 4 | 53f8ed1 | trailGradient buildTrails 接 mode 参数 + 删 ModeToggle |
+| 5 | a405515 | RotationPage/Overlay 从 Context 派生 mode |
+| 6a | b805ea4 | ThemeList mode-aware 过滤+排序+头部 (Blocker fix) |
+| 6b | e9ca083 | fix: 闭合 cn_strength invariant + Progress null state |
+| 7 | 8985fa1 | isCnOnly helper + ThemeList 集成测试 |
+| 8 | (本 commit) | 自动化验收 + Execution Log |
+
+### 自动化验收结果 (Step 8.1-8.4)
+
+- **前端测试**: 207/207 PASS, 0 FAIL, 0 SKIPPED (vitest)
+- **TypeScript**: 仅预存 `tsconfig.json(8,5): TS5101 baseUrl deprecated` 警告,无新增 error
+- **ESLint**: `npm run lint` (= `eslint .`) 输出 `ESLint: No issues found`;直接调 `node_modules/.bin/eslint src --max-warnings=0` 也 exit 0 无输出。注:`npx eslint src ...` 形式因 npx wrapper 解析问题输出诡异 `Lint: 2 errors, 0 warnings`,非真实 lint 错误 (项目规范命令为 `npm run lint`)
+- **后端测试**: 135/135 PASSED, 0 FAILED (uv run --all-extras pytest, 120.79s)
+
+### 手工验收 (Step 8.5)
+
+由人类用户在 dev server 上完成,checklist 见 plan 原文 Step 8.5。
+
+### Deferred / 已知遗留
+
+- ThemeRow returns 列在 cn-* 视角仍取 `theme.returns` (主 ETF 数据),需要后端拆分 `returns_us` / `returns_cn` 才能彻底修复 → 跟踪在 ThemeRow.tsx 顶部 FIXME。
+- `us_etfs.join(' / ')` 子标题在 cn-* 视角仍显示美股 ETF 代码列表 (Task 6 reviewer concern,YAGNI 范围外)。
+- `pickPrimary` helper 未抽取 (只 1 处用,YAGNI)。

@@ -4,11 +4,12 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import numpy as np
 import pandas as pd  # type: ignore[import-untyped]
 import pytest
 
 from src.config_loader import load_algo_config, load_themes
-from src.models import ThemeConfig
+from src.models import CnEtfConfig, ThemeConfig
 from src.pipeline import PipelineMode, compute_outputs
 
 BJT = ZoneInfo('Asia/Shanghai')
@@ -167,9 +168,6 @@ def test_compute_outputs_cn_fallback_status(config):
 
 
 # ── Task 4 新增测试 ────────────────────────────────────────────────────────────
-
-import numpy as np
-from src.models import CnEtfConfig
 
 
 def _fake_ohlc(n: int = 200, base: float = 100.0, drift: float = 0.001) -> pd.DataFrame:

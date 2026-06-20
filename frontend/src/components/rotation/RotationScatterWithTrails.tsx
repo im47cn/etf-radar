@@ -89,7 +89,10 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
     [themes, effectiveMode],
   );
 
-  const trails = useMemo(() => buildTrails(trailFrames), [trailFrames]);
+  const trails = useMemo(
+    () => buildTrails(trailFrames, effectiveMode),
+    [trailFrames, effectiveMode],
+  );
 
   const trailLineSeries = useMemo<TrailLineSeries[]>(() => {
     const out: TrailLineSeries[] = [];

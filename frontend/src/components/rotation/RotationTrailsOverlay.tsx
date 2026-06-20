@@ -1,21 +1,23 @@
 import { useMemo, useRef } from 'react';
 import { useTrailRange } from '@/hooks/useTrailRange';
 import { useFocusedTheme } from '@/hooks/useFocusedTheme';
+import { useUIState } from '@/providers/uiStateContext';
+import { marketViewToRotationMode } from '@/lib/marketView';
 import { TrailRangeSlider } from './TrailRangeSlider';
 import { RotationScatterWithTrails } from './RotationScatterWithTrails';
 import { FocusedThemePanel } from './FocusedThemePanel';
 import type { Theme } from '@/types/themes';
 import type { SnapshotFrame } from '@/types/snapshots';
-import type { RotationMode } from '@/lib/rotation';
 
 interface Props {
   themes: Theme[];
   snapshots: SnapshotFrame[];
-  mode?: RotationMode;
 }
 
-export const RotationTrailsOverlay = ({ themes, snapshots, mode }: Props) => {
+export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
   const { range, setRange } = useTrailRange();
+  const { state } = useUIState();
+  const mode = marketViewToRotationMode(state.marketView);
 
   const validThemeIds = useMemo(() => new Set(themes.map(t => t.id)), [themes]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +54,7 @@ export const RotationTrailsOverlay = ({ themes, snapshots, mode }: Props) => {
         trailFrames={trailFrames}
         focusedId={focusedId}
         onFocus={toggle}
-        mode={mode ?? 'us'}
+        mode={mode}
       />
       <FocusedThemePanel theme={focusedTheme} onClose={() => setFocused(null)} />
     </div>

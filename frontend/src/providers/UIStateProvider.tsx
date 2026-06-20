@@ -27,7 +27,7 @@ function parseSig(s: string | null): SignalFilter {
 }
 
 function parseMv(s: string | null): MarketView {
-  if (s === 'cn-all' || s === 'cn-only' || s === 'us') return s;
+  if (s === 'cn-all' || s === 'us') return s;
   return DEFAULT_MV;
 }
 

@@ -78,13 +78,6 @@ describe('ThemeList × MarketView 集成', () => {
     expect(screen.getByText('白酒')).toBeInTheDocument();
   });
 
-  it('mv=cn-only 只展示 cn-only,头部 "A 股专属主题"', () => {
-    renderAt('/?mv=cn-only');
-    expect(screen.getByText('A 股专属主题')).toBeInTheDocument();
-    expect(screen.queryByText('AI')).not.toBeInTheDocument();
-    expect(screen.getByText('白酒')).toBeInTheDocument();
-  });
-
   it('mv=cn-all 排序按 cn_strength,mapped(50) 落后于 cn-only(60)', () => {
     renderAt('/?mv=cn-all');
     const rows = screen.getAllByRole('row');

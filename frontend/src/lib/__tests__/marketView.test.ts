@@ -37,8 +37,8 @@ describe('pickStrength', () => {
     expect(pickStrength(mapped, 'us')).toEqual(mkStrength(60)));
   it('cn-all view picks cn_strength', () =>
     expect(pickStrength(mapped, 'cn-all')).toEqual(mkStrength(40)));
-  it('cn-only view picks cn_strength', () =>
-    expect(pickStrength(cnOnly, 'cn-only')).toEqual(mkStrength(70)));
+  it('cn-all view on cn-only theme picks cn_strength', () =>
+    expect(pickStrength(cnOnly, 'cn-all')).toEqual(mkStrength(70)));
   it('us view on cn-only returns null', () =>
     expect(pickStrength(cnOnly, 'us')).toBeNull());
 });
@@ -52,17 +52,13 @@ describe('themeMatchesView', () => {
     expect(themeMatchesView(mapped, 'cn-all')).toBe(true);
     expect(themeMatchesView(cnOnly, 'cn-all')).toBe(true);
   });
-  it('cn-only keeps only cn-only', () => {
-    expect(themeMatchesView(mapped, 'cn-only')).toBe(false);
-    expect(themeMatchesView(cnOnly, 'cn-only')).toBe(true);
-  });
   it('cn-all excludes us-only theme with null cn_strength', () => {
     const usOnly: Theme = { ...mapped, id: 'us_only', cn_strength: null };
     expect(themeMatchesView(usOnly, 'cn-all')).toBe(false);
   });
-  it('cn-only excludes cn-only theme with null cn_strength', () => {
+  it('cn-all excludes cn-only theme with null cn_strength', () => {
     const cnOnlyNoStrength: Theme = { ...cnOnly, id: 'cn_no_str', cn_strength: null };
-    expect(themeMatchesView(cnOnlyNoStrength, 'cn-only')).toBe(false);
+    expect(themeMatchesView(cnOnlyNoStrength, 'cn-all')).toBe(false);
   });
   it('us excludes mapped theme with null us_strength', () => {
     const mappedNoUs: Theme = { ...mapped, id: 'm_no_us', us_strength: null };
@@ -73,5 +69,4 @@ describe('themeMatchesView', () => {
 describe('marketViewToRotationMode', () => {
   it('us → us', () => expect(marketViewToRotationMode('us')).toBe('us'));
   it('cn-all → cn', () => expect(marketViewToRotationMode('cn-all')).toBe('cn'));
-  it('cn-only → cn', () => expect(marketViewToRotationMode('cn-only')).toBe('cn'));
 });

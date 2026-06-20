@@ -19,8 +19,8 @@ export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
   const { state } = useUIState();
   const mode = marketViewToRotationMode(state.marketView);
 
-  // 按当前 marketView 收窄散点(cn-all/cn-only/us 分别只显示对应主题集合),
-  // 防止 cn-all↔cn-only 切换时散点图不变. trailFrames 内沿用原 themes 即可,
+  // 按当前 marketView 收窄散点(us/cn-all 分别只显示对应主题集合),
+  // 防止 us↔cn-all 切换时散点图不变. trailFrames 内沿用原 themes 即可,
   // 因为 buildTrails 已经按 us/cn 字段过滤掉不可显示的帧.
   const viewThemes = useMemo(
     () => themes.filter(t => themeMatchesView(t, state.marketView)),

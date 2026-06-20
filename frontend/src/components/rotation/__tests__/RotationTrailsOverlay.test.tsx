@@ -119,11 +119,6 @@ describe('RotationTrailsOverlay', () => {
       wrap(<RotationTrailsOverlay themes={mixed} snapshots={mixedSnapshots} />, '/?mv=cn-all');
       expect(bubbleIds()).toEqual(['bubble-mapped', 'bubble-cn-only']);
     });
-
-    it('mv=cn-only shows only cn-only themes in scatter', () => {
-      wrap(<RotationTrailsOverlay themes={mixed} snapshots={mixedSnapshots} />, '/?mv=cn-only');
-      expect(bubbleIds()).toEqual(['bubble-cn-only']);
-    });
   });
 
   it('ESC closes the focused panel', async () => {

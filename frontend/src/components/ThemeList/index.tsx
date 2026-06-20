@@ -14,9 +14,8 @@ const DIM_LABELS = {
 } as const;
 
 const VIEW_TITLES = {
-  us:        '美股主题强弱',
-  'cn-all':  'A 股主题强弱',
-  'cn-only': 'A 股专属主题',
+  us:       '美股主题强弱',
+  'cn-all': 'A 股主题强弱',
 } as const;
 
 export const ThemeList = () => {

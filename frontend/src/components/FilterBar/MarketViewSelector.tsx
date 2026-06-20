@@ -3,8 +3,7 @@ import type { MarketView } from '@/lib/marketView';
 
 const OPTIONS: { v: MarketView; label: string }[] = [
   { v: 'us', label: '美股' },
-  { v: 'cn-all', label: 'A股全部' },
-  { v: 'cn-only', label: 'A股专属' },
+  { v: 'cn-all', label: 'A股' },
 ];
 
 export const MarketViewSelector = () => {

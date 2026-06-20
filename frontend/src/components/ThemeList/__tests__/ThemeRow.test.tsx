@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ThemeRow } from '../ThemeRow';
 import type { Theme } from '@/types/themes';
+import type { MarketView } from '@/lib/marketView';
 
 const mkTheme = (overrides: Partial<Theme> = {}): Theme => ({
   id: 'm',
@@ -19,14 +20,19 @@ const mkTheme = (overrides: Partial<Theme> = {}): Theme => ({
   ...overrides,
 });
 
-const renderRow = (theme: Theme) =>
+interface RenderRowOpts {
+  theme: Theme;
+  marketView?: MarketView;
+}
+
+const renderRow = ({ theme, marketView = 'us' }: RenderRowOpts) =>
   render(
     <ThemeRow
       index={0}
       theme={theme}
       signal={undefined}
       dimension="composite"
-      marketView="us"
+      marketView={marketView}
       selected={false}
       onClick={() => {}}
     />,
@@ -41,13 +47,13 @@ const renderRow = (theme: Theme) =>
 
 describe('ThemeRow A 股专属 pill', () => {
   it('does NOT render pill for mapped theme', () => {
-    renderRow(mkTheme());
+    renderRow({ theme: mkTheme() });
     expect(screen.queryByText('A股专属')).toBeNull();
   });
 
   it('renders pill for cn-only theme', () => {
-    renderRow(
-      mkTheme({
+    renderRow({
+      theme: mkTheme({
         id: 'cn_x',
         name: '白酒',
         us_etfs: [],
@@ -55,7 +61,24 @@ describe('ThemeRow A 股专属 pill', () => {
         primary_cn: '512690',
         us_strength: null,
       }),
-    );
+    });
     expect(screen.getByText('A股专属')).toBeInTheDocument();
+  });
+});
+
+describe('ThemeRow market-view-aware primary ETF', () => {
+  it('cn-all view shows primary_cn for cn-only theme', () => {
+    renderRow({
+      theme: mkTheme({
+        id: 'cn_csi300',
+        name: '沪深300',
+        us_etfs: [],
+        primary_us: null,
+        primary_cn: '510300',
+        us_strength: null,
+      }),
+      marketView: 'cn-all',
+    });
+    expect(screen.getByText('510300')).toBeInTheDocument();
   });
 });

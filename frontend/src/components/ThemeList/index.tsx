@@ -31,7 +31,9 @@ export const ThemeList = () => {
     return themes.themes.filter((t) => themeMatchesView(t, marketView));
   }, [themes, marketView]);
 
-  // 2) 按 mode-aware strength[dim] 排序; pickStrength=null 排到最后 (理论上 inView 已过滤掉)
+  // 2) 按 mode-aware strength[dim] 排序
+  // invariant: themeMatchesView 已确保 pickStrength(t, mv) != null;
+  // ?? -1 仅作 strength[dim] 字段缺失的兜底防御.
   const sorted = useMemo(() => {
     return [...inView].sort((a, b) => {
       const sa = pickStrength(a, marketView)?.[dimension] ?? -1;

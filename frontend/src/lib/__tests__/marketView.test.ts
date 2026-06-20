@@ -56,6 +56,18 @@ describe('themeMatchesView', () => {
     expect(themeMatchesView(mapped, 'cn-only')).toBe(false);
     expect(themeMatchesView(cnOnly, 'cn-only')).toBe(true);
   });
+  it('cn-all excludes us-only theme with null cn_strength', () => {
+    const usOnly: Theme = { ...mapped, id: 'us_only', cn_strength: null };
+    expect(themeMatchesView(usOnly, 'cn-all')).toBe(false);
+  });
+  it('cn-only excludes cn-only theme with null cn_strength', () => {
+    const cnOnlyNoStrength: Theme = { ...cnOnly, id: 'cn_no_str', cn_strength: null };
+    expect(themeMatchesView(cnOnlyNoStrength, 'cn-only')).toBe(false);
+  });
+  it('us excludes mapped theme with null us_strength', () => {
+    const mappedNoUs: Theme = { ...mapped, id: 'm_no_us', us_strength: null };
+    expect(themeMatchesView(mappedNoUs, 'us')).toBe(false);
+  });
 });
 
 describe('marketViewToRotationMode', () => {

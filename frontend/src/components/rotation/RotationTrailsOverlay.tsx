@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useTrailRange } from '@/hooks/useTrailRange';
 import { useFocusedTheme } from '@/hooks/useFocusedTheme';
 import { useUIState } from '@/providers/uiStateContext';
-import { marketViewToRotationMode } from '@/lib/marketView';
+import { marketViewToRotationMode, themeMatchesView } from '@/lib/marketView';
 import { TrailRangeSlider } from './TrailRangeSlider';
 import { RotationScatterWithTrails } from './RotationScatterWithTrails';
 import { FocusedThemePanel } from './FocusedThemePanel';
@@ -19,7 +19,15 @@ export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
   const { state } = useUIState();
   const mode = marketViewToRotationMode(state.marketView);
 
-  const validThemeIds = useMemo(() => new Set(themes.map(t => t.id)), [themes]);
+  // 按当前 marketView 收窄散点(cn-all/cn-only/us 分别只显示对应主题集合),
+  // 防止 cn-all↔cn-only 切换时散点图不变. trailFrames 内沿用原 themes 即可,
+  // 因为 buildTrails 已经按 us/cn 字段过滤掉不可显示的帧.
+  const viewThemes = useMemo(
+    () => themes.filter(t => themeMatchesView(t, state.marketView)),
+    [themes, state.marketView],
+  );
+
+  const validThemeIds = useMemo(() => new Set(viewThemes.map(t => t.id)), [viewThemes]);
   const containerRef = useRef<HTMLDivElement>(null);
   const { focusedId, toggle, setFocused } = useFocusedTheme({
     validThemeIds,
@@ -40,7 +48,7 @@ export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
     return base;
   }, [snapshots, range, themes]);
 
-  const focusedTheme = focusedId ? themes.find(t => t.id === focusedId) ?? null : null;
+  const focusedTheme = focusedId ? viewThemes.find(t => t.id === focusedId) ?? null : null;
 
   return (
     <div ref={containerRef}>
@@ -50,7 +58,7 @@ export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
         maxDays={snapshots.length}
       />
       <RotationScatterWithTrails
-        themes={themes}
+        themes={viewThemes}
         trailFrames={trailFrames}
         focusedId={focusedId}
         onFocus={toggle}

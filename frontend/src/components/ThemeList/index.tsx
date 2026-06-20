@@ -3,6 +3,7 @@ import { useDataContext } from '@/providers/dataContext';
 import { useUIState } from '@/providers/uiStateContext';
 import { useThemeSignalsMap } from '@/hooks/useData';
 import { filterThemes } from '@/lib/filters';
+import { pickStrength, themeMatchesView } from '@/lib/marketView';
 import { ThemeRow } from './ThemeRow';
 
 const DIM_LABELS = {
@@ -12,34 +13,45 @@ const DIM_LABELS = {
   composite: '综合',
 } as const;
 
+const VIEW_TITLES = {
+  us:        '美股主题强弱',
+  'cn-all':  'A 股主题强弱',
+  'cn-only': 'A 股专属主题',
+} as const;
+
 export const ThemeList = () => {
   const { themes } = useDataContext();
   const { state, dispatch } = useUIState();
   const sigMap = useThemeSignalsMap();
+  const { dimension, marketView } = state;
 
-  const sorted = useMemo(() => {
+  // 1) 过滤到当前视角的主题集
+  const inView = useMemo(() => {
     if (!themes) return [];
-    return [...themes.themes].sort(
-      (a, b) => b.strength[state.dimension] - a.strength[state.dimension],
-    );
-  }, [themes, state.dimension]);
+    return themes.themes.filter((t) => themeMatchesView(t, marketView));
+  }, [themes, marketView]);
 
-  const visible = useMemo(
-    () => (state.onlyCnOnly ? sorted.filter((t) => t.primary_us === null) : sorted),
-    [sorted, state.onlyCnOnly],
-  );
+  // 2) 按 mode-aware strength[dim] 排序; pickStrength=null 排到最后 (理论上 inView 已过滤掉)
+  const sorted = useMemo(() => {
+    return [...inView].sort((a, b) => {
+      const sa = pickStrength(a, marketView)?.[dimension] ?? -1;
+      const sb = pickStrength(b, marketView)?.[dimension] ?? -1;
+      return sb - sa;
+    });
+  }, [inView, marketView, dimension]);
 
+  // 3) signal + search 过滤
   const filtered = useMemo(
-    () => filterThemes(visible, sigMap, state.signalFilter, state.searchQuery),
-    [visible, sigMap, state.signalFilter, state.searchQuery],
+    () => filterThemes(sorted, sigMap, state.signalFilter, state.searchQuery),
+    [sorted, sigMap, state.signalFilter, state.searchQuery],
   );
 
   return (
     <div className="bg-white border rounded">
       <div className="p-3 border-b">
-        <div className="font-medium">美股主题强弱</div>
+        <div className="font-medium">{VIEW_TITLES[marketView]}</div>
         <div className="text-xs text-gray-500">
-          按{DIM_LABELS[state.dimension]}强弱排序 · {filtered.length}/{sorted.length} 个主题
+          按{DIM_LABELS[dimension]}强弱排序 · {filtered.length}/{inView.length} 个主题
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -62,7 +74,8 @@ export const ThemeList = () => {
                 index={i}
                 theme={t}
                 signal={sigMap.get(t.id)}
-                dimension={state.dimension}
+                dimension={dimension}
+                marketView={marketView}
                 selected={state.selectedThemeId === t.id}
                 onClick={() => dispatch({ type: 'SELECT_THEME', id: t.id })}
               />

@@ -26,6 +26,7 @@ const renderRow = (theme: Theme) =>
       theme={theme}
       signal={undefined}
       dimension="composite"
+      marketView="us"
       selected={false}
       onClick={() => {}}
     />,

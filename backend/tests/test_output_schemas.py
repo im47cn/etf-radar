@@ -7,6 +7,7 @@ from pathlib import Path
 
 import jsonschema  # type: ignore[import-untyped]
 import pytest
+from jsonschema import Draft7Validator, validate  # type: ignore[import-untyped]
 
 ROOT = Path(__file__).parent.parent.parent  # repo root
 SCHEMAS = Path(__file__).parent / 'schemas'
@@ -31,7 +32,6 @@ def test_latest_matches_schema(name: str) -> None:
 
 def test_all_4_schemas_loadable() -> None:
     """4 个 schema 文件本身必须是合法 JSON Schema (即使 data 没生成也跑这个)."""
-    from jsonschema import Draft7Validator
     for name in ['themes', 'etfs', 'signals', 'meta']:
         schema = json.loads((SCHEMAS / f'{name}.schema.json').read_text(encoding='utf-8'))
         Draft7Validator.check_schema(schema)
@@ -40,7 +40,6 @@ def test_all_4_schemas_loadable() -> None:
 # ---------------------------------------------------------------------------
 # themes.schema.json v1.1 专项测试
 # ---------------------------------------------------------------------------
-from jsonschema import validate, Draft7Validator
 
 
 def _schema():

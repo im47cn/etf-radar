@@ -6,6 +6,7 @@ export interface RotationPoint {
   x: number;
   y: number;
   size: number;
+  mid: number;
   quadrant: Quadrant;
   tags: string[];
 }

@@ -3,6 +3,7 @@ import { Scatter, Cell, LabelList, Customized, useXAxisScale, useYAxisScale } fr
 import { themesToRotationPoints, QUADRANT_COLORS, computeBubbleSize } from '@/lib/rotation';
 import type { RotationMode } from '@/lib/rotation';
 import { buildTrails, type TrailPoint } from '@/lib/trailGradient';
+import { computeMidTertiles, midToStrokeWidth, MID_STROKE_COLOR } from '@/lib/midStroke';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { RotationChartFrame } from './RotationChartFrame';
 import type { Theme } from '@/types/themes';
@@ -89,6 +90,12 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
     [themes, effectiveMode],
   );
 
+  // 当帧 mid 三分位; 用于将非聚焦气泡按 mid 周期强度映射到 LOW/MID/HIGH 三档线宽
+  const midTertiles = useMemo(
+    () => computeMidTertiles(points.map(p => p.mid)),
+    [points],
+  );
+
   const trails = useMemo(
     () => buildTrails(trailFrames, effectiveMode),
     [trailFrames, effectiveMode],
@@ -125,13 +132,16 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
         {points.map(p => {
           const isFocused = focusedId === p.themeId;
           const isOtherFocused = focusedId !== null && !isFocused;
+          // 聚焦态保留黑色描边(优先级最高); 非聚焦态以 MID_STROKE_COLOR 表达 mid 三档强度
+          const stroke = isFocused ? '#000' : MID_STROKE_COLOR;
+          const strokeWidth = isFocused ? 2 : midToStrokeWidth(p.mid, midTertiles);
           return (
             <Cell
               key={p.themeId}
               fill={QUADRANT_COLORS[p.quadrant]}
               fillOpacity={isOtherFocused ? 0.2 : 1}
-              stroke={isFocused ? '#000' : 'none'}
-              strokeWidth={isFocused ? 2 : 0}
+              stroke={stroke}
+              strokeWidth={strokeWidth}
             />
           );
         })}

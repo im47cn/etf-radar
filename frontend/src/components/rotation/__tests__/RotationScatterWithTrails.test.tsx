@@ -25,12 +25,13 @@ vi.mock('recharts', async () => {
         {children}
       </g>
     ),
-    Cell: ({ fill, fillOpacity, stroke }: { fill?: string; fillOpacity?: number; stroke?: string }) => (
+    Cell: ({ fill, fillOpacity, stroke, strokeWidth }: { fill?: string; fillOpacity?: number; stroke?: string; strokeWidth?: number }) => (
       <g
         data-testid="cell"
         data-fill={fill}
         fill-opacity={fillOpacity}
         data-stroke={stroke}
+        data-stroke-width={strokeWidth}
       />
     ),
     XAxis: () => null,
@@ -110,6 +111,47 @@ describe('RotationScatterWithTrails (rewritten)', () => {
     const mainScatter = container.querySelector('[data-name="current"]')!;
     const dimmed = mainScatter.querySelectorAll('[fill-opacity="0.2"]');
     expect(dimmed.length).toBe(1);
+  });
+
+  it('non-focused cells use mid-stroke color with discrete stroke-width tiers', () => {
+    // 构造 3 个 mid 值差异明显的 theme: 10/50/90 → 三分位法 q33=50, q67=90 → LOW/MID/HIGH
+    const t = (id: string, mid: number): Theme => ({
+      ...mkTheme(id, 50, 50),
+      us_strength: { short: 50, mid, long: 50, composite: 50 },
+      strength: { short: 50, mid, long: 50, composite: 50 },
+    });
+    const { container } = wrap(
+      <RotationScatterWithTrails
+        themes={[t('a', 10), t('b', 50), t('c', 90)]}
+        trailFrames={[]}
+        focusedId={null}
+        onFocus={() => {}}
+      />,
+    );
+    const mainScatter = container.querySelector('[data-name="current"]')!;
+    const cells = Array.from(mainScatter.querySelectorAll('[data-testid="cell"]'));
+    // 全部非聚焦 → 全部走 MID_STROKE_COLOR (#374151)
+    cells.forEach(c => expect(c.getAttribute('data-stroke')).toBe('#374151'));
+    const widths = cells.map(c => Number(c.getAttribute('data-stroke-width')));
+    // 三档线宽 LOW/MID/HIGH 应同时存在
+    expect(new Set(widths)).toEqual(new Set([1, 2, 3]));
+  });
+
+  it('focused cell uses black stroke (overrides mid stroke)', () => {
+    const { container } = wrap(
+      <RotationScatterWithTrails
+        themes={themes}
+        trailFrames={[]}
+        focusedId="ai"
+        onFocus={() => {}}
+      />,
+    );
+    const mainScatter = container.querySelector('[data-name="current"]')!;
+    const focusedCell = Array.from(
+      mainScatter.querySelectorAll('[data-testid="cell"]'),
+    ).find(c => c.getAttribute('data-stroke') === '#000');
+    expect(focusedCell).toBeDefined();
+    expect(focusedCell!.getAttribute('data-stroke-width')).toBe('2');
   });
 
   it('renders without crashing when trailFrames is empty', () => {

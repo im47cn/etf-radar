@@ -48,6 +48,7 @@ export function themesToRotationPoints(
         x: s.long,
         y: s.short,
         size: s.composite,
+        mid: s.mid,
         quadrant: classifyQuadrant(s.long, s.short),
         tags: t.tags,
       };

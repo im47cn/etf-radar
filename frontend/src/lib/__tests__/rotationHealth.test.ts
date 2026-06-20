@@ -8,6 +8,7 @@ const mkPoint = (x: number, y: number, id = 't'): RotationPoint => ({
   x,
   y,
   size: 50,
+  mid: 50,
   quadrant:
     x >= 50 && y >= 50 ? 'leading'
     : x < 50 && y >= 50 ? 'rising'

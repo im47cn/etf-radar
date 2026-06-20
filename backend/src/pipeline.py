@@ -242,11 +242,13 @@ def compute_outputs(
     cn_theme_primary: dict[str, str] = {}
     cn_theme_returns: dict[str, Returns] = {}
     for t in themes:
-        code = t.primary_cn or (t.cn_etfs[0].code if t.cn_etfs else None)
-        if code is None:
+        # 改名避免与上方 line 230 `for code in cn_returns` 重定义冲突;
+        # 同时需要 Optional 形态走 None 短路.
+        primary_code: str | None = t.primary_cn or (t.cn_etfs[0].code if t.cn_etfs else None)
+        if primary_code is None:
             continue
-        cn_theme_primary[t.id] = code
-        cn_theme_returns[t.id] = cn_returns.get(code, Returns())
+        cn_theme_primary[t.id] = primary_code
+        cn_theme_returns[t.id] = cn_returns.get(primary_code, Returns())
 
     cn_theme_dim_rets: dict[DimName, list[float]] = {
         dim: [

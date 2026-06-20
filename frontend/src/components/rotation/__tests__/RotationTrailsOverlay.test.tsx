@@ -53,6 +53,7 @@ const mkTheme = (id: string, long: number, short: number, opts: MkThemeOpts = {}
     name: id.toUpperCase(),
     us_etfs: primary_us ? ['ETF1'] : [],
     primary_us,
+    primary_cn: primary_us ? null : 'CN-ETF1',
     tags: [],
     note: '',
     returns: { r_1d: 0, r_5d: 0, r_20d: 0, r_60d: 0, r_120d: 0, r_ytd: 0 },

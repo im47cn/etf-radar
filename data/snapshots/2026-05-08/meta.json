@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "last_full_refresh": {
     "us": "2026-05-08T16:00:00+08:00",
     "cn": "2026-05-08T16:00:00+08:00"
@@ -11,17 +11,12 @@
       "name": "yfinance"
     },
     "cn": {
-      "status": "degraded",
-      "name": "akshare"
+      "status": "ok",
+      "name": "akshare-em"
     }
   },
-  "failed_symbols": [
-    "159755",
-    "159992",
-    "512480",
-    "512660",
-    "588000"
-  ],
+  "failed_symbols": [],
+  "fallback_symbols": {},
   "stale_minutes": 0,
   "calendar": {
     "us_trading_today": true,
@@ -29,5 +24,9 @@
     "us_session_active": false,
     "cn_session_active": false
   },
-  "backfilled": true
+  "backfilled": true,
+  "theme_kinds": {
+    "mapped": 14,
+    "cn_only": 7
+  }
 }

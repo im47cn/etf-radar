@@ -2,10 +2,10 @@
   "schema_version": "1.0",
   "generated_at": "2026-06-12T16:00:00+08:00",
   "summary": {
-    "themes_total": 14,
-    "etfs_total": 23,
-    "resonance_count": 5,
-    "transmission_count": 2,
+    "themes_total": 21,
+    "etfs_total": 30,
+    "resonance_count": 3,
+    "transmission_count": 4,
     "divergence_count": 1,
     "top_theme": {
       "id": "storage_dram",
@@ -17,14 +17,14 @@
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "512760",
       "votes": {
         "short": "transmission",
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股存储芯片中长期走强"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "semiconductor",
@@ -73,7 +73,7 @@
     {
       "theme_id": "new_energy_vehicle",
       "signal": "transmission",
-      "trigger_cn_etf": "159755",
+      "trigger_cn_etf": "515030",
       "votes": {
         "short": "resonance",
         "mid": "transmission",
@@ -83,25 +83,25 @@
     },
     {
       "theme_id": "robotics",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "562500",
       "votes": {
         "short": null,
-        "mid": null,
-        "long": null
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股机器人动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "gold_metals",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "512400",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "transmission"
       },
-      "description": "美股黄金/有色动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "china_internet",
@@ -138,14 +138,14 @@
     },
     {
       "theme_id": "biotech",
-      "signal": "transmission",
-      "trigger_cn_etf": "512290",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
+        "short": null,
+        "mid": null,
         "long": null
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股生物科技/创新药动量观察中"
     },
     {
       "theme_id": "aerospace_defense",
@@ -160,14 +160,91 @@
     },
     {
       "theme_id": "rare_earth",
-      "signal": "resonance",
-      "trigger_cn_etf": "516780",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "resonance",
-        "mid": "divergence",
-        "long": "resonance"
+        "short": null,
+        "mid": null,
+        "long": null
       },
       "description": "美股稀土/新材料动量观察中"
+    },
+    {
+      "theme_id": "cn_liquor",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer_staples",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "主要消费（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_medical_devices",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "医疗器械（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_home_appliances",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "家电（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_real_estate",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "房地产（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_media",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "传媒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_dividend",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "红利（A 股本土赛道）"
     }
   ],
   "pair_signals": [
@@ -188,11 +265,11 @@
       "cn_code": "512760",
       "mapping_score": 14,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       }
     },
     {
@@ -296,11 +373,11 @@
       "cn_code": "159755",
       "mapping_score": 28,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "resonance",
         "mid": "transmission",
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -308,11 +385,11 @@
       "cn_code": "562500",
       "mapping_score": 29,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": null,
-        "mid": null,
-        "long": null
+        "mid": "transmission",
+        "long": "transmission"
       }
     },
     {
@@ -332,11 +409,11 @@
       "cn_code": "512400",
       "mapping_score": 43,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "divergence"
+        "long": "transmission"
       }
     },
     {
@@ -366,11 +443,11 @@
     {
       "theme_id": "financial",
       "cn_code": "512000",
-      "mapping_score": null,
+      "mapping_score": 7,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": null
       }
@@ -390,25 +467,25 @@
     {
       "theme_id": "solar_clean_energy",
       "cn_code": "515790",
-      "mapping_score": null,
+      "mapping_score": 7,
       "confidence": 90,
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
-        "long": "transmission"
+        "mid": "divergence",
+        "long": "resonance"
       }
     },
     {
       "theme_id": "biotech",
       "cn_code": "512290",
-      "mapping_score": null,
+      "mapping_score": 9,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
-        "long": null
+        "long": "divergence"
       }
     },
     {
@@ -452,11 +529,11 @@
       "cn_code": "516780",
       "mapping_score": 50,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
         "short": "resonance",
         "mid": "divergence",
-        "long": "resonance"
+        "long": "transmission"
       }
     }
   ]

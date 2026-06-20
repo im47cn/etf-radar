@@ -2,10 +2,10 @@
   "schema_version": "1.0",
   "generated_at": "2026-05-22T16:00:00+08:00",
   "summary": {
-    "themes_total": 14,
-    "etfs_total": 23,
-    "resonance_count": 7,
-    "transmission_count": 1,
+    "themes_total": 21,
+    "etfs_total": 30,
+    "resonance_count": 5,
+    "transmission_count": 4,
     "divergence_count": 0,
     "top_theme": {
       "id": "semiconductor",
@@ -17,19 +17,19 @@
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "512760",
       "votes": {
         "short": "transmission",
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股存储芯片中长期走强"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "semiconductor",
       "signal": "resonance",
-      "trigger_cn_etf": "159995",
+      "trigger_cn_etf": "512480",
       "votes": {
         "short": "resonance",
         "mid": "resonance",
@@ -61,12 +61,12 @@
     },
     {
       "theme_id": "energy_oil",
-      "signal": "resonance",
-      "trigger_cn_etf": "162411",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
         "short": null,
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": null,
+        "long": null
       },
       "description": "美股原油/能源动量观察中"
     },
@@ -77,31 +77,31 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "transmission"
+        "long": null
       },
       "description": "美股新能源车/锂电中长期走强"
     },
     {
       "theme_id": "robotics",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "562500",
       "votes": {
         "short": null,
-        "mid": null,
-        "long": null
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股机器人动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "gold_metals",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "512400",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "transmission"
       },
-      "description": "美股黄金/有色动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "china_internet",
@@ -168,25 +168,90 @@
         "long": "resonance"
       },
       "description": "美股稀土/新材料动量观察中"
+    },
+    {
+      "theme_id": "cn_liquor",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer_staples",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "主要消费（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_medical_devices",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "医疗器械（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_home_appliances",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "家电（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_real_estate",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "房地产（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_media",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "传媒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_dividend",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "红利（A 股本土赛道）"
     }
   ],
   "pair_signals": [
     {
       "theme_id": "storage_dram",
       "cn_code": "512480",
-      "mapping_score": null,
-      "confidence": 60,
-      "signal": "transmission",
-      "votes": {
-        "short": null,
-        "mid": "transmission",
-        "long": "transmission"
-      }
-    },
-    {
-      "theme_id": "storage_dram",
-      "cn_code": "512760",
-      "mapping_score": 30,
+      "mapping_score": 28,
       "confidence": 60,
       "signal": "resonance",
       "votes": {
@@ -196,15 +261,27 @@
       }
     },
     {
-      "theme_id": "semiconductor",
-      "cn_code": "512480",
-      "mapping_score": null,
-      "confidence": 90,
+      "theme_id": "storage_dram",
+      "cn_code": "512760",
+      "mapping_score": 30,
+      "confidence": 60,
       "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": "transmission",
         "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "semiconductor",
+      "cn_code": "512480",
+      "mapping_score": 31,
+      "confidence": 90,
+      "signal": "resonance",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -246,13 +323,13 @@
     {
       "theme_id": "ai_compute",
       "cn_code": "588000",
-      "mapping_score": null,
+      "mapping_score": 23,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "transmission"
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -260,10 +337,10 @@
       "cn_code": "162411",
       "mapping_score": 40,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
         "short": null,
-        "mid": "resonance",
+        "mid": null,
         "long": "resonance"
       }
     },
@@ -275,7 +352,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
+        "mid": "resonance",
         "long": null
       }
     },
@@ -288,19 +365,19 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "transmission"
+        "long": null
       }
     },
     {
       "theme_id": "new_energy_vehicle",
       "cn_code": "159755",
-      "mapping_score": null,
+      "mapping_score": 31,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "transmission"
+        "short": "resonance",
+        "mid": "resonance",
+        "long": null
       }
     },
     {
@@ -308,11 +385,11 @@
       "cn_code": "562500",
       "mapping_score": 46,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": null,
         "mid": "transmission",
-        "long": null
+        "long": "transmission"
       }
     },
     {
@@ -332,11 +409,11 @@
       "cn_code": "512400",
       "mapping_score": 48,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "transmission"
       }
     },
     {
@@ -414,19 +491,19 @@
     {
       "theme_id": "biotech",
       "cn_code": "159992",
-      "mapping_score": null,
+      "mapping_score": 4,
       "confidence": 90,
       "signal": null,
       "votes": {
         "short": null,
         "mid": null,
-        "long": null
+        "long": "divergence"
       }
     },
     {
       "theme_id": "aerospace_defense",
       "cn_code": "512660",
-      "mapping_score": null,
+      "mapping_score": 44,
       "confidence": 90,
       "signal": null,
       "votes": {

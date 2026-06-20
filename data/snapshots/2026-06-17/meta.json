@@ -1,10 +1,10 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "last_full_refresh": {
-    "us": "2026-06-17T11:05:38.962205+08:00",
-    "cn": "2026-06-17T11:05:38.962205+08:00"
+    "us": "2026-06-17T16:00:00+08:00",
+    "cn": "2026-06-17T16:00:00+08:00"
   },
-  "last_intraday_refresh": "2026-06-17T11:05:38.962205+08:00",
+  "last_intraday_refresh": null,
   "providers": {
     "us": {
       "status": "ok",
@@ -12,16 +12,21 @@
     },
     "cn": {
       "status": "ok",
-      "name": "akshare"
+      "name": "akshare-em"
     }
   },
   "failed_symbols": [],
+  "fallback_symbols": {},
   "stale_minutes": 0,
   "calendar": {
     "us_trading_today": true,
     "cn_trading_today": true,
     "us_session_active": false,
-    "cn_session_active": true
+    "cn_session_active": false
   },
-  "backfilled": false
+  "backfilled": true,
+  "theme_kinds": {
+    "mapped": 14,
+    "cn_only": 7
+  }
 }

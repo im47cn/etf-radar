@@ -2,8 +2,8 @@
   "schema_version": "1.0",
   "generated_at": "2026-01-02T16:00:00+08:00",
   "summary": {
-    "themes_total": 14,
-    "etfs_total": 23,
+    "themes_total": 21,
+    "etfs_total": 30,
     "resonance_count": 4,
     "transmission_count": 3,
     "divergence_count": 0,
@@ -29,7 +29,7 @@
     {
       "theme_id": "semiconductor",
       "signal": "transmission",
-      "trigger_cn_etf": "159995",
+      "trigger_cn_etf": "512480",
       "votes": {
         "short": "transmission",
         "mid": "transmission",
@@ -139,7 +139,7 @@
     {
       "theme_id": "biotech",
       "signal": "transmission",
-      "trigger_cn_etf": "512290",
+      "trigger_cn_etf": "159992",
       "votes": {
         "short": null,
         "mid": "transmission",
@@ -168,6 +168,83 @@
         "long": "resonance"
       },
       "description": "美股稀土/新材料中长期走强"
+    },
+    {
+      "theme_id": "cn_liquor",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer_staples",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "主要消费（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_medical_devices",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "医疗器械（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_home_appliances",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "家电（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_real_estate",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "房地产（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_media",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "传媒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_dividend",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "红利（A 股本土赛道）"
     }
   ],
   "pair_signals": [
@@ -180,7 +257,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": null
+        "long": "transmission"
       }
     },
     {
@@ -198,13 +275,13 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "512480",
-      "mapping_score": null,
+      "mapping_score": 23,
       "confidence": 90,
       "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": "resonance"
       }
     },
     {
@@ -234,7 +311,7 @@
     {
       "theme_id": "ai_compute",
       "cn_code": "515980",
-      "mapping_score": 16,
+      "mapping_score": 6,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -246,13 +323,13 @@
     {
       "theme_id": "ai_compute",
       "cn_code": "588000",
-      "mapping_score": null,
+      "mapping_score": 26,
       "confidence": 60,
       "signal": null,
       "votes": {
         "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -270,13 +347,13 @@
     {
       "theme_id": "energy_oil",
       "cn_code": "515220",
-      "mapping_score": 3,
+      "mapping_score": 2,
       "confidence": 60,
       "signal": null,
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "divergence"
       }
     },
     {
@@ -294,13 +371,13 @@
     {
       "theme_id": "new_energy_vehicle",
       "cn_code": "159755",
-      "mapping_score": null,
+      "mapping_score": 29,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "transmission"
+        "short": null,
+        "mid": "resonance",
+        "long": null
       }
     },
     {
@@ -310,9 +387,9 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
-        "mid": null,
-        "long": "resonance"
+        "short": null,
+        "mid": "resonance",
+        "long": null
       }
     },
     {
@@ -332,10 +409,10 @@
       "cn_code": "512400",
       "mapping_score": 2,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": null,
         "long": null
       }
     },
@@ -348,7 +425,7 @@
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -372,7 +449,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": null
+        "long": "divergence"
       }
     },
     {
@@ -384,7 +461,7 @@
       "votes": {
         "short": null,
         "mid": "resonance",
-        "long": null
+        "long": "divergence"
       }
     },
     {
@@ -414,7 +491,7 @@
     {
       "theme_id": "biotech",
       "cn_code": "159992",
-      "mapping_score": null,
+      "mapping_score": 27,
       "confidence": 90,
       "signal": "transmission",
       "votes": {
@@ -426,12 +503,12 @@
     {
       "theme_id": "aerospace_defense",
       "cn_code": "512660",
-      "mapping_score": null,
+      "mapping_score": 21,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
+        "short": null,
+        "mid": "resonance",
         "long": null
       }
     },

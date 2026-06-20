@@ -1,4 +1,5 @@
 import type { Theme } from '@/types/themes';
+import { isCnOnly } from '@/lib/marketView';
 
 export const MappingPanel = ({
   theme,
@@ -7,7 +8,7 @@ export const MappingPanel = ({
   theme: Theme;
   confidence: number | null;
 }) => {
-  if (theme.primary_us === null) {
+  if (isCnOnly(theme)) {
     return (
       <div className="rounded border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
         本主题为 A 股本土赛道，无对应美股主题，故不展示映射相关字段。

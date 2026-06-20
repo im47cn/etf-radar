@@ -46,8 +46,11 @@ export const ThemeSchema = z.object({
   note: z.string(),
   returns: ReturnsSchema,
   strength: StrengthSchema,
-  us_strength: StrengthSchema.nullable(),
-  cn_strength: StrengthSchema.nullable(),
+  // 历史 snapshot (schema 1.0) 无 us_strength/cn_strength 键 (字段缺省 = undefined).
+  // .nullish() 同时接受 null + undefined; transform 统一为 null, 保持下游
+  // 类型签名仍是 Strength | null, 已有代码无须改动.
+  us_strength: StrengthSchema.nullish().transform((v) => v ?? null),
+  cn_strength: StrengthSchema.nullish().transform((v) => v ?? null),
   rank: RankSchema,
 });
 export type Theme = z.infer<typeof ThemeSchema>;

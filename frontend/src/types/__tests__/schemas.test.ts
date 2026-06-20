@@ -34,6 +34,34 @@ describe('ThemesFileSchema', () => {
     expect(parsed.themes[0].id).toBe('storage_dram');
   });
 
+  it('accepts legacy schema 1.0 themes missing us_strength/cn_strength keys (snapshot back-compat)', () => {
+    // 历史 snapshots 没有 us_strength / cn_strength 字段(键缺失,不是 null).
+    // 修复前 .nullable() 拒绝此形态,导致 useSnapshotsTimeline 拉到的所有
+    // 历史 frame 解析失败 -> trail 不显示. 锁死兼容.
+    const legacy = {
+      schema_version: '1.0',
+      generated_at: '2026-06-15T20:00:00+08:00',
+      themes: [
+        {
+          id: 'storage_dram',
+          name: '存储芯片',
+          us_etfs: ['DRAM'],
+          primary_us: 'DRAM',
+          primary_cn: null,
+          tags: [],
+          note: '',
+          returns: { r_1d: 0.01, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
+          strength: { short: 50, mid: 50, long: 50, composite: 50 },
+          // intentionally no us_strength / cn_strength keys
+          rank: { short: 1, mid: 1, long: 1, composite: 1 },
+        },
+      ],
+    };
+    const parsed = ThemesFileSchema.parse(legacy);
+    expect(parsed.themes[0].us_strength).toBeNull();
+    expect(parsed.themes[0].cn_strength).toBeNull();
+  });
+
   it('rejects missing required field', () => {
     const invalid = {
       schema_version: '1.0',

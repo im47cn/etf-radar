@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { DimNameSchema, type DimName } from '@/types/themes';
 import { SignalTypeSchema } from '@/types/signals';
+import type { MarketView } from '@/lib/marketView';
 import {
   UIContext,
   type SignalFilter,
@@ -11,6 +12,7 @@ import {
 
 const DEFAULT_DIM: DimName = 'short';
 const DEFAULT_SIG: SignalFilter = 'all';
+const DEFAULT_MV: MarketView = 'us';
 
 // 容错解析: 非法值统一回退默认, 避免外部输入污染 state.
 function parseDim(s: string | null): DimName {
@@ -24,15 +26,20 @@ function parseSig(s: string | null): SignalFilter {
   return r.success ? r.data : DEFAULT_SIG;
 }
 
+function parseMv(s: string | null): MarketView {
+  if (s === 'cn-all' || s === 'cn-only' || s === 'us') return s;
+  return DEFAULT_MV;
+}
+
 /**
- * URL 作为 selectedTheme / dim / sig 的单一事实来源,
+ * URL 作为 selectedTheme / dim / sig / mv 的单一事实来源,
  * 通过 react-router 的 useSearchParams 读写 (在 HashRouter 下作用于
  * `#/<path>?<query>` 的 query 段, 与路由 path 分离 -- 避免与 HashRouter
  * 抢占 `window.location.hash`).
  *
  * searchQuery 仅内存态: 输入高频且属个人查询, 不进 URL 历史.
  *
- * 默认值 (`dim=short`, `sig=all`) 不写入 URL, 保持 URL 简洁.
+ * 默认值 (`dim=short`, `sig=all`, `mv=us`) 不写入 URL, 保持 URL 简洁.
  * 写入一律用 `{ replace: true }`, 避免点击 bubble / 切 tab 污染浏览器历史.
  */
 export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -40,7 +47,6 @@ export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [params, setParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const [onlyCnOnly, setOnlyCnOnly] = useState(false);
 
   // 关键: useSearchParams 每次 render 都返回新的 URLSearchParams 引用.
   // 直接以 params 作为 useMemo deps 等同于每 render 重算, memo 完全失效.
@@ -48,6 +54,7 @@ export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const themeParam = params.get('theme');
   const dimParam = params.get('dim');
   const sigParam = params.get('sig');
+  const mvParam = params.get('mv');
 
   const state = useMemo<UIState>(
     () => ({
@@ -55,19 +62,15 @@ export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
       dimension: parseDim(dimParam),
       signalFilter: parseSig(sigParam),
       searchQuery,
-      onlyCnOnly,
+      marketView: parseMv(mvParam),
     }),
-    [themeParam, dimParam, sigParam, searchQuery, onlyCnOnly],
+    [themeParam, dimParam, sigParam, mvParam, searchQuery],
   );
 
   const dispatch = useCallback<React.Dispatch<UIStateAction>>(
     (a) => {
       if (a.type === 'SET_SEARCH') {
         setSearchQuery(a.q);
-        return;
-      }
-      if (a.type === 'SET_ONLY_CN_ONLY') {
-        setOnlyCnOnly(a.v);
         return;
       }
       setParams(
@@ -85,6 +88,10 @@ export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({
             case 'SET_SIGNAL_FILTER':
               if (a.v === DEFAULT_SIG) next.delete('sig');
               else next.set('sig', a.v);
+              break;
+            case 'SET_MARKET_VIEW':
+              if (a.v === DEFAULT_MV) next.delete('mv');
+              else next.set('mv', a.v);
               break;
           }
           return next;

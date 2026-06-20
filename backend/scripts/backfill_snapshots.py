@@ -33,6 +33,7 @@ from src.output.snapshots_index import write_snapshots_index
 from src.output.writer import atomic_write_json
 from src.pipeline import PipelineMode, compute_outputs
 from src.providers.akshare_em_provider import AkshareEmProvider
+from src.providers.akshare_sina_provider import AkshareSinaProvider
 from src.providers.base import EmptyDataError, EtfDataProvider, ProviderError
 from src.providers.yfinance_provider import YfinanceProvider
 
@@ -40,17 +41,25 @@ log = logging.getLogger(__name__)
 
 
 def _collect_history(
-    symbols: list[str], provider: EtfDataProvider, lookback_days: int,
+    symbols: list[str], providers: list[EtfDataProvider], lookback_days: int,
     label: str, jitter_range: tuple[float, float] = (0.0, 0.0),
 ) -> tuple[dict[str, pd.DataFrame], list[str]]:
-    """一次性拉所有 symbol 的历史, jitter 仅在 CN provider 用 (yfinance 不需要)。"""
+    """一次性拉所有 symbol 的历史, 逐 symbol 走 provider chain (与 pipeline 一致):
+    首选失败立即试下一个, 第一个成功即停; 全部失败才进 failed.
+    jitter 仅在 CN 需要 (yfinance 不需要 sleep)。
+    """
     cache: dict[str, pd.DataFrame] = {}
     failed: list[str] = []
     for sym in tqdm(symbols, desc=f'fetch {label}', unit='sym'):
-        try:
-            cache[sym] = provider.fetch_ohlc(sym, lookback_days=lookback_days)
-        except (ProviderError, EmptyDataError) as e:
-            log.warning(f'{label} fetch failed {sym}: {e}')
+        success = False
+        for provider in providers:
+            try:
+                cache[sym] = provider.fetch_ohlc(sym, lookback_days=lookback_days)
+                success = True
+                break
+            except (ProviderError, EmptyDataError) as e:
+                log.warning(f'{label} fetch failed [{provider.name}] {sym}: {e}')
+        if not success:
             failed.append(sym)
         if jitter_range[1] > 0:
             time.sleep(random.uniform(*jitter_range))
@@ -100,11 +109,12 @@ def backfill(
 
     log.info(f'fetching {len(us_symbols)} US symbols')
     us_cache, us_failed_init = _collect_history(
-        us_symbols, YfinanceProvider(), lookback_days, 'US',
+        us_symbols, [YfinanceProvider()], lookback_days, 'US',
     )
-    log.info(f'fetching {len(cn_codes)} CN codes (with jitter)')
+    log.info(f'fetching {len(cn_codes)} CN codes (with jitter, em -> sina chain)')
     cn_cache, cn_failed_init = _collect_history(
-        cn_codes, AkshareEmProvider(), lookback_days, 'CN', jitter_range=(0.3, 1.0),
+        cn_codes, [AkshareEmProvider(), AkshareSinaProvider()],
+        lookback_days, 'CN', jitter_range=(0.3, 1.0),
     )
     log.info(f'US fetched={len(us_cache)}, failed={len(us_failed_init)}')
     log.info(f'CN fetched={len(cn_cache)}, failed={len(cn_failed_init)}')

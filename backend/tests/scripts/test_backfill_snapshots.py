@@ -23,15 +23,19 @@ def _make_history(n: int = 300, base: float = 100.0) -> pd.DataFrame:
     })
 
 
+@patch('scripts.backfill_snapshots.AkshareSinaProvider')
 @patch('scripts.backfill_snapshots.AkshareEmProvider')
 @patch('scripts.backfill_snapshots.YfinanceProvider')
 def test_backfill_writes_snapshots_and_index(
-    mock_yf: MagicMock, mock_ak: MagicMock,
+    mock_yf: MagicMock, mock_ak: MagicMock, mock_sina: MagicMock,
 ) -> None:
     mock_yf.return_value.fetch_ohlc.return_value = _make_history()
     mock_yf.return_value.name = 'yfinance'
     mock_ak.return_value.fetch_ohlc.return_value = _make_history()
-    mock_ak.return_value.name = 'akshare'
+    mock_ak.return_value.name = 'akshare-em'
+    # sina 是 fallback, EM mock 总成功 sina 不会被 fetch; 仍设 name 避免 NoneType log
+    mock_sina.return_value.fetch_ohlc.return_value = _make_history()
+    mock_sina.return_value.name = 'akshare-sina'
 
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)
@@ -69,15 +73,19 @@ def test_backfill_writes_snapshots_and_index(
         assert idx_dates == snapshot_dirs
 
 
+@patch('scripts.backfill_snapshots.AkshareSinaProvider')
 @patch('scripts.backfill_snapshots.AkshareEmProvider')
 @patch('scripts.backfill_snapshots.YfinanceProvider')
 def test_backfill_skip_existing(
-    mock_yf: MagicMock, mock_ak: MagicMock,
+    mock_yf: MagicMock, mock_ak: MagicMock, mock_sina: MagicMock,
 ) -> None:
     mock_yf.return_value.fetch_ohlc.return_value = _make_history()
     mock_yf.return_value.name = 'yfinance'
     mock_ak.return_value.fetch_ohlc.return_value = _make_history()
-    mock_ak.return_value.name = 'akshare'
+    mock_ak.return_value.name = 'akshare-em'
+    # sina 是 fallback, EM mock 总成功 sina 不会被 fetch; 仍设 name 避免 NoneType log
+    mock_sina.return_value.fetch_ohlc.return_value = _make_history()
+    mock_sina.return_value.name = 'akshare-sina'
 
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)
@@ -108,16 +116,20 @@ def test_backfill_skip_existing(
         assert new_count == first_count + 2
 
 
+@patch('scripts.backfill_snapshots.AkshareSinaProvider')
 @patch('scripts.backfill_snapshots.AkshareEmProvider')
 @patch('scripts.backfill_snapshots.YfinanceProvider')
 def test_backfill_output_schemas_valid(
-    mock_yf: MagicMock, mock_ak: MagicMock,
+    mock_yf: MagicMock, mock_ak: MagicMock, mock_sina: MagicMock,
 ) -> None:
     """回填产物应通过现有 JSON schemas 校验"""
     mock_yf.return_value.fetch_ohlc.return_value = _make_history()
     mock_yf.return_value.name = 'yfinance'
     mock_ak.return_value.fetch_ohlc.return_value = _make_history()
-    mock_ak.return_value.name = 'akshare'
+    mock_ak.return_value.name = 'akshare-em'
+    # sina 是 fallback, EM mock 总成功 sina 不会被 fetch; 仍设 name 避免 NoneType log
+    mock_sina.return_value.fetch_ohlc.return_value = _make_history()
+    mock_sina.return_value.name = 'akshare-sina'
 
     with tempfile.TemporaryDirectory() as d:
         data_root = Path(d)

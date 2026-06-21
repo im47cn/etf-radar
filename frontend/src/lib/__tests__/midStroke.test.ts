@@ -2,9 +2,11 @@ import { describe, it, expect } from 'vitest';
 import {
   computeMidTertiles,
   midToStrokeWidth,
+  midToStrokeDasharray,
   STROKE_WIDTH_LOW,
   STROKE_WIDTH_MID,
   STROKE_WIDTH_HIGH,
+  MID_STROKE_DASHARRAY_LOW,
 } from '../midStroke';
 
 describe('computeMidTertiles', () => {
@@ -67,5 +69,27 @@ describe('midToStrokeWidth', () => {
     expect(STROKE_WIDTH_LOW).toBeGreaterThan(0);
     expect(STROKE_WIDTH_LOW).toBeLessThan(STROKE_WIDTH_MID);
     expect(STROKE_WIDTH_MID).toBeLessThan(STROKE_WIDTH_HIGH);
+  });
+});
+
+describe('midToStrokeDasharray', () => {
+  const t = { q33: 40, q67: 70 };
+
+  it('LOW 档 (mid < q33) 返回虚线模式', () => {
+    expect(midToStrokeDasharray(20, t)).toBe(MID_STROKE_DASHARRAY_LOW);
+    expect(midToStrokeDasharray(39, t)).toBe(MID_STROKE_DASHARRAY_LOW);
+  });
+
+  it('MID/HIGH 档返回 undefined (实线)', () => {
+    expect(midToStrokeDasharray(40, t)).toBeUndefined();
+    expect(midToStrokeDasharray(55, t)).toBeUndefined();
+    expect(midToStrokeDasharray(70, t)).toBeUndefined();
+    expect(midToStrokeDasharray(99, t)).toBeUndefined();
+  });
+
+  it('全平分位 (q33=q67=50): 49 走虚线, 50 走实线', () => {
+    const flat = { q33: 50, q67: 50 };
+    expect(midToStrokeDasharray(49, flat)).toBe(MID_STROKE_DASHARRAY_LOW);
+    expect(midToStrokeDasharray(50, flat)).toBeUndefined();
   });
 });

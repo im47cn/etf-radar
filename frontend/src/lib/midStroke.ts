@@ -33,4 +33,17 @@ export function midToStrokeWidth(mid: number, t: MidTertiles): number {
   return STROKE_WIDTH_HIGH;
 }
 
+/**
+ * 弱档 (LOW) 用虚线强化与中档实线的区分; 中/高档返回 undefined (实线).
+ * 虚线模式 "3 2": 3px 实线 + 2px 间隔, 在 14-20px 半径圆周上约 3-4 段, 不破碎.
+ */
+export const MID_STROKE_DASHARRAY_LOW = '3 2';
+
+export function midToStrokeDasharray(
+  mid: number,
+  t: MidTertiles,
+): string | undefined {
+  return mid < t.q33 ? MID_STROKE_DASHARRAY_LOW : undefined;
+}
+
 export const MID_STROKE_COLOR = '#374151';

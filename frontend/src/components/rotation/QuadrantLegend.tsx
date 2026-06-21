@@ -5,6 +5,7 @@ import {
   STROKE_WIDTH_MID,
   STROKE_WIDTH_HIGH,
   MID_STROKE_COLOR,
+  MID_STROKE_DASHARRAY_LOW,
 } from '@/lib/midStroke';
 
 const ROWS: { q: Quadrant; desc: string }[] = [
@@ -14,8 +15,8 @@ const ROWS: { q: Quadrant; desc: string }[] = [
   { q: 'lagging', desc: '长期&短期都弱 — 暂观望' },
 ];
 
-const MID_TIERS: { w: number; label: string }[] = [
-  { w: STROKE_WIDTH_LOW,  label: '弱'  },
+const MID_TIERS: { w: number; label: string; dash?: string }[] = [
+  { w: STROKE_WIDTH_LOW,  label: '弱', dash: MID_STROKE_DASHARRAY_LOW },
   { w: STROKE_WIDTH_MID,  label: '中'  },
   { w: STROKE_WIDTH_HIGH, label: '强'  },
 ];
@@ -38,7 +39,7 @@ export const QuadrantLegend = () => (
     <div className="flex items-center gap-3 pt-1 border-t border-gray-200">
       <span className="font-medium text-gray-700">中周期强度</span>
       <span className="text-gray-500">(气泡边框)</span>
-      {MID_TIERS.map(({ w, label }) => (
+      {MID_TIERS.map(({ w, label, dash }) => (
         <span key={w} className="flex items-center gap-1">
           <svg width="16" height="16" aria-hidden>
             <circle
@@ -46,6 +47,7 @@ export const QuadrantLegend = () => (
               fill="#fff"
               stroke={MID_STROKE_COLOR}
               strokeWidth={w}
+              strokeDasharray={dash}
             />
           </svg>
           <span className="text-gray-600">{label}</span>

@@ -3,7 +3,12 @@ import { Scatter, Cell, LabelList, Customized, useXAxisScale, useYAxisScale } fr
 import { themesToRotationPoints, QUADRANT_COLORS, computeBubbleSize } from '@/lib/rotation';
 import type { RotationMode } from '@/lib/rotation';
 import { buildTrails, type TrailPoint } from '@/lib/trailGradient';
-import { computeMidTertiles, midToStrokeWidth, MID_STROKE_COLOR } from '@/lib/midStroke';
+import {
+  computeMidTertiles,
+  midToStrokeWidth,
+  midToStrokeDasharray,
+  MID_STROKE_COLOR,
+} from '@/lib/midStroke';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { RotationChartFrame } from './RotationChartFrame';
 import type { Theme } from '@/types/themes';
@@ -133,9 +138,13 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
         {points.map(p => {
           const isFocused = focusedId === p.themeId;
           const isOtherFocused = focusedId !== null && !isFocused;
-          // 聚焦态保留黑色描边(优先级最高); 非聚焦态以 MID_STROKE_COLOR 表达 mid 三档强度
+          // 聚焦态保留黑色实线描边(优先级最高); 非聚焦态以 MID_STROKE_COLOR 表达 mid 三档强度,
+          // 弱档用虚线强化与中档实线的视觉区分.
           const stroke = isFocused ? '#000' : MID_STROKE_COLOR;
           const strokeWidth = isFocused ? 2 : midToStrokeWidth(p.mid, midTertiles);
+          const strokeDasharray = isFocused
+            ? undefined
+            : midToStrokeDasharray(p.mid, midTertiles);
           return (
             <Cell
               key={p.themeId}
@@ -143,6 +152,7 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
               fillOpacity={isOtherFocused ? 0.2 : 1}
               stroke={stroke}
               strokeWidth={strokeWidth}
+              strokeDasharray={strokeDasharray}
               r={p._bubbleSize}
             />
           );

@@ -27,14 +27,29 @@ interface ScatterClickArg {
   themeId?: string;
 }
 
+// 三段暖冷色阶: 冷蓝 (旧) → 暖橙 (中段) → 鲜红 (新).
+// 比原 #1e40af→#b91c1c 两段更醒目, 中段不再灰蒙, 色温递增暗示方向.
+const COLOR_COLD = { r: 0x3b, g: 0x82, b: 0xf6 }; // #3b82f6
+const COLOR_WARM = { r: 0xf5, g: 0x9e, b: 0x0b }; // #f59e0b
+const COLOR_HOT = { r: 0xdc, g: 0x26, b: 0x26 }; // #dc2626
+
+const lerp = (a: number, b: number, t: number): number =>
+  Math.round(a + (b - a) * t);
+
 const interpolateColor = (t: number): string => {
-  const start = { r: 0x1e, g: 0x40, b: 0xaf };
-  const end = { r: 0xb9, g: 0x1c, b: 0x1c };
-  const r = Math.round(start.r + (end.r - start.r) * t);
-  const g = Math.round(start.g + (end.g - start.g) * t);
-  const b = Math.round(start.b + (end.b - start.b) * t);
-  return `rgb(${r},${g},${b})`;
+  const [c1, c2, segT] =
+    t <= 0.5
+      ? [COLOR_COLD, COLOR_WARM, t * 2]
+      : [COLOR_WARM, COLOR_HOT, (t - 0.5) * 2];
+  return `rgb(${lerp(c1.r, c2.r, segT)},${lerp(c1.g, c2.g, segT)},${lerp(c1.b, c2.b, segT)})`;
 };
+
+// 线宽 1→3px 渐变, 头段最粗强化"最新方向"
+const TRAIL_WIDTH_MIN = 1;
+const TRAIL_WIDTH_MAX = 3;
+// 节点 3→7px 渐变, 终点节点放大与当前 bubble 自然衔接
+const TRAIL_NODE_MIN = 3;
+const TRAIL_NODE_MAX = 7;
 
 interface TrailLineSeries {
   themeId: string;
@@ -64,13 +79,17 @@ const TrailLines = ({ series }: { series: TrailLineSeries[] }) => {
           if (x1 == null || y1 == null || x2 == null || y2 == null) return null;
           const t = total <= 2 ? 0 : (i + 0.5) / (total - 1);
           const color = isFocused ? interpolateColor(t) : '#94a3b8';
+          // focused: 线宽随 t 1→3px 递增, 头段最粗, 与颜色温度共同强化方向
+          const sw = isFocused
+            ? TRAIL_WIDTH_MIN + (TRAIL_WIDTH_MAX - TRAIL_WIDTH_MIN) * t
+            : 1;
           return (
             <line
               key={`${themeId}-${i}`}
               x1={x1} y1={y1} x2={x2} y2={y2}
               stroke={color}
-              strokeWidth={isFocused ? 2 : 1}
-              strokeOpacity={isFocused ? 0.75 : 0.18}
+              strokeWidth={sw}
+              strokeOpacity={isFocused ? 0.85 : 0.18}
               strokeLinecap="round"
             />
           );
@@ -175,12 +194,16 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
           >
             {pts.map((_pt, i) => {
               const t = total <= 1 ? 0 : i / (total - 1);
+              // 节点 r 随 t 3→7px 递增, 终点最大与当前 bubble 自然衔接,
+              // 与颜色温度+线宽共同构成方向"三重编码"
+              const nodeR =
+                TRAIL_NODE_MIN + (TRAIL_NODE_MAX - TRAIL_NODE_MIN) * t;
               return (
                 <Cell
                   key={`${themeId}-${i}`}
                   fill={interpolateColor(t)}
                   fillOpacity={0.9}
-                  r={5}
+                  r={nodeR}
                   pointerEvents="none"
                 />
               );

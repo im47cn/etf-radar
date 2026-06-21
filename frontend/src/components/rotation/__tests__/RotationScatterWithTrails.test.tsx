@@ -25,13 +25,14 @@ vi.mock('recharts', async () => {
         {children}
       </g>
     ),
-    Cell: ({ fill, fillOpacity, stroke, strokeWidth, r }: { fill?: string; fillOpacity?: number; stroke?: string; strokeWidth?: number; r?: number }) => (
+    Cell: ({ fill, fillOpacity, stroke, strokeWidth, strokeDasharray, r }: { fill?: string; fillOpacity?: number; stroke?: string; strokeWidth?: number; strokeDasharray?: string; r?: number }) => (
       <g
         data-testid="cell"
         data-fill={fill}
         fill-opacity={fillOpacity}
         data-stroke={stroke}
         data-stroke-width={strokeWidth}
+        data-stroke-dasharray={strokeDasharray ?? ''}
         data-r={r}
       />
     ),
@@ -114,8 +115,9 @@ describe('RotationScatterWithTrails (rewritten)', () => {
     expect(dimmed.length).toBe(1);
   });
 
-  it('non-focused cells use mid-stroke color with discrete stroke-width tiers', () => {
-    // 构造 3 个 mid 值差异明显的 theme: 10/50/90 → 三分位法 q33=50, q67=90 → LOW/MID/HIGH
+  it('non-focused cells encode mid tiers via stroke width + dash pattern', () => {
+    // 构造 3 个 mid 值差异明显的 theme: 10/50/90 → 三分位法 q33=50, q67=90
+    // 弱档: 1px 虚线 / 中档: 1px 实线 / 强档: 2px 实线
     const t = (id: string, mid: number): Theme => ({
       ...mkTheme(id, 50, 50),
       us_strength: { short: 50, mid, long: 50, composite: 50 },
@@ -123,7 +125,7 @@ describe('RotationScatterWithTrails (rewritten)', () => {
     });
     const { container } = wrap(
       <RotationScatterWithTrails
-        themes={[t('a', 10), t('b', 50), t('c', 90)]}
+        themes={[t('low', 10), t('mid', 50), t('high', 90)]}
         trailFrames={[]}
         focusedId={null}
         onFocus={() => {}}
@@ -133,9 +135,15 @@ describe('RotationScatterWithTrails (rewritten)', () => {
     const cells = Array.from(mainScatter.querySelectorAll('[data-testid="cell"]'));
     // 全部非聚焦 → 全部走 MID_STROKE_COLOR (#374151)
     cells.forEach(c => expect(c.getAttribute('data-stroke')).toBe('#374151'));
-    const widths = cells.map(c => Number(c.getAttribute('data-stroke-width')));
-    // 三档线宽 LOW/MID/HIGH 应同时存在
-    expect(new Set(widths)).toEqual(new Set([1, 2, 3]));
+    // 弱档 (mid=10) → 1px + dash
+    expect(cells[0].getAttribute('data-stroke-width')).toBe('1');
+    expect(cells[0].getAttribute('data-stroke-dasharray')).toBe('3 2');
+    // 中档 (mid=50) → 1px + 实线
+    expect(cells[1].getAttribute('data-stroke-width')).toBe('1');
+    expect(cells[1].getAttribute('data-stroke-dasharray')).toBe('');
+    // 强档 (mid=90) → 2px + 实线
+    expect(cells[2].getAttribute('data-stroke-width')).toBe('2');
+    expect(cells[2].getAttribute('data-stroke-dasharray')).toBe('');
   });
 
   it('focused cell uses black stroke (overrides mid stroke)', () => {

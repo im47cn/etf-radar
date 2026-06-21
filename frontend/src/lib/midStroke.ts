@@ -6,9 +6,11 @@ export interface MidTertiles {
   q67: number;
 }
 
+// LOW 与 MID 同宽 (1px) 靠虚/实区分; HIGH 加倍 (2px) 表达强度. 强档与聚焦 2px 黑同宽,
+// 靠颜色 (灰 vs 黑) 区分, 层次更清.
 export const STROKE_WIDTH_LOW = 1;
-export const STROKE_WIDTH_MID = 2;
-export const STROKE_WIDTH_HIGH = 3;
+export const STROKE_WIDTH_MID = 1;
+export const STROKE_WIDTH_HIGH = 2;
 
 /**
  * 计算 mid 数组的 33% / 67% 分位(索引法,与 numpy.percentile interpolation='lower' 近似)。

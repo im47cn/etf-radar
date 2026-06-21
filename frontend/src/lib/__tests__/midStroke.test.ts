@@ -65,9 +65,9 @@ describe('midToStrokeWidth', () => {
     expect(midToStrokeWidth(49, flat)).toBe(STROKE_WIDTH_LOW);
   });
 
-  it('档值常量: LOW < MID < HIGH 且都 > 0', () => {
+  it('档值常量: LOW <= MID < HIGH 且都 > 0 (LOW 与 MID 同宽靠虚实区分)', () => {
     expect(STROKE_WIDTH_LOW).toBeGreaterThan(0);
-    expect(STROKE_WIDTH_LOW).toBeLessThan(STROKE_WIDTH_MID);
+    expect(STROKE_WIDTH_LOW).toBeLessThanOrEqual(STROKE_WIDTH_MID);
     expect(STROKE_WIDTH_MID).toBeLessThan(STROKE_WIDTH_HIGH);
   });
 });

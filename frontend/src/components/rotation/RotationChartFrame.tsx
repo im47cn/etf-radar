@@ -15,7 +15,8 @@ interface Props {
  * Tooltip 已下线 (新版 with-trails 视图用 FocusedThemePanel 承载详情).
  */
 export const RotationChartFrame = ({ height, children }: Props) => (
-  <ResponsiveContainer width="100%" height={height}>
+  // touch-manipulation 关闭 iOS Safari 双击缩放, 消除 300ms 点击延迟
+  <ResponsiveContainer width="100%" height={height} className="touch-manipulation">
     <ScatterChart margin={{ top: 24, right: 24, bottom: 48, left: 24 }}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis

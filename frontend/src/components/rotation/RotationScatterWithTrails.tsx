@@ -21,7 +21,44 @@ interface Props {
   onFocus: (themeId: string) => void;
   height?: number;
   mode?: RotationMode;
+  /** 持仓命中的主题 id 集合; 命中气泡叠加金色外圈, 不影响布局/交互 */
+  ownedThemeIds?: Set<string>;
 }
+
+interface OwnedRingPoint {
+  themeId: string;
+  x: number;
+  y: number;
+  bubbleSize: number;
+}
+
+// 在散点图坐标系上为 ownedThemeIds 命中的气泡叠加一层金色外圈.
+// 与 TrailLines 一样必须在 ScatterChart 的 <Customized> 上下文中才能拿到 scale.
+const OwnedRings = ({ points }: { points: OwnedRingPoint[] }) => {
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+  if (!xScale || !yScale) return null;
+  return (
+    <g pointerEvents="none">
+      {points.map(p => {
+        const cx = xScale(p.x);
+        const cy = yScale(p.y);
+        if (cx == null || cy == null) return null;
+        return (
+          <circle
+            key={`owned-${p.themeId}`}
+            cx={cx}
+            cy={cy}
+            r={p.bubbleSize + 4}
+            fill="none"
+            stroke="#facc15"
+            strokeWidth={2}
+          />
+        );
+      })}
+    </g>
+  );
+};
 
 interface ScatterClickArg {
   themeId?: string;
@@ -99,7 +136,7 @@ const TrailLines = ({ series }: { series: TrailLineSeries[] }) => {
   );
 };
 
-const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) => {
+const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode, ownedThemeIds }: Props) => {
   const isMobile = useIsMobile();
   const effectiveHeight = height ?? (isMobile ? 360 : 500);
   const labelFontSize = isMobile ? 9 : 11;
@@ -135,6 +172,13 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
     return [{ themeId: focusedId, points: pts, isFocused: true }];
   }, [trails, focusedId]);
 
+  const ownedRingPoints = useMemo<OwnedRingPoint[]>(() => {
+    if (!ownedThemeIds || ownedThemeIds.size === 0) return [];
+    return points
+      .filter(p => ownedThemeIds.has(p.themeId))
+      .map(p => ({ themeId: p.themeId, x: p.x, y: p.y, bubbleSize: p._bubbleSize }));
+  }, [points, ownedThemeIds]);
+
   const focusedTrail = useMemo(() => {
     if (focusedId === null) return null;
     const pts = trails.get(focusedId);
@@ -145,6 +189,7 @@ const Impl = ({ themes, trailFrames, focusedId, onFocus, height, mode }: Props) 
   return (
     <RotationChartFrame height={effectiveHeight}>
       <Customized component={() => <TrailLines series={trailLineSeries} />} />
+      <Customized component={() => <OwnedRings points={ownedRingPoints} />} />
       <Scatter
         name="current"
         data={points}
@@ -223,5 +268,6 @@ export const RotationScatterWithTrails = memo(
     prev.focusedId === next.focusedId &&
     prev.height === next.height &&
     prev.onFocus === next.onFocus &&
-    prev.mode === next.mode,
+    prev.mode === next.mode &&
+    prev.ownedThemeIds === next.ownedThemeIds,
 );

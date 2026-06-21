@@ -9,6 +9,14 @@ vi.mock('@/providers/dataContext', () => ({
   useDataContext: () => mockUseDataContext(),
 }));
 
+vi.mock('@/hooks/usePortfolioScores', () => ({
+  usePortfolioScores: () => ({
+    scores: [],
+    loading: false,
+    ownedThemeIds: new Set<string>(),
+  }),
+}));
+
 vi.mock('@/hooks/useSnapshotsTimeline', () => ({
   useSnapshotsTimeline: () => ({
     snapshotsFrames: [],

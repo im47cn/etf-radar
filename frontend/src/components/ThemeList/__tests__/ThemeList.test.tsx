@@ -1,10 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { UIStateProvider } from '@/providers/UIStateProvider';
 import { DataContext, type DataContextValue } from '@/providers/dataContext';
 import { ThemeList } from '../index';
 import type { ThemesFile } from '@/types/themes';
+
+// Stub usePortfolioScores: 测试不依赖 Auth/Supabase, 空持仓即可
+vi.mock('@/hooks/usePortfolioScores', () => ({
+  usePortfolioScores: () => ({
+    scores: [],
+    loading: false,
+    ownedThemeIds: new Set<string>(),
+  }),
+}));
 
 const mkS = (n: number) => ({ short: n, mid: n, long: n, composite: n });
 

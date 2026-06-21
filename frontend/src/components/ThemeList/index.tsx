@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useDataContext } from '@/providers/dataContext';
 import { useUIState } from '@/providers/uiStateContext';
 import { useThemeSignalsMap } from '@/hooks/useData';
+import { usePortfolioScores } from '@/hooks/usePortfolioScores';
 import { filterThemes } from '@/lib/filters';
 import { pickStrength, themeMatchesView } from '@/lib/marketView';
 import { ThemeRow } from './ThemeRow';
@@ -22,6 +23,7 @@ export const ThemeList = () => {
   const { themes } = useDataContext();
   const { state, dispatch } = useUIState();
   const sigMap = useThemeSignalsMap();
+  const { ownedThemeIds } = usePortfolioScores();
   const { dimension, marketView } = state;
 
   // 1) 过滤到当前视角的主题集
@@ -79,6 +81,7 @@ export const ThemeList = () => {
                 marketView={marketView}
                 selected={state.selectedThemeId === t.id}
                 onClick={() => dispatch({ type: 'SELECT_THEME', id: t.id })}
+                owned={ownedThemeIds.has(t.id)}
               />
             ))}
           </tbody>

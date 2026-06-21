@@ -12,9 +12,11 @@ import type { SnapshotFrame } from '@/types/snapshots';
 interface Props {
   themes: Theme[];
   snapshots: SnapshotFrame[];
+  /** 持仓命中的主题 id 集合; 透传给散点图叠加金圈 */
+  ownedThemeIds?: Set<string>;
 }
 
-export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
+export const RotationTrailsOverlay = ({ themes, snapshots, ownedThemeIds }: Props) => {
   const { range, setRange } = useTrailRange();
   const { state } = useUIState();
   const mode = marketViewToRotationMode(state.marketView);
@@ -63,6 +65,7 @@ export const RotationTrailsOverlay = ({ themes, snapshots }: Props) => {
         focusedId={focusedId}
         onFocus={toggle}
         mode={mode}
+        ownedThemeIds={ownedThemeIds}
       />
       <FocusedThemePanel theme={focusedTheme} onClose={() => setFocused(null)} />
     </div>

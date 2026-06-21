@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useDataContext } from '@/providers/dataContext';
 import { useSnapshotsTimeline } from '@/hooks/useSnapshotsTimeline';
+import { usePortfolioScores } from '@/hooks/usePortfolioScores';
 import { RotationTrailsOverlay } from '@/components/rotation/RotationTrailsOverlay';
 import { QuadrantLegend } from '@/components/rotation/QuadrantLegend';
 import { RotationHealthBar } from '@/components/rotation/RotationHealthBar';
@@ -10,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export const RotationPage = () => {
   const { themes, isLoading, error } = useDataContext();
   const { snapshotsFrames } = useSnapshotsTimeline();
+  const { ownedThemeIds } = usePortfolioScores();
 
   // Health 必须在所有 hooks 调用完成后计算 (即便提前 return). 用 useMemo 缓存,
   // themes.themes 变化时自动重算 (滑动时间轴 / 数据刷新).
@@ -51,7 +53,11 @@ export const RotationPage = () => {
           X 轴为长期强度 (60d), Y 轴为短期强度 (1d), 中线 50 切四象限。气泡大小反映综合排名。
         </p>
         {health && <RotationHealthBar health={health} />}
-        <RotationTrailsOverlay themes={themes.themes} snapshots={snapshotsFrames} />
+        <RotationTrailsOverlay
+          themes={themes.themes}
+          snapshots={snapshotsFrames}
+          ownedThemeIds={ownedThemeIds}
+        />
         <QuadrantLegend />
       </div>
     </main>

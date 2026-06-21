@@ -17,6 +17,8 @@ interface Props {
   marketView: MarketView;
   selected: boolean;
   onClick: () => void;
+  /** 该主题是否在持仓内 (用于 ⭐ 标记) */
+  owned?: boolean;
 }
 
 const SIGNAL_LABEL: Record<SignalType, string> = {
@@ -31,7 +33,7 @@ const signalVariant = (s: SignalType | null | undefined): 'default' | 'secondary
   return 'default';
 };
 
-export const ThemeRow = ({ index, theme, signal, dimension, marketView, selected, onClick }: Props) => {
+export const ThemeRow = ({ index, theme, signal, dimension, marketView, selected, onClick, owned }: Props) => {
   const strength = pickStrength(theme, marketView)?.[dimension];
   const r1d = theme.returns.r_1d;
   const r5d = theme.returns.r_5d;
@@ -56,6 +58,9 @@ export const ThemeRow = ({ index, theme, signal, dimension, marketView, selected
       </td>
       <td className="px-2 py-2">
         <div className="font-medium">
+          {owned && (
+            <span className="text-yellow-500 mr-1" title="持仓中">★</span>
+          )}
           {theme.name}
           {isCnOnly(theme) && (
             <span className="ml-2 inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 text-slate-600 border border-slate-200">

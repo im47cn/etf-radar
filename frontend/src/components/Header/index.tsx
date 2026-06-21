@@ -2,6 +2,7 @@ import { KpiCards } from './KpiCards';
 import { StaleBanner } from './StaleBanner';
 import { UpdateBadge } from './UpdateBadge';
 import { RadarTabs } from './RadarTabs';
+import { UserMenu } from './UserMenu';
 
 export const Header = () => (
   <header className="border-b bg-white p-4 space-y-3">
@@ -12,7 +13,10 @@ export const Header = () => (
           追踪美股主题 → 映射 A 股 ETF 联动信号
         </div>
       </div>
-      <UpdateBadge />
+      <div className="flex items-center gap-3">
+        <UpdateBadge />
+        <UserMenu />
+      </div>
     </div>
     <RadarTabs />
     <KpiCards />

@@ -69,6 +69,15 @@ vi.mock('@/providers/uiStateContext', async () => {
   };
 });
 
+// Stub usePortfolioScores: 避免 useAuth/Supabase 依赖渗透到 router 测试
+vi.mock('@/hooks/usePortfolioScores', () => ({
+  usePortfolioScores: () => ({
+    scores: [],
+    loading: false,
+    ownedThemeIds: new Set<string>(),
+  }),
+}));
+
 // Mock useSnapshotsTimeline to return index-error state
 vi.mock('@/hooks/useSnapshotsTimeline', () => ({
   useSnapshotsTimeline: () => ({

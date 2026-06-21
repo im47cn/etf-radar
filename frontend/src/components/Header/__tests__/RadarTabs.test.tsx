@@ -15,7 +15,7 @@ describe('RadarTabs', () => {
     renderAt('/');
     expect(screen.getByText('跨市雷达').closest('a')).toHaveAttribute('href', '/');
     expect(screen.getByText('主题轮动').closest('a')).toHaveAttribute('href', '/rotation');
-    expect(screen.getByText(/持仓监控/)).toBeInTheDocument();
+    expect(screen.getByText('我的持仓').closest('a')).toHaveAttribute('href', '/portfolio');
   });
 
   it('marks active tab when on root path', () => {
@@ -28,5 +28,11 @@ describe('RadarTabs', () => {
     renderAt('/rotation');
     const rotationLink = screen.getByText('主题轮动').closest('a')!;
     expect(rotationLink.className).toMatch(/bg-blue-600/);
+  });
+
+  it('marks portfolio tab active on /portfolio', () => {
+    renderAt('/portfolio');
+    const portfolioLink = screen.getByText('我的持仓').closest('a')!;
+    expect(portfolioLink.className).toMatch(/bg-blue-600/);
   });
 });

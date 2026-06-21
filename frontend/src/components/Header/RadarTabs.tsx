@@ -11,12 +11,9 @@ export const RadarTabs = () => {
     <div className="flex gap-1 text-sm">
       <Link to="/" className={linkClass(pathname === '/')}>跨市雷达</Link>
       <Link to="/rotation" className={linkClass(pathname === '/rotation')}>主题轮动</Link>
-      <span
-        className="px-3 py-1 rounded text-gray-400 cursor-not-allowed"
-        aria-disabled
-      >
-        持仓监控 (v3)
-      </span>
+      <Link to="/portfolio" className={linkClass(pathname === '/portfolio')}>
+        我的持仓
+      </Link>
     </div>
   );
 };

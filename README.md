@@ -51,6 +51,22 @@ npm run build
 npm test -- --run  # 27 tests
 ```
 
+### 持仓监控本地开发（v3+）
+
+`/portfolio` 路由需要 Supabase 凭据。**未配置不影响其他页面**，但 `/portfolio` 会显示"未配置"提示。
+
+```bash
+cp frontend/.env.local.example frontend/.env.local
+# 编辑 .env.local，填入 Supabase Project URL 和 anon key
+# 凭据可向项目维护者索取，或自行创建 Supabase 项目
+
+npm run dev  # http://localhost:5173/etf-radar/#/portfolio
+```
+
+**Magic Link 登录**：邮件可能进国内邮箱（QQ/163）的垃圾箱，请检查；或使用 Google OAuth 一键登录。
+
+**数据库 Schema**：见 `backend/migrations/001_user_holdings.sql`。在 Supabase SQL Editor 一次性执行。
+
 ### 首次种子数据 (需联网)
 
 ```bash

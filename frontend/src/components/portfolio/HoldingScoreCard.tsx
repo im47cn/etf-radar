@@ -1,0 +1,108 @@
+import type { HoldingScore } from '@/lib/portfolio/types';
+
+interface Props {
+  score:    HoldingScore;
+  onDelete: (etfCode: string) => void;
+}
+
+const tagColor = (tag?: string) => {
+  switch (tag) {
+    case '偏强':       return 'bg-green-100 text-green-700';
+    case '中性偏强':   return 'bg-green-50 text-green-600';
+    case '中性偏弱':   return 'bg-orange-50 text-orange-600';
+    case '偏弱':       return 'bg-red-100 text-red-700';
+    case '动量向上':   return 'bg-blue-100 text-blue-700';
+    case '动量向下':   return 'bg-amber-100 text-amber-700';
+    default:           return 'bg-gray-100 text-gray-600';
+  }
+};
+
+const fmtPct = (n: number | null) => n === null ? '—' : `${(n * 100).toFixed(1)}%`;
+const fmtMoney = (n: number | null) => n === null ? '—' : `¥${n.toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`;
+
+export const HoldingScoreCard = ({ score, onDelete }: Props) => {
+  const isUncovered = score.status === 'uncovered';
+
+  const handleDelete = () => {
+    if (window.confirm(`确定删除 ${score.etfCode} 的持仓记录吗？此操作不可恢复。`)) {
+      onDelete(score.etfCode);
+    }
+  };
+
+  return (
+    <div className={`border rounded-lg p-4 ${isUncovered ? 'bg-gray-50 opacity-90' : 'bg-white'}`}>
+      {/* Header */}
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <div className="font-semibold">{score.etfCode}</div>
+          {score.name && <div className="text-sm text-gray-600">{score.name}</div>}
+        </div>
+        <div className="flex flex-wrap gap-1 items-start">
+          {isUncovered ? (
+            <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600">无信号</span>
+          ) : (
+            <>
+              {score.l2Tag && <span className={`text-xs px-2 py-0.5 rounded ${tagColor(score.l2Tag)}`}>{score.l2Tag}</span>}
+              {score.momentumTag && <span className={`text-xs px-2 py-0.5 rounded ${tagColor(score.momentumTag)}`}>{score.momentumTag}</span>}
+            </>
+          )}
+          <button onClick={handleDelete} title="删除" aria-label="删除" className="text-gray-400 hover:text-red-500 text-sm ml-1">
+            ⋯
+          </button>
+        </div>
+      </div>
+
+      {/* 持仓 */}
+      <div className="text-sm space-y-1 border-t pt-2">
+        <div>持仓 {score.shares} 份 {score.costPrice !== null && `· 成本 ${fmtMoney(score.costPrice)}`}</div>
+        {score.currentPrice !== null && (
+          <div>现价 {fmtMoney(score.currentPrice)} · 市值 {fmtMoney(score.marketValue)}</div>
+        )}
+        {score.pnlAbs !== null && score.pnlPct !== null && (
+          <div className={score.pnlAbs >= 0 ? 'text-green-600' : 'text-red-600'}>
+            盈亏 {score.pnlAbs >= 0 ? '+' : ''}{fmtMoney(score.pnlAbs)} ({score.pnlAbs >= 0 ? '+' : ''}{fmtPct(score.pnlPct)})
+          </div>
+        )}
+      </div>
+
+      {/* uncovered 提示 */}
+      {isUncovered && (
+        <div className="mt-3 pt-2 border-t text-xs text-gray-500">
+          ⓘ 该 ETF 不在信号覆盖范围（14 主题外），仅记录持仓信息
+        </div>
+      )}
+
+      {/* covered: 信号区 */}
+      {!isUncovered && score.themeName && (
+        <div className="mt-3 pt-2 border-t text-sm space-y-2">
+          <div className="text-gray-600">归属主题：<span className="font-medium text-gray-900">{score.themeName}</span></div>
+
+          {score.themeUsStrength && score.selfStrength && (
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="border rounded p-2">
+                <div className="text-gray-500 mb-1">双轨强度（美/A）</div>
+                <div>美 短{score.themeUsStrength.short} 中{score.themeUsStrength.mid} 长{score.themeUsStrength.long}</div>
+                {score.themeCnStrength && (
+                  <div>A 短{score.themeCnStrength.short} 中{score.themeCnStrength.mid} 长{score.themeCnStrength.long}</div>
+                )}
+              </div>
+              <div className="border rounded p-2">
+                <div className="text-gray-500 mb-1">ETF 自身百分位</div>
+                <div>短 {score.selfStrength.short}</div>
+                <div>中 {score.selfStrength.mid}</div>
+                <div>长 {score.selfStrength.long}</div>
+                <div>综合 {score.selfStrength.composite}</div>
+              </div>
+            </div>
+          )}
+
+          {score.narrative && (
+            <div className="text-gray-700 text-xs leading-relaxed bg-gray-50 p-2 rounded">
+              {score.narrative}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};

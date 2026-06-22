@@ -13,11 +13,12 @@ themes:
     name: 半导体
     us_etfs: [SOXX, SMH, XSD]
     primary_us: SOXX
-    tags: [半导体, 芯片]
+    tags: [半导体, 芯片, 半导体设备]
     note: ""
     cn_etfs:
       - {code: '512480', name: 半导体ETF国联安, tracking: 中证全指半导体, match_type: exact}
       - {code: '159995', name: 芯片ETF华夏, tracking: 国证芯片, match_type: exact}
+      - {code: '159516', name: 半导体设备ETF国泰, tracking: 国证半导体设备, match_type: wide}
 
   - id: cybersecurity
     name: 网络安全
@@ -185,16 +186,16 @@ themes:
     cn_etfs:
       - {code: '510880', name: 红利ETF, tracking: 上证红利, match_type: exact}
 
-  - id: cn_semiconductor_equipment
-    name: 半导体设备
-    tags: [半导体设备, 半导体, 上游]
-    primary_cn: '159516'
-    cn_etfs:
-      - {code: '159516', name: 半导体设备ETF国泰, tracking: 国证半导体设备, match_type: exact}
-
   - id: cn_star_100
     name: 科创100
     tags: [科创板, 中小盘, 成长]
     primary_cn: '588220'
     cn_etfs:
       - {code: '588220', name: 科创100ETF鹏华, tracking: 上证科创板100, match_type: exact}
+
+  - id: cn_power
+    name: 电力
+    tags: [电力, 公用事业, 红利]
+    primary_cn: '561560'
+    cn_etfs:
+      - {code: '561560', name: 电力ETF华泰柏瑞, tracking: 中证全指电力公用事业, match_type: exact}

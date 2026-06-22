@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-22T11:15:19.915620+08:00",
+  "generated_at": "2026-06-22T11:21:57.789515+08:00",
   "summary": {
     "themes_total": 23,
-    "etfs_total": 32,
-    "resonance_count": 5,
+    "etfs_total": 33,
+    "resonance_count": 4,
     "transmission_count": 5,
     "divergence_count": 0,
     "top_theme": {
@@ -86,8 +86,8 @@
       "signal": "transmission",
       "trigger_cn_etf": "562500",
       "votes": {
-        "short": "resonance",
-        "mid": "transmission",
+        "short": "transmission",
+        "mid": null,
         "long": "transmission"
       },
       "description": "美股领先, A股尚未完全跟随"
@@ -116,11 +116,11 @@
     },
     {
       "theme_id": "financial",
-      "signal": "resonance",
-      "trigger_cn_etf": "512000",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "resonance",
-        "mid": "resonance",
+        "short": null,
+        "mid": null,
         "long": null
       },
       "description": "美股金融/券商银行动量观察中"
@@ -247,17 +247,6 @@
       "description": "红利（A 股本土赛道）"
     },
     {
-      "theme_id": "cn_semiconductor_equipment",
-      "signal": null,
-      "trigger_cn_etf": null,
-      "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
-      },
-      "description": "半导体设备（A 股本土赛道）"
-    },
-    {
       "theme_id": "cn_star_100",
       "signal": null,
       "trigger_cn_etf": null,
@@ -267,6 +256,17 @@
         "long": null
       },
       "description": "科创100（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_power",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "电力（A 股本土赛道）"
     }
   ],
   "pair_signals": [
@@ -311,6 +311,18 @@
       "cn_code": "159995",
       "mapping_score": 29,
       "confidence": 90,
+      "signal": "resonance",
+      "votes": {
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "semiconductor",
+      "cn_code": "159516",
+      "mapping_score": 10,
+      "confidence": 60,
       "signal": "resonance",
       "votes": {
         "short": "resonance",
@@ -409,8 +421,8 @@
       "confidence": 90,
       "signal": "transmission",
       "votes": {
-        "short": "resonance",
-        "mid": "transmission",
+        "short": "transmission",
+        "mid": null,
         "long": "transmission"
       }
     },
@@ -467,9 +479,9 @@
       "cn_code": "512000",
       "mapping_score": 12,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "resonance",
         "long": null
       }

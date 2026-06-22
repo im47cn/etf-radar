@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { AuthContext } from '@/providers/authContext';
 import { useHoldings } from '../useHoldings';
+import { HoldingsProvider } from '@/providers/HoldingsProvider';
 import type { ReactNode } from 'react';
 
 const fakeHoldings = [
@@ -38,7 +39,7 @@ const wrapper = (status: 'authenticated' | 'anonymous') => ({ children }: { chil
     signInWithGithub:    vi.fn(),
     signOut:             vi.fn(),
   }}>
-    {children}
+    <HoldingsProvider>{children}</HoldingsProvider>
   </AuthContext.Provider>
 );
 

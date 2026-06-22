@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import { DataProvider } from '@/providers/DataProvider';
 import { UIStateProvider } from '@/providers/UIStateProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
+import { HoldingsProvider } from '@/providers/HoldingsProvider';
 import { Header } from '@/components/Header';
 import { RadarPage } from '@/pages/RadarPage';
 import { RotationPage } from '@/pages/RotationPage';
@@ -13,17 +14,19 @@ export default function App() {
     <DataProvider>
       <HashRouter>
         <AuthProvider>
-          <UIStateProvider>
-            <div className="min-h-screen bg-gray-50">
-              <Header />
-              <Routes>
-                <Route path="/"               element={<RadarPage />} />
-                <Route path="/rotation"       element={<RotationPage />} />
-                <Route path="/portfolio"      element={<PortfolioPage />} />
-                <Route path="/auth/callback"  element={<AuthCallback />} />
-              </Routes>
-            </div>
-          </UIStateProvider>
+          <HoldingsProvider>
+            <UIStateProvider>
+              <div className="min-h-screen bg-gray-50">
+                <Header />
+                <Routes>
+                  <Route path="/"               element={<RadarPage />} />
+                  <Route path="/rotation"       element={<RotationPage />} />
+                  <Route path="/portfolio"      element={<PortfolioPage />} />
+                  <Route path="/auth/callback"  element={<AuthCallback />} />
+                </Routes>
+              </div>
+            </UIStateProvider>
+          </HoldingsProvider>
         </AuthProvider>
       </HashRouter>
     </DataProvider>

@@ -55,24 +55,36 @@ describe('HoldingScoreCard', () => {
     expect(screen.getByText(/不在信号覆盖范围/)).toBeInTheDocument();
   });
 
-  it('delete 按钮触发 onDelete', () => {
+  it('菜单默认折叠, 不占用页面空间', () => {
+    render(<HoldingScoreCard score={coveredScore} onDelete={vi.fn()} onEdit={vi.fn()} />);
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /删除/ })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /编辑/ })).toBeNull();
+    // 仅 kebab 触发器可见
+    expect(screen.getByRole('button', { name: /操作菜单/ })).toBeInTheDocument();
+  });
+
+  it('点 ⋯ 展开菜单后, 点删除触发 onDelete', () => {
     const onDelete = vi.fn();
-    // 用 confirm spy 让 confirm 返回 true
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<HoldingScoreCard score={coveredScore} onDelete={onDelete} />);
-    fireEvent.click(screen.getByRole('button', { name: /删除/ }));
+    fireEvent.click(screen.getByRole('button', { name: /操作菜单/ }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /删除/ }));
     expect(onDelete).toHaveBeenCalledWith('512480');
   });
 
-  it('onEdit 存在时显示编辑按钮并回传 etfCode', () => {
+  it('onEdit 存在时菜单含编辑项, 点击回传 etfCode', () => {
     const onEdit = vi.fn();
     render(<HoldingScoreCard score={coveredScore} onDelete={vi.fn()} onEdit={onEdit} />);
-    fireEvent.click(screen.getByRole('button', { name: /编辑/ }));
+    fireEvent.click(screen.getByRole('button', { name: /操作菜单/ }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /编辑/ }));
     expect(onEdit).toHaveBeenCalledWith('512480');
   });
 
-  it('未提供 onEdit 不渲染编辑按钮', () => {
+  it('未提供 onEdit 时菜单不渲染编辑项, 仅删除可用', () => {
     render(<HoldingScoreCard score={coveredScore} onDelete={vi.fn()} />);
-    expect(screen.queryByRole('button', { name: /编辑/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /操作菜单/ }));
+    expect(screen.queryByRole('menuitem', { name: /编辑/ })).toBeNull();
+    expect(screen.getByRole('menuitem', { name: /删除/ })).toBeInTheDocument();
   });
 });

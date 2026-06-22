@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { HoldingScore } from '@/lib/portfolio/types';
 
 interface Props {
@@ -23,11 +24,36 @@ const fmtMoney = (n: number | null) => n === null ? '—' : `¥${n.toLocaleStrin
 
 export const HoldingScoreCard = ({ score, onDelete, onEdit }: Props) => {
   const isUncovered = score.status === 'uncovered';
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Outside click / Esc 关闭菜单 — 订阅 DOM, 合法 effect 用法
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
 
   const handleDelete = () => {
+    setMenuOpen(false);
     if (window.confirm(`确定删除 ${score.etfCode} 的持仓记录吗？此操作不可恢复。`)) {
       onDelete(score.etfCode);
     }
+  };
+
+  const handleEdit = () => {
+    setMenuOpen(false);
+    onEdit?.(score.etfCode);
   };
 
   return (
@@ -47,18 +73,41 @@ export const HoldingScoreCard = ({ score, onDelete, onEdit }: Props) => {
               {score.momentumTag && <span className={`text-xs px-2 py-0.5 rounded ${tagColor(score.momentumTag)}`}>{score.momentumTag}</span>}
             </>
           )}
-          {onEdit && (
+          {/* kebab 菜单 — 触发器始终显示, 编辑/删除收纳其中 */}
+          <div className="relative ml-1" ref={menuRef}>
             <button
-              onClick={() => onEdit(score.etfCode)}
-              title="编辑" aria-label="编辑"
-              className="text-gray-400 hover:text-blue-500 text-sm ml-1"
+              type="button"
+              onClick={() => setMenuOpen(o => !o)}
+              title="操作" aria-label="操作菜单"
+              aria-haspopup="menu" aria-expanded={menuOpen}
+              className="text-gray-400 hover:text-gray-700 text-sm px-1 leading-none"
             >
-              ✏️
+              ⋯
             </button>
-          )}
-          <button onClick={handleDelete} title="删除" aria-label="删除" className="text-gray-400 hover:text-red-500 text-sm ml-1">
-            ⋯
-          </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-1 w-28 bg-white border border-gray-200 rounded shadow-lg z-10 py-1 text-sm"
+              >
+                {onEdit && (
+                  <button
+                    type="button" role="menuitem"
+                    onClick={handleEdit}
+                    className="block w-full text-left px-3 py-1.5 hover:bg-gray-50"
+                  >
+                    ✏️ 编辑
+                  </button>
+                )}
+                <button
+                  type="button" role="menuitem"
+                  onClick={handleDelete}
+                  className="block w-full text-left px-3 py-1.5 hover:bg-red-50 text-red-600"
+                >
+                  🗑 删除
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

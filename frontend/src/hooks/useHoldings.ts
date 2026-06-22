@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { isSupabaseConfigured, getSupabase } from '@/lib/supabase';
 import { HoldingSchema, type Holding } from '@/lib/portfolio/types';
 import { useAuth } from './useAuth';
@@ -49,24 +49,32 @@ export function useHoldings(): UseHoldingsResult {
     setLoading(false);
   }, [user]);
 
-  // 初始拉取: refresh() 内部含 setLoading/setHoldings, 但这是从外部系统 (Supabase) 同步状态到 React 的合法用法,
-  // 而非 effect-body 内的派生 state — 规则在此为假阳性.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (status === 'authenticated') refresh();
-  }, [status, refresh]);
+  // refresh 引用持 ref, 避免下面两个 effect 在 user 变化时重跑
+  // (Realtime 重跑会触发 'cannot add callbacks after subscribe()' → 白屏).
+  // React 19 禁止 render 中改 ref, 用 effect 同步.
+  const refreshRef = useRef(refresh);
+  useEffect(() => { refreshRef.current = refresh; }, [refresh]);
 
-  // Realtime 订阅
+  // 初始拉取: refreshRef.current() 间接调用了 setLoading/setHoldings, 但这是从外部系统
+  // (Supabase) 同步状态到 React 的合法用法, 而非 effect-body 内的派生 state.
+  useEffect(() => {
+    if (status === 'authenticated') refreshRef.current();
+  }, [status]);
+
+  // Realtime 订阅 — channel by name 在 supabase-js 内是单例, 必须 removeChannel 真正销毁,
+  // 仅 unsubscribe 会留下 closed channel, 下次 effect 拿到的还是它, .on() 会抛
+  // "cannot add postgres_changes callbacks after subscribe()" → 整页白屏
   useEffect(() => {
     if (status !== 'authenticated' || !isSupabaseConfigured()) return;
-    const sub = getSupabase()
+    const supabase = getSupabase();
+    const channel = supabase
       .channel('user_holdings_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_holdings' }, () => {
-        refresh();
+        refreshRef.current();
       })
       .subscribe();
-    return () => { sub.unsubscribe(); };
-  }, [status, refresh]);
+    return () => { supabase.removeChannel(channel); };
+  }, [status]);
 
   // upsert：检测重复 → 合并加权平均成本
   const upsert = useCallback(async (input: UpsertInput) => {

@@ -25,6 +25,7 @@ vi.mock('@/lib/supabase', () => ({
       delete: () => ({ eq: deleteMock }),
     })),
     channel: channelMock,
+    removeChannel: vi.fn(),
   }),
 }));
 

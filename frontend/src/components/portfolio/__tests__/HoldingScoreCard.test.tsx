@@ -106,6 +106,46 @@ describe('HoldingScoreCard', () => {
     expect(screen.getByRole('menuitem', { name: /删除/ })).toBeInTheDocument();
   });
 
+  it('1:N — 渲染次要归属 chip 行 + 边界提示文案', () => {
+    const score: HoldingScore = {
+      ...coveredScore,
+      secondaryThemes: [{ id: 'semiconductor', name: '半导体' }],
+    };
+    render(<HoldingScoreCard score={score} onDelete={vi.fn()} />);
+    expect(screen.getByText('也属于')).toBeInTheDocument();
+    expect(screen.getByText('半导体')).toBeInTheDocument();
+    // 边界提示：百分位仅基于主归属计算
+    expect(screen.getByText(/百分位仅基于主归属计算/)).toBeInTheDocument();
+  });
+
+  it('1:N — secondaryThemes 超过 3 个时折叠为 +N', () => {
+    const score: HoldingScore = {
+      ...coveredScore,
+      secondaryThemes: [
+        { id: 't1', name: '主题一' },
+        { id: 't2', name: '主题二' },
+        { id: 't3', name: '主题三' },
+        { id: 't4', name: '主题四' },
+        { id: 't5', name: '主题五' },
+      ],
+    };
+    render(<HoldingScoreCard score={score} onDelete={vi.fn()} />);
+    expect(screen.getByText('主题一')).toBeInTheDocument();
+    expect(screen.getByText('主题二')).toBeInTheDocument();
+    expect(screen.getByText('主题三')).toBeInTheDocument();
+    // 第 4、5 个不渲染为 chip
+    expect(screen.queryByText('主题四')).toBeNull();
+    expect(screen.queryByText('主题五')).toBeNull();
+    // 显示 +2
+    expect(screen.getByText('+2')).toBeInTheDocument();
+  });
+
+  it('1:N — 无次要归属时不渲染 chip 行', () => {
+    render(<HoldingScoreCard score={coveredScore} onDelete={vi.fn()} />);
+    expect(screen.queryByText('也属于')).toBeNull();
+    expect(screen.queryByText(/百分位仅基于主归属计算/)).toBeNull();
+  });
+
   it('covered 但无主题归属: 显示 ETF 自身百分位 + narrative, 不渲染归属主题区', () => {
     render(<HoldingScoreCard score={coveredNoThemeScore} onDelete={vi.fn()} />);
     // 仍是 covered 风格

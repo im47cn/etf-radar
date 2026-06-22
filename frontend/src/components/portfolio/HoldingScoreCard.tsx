@@ -140,6 +140,25 @@ export const HoldingScoreCard = ({ score, onDelete, onEdit }: Props) => {
             <div className="text-xs text-gray-400">ⓘ 未归入主题分组（暂无双轨信号）</div>
           )}
 
+          {/* 1:N — 次要归属主题 chip 行（max 3 显示，超出 +N） */}
+          {score.secondaryThemes && score.secondaryThemes.length > 0 && (
+            <div className="text-xs text-gray-500 flex flex-wrap items-center gap-1">
+              <span>也属于</span>
+              {score.secondaryThemes.slice(0, 3).map(t => (
+                <span
+                  key={t.id}
+                  className="bg-gray-100 text-gray-600 rounded px-1.5 py-0.5"
+                >
+                  {t.name}
+                </span>
+              ))}
+              {score.secondaryThemes.length > 3 && (
+                <span className="text-gray-400">+{score.secondaryThemes.length - 3}</span>
+              )}
+              <span className="text-gray-400">· 百分位仅基于主归属计算</span>
+            </div>
+          )}
+
           {score.selfStrength && (
             <div className={`grid ${score.themeUsStrength ? 'grid-cols-2' : 'grid-cols-1'} gap-2 text-xs`}>
               {score.themeUsStrength && (

@@ -36,6 +36,24 @@ const uncoveredScore: HoldingScore = {
   pnlPct: null,
 };
 
+const coveredNoThemeScore: HoldingScore = {
+  etfCode: '159559',
+  status: 'covered',
+  name: '机器人ETF景顺',
+  shares: 1000,
+  costPrice: 1.40,
+  currentPrice: 1.44,
+  marketValue: 1440,
+  pnlAbs: 40,
+  pnlPct: 0.0286,
+  selfStrength: { short: 73, mid: 76, long: 58, composite: 68 },
+  // 故意不填 themeId/themeName/themeUsStrength — 仿 theme_id 反查未命中
+  quadrant: 'leading',
+  l2Tag: '中性偏强',
+  momentumTag: '动量向上',
+  narrative: '综合 68 分位，短中周期偏强',
+};
+
 describe('HoldingScoreCard', () => {
   it('covered: 渲染所有字段', () => {
     render(<HoldingScoreCard score={coveredScore} onDelete={vi.fn()} />);
@@ -86,5 +104,23 @@ describe('HoldingScoreCard', () => {
     fireEvent.click(screen.getByRole('button', { name: /操作菜单/ }));
     expect(screen.queryByRole('menuitem', { name: /编辑/ })).toBeNull();
     expect(screen.getByRole('menuitem', { name: /删除/ })).toBeInTheDocument();
+  });
+
+  it('covered 但无主题归属: 显示 ETF 自身百分位 + narrative, 不渲染归属主题区', () => {
+    render(<HoldingScoreCard score={coveredNoThemeScore} onDelete={vi.fn()} />);
+    // 仍是 covered 风格
+    expect(screen.getByText('中性偏强')).toBeInTheDocument();
+    expect(screen.getByText('动量向上')).toBeInTheDocument();
+    // 自身百分位仍可见
+    expect(screen.getByText(/ETF 自身百分位/)).toBeInTheDocument();
+    // narrative 仍可见（"综合 68 分位"是 narrative 文案；"综合 68"是百分位数字 — 两处都出现）
+    expect(screen.getAllByText(/综合 68/).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/综合 68 分位/)).toBeInTheDocument();
+    // 归属主题区域不渲染
+    expect(screen.queryByText(/归属主题/)).toBeNull();
+    expect(screen.queryByText(/双轨强度/)).toBeNull();
+    // 不应误判为 uncovered
+    expect(screen.queryByText(/无信号/)).toBeNull();
+    expect(screen.queryByText(/不在信号覆盖范围/)).toBeNull();
   });
 });

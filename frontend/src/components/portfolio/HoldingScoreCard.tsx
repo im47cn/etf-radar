@@ -131,20 +131,26 @@ export const HoldingScoreCard = ({ score, onDelete, onEdit }: Props) => {
         </div>
       )}
 
-      {/* covered: 信号区 */}
-      {!isUncovered && score.themeName && (
+      {/* covered: 信号区 — 三段独立渲染, 缺主题归属时仍展示自身百分位与 narrative */}
+      {!isUncovered && (
         <div className="mt-3 pt-2 border-t text-sm space-y-2">
-          <div className="text-gray-600">归属主题：<span className="font-medium text-gray-900">{score.themeName}</span></div>
+          {score.themeName ? (
+            <div className="text-gray-600">归属主题：<span className="font-medium text-gray-900">{score.themeName}</span></div>
+          ) : (
+            <div className="text-xs text-gray-400">ⓘ 未归入主题分组（暂无双轨信号）</div>
+          )}
 
-          {score.themeUsStrength && score.selfStrength && (
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="border rounded p-2">
-                <div className="text-gray-500 mb-1">双轨强度（美/A）</div>
-                <div>美 短{score.themeUsStrength.short} 中{score.themeUsStrength.mid} 长{score.themeUsStrength.long}</div>
-                {score.themeCnStrength && (
-                  <div>A 短{score.themeCnStrength.short} 中{score.themeCnStrength.mid} 长{score.themeCnStrength.long}</div>
-                )}
-              </div>
+          {score.selfStrength && (
+            <div className={`grid ${score.themeUsStrength ? 'grid-cols-2' : 'grid-cols-1'} gap-2 text-xs`}>
+              {score.themeUsStrength && (
+                <div className="border rounded p-2">
+                  <div className="text-gray-500 mb-1">双轨强度（美/A）</div>
+                  <div>美 短{score.themeUsStrength.short} 中{score.themeUsStrength.mid} 长{score.themeUsStrength.long}</div>
+                  {score.themeCnStrength && (
+                    <div>A 短{score.themeCnStrength.short} 中{score.themeCnStrength.mid} 长{score.themeCnStrength.long}</div>
+                  )}
+                </div>
+              )}
               <div className="border rounded p-2">
                 <div className="text-gray-500 mb-1">ETF 自身百分位</div>
                 <div>短 {score.selfStrength.short}</div>

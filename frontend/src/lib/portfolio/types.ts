@@ -52,6 +52,8 @@ export interface HoldingScore {
   l2Tag?:           StrengthTag;
   momentumTag?:     MomentumTag | null;
   narrative?:       string;
+  // 1:N — 次要归属主题（不含主归属），UI 在「也属于」chip 区展示
+  secondaryThemes?: { id: string; name: string }[];
 }
 
 // ========== 引擎输入（轻量重定义，避免依赖 zod schemas） ==========
@@ -68,7 +70,8 @@ export interface EtfMetric {
   code:          string;
   name:          string;
   tracking_index?: string;
-  theme_id?:     string;
+  theme_id?:     string;     // 主归属（兼容历史快照可缺）
+  theme_ids?:    string[];   // 全部归属（1:N，含主归属；缺省即退化为单主题）
   price:         number;
   strength:      Strength;
 }

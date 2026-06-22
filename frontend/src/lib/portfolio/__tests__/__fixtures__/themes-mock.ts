@@ -25,6 +25,14 @@ export const themesMock: ThemeMetric[] = [
     us_strength: { short: 10, mid: 10, long: 10, composite: 10 },
     cn_strength: { short: 12, mid: 8,  long: 11, composite: 10 },
   },
+  {
+    id: 'semiconductor',
+    name: '半导体',
+    primary_cn: '512760',
+    strength:    { short: 60, mid: 60, long: 60, composite: 60 },
+    us_strength: { short: 62, mid: 58, long: 60, composite: 60 },
+    cn_strength: { short: 60, mid: 60, long: 60, composite: 60 },
+  },
 ];
 
 export const themeSignalsMock: ThemeSignalEntry[] = [

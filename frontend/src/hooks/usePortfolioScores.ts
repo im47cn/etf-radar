@@ -49,6 +49,7 @@ export function usePortfolioScores(): UsePortfolioScoresResult {
         name:           e.name,
         tracking_index: e.tracking_index,
         theme_id:       e.theme_id,
+        theme_ids:      e.theme_ids,   // 1:N 全部归属（含主），engine 用于次要归属
         price:          e.price!,
         strength:       e.strength,
       }));

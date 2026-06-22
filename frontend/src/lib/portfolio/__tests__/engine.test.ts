@@ -159,4 +159,62 @@ describe('scorePortfolio', () => {
     expect(result[0].themeName).toBeUndefined();
     expect(result[0].selfStrength).toBeDefined();
   });
+
+  // ── 1:N 主题归属 — secondaryThemes ─────────────────────────────────
+  it('跨主题 ETF (512480) 携带 secondaryThemes，排除主归属', () => {
+    const result = scorePortfolio({
+      holdings: [baseHolding('512480', 100, 2.0)],
+      themes: themesMock,
+      etfs: etfsMock,
+      themeSignals: themeSignalsMock,
+    });
+    expect(result[0].themeId).toBe('storage_dram');
+    expect(result[0].secondaryThemes).toEqual([
+      { id: 'semiconductor', name: '半导体' },
+    ]);
+  });
+
+  it('单一主题 ETF (562500): secondaryThemes 为 undefined（无次要归属）', () => {
+    const result = scorePortfolio({
+      holdings: [baseHolding('562500', 100, 1.5)],
+      themes: themesMock,
+      etfs: etfsMock,
+      themeSignals: themeSignalsMock,
+    });
+    expect(result[0].themeId).toBe('robotics_theme');
+    expect(result[0].secondaryThemes).toBeUndefined();
+  });
+
+  it('theme_ids 中含未知主题 id 时被过滤，不出现在 secondaryThemes', () => {
+    const result = scorePortfolio({
+      holdings: [baseHolding('512480', 100, 2.0)],
+      themes: themesMock,
+      etfs: [{
+        code: '512480', name: 'X', tracking_index: 'Y',
+        theme_id: 'storage_dram',
+        theme_ids: ['storage_dram', 'semiconductor', 'ghost_theme'],
+        price: 2.0, strength: { short: 50, mid: 50, long: 50, composite: 50 },
+      }],
+      themeSignals: themeSignalsMock,
+    });
+    expect(result[0].secondaryThemes).toEqual([
+      { id: 'semiconductor', name: '半导体' },
+    ]);
+  });
+
+  it('历史快照（无 theme_ids）等价于单主题，secondaryThemes 为 undefined', () => {
+    const result = scorePortfolio({
+      holdings: [baseHolding('562500', 100, 1.5)],
+      themes: themesMock,
+      etfs: [{
+        code: '562500', name: '机器人ETF', tracking_index: '中证机器人',
+        theme_id: 'robotics_theme',
+        // 故意不带 theme_ids
+        price: 1.5, strength: { short: 70, mid: 70, long: 70, composite: 70 },
+      }],
+      themeSignals: themeSignalsMock,
+    });
+    expect(result[0].themeId).toBe('robotics_theme');
+    expect(result[0].secondaryThemes).toBeUndefined();
+  });
 });

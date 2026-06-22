@@ -6,6 +6,7 @@ export const etfsMock: EtfMetric[] = [
     name: '半导体ETF国联安',
     tracking_index: '中证全指半导体',
     theme_id: 'storage_dram',
+    theme_ids: ['storage_dram', 'semiconductor'],  // 跨主题 ETF
     price: 2.481,
     strength: { short: 95, mid: 99, long: 99, composite: 98 },
   },

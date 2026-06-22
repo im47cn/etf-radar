@@ -38,9 +38,16 @@ function buildScore(
     };
   }
 
-  // covered: 按 etf.theme_id 反查主题（缺失/未知则 theme=undefined, UI 兜底渲染）
+  // covered: 按 etf.theme_id 反查主归属主题（缺失/未知则 theme=undefined, UI 兜底渲染）
   const theme = etf.theme_id ? themeById.get(etf.theme_id) : undefined;
   const signal = theme ? signalByTheme.get(theme.id) : undefined;
+
+  // 1:N 次要归属 — theme_ids 排除主归属，过滤未知/不存在的主题
+  const secondaryThemes = (etf.theme_ids ?? [])
+    .filter(id => id !== etf.theme_id)
+    .map(id => themeById.get(id))
+    .filter((t): t is ThemeMetric => t !== undefined)
+    .map(t => ({ id: t.id, name: t.name }));
   const quadrant = computeQuadrant(etf.strength);
   const l2Tag = strengthTag(etf.strength.composite);
   const mTag  = momentumTag(etf.strength.short, etf.strength.mid);
@@ -72,6 +79,7 @@ function buildScore(
     quadrant,
     l2Tag,
     momentumTag:  mTag,
+    secondaryThemes: secondaryThemes.length > 0 ? secondaryThemes : undefined,
   };
   score.narrative = buildNarrative(score);
   return score;

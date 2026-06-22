@@ -184,3 +184,17 @@ themes:
     primary_cn: '510880'
     cn_etfs:
       - {code: '510880', name: 红利ETF, tracking: 上证红利, match_type: exact}
+
+  - id: cn_semiconductor_equipment
+    name: 半导体设备
+    tags: [半导体设备, 半导体, 上游]
+    primary_cn: '159516'
+    cn_etfs:
+      - {code: '159516', name: 半导体设备ETF国泰, tracking: 国证半导体设备, match_type: exact}
+
+  - id: cn_star_100
+    name: 科创100
+    tags: [科创板, 中小盘, 成长]
+    primary_cn: '588220'
+    cn_etfs:
+      - {code: '588220', name: 科创100ETF鹏华, tracking: 上证科创板100, match_type: exact}

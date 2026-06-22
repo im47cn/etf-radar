@@ -43,11 +43,11 @@ def test_pipeline_full_mode_creates_files(
         assert (latest / 'meta.json').exists()
 
         themes = json.loads((latest / 'themes.json').read_text(encoding='utf-8'))
-        assert len(themes['themes']) == 21  # 14 原始 + 7 A 股独立行业
+        assert len(themes['themes']) == 23  # 14 原始 + 7 A 股独立行业 + 2 半导体设备/科创100
         assert themes['schema_version'] == '1.1'
 
         signals = json.loads((latest / 'signals.json').read_text(encoding='utf-8'))
-        assert signals['summary']['themes_total'] == 21
+        assert signals['summary']['themes_total'] == 23
         # All themes have same composite (mock returns same df) → top_theme should be deterministic
 
         meta = json.loads((latest / 'meta.json').read_text(encoding='utf-8'))

@@ -63,4 +63,16 @@ describe('HoldingScoreCard', () => {
     fireEvent.click(screen.getByRole('button', { name: /删除/ }));
     expect(onDelete).toHaveBeenCalledWith('512480');
   });
+
+  it('onEdit 存在时显示编辑按钮并回传 etfCode', () => {
+    const onEdit = vi.fn();
+    render(<HoldingScoreCard score={coveredScore} onDelete={vi.fn()} onEdit={onEdit} />);
+    fireEvent.click(screen.getByRole('button', { name: /编辑/ }));
+    expect(onEdit).toHaveBeenCalledWith('512480');
+  });
+
+  it('未提供 onEdit 不渲染编辑按钮', () => {
+    render(<HoldingScoreCard score={coveredScore} onDelete={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: /编辑/ })).toBeNull();
+  });
 });

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef, type ReactNode } from 'react'
 import { isSupabaseConfigured, getSupabase } from '@/lib/supabase';
 import { HoldingSchema, type Holding } from '@/lib/portfolio/types';
 import { useAuth } from '@/hooks/useAuth';
-import { HoldingsContext, type UseHoldingsResult, type UpsertInput } from './holdingsContext';
+import { HoldingsContext, type UseHoldingsResult, type UpsertInput, type UpdateInput } from './holdingsContext';
 
 function useHoldingsImpl(): UseHoldingsResult {
   const { user, status } = useAuth();
@@ -97,6 +97,27 @@ function useHoldingsImpl(): UseHoldingsResult {
     return { error: null, merged };
   }, [user, holdings, refresh]);
 
+  // 覆盖语义 — 与 upsert 区分: upsert 合并加权平均 (加仓), update 直接覆盖 (修正手误).
+  // 不允许改 etf_code (PK 一部分); 想改代码请删除后重新添加.
+  const update = useCallback(async (etfCode: string, patch: UpdateInput) => {
+    if (!user) return { error: '未登录' };
+    // 去除 undefined 字段, 让调用方可只 patch 部分字段
+    const payload: Record<string, unknown> = {};
+    if (patch.shares     !== undefined) payload.shares     = patch.shares;
+    if (patch.cost_price !== undefined) payload.cost_price = patch.cost_price;
+    if (patch.note       !== undefined) payload.note       = patch.note;
+    if (Object.keys(payload).length === 0) return { error: null };
+
+    const { error } = await getSupabase()
+      .from('user_holdings')
+      .update(payload)
+      .eq('user_id', user.id)
+      .eq('etf_code', etfCode);
+    if (error) return { error: error.message };
+    await refresh();
+    return { error: null };
+  }, [user, refresh]);
+
   const remove = useCallback(async (etfCode: string) => {
     if (!user) return { error: '未登录' };
     const { error } = await getSupabase()
@@ -114,6 +135,7 @@ function useHoldingsImpl(): UseHoldingsResult {
     loading:  isAuthed ? loading  : false,
     error,
     upsert,
+    update,
     remove,
     refresh,
   };

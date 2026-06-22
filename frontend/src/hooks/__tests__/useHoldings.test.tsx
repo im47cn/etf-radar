@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { AuthContext } from '@/providers/authContext';
 import { useHoldings } from '../useHoldings';
 import { HoldingsProvider } from '@/providers/HoldingsProvider';
@@ -12,10 +12,17 @@ const fakeHoldings = [
 const orderMock = vi.fn();
 const upsertMock = vi.fn();
 const deleteMock = vi.fn();
+const updateFinalMock = vi.fn();
+const updatePayloadMock = vi.fn();
 const channelMock = vi.fn();
 
 // select() 返回带 order() 的链式对象，order() 才真正 resolve 数据
 const selectMock = vi.fn(() => ({ order: orderMock }));
+
+// update(payload).eq('user_id', ...).eq('etf_code', ...) — 双 eq 链
+const updateChain = () => ({
+  eq: vi.fn(() => ({ eq: updateFinalMock })),
+});
 
 vi.mock('@/lib/supabase', () => ({
   isSupabaseConfigured: () => true,
@@ -24,6 +31,7 @@ vi.mock('@/lib/supabase', () => ({
       select: selectMock,
       upsert: upsertMock,
       delete: () => ({ eq: deleteMock }),
+      update: (payload: unknown) => { updatePayloadMock(payload); return updateChain(); },
     })),
     channel: channelMock,
     removeChannel: vi.fn(),
@@ -48,6 +56,8 @@ describe('useHoldings', () => {
     selectMock.mockReset();
     selectMock.mockReturnValue({ order: orderMock });
     orderMock.mockReset();
+    updateFinalMock.mockReset();
+    updatePayloadMock.mockReset();
     channelMock.mockReset();
     channelMock.mockReturnValue({
       on: () => ({ subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })) }),
@@ -66,5 +76,38 @@ describe('useHoldings', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.holdings).toHaveLength(1);
     expect(result.current.holdings[0].etf_code).toBe('512480');
+  });
+
+  it('update: 仅传入字段被发送, 不影响 etf_code', async () => {
+    orderMock.mockResolvedValue({ data: fakeHoldings, error: null });
+    updateFinalMock.mockResolvedValue({ error: null });
+    const { result } = renderHook(() => useHoldings(), { wrapper: wrapper('authenticated') });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      const r = await result.current.update('512480', { shares: 200, note: '修正' });
+      expect(r.error).toBeNull();
+    });
+    expect(updatePayloadMock).toHaveBeenCalledWith({ shares: 200, note: '修正' });
+  });
+
+  it('update: 空 patch 直接返回, 不发请求', async () => {
+    orderMock.mockResolvedValue({ data: fakeHoldings, error: null });
+    const { result } = renderHook(() => useHoldings(), { wrapper: wrapper('authenticated') });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      const r = await result.current.update('512480', {});
+      expect(r.error).toBeNull();
+    });
+    expect(updatePayloadMock).not.toHaveBeenCalled();
+  });
+
+  it('update: anonymous 状态返回 "未登录"', async () => {
+    const { result } = renderHook(() => useHoldings(), { wrapper: wrapper('anonymous') });
+    await act(async () => {
+      const r = await result.current.update('512480', { shares: 100 });
+      expect(r.error).toBe('未登录');
+    });
   });
 });

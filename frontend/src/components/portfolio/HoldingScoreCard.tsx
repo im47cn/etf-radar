@@ -3,6 +3,7 @@ import type { HoldingScore } from '@/lib/portfolio/types';
 interface Props {
   score:    HoldingScore;
   onDelete: (etfCode: string) => void;
+  onEdit?:  (etfCode: string) => void;
 }
 
 const tagColor = (tag?: string) => {
@@ -20,7 +21,7 @@ const tagColor = (tag?: string) => {
 const fmtPct = (n: number | null) => n === null ? '—' : `${(n * 100).toFixed(1)}%`;
 const fmtMoney = (n: number | null) => n === null ? '—' : `¥${n.toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`;
 
-export const HoldingScoreCard = ({ score, onDelete }: Props) => {
+export const HoldingScoreCard = ({ score, onDelete, onEdit }: Props) => {
   const isUncovered = score.status === 'uncovered';
 
   const handleDelete = () => {
@@ -45,6 +46,15 @@ export const HoldingScoreCard = ({ score, onDelete }: Props) => {
               {score.l2Tag && <span className={`text-xs px-2 py-0.5 rounded ${tagColor(score.l2Tag)}`}>{score.l2Tag}</span>}
               {score.momentumTag && <span className={`text-xs px-2 py-0.5 rounded ${tagColor(score.momentumTag)}`}>{score.momentumTag}</span>}
             </>
+          )}
+          {onEdit && (
+            <button
+              onClick={() => onEdit(score.etfCode)}
+              title="编辑" aria-label="编辑"
+              className="text-gray-400 hover:text-blue-500 text-sm ml-1"
+            >
+              ✏️
+            </button>
           )}
           <button onClick={handleDelete} title="删除" aria-label="删除" className="text-gray-400 hover:text-red-500 text-sm ml-1">
             ⋯

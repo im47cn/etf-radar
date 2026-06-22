@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # Pre-push hook: 本地拦截 lint 错误以减少 CI 噪音 (backend + frontend 对称).
 #
-# 设计取舍 (2026-06): 只跑 lint, 测试留给 CI.
+# 设计取舍 (2026-06): 只跑 lint + 类型检查, 测试留给 CI.
 #   - lint 失败是 typo 类廉价修复, 本地拦截价值高
+#   - tsc 类型错误同样廉价 (本地 ~5s), 比等 CI 1 分钟反馈快得多
 #   - 测试全跑阻塞心流, 收益 < 成本 (backend pytest ~90s, frontend vitest ~10s)
 #   - CI 是 source of truth, push 后由 GitHub Actions 验证
 #
 # 触发规则: 仅当对应目录有改动时跑对应工具 (与 CI 不同 path 触发条件一致).
 #   - backend/  变动 → ruff check
-#   - frontend/ 变动 → npm run lint
+#   - frontend/ 变动 → npm run lint + npm run typecheck
 #   - 两者皆无 → 全跳过
 #
 # 启用: git config core.hooksPath .githooks  (或运行 scripts/setup-hooks.sh)
@@ -83,8 +84,15 @@ if [ "$RUN_FRONTEND" -eq 1 ]; then
     echo "[pre-push] Emergency bypass: git push --no-verify"
     exit 1
   fi
+  echo "[pre-push] tsc -b --noEmit..."
+  if ! (cd "$FRONTEND" && npm run -s typecheck); then
+    echo ""
+    echo "[pre-push] BLOCKED by tsc. Fix the type errors above."
+    echo "[pre-push] Emergency bypass: git push --no-verify"
+    exit 1
+  fi
 else
-  echo "[pre-push] no frontend changes, skip eslint"
+  echo "[pre-push] no frontend changes, skip eslint + tsc"
 fi
 
 echo "[pre-push] OK (tests deferred to CI)"

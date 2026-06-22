@@ -34,6 +34,7 @@ const wrapper = (status: 'authenticated' | 'anonymous') => ({ children }: { chil
     user: status === 'authenticated' ? { id: 'u', email: 't@e.com' } as never : null,
     signInWithMagicLink: vi.fn(),
     signInWithGoogle:    vi.fn(),
+    signInWithGithub:    vi.fn(),
     signOut:             vi.fn(),
   }}>
     {children}

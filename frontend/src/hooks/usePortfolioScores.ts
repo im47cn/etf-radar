@@ -29,17 +29,16 @@ export function usePortfolioScores(): UsePortfolioScoresResult {
     if (!data?.themes || !data?.etfs) return [];
 
     // data.themes: ThemesFile = { themes: Theme[] }
-    // primary_cn 可空 → 仅保留有 A 股映射的主题；us_strength/cn_strength 可空 → ?? undefined
-    const themes: ThemeMetric[] = data.themes.themes
-      .filter((t) => t.primary_cn !== null)
-      .map((t) => ({
-        id:          t.id,
-        name:        t.name,
-        primary_cn:  t.primary_cn!,
-        strength:    t.strength,
-        us_strength: t.us_strength ?? undefined,
-        cn_strength: t.cn_strength ?? undefined,
-      }));
+    // engine 现按 theme_id 反查, 不再依赖 primary_cn 索引;
+    // primary_cn 字段保留兼容 ThemeMetric 类型定义, 缺则空串
+    const themes: ThemeMetric[] = data.themes.themes.map((t) => ({
+      id:          t.id,
+      name:        t.name,
+      primary_cn:  t.primary_cn ?? '',
+      strength:    t.strength,
+      us_strength: t.us_strength ?? undefined,
+      cn_strength: t.cn_strength ?? undefined,
+    }));
 
     // data.etfs: EtfsFile = { etfs: Etf[] }
     // price 可空 → 仅保留有价格的 ETF（无价无法算市值/盈亏）
@@ -49,6 +48,7 @@ export function usePortfolioScores(): UsePortfolioScoresResult {
         code:           e.code,
         name:           e.name,
         tracking_index: e.tracking_index,
+        theme_id:       e.theme_id,
         price:          e.price!,
         strength:       e.strength,
       }));

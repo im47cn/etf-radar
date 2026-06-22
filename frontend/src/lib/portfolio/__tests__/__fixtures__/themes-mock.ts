@@ -10,6 +10,14 @@ export const themesMock: ThemeMetric[] = [
     cn_strength: { short: 96, mid: 99, long: 98, composite: 98 },
   },
   {
+    id: 'robotics_theme',
+    name: '机器人',
+    primary_cn: '562500',
+    strength:    { short: 70, mid: 70, long: 70, composite: 70 },
+    us_strength: { short: 72, mid: 68, long: 65, composite: 68 },
+    cn_strength: { short: 70, mid: 70, long: 70, composite: 70 },
+  },
+  {
     id: 'weak_theme',
     name: '弱势主题',
     primary_cn: '999999',
@@ -20,6 +28,7 @@ export const themesMock: ThemeMetric[] = [
 ];
 
 export const themeSignalsMock: ThemeSignalEntry[] = [
-  { theme_id: 'storage_dram', signal: 'resonance' },
-  { theme_id: 'weak_theme',   signal: 'divergence' },
+  { theme_id: 'storage_dram',   signal: 'resonance' },
+  { theme_id: 'robotics_theme', signal: 'transmission' },
+  { theme_id: 'weak_theme',     signal: 'divergence' },
 ];

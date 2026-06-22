@@ -5,21 +5,21 @@ import type {
 import { strengthTag, momentumTag, computeQuadrant, buildNarrative } from './rules';
 
 export function scorePortfolio(inputs: ScoreInputs): HoldingScore[] {
-  const etfByCode    = new Map<string, EtfMetric>(inputs.etfs.map(e => [e.code, e]));
-  const themeByPrimaryCn = new Map<string, ThemeMetric>(
-    inputs.themes.map(t => [t.primary_cn, t]),
+  const etfByCode = new Map<string, EtfMetric>(inputs.etfs.map(e => [e.code, e]));
+  const themeById = new Map<string, ThemeMetric>(
+    inputs.themes.map(t => [t.id, t]),
   );
   const signalByTheme = new Map<string, ThemeSignalEntry>(
     inputs.themeSignals.map(s => [s.theme_id, s]),
   );
 
-  return inputs.holdings.map(h => buildScore(h, etfByCode, themeByPrimaryCn, signalByTheme));
+  return inputs.holdings.map(h => buildScore(h, etfByCode, themeById, signalByTheme));
 }
 
 function buildScore(
   h: Holding,
   etfByCode: Map<string, EtfMetric>,
-  themeByPrimaryCn: Map<string, ThemeMetric>,
+  themeById: Map<string, ThemeMetric>,
   signalByTheme: Map<string, ThemeSignalEntry>,
 ): HoldingScore {
   const etf = etfByCode.get(h.etf_code);
@@ -38,8 +38,8 @@ function buildScore(
     };
   }
 
-  // covered
-  const theme = themeByPrimaryCn.get(h.etf_code);
+  // covered: 按 etf.theme_id 反查主题（缺失/未知则 theme=undefined, UI 兜底渲染）
+  const theme = etf.theme_id ? themeById.get(etf.theme_id) : undefined;
   const signal = theme ? signalByTheme.get(theme.id) : undefined;
   const quadrant = computeQuadrant(etf.strength);
   const l2Tag = strengthTag(etf.strength.composite);

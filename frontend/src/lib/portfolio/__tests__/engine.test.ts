@@ -114,4 +114,49 @@ describe('scorePortfolio', () => {
       holdings: [], themes: themesMock, etfs: etfsMock, themeSignals: themeSignalsMock,
     })).toEqual([]);
   });
+
+  it('非 primary_cn 同主题 ETF (159559) 也能反查到主题', () => {
+    const result = scorePortfolio({
+      holdings: [baseHolding('159559', 1000, 1.40)],
+      themes: themesMock,
+      etfs: etfsMock,
+      themeSignals: themeSignalsMock,
+    });
+    const s = result[0];
+    expect(s.status).toBe('covered');
+    expect(s.themeId).toBe('robotics_theme');
+    expect(s.themeName).toBe('机器人');
+    expect(s.themeSignal).toBe('transmission');
+    expect(s.themeUsStrength).toEqual({ short: 72, mid: 68, long: 65, composite: 68 });
+  });
+
+  it('theme_id 缺失（历史快照）的 ETF: status=covered, themeName=undefined', () => {
+    const result = scorePortfolio({
+      holdings: [baseHolding('888888', 100, 2.0)],
+      themes: themesMock,
+      etfs: etfsMock,
+      themeSignals: themeSignalsMock,
+    });
+    const s = result[0];
+    expect(s.status).toBe('covered');
+    expect(s.themeId).toBeUndefined();
+    expect(s.themeName).toBeUndefined();
+    expect(s.selfStrength).toEqual({ short: 50, mid: 50, long: 50, composite: 50 });
+    expect(s.l2Tag).toBeDefined();
+  });
+
+  it('theme_id 指向未知主题: status=covered, themeName=undefined（防御性）', () => {
+    const result = scorePortfolio({
+      holdings: [baseHolding('512480', 100, 2.0)],
+      themes: themesMock,
+      etfs: [{
+        code: '512480', name: 'X', tracking_index: 'Y',
+        theme_id: 'nonexistent_theme',
+        price: 2.0, strength: { short: 50, mid: 50, long: 50, composite: 50 },
+      }],
+      themeSignals: themeSignalsMock,
+    });
+    expect(result[0].themeName).toBeUndefined();
+    expect(result[0].selfStrength).toBeDefined();
+  });
 });

@@ -68,6 +68,7 @@ export interface EtfMetric {
   code:          string;
   name:          string;
   tracking_index?: string;
+  theme_id?:     string;
   price:         number;
   strength:      Strength;
 }

@@ -25,7 +25,9 @@ export interface UseSnapshotsTimelineResult {
 // URL 构造已集中到 lib/dataUrls.ts, 配合契约测试杜绝 publicDir 平铺结构与
 // fetch URL 前缀错配 (详见该模块顶部注释).
 const INDEX_URL = LATEST_URLS.snapshotsIndex;
-const CACHE_MAX = 20;
+// CACHE_MAX 与 MAX_TRAIL_DAYS (30) 保持 ≥ 5 缓冲: 用户拖 slider 到 -30 天时,
+// trail 需要 30 帧 + 当前帧 + 少量预取余量, LRU 不应在浏览过程中挤掉刚加载的帧.
+const CACHE_MAX = 35;
 const PREFETCH_RECENT = 10;
 const FRAME_MAX_RETRIES = 3;
 const FRAME_RETRY_BASE_MS = 5000;

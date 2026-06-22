@@ -10,8 +10,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const RotationPage = () => {
   const { themes, isLoading, error } = useDataContext();
-  const { snapshotsFrames } = useSnapshotsTimeline();
+  const { snapshotsFrames, index, prefetch } = useSnapshotsTimeline();
   const { ownedThemeIds } = usePortfolioScores();
+
+  // availableDates: 给 slider 决定上限用; 与 snapshotsFrames (cache 子集) 解耦.
+  // 让 slider 能覆盖 MAX_TRAIL_DAYS (30) 而不被 PREFETCH_RECENT (10) 卡住.
+  const availableDates = useMemo(
+    () => index?.snapshots.map(s => s.date) ?? [],
+    [index],
+  );
 
   // Health 必须在所有 hooks 调用完成后计算 (即便提前 return). 用 useMemo 缓存,
   // themes.themes 变化时自动重算 (滑动时间轴 / 数据刷新).
@@ -56,6 +63,8 @@ export const RotationPage = () => {
         <RotationTrailsOverlay
           themes={themes.themes}
           snapshots={snapshotsFrames}
+          availableDates={availableDates}
+          onPrefetch={prefetch}
           ownedThemeIds={ownedThemeIds}
         />
         <QuadrantLegend />

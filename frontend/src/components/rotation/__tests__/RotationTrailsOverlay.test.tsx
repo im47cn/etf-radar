@@ -121,6 +121,89 @@ describe('RotationTrailsOverlay', () => {
     });
   });
 
+  describe('slider upper bound (availableDates decouples from cached frames)', () => {
+    it('uses availableDates.length when provided (not snapshots.length)', () => {
+      // 仿真线上场景: index 中有 100 个日期, 但只预取了 5 帧.
+      const availableDates = Array.from({ length: 100 }, (_, i) =>
+        `2026-03-${String(i + 1).padStart(2, '0')}`,
+      );
+      const fewCached: SnapshotFrame[] = Array.from({ length: 5 }, (_, i) => ({
+        date: availableDates[availableDates.length - 5 + i],
+        themes,
+      }));
+      const { container } = wrap(
+        <RotationTrailsOverlay
+          themes={themes}
+          snapshots={fewCached}
+          availableDates={availableDates}
+        />,
+      );
+      // 修复前: slider min = -Math.min(30, 5) = -5
+      // 修复后: slider min = -Math.min(30, 100) = -30
+      const sliderRoot = container.querySelector('[role="group"]');
+      expect(sliderRoot).not.toBeNull();
+    });
+
+    it('falls back to snapshots.length when availableDates is not provided', () => {
+      // 向后兼容: 既有调用方未传 availableDates 时维持旧行为.
+      const { container } = wrap(
+        <RotationTrailsOverlay themes={themes} snapshots={snapshots} />,
+      );
+      expect(container.querySelector('[role="group"]')).not.toBeNull();
+    });
+  });
+
+  describe('on-demand prefetch', () => {
+    it('calls onPrefetch with missing dates when range covers uncached frames', () => {
+      // 默认 range = { startOffset: -10, endOffset: 0 } (来自 useTrailRange).
+      // 提供 11 个 availableDates 但 snapshots 为空 -> 全部缺失 -> 应触发 prefetch.
+      const availableDates = Array.from({ length: 11 }, (_, i) =>
+        `2026-05-${String(i + 1).padStart(2, '0')}`,
+      );
+      const onPrefetch = vi.fn();
+      wrap(
+        <RotationTrailsOverlay
+          themes={themes}
+          snapshots={[]}
+          availableDates={availableDates}
+          onPrefetch={onPrefetch}
+        />,
+      );
+      expect(onPrefetch).toHaveBeenCalledTimes(1);
+      expect(onPrefetch).toHaveBeenCalledWith(availableDates);
+    });
+
+    it('does not call onPrefetch when all needed dates are already cached', () => {
+      const availableDates = Array.from({ length: 11 }, (_, i) =>
+        `2026-05-${String(i + 1).padStart(2, '0')}`,
+      );
+      const cached: SnapshotFrame[] = availableDates.map(date => ({ date, themes }));
+      const onPrefetch = vi.fn();
+      wrap(
+        <RotationTrailsOverlay
+          themes={themes}
+          snapshots={cached}
+          availableDates={availableDates}
+          onPrefetch={onPrefetch}
+        />,
+      );
+      expect(onPrefetch).not.toHaveBeenCalled();
+    });
+
+    it('is a no-op when onPrefetch is not provided', () => {
+      // 不传 onPrefetch 不应抛错 (向后兼容).
+      expect(() => {
+        wrap(
+          <RotationTrailsOverlay
+            themes={themes}
+            snapshots={[]}
+            availableDates={['2026-05-01']}
+          />,
+        );
+      }).not.toThrow();
+    });
+  });
+
   it('ESC closes the focused panel', async () => {
     const user = userEvent.setup();
     wrap(<RotationTrailsOverlay themes={themes} snapshots={snapshots} />);

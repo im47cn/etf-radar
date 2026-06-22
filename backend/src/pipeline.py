@@ -393,6 +393,7 @@ def compute_outputs(
                     amount = float(amount_raw) / 1e8
             etfs_list.append({
                 'code': cn.code, 'name': cn.name, 'tracking_index': cn.tracking,
+                'theme_id': t.id,
                 'returns': r.model_dump(),
                 'amount_yi': amount, 'price': price,
                 'strength': cn_strengths.get(

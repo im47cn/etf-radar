@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 from src.models import (
     ThemeConfig, CnEtfConfig, Returns, Strength, PairSignal,
-    ThemeOutput, Rank,
+    ThemeOutput, Rank, EtfOutput,
 )
 
 
@@ -107,5 +107,20 @@ def test_theme_output_cn_only_has_no_us_strength():
     )
     assert t.us_strength is None
     assert t.cn_strength.composite == 40
+
+
+def test_etf_output_requires_theme_id():
+    """EtfOutput.theme_id 是必填，缺失应触发 pydantic 校验错误。"""
+    with pytest.raises(ValidationError):
+        EtfOutput(
+            code='562500', name='机器人ETF', tracking_index='中证机器人',
+            returns=Returns(), strength=Strength(short=0, mid=0, long=0, composite=0),
+        )
+    e = EtfOutput(
+        code='562500', name='机器人ETF', tracking_index='中证机器人',
+        theme_id='robotics',
+        returns=Returns(), strength=Strength(short=0, mid=0, long=0, composite=0),
+    )
+    assert e.theme_id == 'robotics'
 
 

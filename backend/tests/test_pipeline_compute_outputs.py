@@ -250,3 +250,26 @@ def test_compute_outputs_schema_version_bumped():
 
     assert themes_json['schema_version'] == '1.1'
     assert meta_json['theme_kinds'] == {'mapped': 1, 'cn_only': 1}
+
+
+def test_compute_outputs_etf_has_theme_id(config):
+    """每个 ETF 在 etfs.json 里必须带 theme_id，按 themes 列表首次出现归属。
+
+    使用真实 config/themes.yml：含跨主题 ETF 512480（storage_dram + semiconductor），
+    按 cn_codes_seen 首次出现归属 storage_dram；机器人主题 562500 + 159559 同归 robotics。
+    """
+    themes, algo = config
+    asof = datetime(2026, 6, 22, 16, 0, tzinfo=BJT)
+    _, etfs_json, _, _ = compute_outputs(
+        themes, us_ohlc={}, cn_ohlc={}, us_failed=[], cn_failed=[], algo=algo,
+        asof_bjt=asof, mode=PipelineMode.FULL,
+    )
+    code_to_theme = {e['code']: e['theme_id'] for e in etfs_json['etfs']}
+
+    # 机器人主题两只 ETF 都归 robotics
+    assert code_to_theme['562500'] == 'robotics'
+    assert code_to_theme['159559'] == 'robotics'
+    # 跨主题 ETF 按 themes 列表首次出现归属（storage_dram 在 semiconductor 之前）
+    assert code_to_theme['512480'] == 'storage_dram'
+    # 所有 etf 都有非空 theme_id
+    assert all(e.get('theme_id') for e in etfs_json['etfs'])

@@ -106,6 +106,7 @@ class EtfOutput(BaseModel):
     code: str
     name: str
     tracking_index: str
+    theme_id: str
     returns: Returns
     amount_yi: Optional[float] = None
     price: Optional[float] = None

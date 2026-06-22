@@ -11,7 +11,7 @@ import argparse
 import logging
 import random
 import time
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -478,20 +478,6 @@ def compute_outputs(
     return themes_json, etfs_json, signals_json, meta_json
 
 
-def run_archive(data_root: Path, day: date) -> Path:
-    """归档 latest/ → snapshots/<day>/, 然后重建 snapshots-index.json.
-
-    返回 snapshots-index.json 的绝对路径。
-
-    关键约束: archive 模式必须重建 index, 否则前端时光机看不到新归档
-    (历史 bug: archive 写文件夹但不更新 index → index 永远停在最后 backfill).
-    """
-    from .output.archiver import archive_latest
-    from .output.snapshots_index import write_snapshots_index
-    archive_latest(data_root, day)
-    return write_snapshots_index(data_root)
-
-
 def run_pipeline(
     mode: PipelineMode,
     data_root: Path,
@@ -535,10 +521,12 @@ def main() -> None:
                         format='%(asctime)s %(levelname)s %(name)s: %(message)s')
 
     if args.mode == PipelineMode.ARCHIVE:
+        from .output.archiver import archive_latest
         # 使用 BJT 日期作为归档目录, 与 A 股市场对齐
+        # archive_latest 内部已自动重建 snapshots-index.json (见 archiver.py 不变量)
         today_bjt = datetime.now(tz=BJT).date()
-        idx_path = run_archive(args.data_root, today_bjt)
-        log.info(f'snapshots index updated: {idx_path}')
+        dst = archive_latest(args.data_root, today_bjt)
+        log.info(f'archived to {dst} (snapshots-index rebuilt)')
         return
     run_pipeline(args.mode, args.data_root, args.config_dir)
 

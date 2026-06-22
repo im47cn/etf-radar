@@ -25,7 +25,8 @@ def test_load_themes_missing_file() -> None:
 def test_real_themes_yml_count() -> None:
     real = Path(__file__).parent.parent.parent / 'config' / 'themes.yml'
     themes = load_themes(real)
-    assert len(themes) == 23  # 14 原始 + 7 A 股独立行业 + 2 半导体设备/科创100
+    # 12 mapped + 15 CN-only (7 独立行业 + 半导体设备/科创100 + 拆分: 券商/煤炭/银行/有色/电池/油气)
+    assert len(themes) == 27
 
 
 def test_load_themes_includes_cn_only_count():

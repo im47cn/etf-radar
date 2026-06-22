@@ -1,19 +1,6 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-01-04T16:00:00+08:00",
-  "summary": {
-    "themes_total": 21,
-    "etfs_total": 30,
-    "resonance_count": 4,
-    "transmission_count": 3,
-    "divergence_count": 0,
-    "top_theme": {
-      "id": "solar_clean_energy",
-      "name": "光伏/清洁能源",
-      "primary_us": "TAN",
-      "composite_strength": 92
-    }
-  },
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -33,7 +20,7 @@
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": "resonance"
+        "long": null
       },
       "description": "美股领先, A股尚未完全跟随"
     },
@@ -68,7 +55,18 @@
         "mid": null,
         "long": null
       },
-      "description": "美股原油/能源动量观察中"
+      "description": "美股原油/油气动量观察中"
+    },
+    {
+      "theme_id": "cn_coal",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "煤炭（A 股本土赛道）"
     },
     {
       "theme_id": "new_energy_vehicle",
@@ -77,12 +75,34 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": null
+        "long": "transmission"
       },
-      "description": "美股新能源车/锂电动量观察中"
+      "description": "美股新能源车动量观察中"
+    },
+    {
+      "theme_id": "cn_battery",
+      "signal": "resonance",
+      "trigger_cn_etf": "159755",
+      "votes": {
+        "short": "resonance",
+        "mid": "transmission",
+        "long": "resonance"
+      },
+      "description": "美股锂电池中长期走强"
     },
     {
       "theme_id": "robotics",
+      "signal": "transmission",
+      "trigger_cn_etf": "159559",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "transmission"
+      },
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "gold",
       "signal": null,
       "trigger_cn_etf": null,
       "votes": {
@@ -90,18 +110,18 @@
         "mid": null,
         "long": null
       },
-      "description": "美股机器人动量观察中"
+      "description": "美股黄金动量观察中"
     },
     {
-      "theme_id": "gold_metals",
+      "theme_id": "cn_base_metals",
       "signal": "resonance",
-      "trigger_cn_etf": "518880",
+      "trigger_cn_etf": "512400",
       "votes": {
         "short": null,
         "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股黄金/有色动量观察中"
+      "description": "美股有色金属中长期走强"
     },
     {
       "theme_id": "china_internet",
@@ -115,7 +135,7 @@
       "description": "美股中概互联网/港股动量观察中"
     },
     {
-      "theme_id": "financial",
+      "theme_id": "cn_brokerage",
       "signal": null,
       "trigger_cn_etf": null,
       "votes": {
@@ -123,7 +143,18 @@
         "mid": null,
         "long": null
       },
-      "description": "美股金融/券商银行动量观察中"
+      "description": "券商（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_banking",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股银行动量观察中"
     },
     {
       "theme_id": "solar_clean_energy",
@@ -167,7 +198,7 @@
         "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股稀土/新材料中长期走强"
+      "description": "美股稀土/新材料动量观察中"
     },
     {
       "theme_id": "cn_liquor",
@@ -245,6 +276,28 @@
         "long": null
       },
       "description": "红利（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_star_100",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "科创100（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_power",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "电力（A 股本土赛道）"
     }
   ],
   "pair_signals": [
@@ -281,7 +334,7 @@
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -294,6 +347,18 @@
         "short": "transmission",
         "mid": "transmission",
         "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "semiconductor",
+      "cn_code": "159516",
+      "mapping_score": 18,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": "transmission",
+        "mid": "resonance",
+        "long": null
       }
     },
     {
@@ -317,7 +382,7 @@
       "votes": {
         "short": "resonance",
         "mid": null,
-        "long": "transmission"
+        "long": "divergence"
       }
     },
     {
@@ -345,18 +410,6 @@
       }
     },
     {
-      "theme_id": "energy_oil",
-      "cn_code": "515220",
-      "mapping_score": 2,
-      "confidence": 60,
-      "signal": null,
-      "votes": {
-        "short": "transmission",
-        "mid": null,
-        "long": "divergence"
-      }
-    },
-    {
       "theme_id": "new_energy_vehicle",
       "cn_code": "515030",
       "mapping_score": 28,
@@ -365,19 +418,19 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": null
+        "long": "transmission"
       }
     },
     {
-      "theme_id": "new_energy_vehicle",
+      "theme_id": "cn_battery",
       "cn_code": "159755",
-      "mapping_score": 29,
+      "mapping_score": 61,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
-        "mid": "resonance",
-        "long": null
+        "short": "resonance",
+        "mid": "transmission",
+        "long": "resonance"
       }
     },
     {
@@ -388,32 +441,44 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "resonance",
+        "mid": null,
         "long": null
       }
     },
     {
-      "theme_id": "gold_metals",
+      "theme_id": "robotics",
+      "cn_code": "159559",
+      "mapping_score": 33,
+      "confidence": 90,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "gold",
       "cn_code": "518880",
       "mapping_score": 2,
       "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "cn_base_metals",
+      "cn_code": "512400",
+      "mapping_score": 36,
+      "confidence": 60,
       "signal": "resonance",
       "votes": {
         "short": null,
         "mid": "resonance",
         "long": "resonance"
-      }
-    },
-    {
-      "theme_id": "gold_metals",
-      "cn_code": "512400",
-      "mapping_score": 2,
-      "confidence": 60,
-      "signal": null,
-      "votes": {
-        "short": "transmission",
-        "mid": null,
-        "long": null
       }
     },
     {
@@ -441,19 +506,7 @@
       }
     },
     {
-      "theme_id": "financial",
-      "cn_code": "512000",
-      "mapping_score": 9,
-      "confidence": 90,
-      "signal": null,
-      "votes": {
-        "short": null,
-        "mid": null,
-        "long": "divergence"
-      }
-    },
-    {
-      "theme_id": "financial",
+      "theme_id": "cn_banking",
       "cn_code": "512800",
       "mapping_score": 2,
       "confidence": 90,
@@ -508,7 +561,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "resonance",
+        "mid": null,
         "long": null
       }
     },

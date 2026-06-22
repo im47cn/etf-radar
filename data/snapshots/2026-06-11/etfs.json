@@ -6,6 +6,7 @@
       "code": "512480",
       "name": "半导体ETF国联安",
       "tracking_index": "中证全指半导体",
+      "theme_id": "storage_dram",
       "returns": {
         "r_1d": 0.014184634991956381,
         "r_5d": -0.029148489714417497,
@@ -17,7 +18,7 @@
       "amount_yi": 13.36248796,
       "price": 2.13,
       "strength": {
-        "short": 42,
+        "short": 40,
         "mid": 99,
         "long": 96,
         "composite": 86
@@ -27,6 +28,7 @@
       "code": "512760",
       "name": "芯片ETF",
       "tracking_index": "中华半导体芯片",
+      "theme_id": "storage_dram",
       "returns": {
         "r_1d": 0.007155665595412232,
         "r_5d": -0.050401631377068705,
@@ -39,15 +41,16 @@
       "price": 1.122,
       "strength": {
         "short": 22,
-        "mid": 7,
-        "long": 7,
-        "composite": 10
+        "mid": 6,
+        "long": 6,
+        "composite": 9
       }
     },
     {
       "code": "159995",
       "name": "芯片ETF华夏",
       "tracking_index": "国证芯片",
+      "theme_id": "semiconductor",
       "returns": {
         "r_1d": 0.005014636500864537,
         "r_5d": -0.05316731888187126,
@@ -59,16 +62,39 @@
       "amount_yi": 8.20719897,
       "price": 2.399,
       "strength": {
-        "short": 20,
+        "short": 21,
         "mid": 98,
         "long": 93,
-        "composite": 80
+        "composite": 81
+      }
+    },
+    {
+      "code": "159516",
+      "name": "半导体设备ETF国泰",
+      "tracking_index": "国证半导体设备",
+      "theme_id": "semiconductor",
+      "returns": {
+        "r_1d": 0.05133202330450121,
+        "r_5d": 0.08922132264043253,
+        "r_20d": 0.1739680239351882,
+        "r_60d": -0.22211285108308265,
+        "r_120d": -0.07783276202273363,
+        "r_ytd": -0.18489366918021008
+      },
+      "amount_yi": 30.23815587,
+      "price": 1.359,
+      "strength": {
+        "short": 99,
+        "mid": 50,
+        "long": 33,
+        "composite": 53
       }
     },
     {
       "code": "512720",
       "name": "计算机ETF国泰",
       "tracking_index": "中证计算机",
+      "theme_id": "cybersecurity",
       "returns": {
         "r_1d": -0.025495886517393304,
         "r_5d": -0.077092954205607,
@@ -80,16 +106,17 @@
       "amount_yi": 0.35053661,
       "price": 1.123,
       "strength": {
-        "short": 5,
-        "mid": 15,
-        "long": 43,
-        "composite": 24
+        "short": 4,
+        "mid": 14,
+        "long": 42,
+        "composite": 23
       }
     },
     {
       "code": "515980",
       "name": "人工智能ETF",
       "tracking_index": "中证人工智能主题",
+      "theme_id": "ai_compute",
       "returns": {
         "r_1d": -0.03122384045153285,
         "r_5d": -0.08491029065580867,
@@ -101,16 +128,17 @@
       "amount_yi": 2.87320859,
       "price": 1.072,
       "strength": {
-        "short": 2,
-        "mid": 90,
-        "long": 83,
-        "composite": 70
+        "short": 1,
+        "mid": 89,
+        "long": 82,
+        "composite": 69
       }
     },
     {
       "code": "588000",
       "name": "科创50ETF",
       "tracking_index": "上证科创板50",
+      "theme_id": "ai_compute",
       "returns": {
         "r_1d": 0.006857169726137045,
         "r_5d": -0.042369771039013654,
@@ -123,15 +151,16 @@
       "price": 1.756,
       "strength": {
         "short": 25,
-        "mid": 93,
-        "long": 85,
-        "composite": 76
+        "mid": 92,
+        "long": 84,
+        "composite": 75
       }
     },
     {
       "code": "162411",
       "name": "华宝油气",
       "tracking_index": "标普石油天然气上游",
+      "theme_id": "energy_oil",
       "returns": {
         "r_1d": 0.027587956518828963,
         "r_5d": -0.011274076573218108,
@@ -143,16 +172,17 @@
       "amount_yi": 1.44749408,
       "price": 0.882,
       "strength": {
-        "short": 97,
-        "mid": 63,
+        "short": 95,
+        "mid": 62,
         "long": 81,
-        "composite": 77
+        "composite": 76
       }
     },
     {
       "code": "515220",
       "name": "煤炭ETF",
       "tracking_index": "中证煤炭",
+      "theme_id": "cn_coal",
       "returns": {
         "r_1d": 0.0038240964384034758,
         "r_5d": -0.08764730705875566,
@@ -164,16 +194,17 @@
       "amount_yi": 8.35157356,
       "price": 1.31,
       "strength": {
-        "short": 10,
-        "mid": 81,
-        "long": 87,
-        "composite": 69
+        "short": 9,
+        "mid": 80,
+        "long": 86,
+        "composite": 68
       }
     },
     {
       "code": "515030",
       "name": "新能源车ETF",
       "tracking_index": "中证新能源汽车",
+      "theme_id": "new_energy_vehicle",
       "returns": {
         "r_1d": 0.0043692041106639995,
         "r_5d": -0.026352694647637658,
@@ -185,16 +216,17 @@
       "amount_yi": 1.98013082,
       "price": 1.835,
       "strength": {
-        "short": 35,
-        "mid": 38,
-        "long": 57,
-        "composite": 45
+        "short": 34,
+        "mid": 34,
+        "long": 55,
+        "composite": 42
       }
     },
     {
       "code": "159755",
       "name": "电池ETF",
       "tracking_index": "中证电池主题",
+      "theme_id": "cn_battery",
       "returns": {
         "r_1d": 0.007611835039630074,
         "r_5d": -0.03080038150572124,
@@ -206,16 +238,17 @@
       "amount_yi": 5.53955979,
       "price": 1.055,
       "strength": {
-        "short": 32,
-        "mid": 33,
-        "long": 56,
-        "composite": 42
+        "short": 31,
+        "mid": 30,
+        "long": 53,
+        "composite": 39
       }
     },
     {
       "code": "562500",
       "name": "机器人ETF",
       "tracking_index": "中证机器人",
+      "theme_id": "robotics",
       "returns": {
         "r_1d": -0.03780828353993867,
         "r_5d": -0.035154588926472614,
@@ -229,14 +262,37 @@
       "strength": {
         "short": 13,
         "mid": 75,
-        "long": 72,
+        "long": 70,
         "composite": 61
+      }
+    },
+    {
+      "code": "159559",
+      "name": "机器人ETF景顺",
+      "tracking_index": "中证机器人产业",
+      "theme_id": "robotics",
+      "returns": {
+        "r_1d": -0.046058441659469686,
+        "r_5d": -0.007225464961041959,
+        "r_20d": -0.019390194577308284,
+        "r_60d": 0.04828267874874601,
+        "r_120d": 0.042969573270976634,
+        "r_ytd": -0.042589829094066
+      },
+      "amount_yi": 1.81372724,
+      "price": 1.379,
+      "strength": {
+        "short": 16,
+        "mid": 69,
+        "long": 57,
+        "composite": 54
       }
     },
     {
       "code": "518880",
       "name": "黄金ETF",
       "tracking_index": "上海黄金交易所黄金现货合约",
+      "theme_id": "gold",
       "returns": {
         "r_1d": -0.026680622171107452,
         "r_5d": -0.08816675599430523,
@@ -249,15 +305,16 @@
       "price": 8.506,
       "strength": {
         "short": 3,
-        "mid": 8,
-        "long": 41,
-        "composite": 20
+        "mid": 7,
+        "long": 40,
+        "composite": 19
       }
     },
     {
       "code": "512400",
       "name": "有色金属ETF",
       "tracking_index": "中证有色金属",
+      "theme_id": "cn_base_metals",
       "returns": {
         "r_1d": 0.019877098154171585,
         "r_5d": -0.04676176590803933,
@@ -269,16 +326,17 @@
       "amount_yi": 12.7608366,
       "price": 1.88,
       "strength": {
-        "short": 29,
-        "mid": 24,
-        "long": 61,
-        "composite": 40
+        "short": 28,
+        "mid": 21,
+        "long": 60,
+        "composite": 38
       }
     },
     {
       "code": "513050",
       "name": "中概互联网ETF",
       "tracking_index": "中证海外中国互联网",
+      "theme_id": "china_internet",
       "returns": {
         "r_1d": -0.02573671464404982,
         "r_5d": -0.05436120921888726,
@@ -290,16 +348,17 @@
       "amount_yi": 22.55090227,
       "price": 1.074,
       "strength": {
-        "short": 12,
-        "mid": 10,
-        "long": 9,
-        "composite": 10
+        "short": 10,
+        "mid": 9,
+        "long": 8,
+        "composite": 9
       }
     },
     {
       "code": "513330",
       "name": "恒生互联网科技业ETF",
       "tracking_index": "恒生互联网科技业",
+      "theme_id": "china_internet",
       "returns": {
         "r_1d": -0.023347363996991177,
         "r_5d": -0.061087691979838266,
@@ -311,16 +370,17 @@
       "amount_yi": 21.182365,
       "price": 0.381,
       "strength": {
-        "short": 8,
-        "mid": 12,
-        "long": 11,
-        "composite": 11
+        "short": 7,
+        "mid": 11,
+        "long": 10,
+        "composite": 10
       }
     },
     {
       "code": "512000",
       "name": "券商ETF",
       "tracking_index": "中证全指证券公司",
+      "theme_id": "cn_brokerage",
       "returns": {
         "r_1d": -0.010320009031989472,
         "r_5d": -0.012371291802546829,
@@ -332,16 +392,17 @@
       "amount_yi": 8.86805382,
       "price": 0.482,
       "strength": {
-        "short": 34,
-        "mid": 36,
-        "long": 27,
-        "composite": 32
+        "short": 33,
+        "mid": 32,
+        "long": 25,
+        "composite": 29
       }
     },
     {
       "code": "512800",
       "name": "银行ETF",
       "tracking_index": "中证银行",
+      "theme_id": "cn_banking",
       "returns": {
         "r_1d": -0.004975134640113843,
         "r_5d": 0.03553673427678737,
@@ -353,16 +414,17 @@
       "amount_yi": 12.29474849,
       "price": 0.802,
       "strength": {
-        "short": 99,
+        "short": 98,
         "mid": 71,
-        "long": 53,
-        "composite": 69
+        "long": 51,
+        "composite": 68
       }
     },
     {
       "code": "515790",
       "name": "光伏ETF",
       "tracking_index": "中证光伏产业",
+      "theme_id": "solar_clean_energy",
       "returns": {
         "r_1d": -0.0030015030037565085,
         "r_5d": -0.0659153284143259,
@@ -375,15 +437,16 @@
       "price": 0.998,
       "strength": {
         "short": 15,
-        "mid": 26,
-        "long": 65,
-        "composite": 39
+        "mid": 23,
+        "long": 64,
+        "composite": 38
       }
     },
     {
       "code": "512290",
       "name": "生物医药ETF",
       "tracking_index": "中证生物医药",
+      "theme_id": "biotech",
       "returns": {
         "r_1d": -0.003502630551202112,
         "r_5d": -0.011628037995119099,
@@ -395,16 +458,17 @@
       "amount_yi": 0.66313728,
       "price": 0.855,
       "strength": {
-        "short": 40,
-        "mid": 28,
-        "long": 24,
-        "composite": 29
+        "short": 39,
+        "mid": 25,
+        "long": 22,
+        "composite": 27
       }
     },
     {
       "code": "159992",
       "name": "创新药ETF",
       "tracking_index": "中证创新药产业",
+      "theme_id": "biotech",
       "returns": {
         "r_1d": -0.004169568236724892,
         "r_5d": -0.008321823337492217,
@@ -416,16 +480,17 @@
       "amount_yi": 2.86524916,
       "price": 0.718,
       "strength": {
-        "short": 47,
-        "mid": 30,
-        "long": 26,
-        "composite": 32
+        "short": 45,
+        "mid": 27,
+        "long": 24,
+        "composite": 29
       }
     },
     {
       "code": "512660",
       "name": "军工ETF",
       "tracking_index": "中证军工",
+      "theme_id": "aerospace_defense",
       "returns": {
         "r_1d": -0.002458010250269004,
         "r_5d": -0.04726550545620859,
@@ -437,16 +502,17 @@
       "amount_yi": 2.5502638,
       "price": 1.219,
       "strength": {
-        "short": 18,
-        "mid": 14,
-        "long": 46,
-        "composite": 28
+        "short": 19,
+        "mid": 12,
+        "long": 44,
+        "composite": 26
       }
     },
     {
       "code": "512710",
       "name": "军工龙头ETF",
       "tracking_index": "中证军工龙头",
+      "theme_id": "aerospace_defense",
       "returns": {
         "r_1d": -0.0030581063588208846,
         "r_5d": -0.049300498449454236,
@@ -458,9 +524,9 @@
       "amount_yi": 2.54720008,
       "price": 0.653,
       "strength": {
-        "short": 17,
+        "short": 18,
         "mid": 5,
-        "long": 37,
+        "long": 36,
         "composite": 20
       }
     },
@@ -468,6 +534,7 @@
       "code": "516780",
       "name": "稀土ETF",
       "tracking_index": "中证稀土产业",
+      "theme_id": "rare_earth",
       "returns": {
         "r_1d": 0.010729716672567054,
         "r_5d": -0.01588175255294307,
@@ -479,8 +546,8 @@
       "amount_yi": 1.54229025,
       "price": 0.937,
       "strength": {
-        "short": 59,
-        "mid": 2,
+        "short": 57,
+        "mid": 1,
         "long": 2,
         "composite": 13
       }
@@ -489,6 +556,7 @@
       "code": "512690",
       "name": "酒ETF",
       "tracking_index": "中证酒",
+      "theme_id": "cn_liquor",
       "returns": {
         "r_1d": -0.004705891037412617,
         "r_5d": -0.021004272770532125,
@@ -501,15 +569,16 @@
       "price": 0.424,
       "strength": {
         "short": 30,
-        "mid": 21,
+        "mid": 18,
         "long": 15,
-        "composite": 20
+        "composite": 19
       }
     },
     {
       "code": "159928",
       "name": "消费ETF",
       "tracking_index": "中证主要消费",
+      "theme_id": "cn_consumer_staples",
       "returns": {
         "r_1d": 0.0,
         "r_5d": -0.013751171612824409,
@@ -521,16 +590,17 @@
       "amount_yi": 2.14326772,
       "price": 0.65,
       "strength": {
-        "short": 44,
-        "mid": 19,
-        "long": 20,
-        "composite": 24
+        "short": 42,
+        "mid": 17,
+        "long": 18,
+        "composite": 22
       }
     },
     {
       "code": "159883",
       "name": "医疗器械ETF",
       "tracking_index": "中证全指医疗器械",
+      "theme_id": "cn_medical_devices",
       "returns": {
         "r_1d": 0.0,
         "r_5d": -0.027779564107075706,
@@ -543,15 +613,16 @@
       "price": 0.426,
       "strength": {
         "short": 27,
-        "mid": 22,
-        "long": 31,
-        "composite": 27
+        "mid": 20,
+        "long": 29,
+        "composite": 25
       }
     },
     {
       "code": "159996",
       "name": "家电ETF",
       "tracking_index": "中证全指家电",
+      "theme_id": "cn_home_appliances",
       "returns": {
         "r_1d": 0.0034164706958972777,
         "r_5d": -0.012877168790203312,
@@ -563,16 +634,17 @@
       "amount_yi": 0.7839494,
       "price": 1.466,
       "strength": {
-        "short": 51,
-        "mid": 44,
-        "long": 49,
-        "composite": 47
+        "short": 49,
+        "mid": 40,
+        "long": 47,
+        "composite": 45
       }
     },
     {
       "code": "512200",
       "name": "地产ETF",
       "tracking_index": "中证800地产",
+      "theme_id": "cn_real_estate",
       "returns": {
         "r_1d": -0.0031695747612790672,
         "r_5d": -0.03585730989085276,
@@ -584,16 +656,17 @@
       "amount_yi": 1.26131221,
       "price": 1.26,
       "strength": {
-        "short": 23,
-        "mid": 17,
-        "long": 30,
-        "composite": 23
+        "short": 24,
+        "mid": 15,
+        "long": 28,
+        "composite": 22
       }
     },
     {
       "code": "159805",
       "name": "传媒ETF",
       "tracking_index": "中证传媒",
+      "theme_id": "cn_media",
       "returns": {
         "r_1d": -0.03500143890341239,
         "r_5d": -0.05985773100965791,
@@ -605,16 +678,17 @@
       "amount_yi": 0.23118561,
       "price": 1.151,
       "strength": {
-        "short": 7,
+        "short": 6,
         "mid": 3,
-        "long": 22,
-        "composite": 11
+        "long": 20,
+        "composite": 10
       }
     },
     {
       "code": "510880",
       "name": "红利ETF",
       "tracking_index": "上证红利",
+      "theme_id": "cn_dividend",
       "returns": {
         "r_1d": -0.0003067014285658735,
         "r_5d": -0.020343801657723495,
@@ -626,10 +700,54 @@
       "amount_yi": 2.96504768,
       "price": 3.26,
       "strength": {
-        "short": 37,
-        "mid": 58,
-        "long": 64,
-        "composite": 56
+        "short": 36,
+        "mid": 56,
+        "long": 62,
+        "composite": 54
+      }
+    },
+    {
+      "code": "588220",
+      "name": "科创100ETF鹏华",
+      "tracking_index": "上证科创板100",
+      "theme_id": "cn_star_100",
+      "returns": {
+        "r_1d": 0.00839165763624838,
+        "r_5d": -0.004446922280938019,
+        "r_20d": 0.0050265394859348314,
+        "r_60d": 0.20178552277939746,
+        "r_120d": 0.31269042661958313,
+        "r_ytd": 0.23083320821962827
+      },
+      "amount_yi": 4.16422866,
+      "price": 1.795,
+      "strength": {
+        "short": 80,
+        "mid": 95,
+        "long": 91,
+        "composite": 90
+      }
+    },
+    {
+      "code": "561560",
+      "name": "电力ETF华泰柏瑞",
+      "tracking_index": "中证全指电力公用事业",
+      "theme_id": "cn_power",
+      "returns": {
+        "r_1d": 0.004385971943254268,
+        "r_5d": -0.08323571937719045,
+        "r_20d": -0.0365239308008718,
+        "r_60d": -0.04213404369163849,
+        "r_120d": 0.09881741706889033,
+        "r_ytd": 0.11505153983077387
+      },
+      "amount_yi": 1.1391936,
+      "price": 1.371,
+      "strength": {
+        "short": 12,
+        "mid": 44,
+        "long": 74,
+        "composite": 50
       }
     }
   ]

@@ -27,28 +27,28 @@
         "r_ytd": 0.3483914891162737
       },
       "strength": {
-        "short": 96,
+        "short": 94,
         "mid": 0,
-        "long": 89,
+        "long": 90,
         "composite": 55
       },
       "us_strength": {
-        "short": 96,
+        "short": 94,
         "mid": 0,
-        "long": 89,
+        "long": 90,
         "composite": 55
       },
       "cn_strength": {
         "short": 99,
-        "mid": 98,
-        "long": 86,
+        "mid": 96,
+        "long": 87,
         "composite": 93
       },
       "rank": {
-        "short": 10,
-        "mid": 10,
-        "long": 10,
-        "composite": 10
+        "short": 13,
+        "mid": 13,
+        "long": 13,
+        "composite": 13
       }
     },
     {
@@ -63,7 +63,8 @@
       "primary_cn": "512480",
       "tags": [
         "半导体",
-        "芯片"
+        "芯片",
+        "半导体设备"
       ],
       "note": "",
       "returns": {
@@ -75,21 +76,21 @@
         "r_ytd": 0.38656270949638233
       },
       "strength": {
-        "short": 86,
+        "short": 84,
         "mid": 99,
         "long": 94,
         "composite": 94
       },
       "us_strength": {
-        "short": 86,
+        "short": 84,
         "mid": 99,
         "long": 94,
         "composite": 94
       },
       "cn_strength": {
         "short": 99,
-        "mid": 98,
-        "long": 86,
+        "mid": 96,
+        "long": 87,
         "composite": 93
       },
       "rank": {
@@ -122,28 +123,28 @@
         "r_ytd": -0.0450387784918646
       },
       "strength": {
-        "short": 51,
+        "short": 49,
         "mid": 61,
-        "long": 26,
-        "composite": 45
+        "long": 25,
+        "composite": 44
       },
       "us_strength": {
-        "short": 51,
+        "short": 49,
         "mid": 61,
-        "long": 26,
-        "composite": 45
+        "long": 25,
+        "composite": 44
       },
       "cn_strength": {
-        "short": 61,
-        "mid": 68,
-        "long": 53,
-        "composite": 61
+        "short": 62,
+        "mid": 64,
+        "long": 49,
+        "composite": 58
       },
       "rank": {
-        "short": 13,
-        "mid": 13,
-        "long": 13,
-        "composite": 13
+        "short": 19,
+        "mid": 19,
+        "long": 19,
+        "composite": 19
       }
     },
     {
@@ -171,33 +172,33 @@
         "r_ytd": 0.10493490180404363
       },
       "strength": {
-        "short": 79,
-        "mid": 88,
-        "long": 54,
-        "composite": 73
+        "short": 78,
+        "mid": 86,
+        "long": 48,
+        "composite": 69
       },
       "us_strength": {
-        "short": 79,
-        "mid": 88,
-        "long": 54,
-        "composite": 73
+        "short": 78,
+        "mid": 86,
+        "long": 48,
+        "composite": 69
       },
       "cn_strength": {
-        "short": 86,
-        "mid": 91,
-        "long": 80,
-        "composite": 86
+        "short": 85,
+        "mid": 88,
+        "long": 77,
+        "composite": 83
       },
       "rank": {
-        "short": 5,
-        "mid": 5,
-        "long": 5,
-        "composite": 5
+        "short": 8,
+        "mid": 8,
+        "long": 8,
+        "composite": 8
       }
     },
     {
       "id": "energy_oil",
-      "name": "原油/能源",
+      "name": "原油/油气",
       "us_etfs": [
         "XLE",
         "USO"
@@ -206,6 +207,7 @@
       "primary_cn": "162411",
       "tags": [
         "原油",
+        "油气",
         "能源"
       ],
       "note": "",
@@ -214,26 +216,66 @@
         "r_5d": 0.04579385308845787,
         "r_20d": 0.011465313411638006,
         "r_60d": 0.15012936239592933,
-        "r_120d": 0.3259179000584533,
+        "r_120d": 0.3259179886503468,
         "r_ytd": 0.27400303000141035
       },
       "strength": {
-        "short": 82,
-        "mid": 77,
-        "long": 84,
-        "composite": 81
+        "short": 81,
+        "mid": 76,
+        "long": 82,
+        "composite": 79
       },
       "us_strength": {
-        "short": 82,
-        "mid": 77,
-        "long": 84,
-        "composite": 81
+        "short": 81,
+        "mid": 76,
+        "long": 82,
+        "composite": 79
       },
       "cn_strength": {
-        "short": 95,
-        "mid": 86,
+        "short": 94,
+        "mid": 83,
         "long": 93,
-        "composite": 91
+        "composite": 89
+      },
+      "rank": {
+        "short": 7,
+        "mid": 7,
+        "long": 7,
+        "composite": 7
+      }
+    },
+    {
+      "id": "cn_coal",
+      "name": "煤炭",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "515220",
+      "tags": [
+        "煤炭",
+        "能源",
+        "红利"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": -0.003795070968551721,
+        "r_5d": 0.05389824526446634,
+        "r_20d": 0.08074003566781468,
+        "r_60d": 0.2033782019811665,
+        "r_120d": 0.1066287466458214,
+        "r_ytd": 0.24040188954349048
+      },
+      "strength": {
+        "short": 89,
+        "mid": 99,
+        "long": 81,
+        "composite": 90
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 89,
+        "mid": 99,
+        "long": 81,
+        "composite": 90
       },
       "rank": {
         "short": 4,
@@ -244,17 +286,16 @@
     },
     {
       "id": "new_energy_vehicle",
-      "name": "新能源车/锂电",
+      "name": "新能源车",
       "us_etfs": [
         "DRIV",
-        "LIT",
         "HAIL"
       ],
       "primary_us": "DRIV",
       "primary_cn": "515030",
       "tags": [
         "新能源车",
-        "锂电池"
+        "智能出行"
       ],
       "note": "",
       "returns": {
@@ -266,22 +307,68 @@
         "r_ytd": 0.20744645880534263
       },
       "strength": {
-        "short": 93,
-        "mid": 96,
-        "long": 77,
-        "composite": 88
+        "short": 91,
+        "mid": 93,
+        "long": 72,
+        "composite": 84
       },
       "us_strength": {
-        "short": 93,
-        "mid": 96,
-        "long": 77,
-        "composite": 88
+        "short": 91,
+        "mid": 93,
+        "long": 72,
+        "composite": 84
       },
       "cn_strength": {
         "short": 93,
-        "mid": 94,
-        "long": 75,
-        "composite": 86
+        "mid": 93,
+        "long": 71,
+        "composite": 84
+      },
+      "rank": {
+        "short": 6,
+        "mid": 6,
+        "long": 6,
+        "composite": 6
+      }
+    },
+    {
+      "id": "cn_battery",
+      "name": "锂电池",
+      "us_etfs": [
+        "LIT"
+      ],
+      "primary_us": "LIT",
+      "primary_cn": "159755",
+      "tags": [
+        "锂电池",
+        "储能"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.036585907335482074,
+        "r_5d": 0.071513487678347,
+        "r_20d": 0.1700668861649091,
+        "r_60d": 0.20408895981753,
+        "r_120d": 0.375511327880443,
+        "r_ytd": 0.2863230952911952
+      },
+      "strength": {
+        "short": 97,
+        "mid": 97,
+        "long": 86,
+        "composite": 93
+      },
+      "us_strength": {
+        "short": 97,
+        "mid": 97,
+        "long": 86,
+        "composite": 93
+      },
+      "cn_strength": {
+        "short": 81,
+        "mid": 91,
+        "long": 69,
+        "composite": 80
       },
       "rank": {
         "short": 3,
@@ -314,44 +401,43 @@
         "r_ytd": 0.04630954322474223
       },
       "strength": {
-        "short": 89,
-        "mid": 81,
-        "long": 47,
-        "composite": 69
+        "short": 87,
+        "mid": 80,
+        "long": 41,
+        "composite": 66
       },
       "us_strength": {
-        "short": 89,
-        "mid": 81,
-        "long": 47,
-        "composite": 69
+        "short": 87,
+        "mid": 80,
+        "long": 41,
+        "composite": 66
       },
       "cn_strength": {
-        "short": 81,
-        "mid": 60,
-        "long": 49,
-        "composite": 60
+        "short": 80,
+        "mid": 55,
+        "long": 45,
+        "composite": 56
       },
       "rank": {
-        "short": 6,
-        "mid": 6,
-        "long": 6,
-        "composite": 6
+        "short": 10,
+        "mid": 10,
+        "long": 10,
+        "composite": 10
       }
     },
     {
-      "id": "gold_metals",
-      "name": "黄金/有色",
+      "id": "gold",
+      "name": "黄金",
       "us_etfs": [
         "GLD",
-        "SLV",
-        "PICK"
+        "SLV"
       ],
       "primary_us": "GLD",
       "primary_cn": "518880",
       "tags": [
         "黄金",
         "贵金属",
-        "有色"
+        "避险"
       ],
       "note": "",
       "returns": {
@@ -363,28 +449,74 @@
         "r_ytd": 0.0617759829453459
       },
       "strength": {
-        "short": 26,
-        "mid": 16,
-        "long": 59,
-        "composite": 35
+        "short": 25,
+        "mid": 15,
+        "long": 56,
+        "composite": 33
       },
       "us_strength": {
-        "short": 26,
-        "mid": 16,
-        "long": 59,
-        "composite": 35
+        "short": 25,
+        "mid": 15,
+        "long": 56,
+        "composite": 33
       },
       "cn_strength": {
-        "short": 13,
-        "mid": 11,
-        "long": 61,
-        "composite": 31
+        "short": 12,
+        "mid": 9,
+        "long": 56,
+        "composite": 28
       },
       "rank": {
-        "short": 17,
-        "mid": 17,
-        "long": 17,
-        "composite": 17
+        "short": 22,
+        "mid": 22,
+        "long": 22,
+        "composite": 22
+      }
+    },
+    {
+      "id": "cn_base_metals",
+      "name": "有色金属",
+      "us_etfs": [
+        "PICK"
+      ],
+      "primary_us": "PICK",
+      "primary_cn": "512400",
+      "tags": [
+        "有色",
+        "工业金属"
+      ],
+      "note": "A股有色对应美股金属矿业",
+      "returns": {
+        "r_1d": 0.025317766352974242,
+        "r_5d": -0.002593989716942276,
+        "r_20d": 0.06280841398523652,
+        "r_60d": 0.009787975654536438,
+        "r_120d": 0.32440104950413656,
+        "r_ytd": 0.16251893684447788
+      },
+      "strength": {
+        "short": 68,
+        "mid": 58,
+        "long": 77,
+        "composite": 68
+      },
+      "us_strength": {
+        "short": 68,
+        "mid": 58,
+        "long": 77,
+        "composite": 68
+      },
+      "cn_strength": {
+        "short": 44,
+        "mid": 23,
+        "long": 75,
+        "composite": 48
+      },
+      "rank": {
+        "short": 9,
+        "mid": 9,
+        "long": 9,
+        "composite": 9
       }
     },
     {
@@ -413,75 +545,114 @@
       "strength": {
         "short": 75,
         "mid": 7,
-        "long": 12,
-        "composite": 23
+        "long": 11,
+        "composite": 22
       },
       "us_strength": {
         "short": 75,
         "mid": 7,
-        "long": 12,
-        "composite": 23
+        "long": 11,
+        "composite": 22
       },
       "cn_strength": {
-        "short": 5,
-        "mid": 3,
+        "short": 4,
+        "mid": 2,
         "long": 8,
         "composite": 5
       },
       "rank": {
-        "short": 18,
-        "mid": 18,
-        "long": 18,
-        "composite": 18
+        "short": 24,
+        "mid": 24,
+        "long": 24,
+        "composite": 24
       }
     },
     {
-      "id": "financial",
-      "name": "金融/券商银行",
-      "us_etfs": [
-        "XLF",
-        "KBE",
-        "KRE"
-      ],
-      "primary_us": "XLF",
+      "id": "cn_brokerage",
+      "name": "券商",
+      "us_etfs": [],
+      "primary_us": null,
       "primary_cn": "512000",
       "tags": [
+        "券商",
         "金融",
-        "银行",
-        "券商"
+        "高 beta"
       ],
       "note": "",
       "returns": {
-        "r_1d": 0.004036582140481254,
-        "r_5d": 0.006350484732591828,
-        "r_20d": 0.052980833896955175,
-        "r_60d": -0.021374377414805627,
-        "r_120d": -0.0003593058215140178,
-        "r_ytd": -0.047191800771756325
+        "r_1d": 0.003883500026397612,
+        "r_5d": 0.013658748931040044,
+        "r_20d": 0.033500669730043994,
+        "r_60d": -0.10477895123317676,
+        "r_120d": -0.15082288973458352,
+        "r_ytd": -0.1340157714182023
       },
       "strength": {
-        "short": 59,
-        "mid": 46,
-        "long": 34,
-        "composite": 44
+        "short": 77,
+        "mid": 25,
+        "long": 19,
+        "composite": 33
       },
-      "us_strength": {
-        "short": 59,
-        "mid": 46,
-        "long": 34,
-        "composite": 44
-      },
+      "us_strength": null,
       "cn_strength": {
         "short": 77,
-        "mid": 27,
-        "long": 21,
-        "composite": 35
+        "mid": 25,
+        "long": 19,
+        "composite": 33
       },
       "rank": {
+        "short": 23,
+        "mid": 23,
+        "long": 23,
+        "composite": 23
+      }
+    },
+    {
+      "id": "cn_banking",
+      "name": "银行",
+      "us_etfs": [
+        "KBE",
+        "KRE"
+      ],
+      "primary_us": "KBE",
+      "primary_cn": "512800",
+      "tags": [
+        "银行",
+        "金融",
+        "高股息"
+      ],
+      "note": "A股银行对应美股商业+区域银行",
+      "returns": {
+        "r_1d": 0.009076773071818188,
+        "r_5d": -0.0021786405286282726,
+        "r_20d": 0.0658376572055836,
+        "r_60d": -0.01024706073901935,
+        "r_120d": 0.1285460292211797,
+        "r_ytd": 0.05401566862262801
+      },
+      "strength": {
+        "short": 53,
+        "mid": 52,
+        "long": 51,
+        "composite": 52
+      },
+      "us_strength": {
+        "short": 53,
+        "mid": 52,
+        "long": 51,
+        "composite": 52
+      },
+      "cn_strength": {
         "short": 14,
-        "mid": 14,
-        "long": 14,
-        "composite": 14
+        "mid": 57,
+        "long": 39,
+        "composite": 41
+      },
+      "rank": {
+        "short": 16,
+        "mid": 16,
+        "long": 16,
+        "composite": 16
       }
     },
     {
@@ -507,28 +678,28 @@
         "r_ytd": 0.12396546252363905
       },
       "strength": {
-        "short": 71,
+        "short": 72,
         "mid": 67,
-        "long": 64,
-        "composite": 67
+        "long": 60,
+        "composite": 65
       },
       "us_strength": {
-        "short": 71,
+        "short": 72,
         "mid": 67,
-        "long": 64,
-        "composite": 67
+        "long": 60,
+        "composite": 65
       },
       "cn_strength": {
-        "short": 19,
-        "mid": 36,
-        "long": 67,
-        "composite": 45
+        "short": 20,
+        "mid": 34,
+        "long": 63,
+        "composite": 43
       },
       "rank": {
-        "short": 8,
-        "mid": 8,
-        "long": 8,
-        "composite": 8
+        "short": 12,
+        "mid": 12,
+        "long": 12,
+        "composite": 12
       }
     },
     {
@@ -556,27 +727,27 @@
       },
       "strength": {
         "short": 16,
-        "mid": 54,
-        "long": 68,
-        "composite": 52
+        "mid": 48,
+        "long": 64,
+        "composite": 48
       },
       "us_strength": {
         "short": 16,
-        "mid": 54,
-        "long": 68,
-        "composite": 52
+        "mid": 48,
+        "long": 64,
+        "composite": 48
       },
       "cn_strength": {
         "short": 72,
-        "mid": 30,
-        "long": 32,
-        "composite": 39
+        "mid": 28,
+        "long": 29,
+        "composite": 37
       },
       "rank": {
-        "short": 11,
-        "mid": 11,
-        "long": 11,
-        "composite": 11
+        "short": 17,
+        "mid": 17,
+        "long": 17,
+        "composite": 17
       }
     },
     {
@@ -604,28 +775,28 @@
         "r_ytd": -0.015013017943833442
       },
       "strength": {
-        "short": 67,
-        "mid": 21,
-        "long": 41,
-        "composite": 38
+        "short": 65,
+        "mid": 19,
+        "long": 36,
+        "composite": 35
       },
       "us_strength": {
-        "short": 67,
-        "mid": 21,
-        "long": 41,
-        "composite": 38
+        "short": 65,
+        "mid": 19,
+        "long": 36,
+        "composite": 35
       },
       "cn_strength": {
         "short": 37,
-        "mid": 45,
-        "long": 65,
-        "composite": 51
+        "mid": 42,
+        "long": 61,
+        "composite": 49
       },
       "rank": {
-        "short": 16,
-        "mid": 16,
-        "long": 16,
-        "composite": 16
+        "short": 21,
+        "mid": 21,
+        "long": 21,
+        "composite": 21
       }
     },
     {
@@ -652,21 +823,21 @@
       },
       "strength": {
         "short": 99,
-        "mid": 92,
+        "mid": 90,
         "long": 97,
         "composite": 95
       },
       "us_strength": {
         "short": 99,
-        "mid": 92,
+        "mid": 90,
         "long": 97,
         "composite": 95
       },
       "cn_strength": {
-        "short": 90,
-        "mid": 74,
-        "long": 71,
-        "composite": 76
+        "short": 91,
+        "mid": 69,
+        "long": 67,
+        "composite": 73
       },
       "rank": {
         "short": 1,
@@ -695,23 +866,23 @@
         "r_ytd": -0.12053406902827338
       },
       "strength": {
-        "short": 11,
-        "mid": 21,
-        "long": 17,
-        "composite": 17
+        "short": 10,
+        "mid": 19,
+        "long": 16,
+        "composite": 16
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 11,
-        "mid": 21,
-        "long": 17,
-        "composite": 17
+        "short": 10,
+        "mid": 19,
+        "long": 16,
+        "composite": 16
       },
       "rank": {
-        "short": 21,
-        "mid": 21,
-        "long": 21,
-        "composite": 21
+        "short": 27,
+        "mid": 27,
+        "long": 27,
+        "composite": 27
       }
     },
     {
@@ -734,23 +905,23 @@
         "r_ytd": -0.0710434227336972
       },
       "strength": {
-        "short": 75,
-        "mid": 43,
-        "long": 29,
-        "composite": 44
+        "short": 74,
+        "mid": 40,
+        "long": 27,
+        "composite": 42
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 75,
-        "mid": 43,
-        "long": 29,
-        "composite": 44
+        "short": 74,
+        "mid": 40,
+        "long": 27,
+        "composite": 42
       },
       "rank": {
-        "short": 15,
-        "mid": 15,
-        "long": 15,
-        "composite": 15
+        "short": 20,
+        "mid": 20,
+        "long": 20,
+        "composite": 20
       }
     },
     {
@@ -774,22 +945,22 @@
       },
       "strength": {
         "short": 8,
-        "mid": 15,
-        "long": 27,
-        "composite": 18
+        "mid": 13,
+        "long": 25,
+        "composite": 17
       },
       "us_strength": null,
       "cn_strength": {
         "short": 8,
-        "mid": 15,
-        "long": 27,
-        "composite": 18
+        "mid": 13,
+        "long": 25,
+        "composite": 17
       },
       "rank": {
-        "short": 20,
-        "mid": 20,
-        "long": 20,
-        "composite": 20
+        "short": 25,
+        "mid": 25,
+        "long": 25,
+        "composite": 25
       }
     },
     {
@@ -813,22 +984,22 @@
       },
       "strength": {
         "short": 83,
-        "mid": 55,
-        "long": 45,
-        "composite": 57
+        "mid": 50,
+        "long": 42,
+        "composite": 53
       },
       "us_strength": null,
       "cn_strength": {
         "short": 83,
-        "mid": 55,
-        "long": 45,
-        "composite": 57
+        "mid": 50,
+        "long": 42,
+        "composite": 53
       },
       "rank": {
-        "short": 9,
-        "mid": 9,
-        "long": 9,
-        "composite": 9
+        "short": 15,
+        "mid": 15,
+        "long": 15,
+        "composite": 15
       }
     },
     {
@@ -850,23 +1021,23 @@
         "r_ytd": -0.05150189571640218
       },
       "strength": {
-        "short": 88,
-        "mid": 49,
-        "long": 35,
-        "composite": 51
+        "short": 87,
+        "mid": 45,
+        "long": 31,
+        "composite": 48
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 88,
-        "mid": 49,
-        "long": 35,
-        "composite": 51
+        "short": 87,
+        "mid": 45,
+        "long": 31,
+        "composite": 48
       },
       "rank": {
-        "short": 12,
-        "mid": 12,
-        "long": 12,
-        "composite": 12
+        "short": 18,
+        "mid": 18,
+        "long": 18,
+        "composite": 18
       }
     },
     {
@@ -891,22 +1062,22 @@
       },
       "strength": {
         "short": 2,
-        "mid": 6,
-        "long": 40,
-        "composite": 19
+        "mid": 5,
+        "long": 36,
+        "composite": 17
       },
       "us_strength": null,
       "cn_strength": {
         "short": 2,
-        "mid": 6,
-        "long": 40,
-        "composite": 19
+        "mid": 5,
+        "long": 36,
+        "composite": 17
       },
       "rank": {
-        "short": 19,
-        "mid": 19,
-        "long": 19,
-        "composite": 19
+        "short": 26,
+        "mid": 26,
+        "long": 26,
+        "composite": 26
       }
     },
     {
@@ -929,23 +1100,103 @@
         "r_ytd": 0.04938896658253395
       },
       "strength": {
-        "short": 68,
-        "mid": 81,
-        "long": 57,
-        "composite": 69
+        "short": 69,
+        "mid": 78,
+        "long": 53,
+        "composite": 66
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 68,
-        "mid": 81,
-        "long": 57,
-        "composite": 69
+        "short": 69,
+        "mid": 78,
+        "long": 53,
+        "composite": 66
       },
       "rank": {
-        "short": 7,
-        "mid": 7,
-        "long": 7,
-        "composite": 7
+        "short": 11,
+        "mid": 11,
+        "long": 11,
+        "composite": 11
+      }
+    },
+    {
+      "id": "cn_star_100",
+      "name": "科创100",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "588220",
+      "tags": [
+        "科创板",
+        "中小盘",
+        "成长"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.026830877796956448,
+        "r_5d": 0.046176254888984435,
+        "r_20d": 0.14546408933636845,
+        "r_60d": 0.02806773633435273,
+        "r_120d": 0.20791710398291832,
+        "r_ytd": 0.15384988271264258
+      },
+      "strength": {
+        "short": 96,
+        "mid": 86,
+        "long": 83,
+        "composite": 87
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 96,
+        "mid": 86,
+        "long": 83,
+        "composite": 87
+      },
+      "rank": {
+        "short": 5,
+        "mid": 5,
+        "long": 5,
+        "composite": 5
+      }
+    },
+    {
+      "id": "cn_power",
+      "name": "电力",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "561560",
+      "tags": [
+        "电力",
+        "公用事业",
+        "红利"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": -0.013284328198734282,
+        "r_5d": -0.026394494122942,
+        "r_20d": 0.005961269516499446,
+        "r_60d": 0.06840930161442592,
+        "r_120d": 0.045600605407108544,
+        "r_ytd": 0.0966483704731325
+      },
+      "strength": {
+        "short": 6,
+        "mid": 72,
+        "long": 59,
+        "composite": 54
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 6,
+        "mid": 72,
+        "long": 59,
+        "composite": 54
+      },
+      "rank": {
+        "short": 14,
+        "mid": 14,
+        "long": 14,
+        "composite": 14
       }
     }
   ]

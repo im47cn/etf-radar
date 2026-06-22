@@ -166,6 +166,21 @@ describe('EtfsFileSchema', () => {
     const parsed = EtfsFileSchema.parse(valid);
     expect(parsed.etfs[0].amount_yi).toBeNull();
   });
+
+  it('theme_id 可缺也可填 (向后兼容历史快照)', () => {
+    const base = {
+      code: '562500', name: '机器人ETF', tracking_index: '中证机器人',
+      returns: { r_1d: null, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
+      amount_yi: null, price: 1.5,
+      strength: { short: 50, mid: 50, long: 50, composite: 50 },
+    };
+    const wrap = (etf: object) => ({
+      schema_version: '1.0', generated_at: '2026-06-22T16:00:00+08:00', etfs: [etf],
+    });
+    expect(() => EtfsFileSchema.parse(wrap(base))).not.toThrow();
+    const withTid = EtfsFileSchema.parse(wrap({ ...base, theme_id: 'robotics' }));
+    expect(withTid.etfs[0].theme_id).toBe('robotics');
+  });
 });
 
 // ----- 数值约束 (立场 B): 数值越界一律拒绝 -----

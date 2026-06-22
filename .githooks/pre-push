@@ -9,7 +9,7 @@
 #   - CI 是 source of truth, push 后由 GitHub Actions 验证
 #
 # 触发规则: 仅当对应目录有改动时跑对应工具 (与 CI 不同 path 触发条件一致).
-#   - backend/  变动 → ruff check
+#   - backend/  变动 → ruff check + mypy src
 #   - frontend/ 变动 → npm run lint + npm run typecheck + npm run build
 #   - 两者皆无 → 全跳过
 #
@@ -73,8 +73,15 @@ if [ "$RUN_BACKEND" -eq 1 ]; then
     echo "[pre-push] Emergency bypass: git push --no-verify"
     exit 1
   fi
+  echo "[pre-push] mypy src..."
+  if ! (cd "$BACKEND" && uv run mypy src); then
+    echo ""
+    echo "[pre-push] BLOCKED by mypy. Fix the type errors above."
+    echo "[pre-push] Emergency bypass: git push --no-verify"
+    exit 1
+  fi
 else
-  echo "[pre-push] no backend changes, skip ruff"
+  echo "[pre-push] no backend changes, skip ruff + mypy"
 fi
 
 if [ "$RUN_FRONTEND" -eq 1 ]; then

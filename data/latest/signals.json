@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-22T11:21:57.789515+08:00",
+  "generated_at": "2026-06-22T11:40:27.959771+08:00",
   "summary": {
     "themes_total": 23,
-    "etfs_total": 33,
+    "etfs_total": 34,
     "resonance_count": 4,
-    "transmission_count": 5,
+    "transmission_count": 7,
     "divergence_count": 0,
     "top_theme": {
       "id": "storage_dram",
@@ -17,14 +17,14 @@
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "512760",
       "votes": {
         "short": "resonance",
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股存储芯片中长期走强"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "semiconductor",
@@ -72,22 +72,22 @@
     },
     {
       "theme_id": "new_energy_vehicle",
-      "signal": "transmission",
-      "trigger_cn_etf": "515030",
+      "signal": "resonance",
+      "trigger_cn_etf": "159755",
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股新能源车/锂电中长期走强"
     },
     {
       "theme_id": "robotics",
       "signal": "transmission",
       "trigger_cn_etf": "562500",
       "votes": {
-        "short": "transmission",
-        "mid": null,
+        "short": "resonance",
+        "mid": "transmission",
         "long": "transmission"
       },
       "description": "美股领先, A股尚未完全跟随"
@@ -127,12 +127,12 @@
     },
     {
       "theme_id": "solar_clean_energy",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "515790",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "divergence",
+        "long": "resonance"
       },
       "description": "美股光伏/清洁能源动量观察中"
     },
@@ -149,25 +149,25 @@
     },
     {
       "theme_id": "aerospace_defense",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "512710",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
       },
-      "description": "美股航天军工动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "rare_earth",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "516780",
       "votes": {
         "short": "resonance",
-        "mid": null,
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股稀土/新材料动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cn_liquor",
@@ -287,11 +287,11 @@
       "cn_code": "512760",
       "mapping_score": 21,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
         "short": "resonance",
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       }
     },
     {
@@ -321,13 +321,13 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 10,
+      "mapping_score": 22,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
         "short": "resonance",
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": null,
+        "long": "transmission"
       }
     },
     {
@@ -395,11 +395,11 @@
       "cn_code": "515030",
       "mapping_score": 23,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": null,
+        "long": null
       }
     },
     {
@@ -407,11 +407,11 @@
       "cn_code": "159755",
       "mapping_score": 25,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": null,
-        "long": null
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -421,9 +421,21 @@
       "confidence": 90,
       "signal": "transmission",
       "votes": {
-        "short": "transmission",
-        "mid": null,
+        "short": "resonance",
+        "mid": "transmission",
         "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "robotics",
+      "cn_code": "159559",
+      "mapping_score": 24,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": "transmission",
+        "mid": "resonance",
+        "long": null
       }
     },
     {
@@ -433,7 +445,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -482,7 +494,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "resonance",
+        "mid": null,
         "long": null
       }
     },
@@ -494,7 +506,7 @@
       "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": null,
+        "mid": "divergence",
         "long": null
       }
     },
@@ -503,9 +515,9 @@
       "cn_code": "515790",
       "mapping_score": 8,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": "divergence",
         "long": "resonance"
       }
@@ -551,9 +563,9 @@
       "cn_code": "512710",
       "mapping_score": 32,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
         "long": "divergence"
       }
@@ -563,11 +575,11 @@
       "cn_code": "516780",
       "mapping_score": 49,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
         "short": "resonance",
-        "mid": null,
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       }
     }
   ]

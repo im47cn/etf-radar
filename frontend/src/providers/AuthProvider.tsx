@@ -44,13 +44,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error?.message ?? null };
   }, []);
 
+  const signInWithGithub = useCallback(async () => {
+    if (!isSupabaseConfigured()) return { error: '未配置 Supabase' };
+    const { error } = await getSupabase().auth.signInWithOAuth({
+      provider: 'github',
+      options:  { redirectTo: `${window.location.origin}/etf-radar/#/auth/callback` },
+    });
+    return { error: error?.message ?? null };
+  }, []);
+
   const signOut = useCallback(async () => {
     if (!isSupabaseConfigured()) return;
     await getSupabase().auth.signOut();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ status, user, signInWithMagicLink, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ status, user, signInWithMagicLink, signInWithGoogle, signInWithGithub, signOut }}>
       {children}
     </AuthContext.Provider>
   );

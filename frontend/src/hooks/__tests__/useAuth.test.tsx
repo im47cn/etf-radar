@@ -32,10 +32,11 @@ describe('useAuth', () => {
     expect(result.current.user).toBeNull();
   });
 
-  it('exposes signInWithMagicLink, signInWithGoogle, signOut', () => {
+  it('exposes signInWithMagicLink, signInWithGoogle, signInWithGithub, signOut', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     expect(typeof result.current.signInWithMagicLink).toBe('function');
     expect(typeof result.current.signInWithGoogle).toBe('function');
+    expect(typeof result.current.signInWithGithub).toBe('function');
     expect(typeof result.current.signOut).toBe('function');
   });
 });

@@ -8,6 +8,7 @@ export interface AuthContextValue {
   user:   User | null;
   signInWithMagicLink: (email: string) => Promise<{ error: string | null }>;
   signInWithGoogle:    () => Promise<{ error: string | null }>;
+  signInWithGithub:    () => Promise<{ error: string | null }>;
   signOut:             () => Promise<void>;
 }
 

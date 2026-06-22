@@ -9,6 +9,7 @@ const renderWithAuth = (status: 'loading' | 'anonymous' | 'unconfigured', overri
     user: null,
     signInWithMagicLink: vi.fn().mockResolvedValue({ error: null }),
     signInWithGoogle:    vi.fn().mockResolvedValue({ error: null }),
+    signInWithGithub:    vi.fn().mockResolvedValue({ error: null }),
     signOut:             vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
@@ -33,6 +34,7 @@ describe('AuthGate', () => {
     expect(screen.getByText(/持仓信号监控/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /发送登录链接/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Google/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /GitHub/ })).toBeInTheDocument();
   });
 
   it('unconfigured: shows config-missing message', () => {

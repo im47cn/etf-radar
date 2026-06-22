@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 export const AuthGate = ({ children }: { children: ReactNode }) => {
-  const { status, signInWithMagicLink, signInWithGoogle } = useAuth();
+  const { status, signInWithMagicLink, signInWithGoogle, signInWithGithub } = useAuth();
   const [email, setEmail]   = useState('');
   const [msg, setMsg]       = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -64,9 +64,16 @@ export const AuthGate = ({ children }: { children: ReactNode }) => {
 
       <button
         onClick={signInWithGoogle}
-        className="w-full px-4 py-2 border rounded hover:bg-gray-50"
+        className="w-full px-4 py-2 border rounded hover:bg-gray-50 mb-2"
       >
         使用 Google 登录
+      </button>
+
+      <button
+        onClick={signInWithGithub}
+        className="w-full px-4 py-2 border rounded hover:bg-gray-50"
+      >
+        使用 GitHub 登录
       </button>
 
       {msg && (

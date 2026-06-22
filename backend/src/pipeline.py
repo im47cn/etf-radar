@@ -375,6 +375,12 @@ def compute_outputs(
         ],
     }
 
+    # 1:N 主题归属 — 先扫全 themes 建 cn_code → [theme_id, ...] 映射（按配置顺序）
+    cn_code_to_theme_ids: dict[str, list[str]] = {}
+    for t in themes:
+        for cn in t.cn_etfs:
+            cn_code_to_theme_ids.setdefault(cn.code, []).append(t.id)
+
     etfs_list: list[dict[str, Any]] = []
     cn_codes_seen: set[str] = set()
     for t in themes:
@@ -391,9 +397,11 @@ def compute_outputs(
                 amount_raw = df['amount'].iloc[-1]
                 if pd.notna(amount_raw):
                     amount = float(amount_raw) / 1e8
+            theme_ids = cn_code_to_theme_ids[cn.code]
             etfs_list.append({
                 'code': cn.code, 'name': cn.name, 'tracking_index': cn.tracking,
-                'theme_id': t.id,
+                'theme_id': theme_ids[0],   # 主归属 = 配置首次出现
+                'theme_ids': theme_ids,     # 全部归属（含主归属）
                 'returns': r.model_dump(),
                 'amount_yi': amount, 'price': price,
                 'strength': cn_strengths.get(

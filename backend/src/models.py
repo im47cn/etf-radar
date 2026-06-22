@@ -106,11 +106,20 @@ class EtfOutput(BaseModel):
     code: str
     name: str
     tracking_index: str
-    theme_id: str
+    theme_id: str                     # 主归属（首次出现的主题，向后兼容）
+    theme_ids: list[str] = Field(min_length=1)  # 全部归属（含主归属），1:N
     returns: Returns
     amount_yi: Optional[float] = None
     price: Optional[float] = None
     strength: Strength
+
+    @model_validator(mode='after')
+    def _validate_theme_ids(self) -> 'EtfOutput':
+        if self.theme_id not in self.theme_ids:
+            raise ValueError(
+                f"etf {self.code}: theme_id={self.theme_id} must be in theme_ids={self.theme_ids}"
+            )
+        return self
 
 
 class PairSignal(BaseModel):

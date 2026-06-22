@@ -273,3 +273,35 @@ def test_compute_outputs_etf_has_theme_id(config):
     assert code_to_theme['512480'] == 'storage_dram'
     # 所有 etf 都有非空 theme_id
     assert all(e.get('theme_id') for e in etfs_json['etfs'])
+
+
+def test_compute_outputs_etf_has_theme_ids_1_to_n(config):
+    """1:N 主题归属 — 每个 ETF 携带完整 theme_ids，跨主题 ETF 多归属。
+
+    - 单一主题 ETF（如 robotics 的 562500）：theme_ids 长度 1
+    - 跨主题 ETF（如 512480 同属 storage_dram + semiconductor）：theme_ids 含两个
+    - 主归属 theme_id 必须是 theme_ids 首项（配置首次出现）
+    """
+    themes, algo = config
+    asof = datetime(2026, 6, 22, 16, 0, tzinfo=BJT)
+    _, etfs_json, _, _ = compute_outputs(
+        themes, us_ohlc={}, cn_ohlc={}, us_failed=[], cn_failed=[], algo=algo,
+        asof_bjt=asof, mode=PipelineMode.FULL,
+    )
+    code_to_record = {e['code']: e for e in etfs_json['etfs']}
+
+    # 跨主题 ETF：theme_ids 含两个主题，按配置顺序
+    rec_512480 = code_to_record['512480']
+    assert rec_512480['theme_ids'] == ['storage_dram', 'semiconductor']
+    assert rec_512480['theme_id'] == 'storage_dram'
+
+    # 单一主题 ETF：theme_ids 长度 1，且首项即主归属
+    rec_562500 = code_to_record['562500']
+    assert rec_562500['theme_ids'] == ['robotics']
+    assert rec_562500['theme_id'] == 'robotics'
+
+    # 不变量：theme_id ∈ theme_ids 对所有 etf 都成立
+    for e in etfs_json['etfs']:
+        assert e['theme_id'] in e['theme_ids'], (
+            f"{e['code']}: theme_id={e['theme_id']} not in {e['theme_ids']}"
+        )

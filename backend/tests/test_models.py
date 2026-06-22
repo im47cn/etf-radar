@@ -118,9 +118,41 @@ def test_etf_output_requires_theme_id():
         )
     e = EtfOutput(
         code='562500', name='机器人ETF', tracking_index='中证机器人',
-        theme_id='robotics',
+        theme_id='robotics', theme_ids=['robotics'],
         returns=Returns(), strength=Strength(short=0, mid=0, long=0, composite=0),
     )
     assert e.theme_id == 'robotics'
+
+
+# ── Task 1 (1:N 改造): theme_ids 字段约束 ──────────────────────────────
+def test_etf_output_theme_ids_required_min_one():
+    """theme_ids 必填且至少 1 项。"""
+    with pytest.raises(ValidationError):
+        EtfOutput(
+            code='c', name='n', tracking_index='t',
+            theme_id='a', theme_ids=[],
+            returns=Returns(), strength=Strength(short=0, mid=0, long=0, composite=0),
+        )
+
+
+def test_etf_output_theme_id_must_be_in_theme_ids():
+    """主归属 theme_id 必须出现在 theme_ids 中（不变量）。"""
+    with pytest.raises(ValidationError, match='must be in theme_ids'):
+        EtfOutput(
+            code='c', name='n', tracking_index='t',
+            theme_id='a', theme_ids=['b', 'c'],
+            returns=Returns(), strength=Strength(short=0, mid=0, long=0, composite=0),
+        )
+
+
+def test_etf_output_theme_ids_supports_multiple():
+    """跨主题 ETF 可携带多个 theme_ids。"""
+    e = EtfOutput(
+        code='512480', name='半导体ETF', tracking_index='中证全指半导体',
+        theme_id='storage_dram', theme_ids=['storage_dram', 'semiconductor'],
+        returns=Returns(), strength=Strength(short=0, mid=0, long=0, composite=0),
+    )
+    assert e.theme_ids == ['storage_dram', 'semiconductor']
+    assert e.theme_id == 'storage_dram'
 
 

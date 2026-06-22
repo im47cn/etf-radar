@@ -10,12 +10,17 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["code", "name", "tracking_index", "theme_id", "returns", "amount_yi", "price", "strength"],
+        "required": ["code", "name", "tracking_index", "theme_id", "theme_ids", "returns", "amount_yi", "price", "strength"],
         "properties": {
           "code": { "type": "string" },
           "name": { "type": "string" },
           "tracking_index": { "type": "string" },
           "theme_id": { "type": "string", "minLength": 1 },
+          "theme_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
           "returns": {
             "type": "object",
             "required": ["r_1d", "r_5d", "r_20d", "r_60d", "r_120d", "r_ytd"],

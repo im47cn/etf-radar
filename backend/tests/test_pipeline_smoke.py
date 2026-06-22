@@ -47,8 +47,7 @@ def test_pipeline_full_mode_creates_files(
         assert themes['schema_version'] == '1.1'
 
         signals = json.loads((latest / 'signals.json').read_text(encoding='utf-8'))
-        assert signals['summary']['themes_total'] == 23
-        # All themes have same composite (mock returns same df) → top_theme should be deterministic
+        assert len(signals['theme_signals']) == 23
 
         meta = json.loads((latest / 'meta.json').read_text(encoding='utf-8'))
         assert meta['providers']['us']['status'] == 'ok'

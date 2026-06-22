@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Signals file (data/latest/signals.json)",
   "type": "object",
-  "required": ["schema_version", "generated_at", "summary", "theme_signals", "pair_signals"],
+  "required": ["schema_version", "generated_at", "theme_signals", "pair_signals"],
   "definitions": {
     "signalType": { "enum": ["resonance", "transmission", "divergence", null] },
     "votes": {
@@ -18,32 +18,6 @@
   "properties": {
     "schema_version": { "type": "string" },
     "generated_at": { "type": "string" },
-    "summary": {
-      "type": "object",
-      "required": ["themes_total", "etfs_total", "resonance_count", "transmission_count", "divergence_count", "top_theme"],
-      "properties": {
-        "themes_total":       { "type": "integer", "minimum": 0 },
-        "etfs_total":         { "type": "integer", "minimum": 0 },
-        "resonance_count":    { "type": "integer", "minimum": 0 },
-        "transmission_count": { "type": "integer", "minimum": 0 },
-        "divergence_count":   { "type": "integer", "minimum": 0 },
-        "top_theme": {
-          "anyOf": [
-            { "type": "null" },
-            {
-              "type": "object",
-              "required": ["id", "name", "primary_us", "composite_strength"],
-              "properties": {
-                "id":   { "type": "string" },
-                "name": { "type": "string" },
-                "primary_us": { "type": "string" },
-                "composite_strength": { "type": "integer", "minimum": 0, "maximum": 99 }
-              }
-            }
-          ]
-        }
-      }
-    },
     "theme_signals": {
       "type": "array",
       "items": {

@@ -10,24 +10,6 @@ export const VotesSchema = z.object({
 });
 export type Votes = z.infer<typeof VotesSchema>;
 
-export const TopThemeSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  primary_us: z.string(),
-  composite_strength: z.number().int().min(0).max(99),
-});
-export type TopTheme = z.infer<typeof TopThemeSchema>;
-
-export const SignalsSummarySchema = z.object({
-  themes_total: z.number().int().nonnegative(),
-  etfs_total: z.number().int().nonnegative(),
-  resonance_count: z.number().int().nonnegative(),
-  transmission_count: z.number().int().nonnegative(),
-  divergence_count: z.number().int().nonnegative(),
-  top_theme: TopThemeSchema.nullable(),
-});
-export type SignalsSummary = z.infer<typeof SignalsSummarySchema>;
-
 export const ThemeSignalSchema = z.object({
   theme_id: z.string(),
   signal: SignalTypeSchema.nullable(),
@@ -50,7 +32,6 @@ export type PairSignal = z.infer<typeof PairSignalSchema>;
 export const SignalsFileSchema = z.object({
   schema_version: z.string(),
   generated_at: z.string(),
-  summary: SignalsSummarySchema,
   theme_signals: z.array(ThemeSignalSchema),
   pair_signals: z.array(PairSignalSchema),
 });

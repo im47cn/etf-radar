@@ -42,7 +42,6 @@ vi.mock('@/providers/dataContext', () => ({
     etfs: { schema_version: '1.0', generated_at: '', etfs: [] },
     signals: {
       schema_version: '1.0', generated_at: '',
-      summary: { short_count: 0, mid_count: 0, long_count: 0, composite_count: 0 },
       theme_signals: [],
       pair_signals: [],
     },

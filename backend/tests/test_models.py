@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 from src.models import (
     ThemeConfig, CnEtfConfig, Returns, Strength, PairSignal,
-    ThemeOutput, TopTheme, Rank,
+    ThemeOutput, Rank,
 )
 
 
@@ -76,7 +76,7 @@ def test_theme_config_mapped_backward_compat():
     assert t.primary_cn is None
 
 
-# ── Task 2: ThemeOutput / TopTheme 扩展 ───────────────────────────────────
+# ── Task 2: ThemeOutput 扩展 ──────────────────────────────────────────────
 def _s(c=50):
     return Strength(short=c, mid=c, long=c, composite=c)
 
@@ -109,7 +109,3 @@ def test_theme_output_cn_only_has_no_us_strength():
     assert t.cn_strength.composite == 40
 
 
-def test_top_theme_allows_null_primary_us():
-    """纯 A 股主题登顶时 primary_us 可为 None。"""
-    top = TopTheme(id='cn_x', name='X', primary_us=None, composite_strength=80)
-    assert top.primary_us is None

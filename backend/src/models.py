@@ -129,22 +129,6 @@ class ThemeSignal(BaseModel):
     description: str
 
 
-class TopTheme(BaseModel):
-    id: str
-    name: str
-    primary_us: Optional[str] = None   # 纯 A 股主题登顶时可为 None
-    composite_strength: int
-
-
-class SignalsSummary(BaseModel):
-    themes_total: int
-    etfs_total: int
-    resonance_count: int
-    transmission_count: int
-    divergence_count: int
-    top_theme: Optional[TopTheme]
-
-
 class ProviderInfo(BaseModel):
     status: ProviderStatus
     name: str

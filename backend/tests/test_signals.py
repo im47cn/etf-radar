@@ -177,7 +177,3 @@ def test_cn_only_theme_has_null_signal():
     assert ts['signal'] is None
     assert ts['trigger_cn_etf'] is None
     assert "A 股本土赛道" in ts['description']
-    summary = signals_json['summary']
-    assert summary['resonance_count'] == 0
-    assert summary['transmission_count'] == 0
-    assert summary['divergence_count'] == 0

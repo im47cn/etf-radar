@@ -89,11 +89,6 @@ describe('SignalsFileSchema', () => {
     const bad = {
       schema_version: '1.0',
       generated_at: '2026-06-10T01:00:00+08:00',
-      summary: {
-        themes_total: 14, etfs_total: 20,
-        resonance_count: 0, transmission_count: 0, divergence_count: 0,
-        top_theme: null,
-      },
       theme_signals: [
         {
           theme_id: 'x',

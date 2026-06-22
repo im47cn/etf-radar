@@ -37,11 +37,9 @@ from .models import (
     ProviderStatus,
     Rank,
     Returns,
-    SignalsSummary,
     Strength,
     ThemeConfig,
     ThemeSignal,
-    TopTheme,
 )
 from .output.descriptions import theme_dynamic_description
 from .output.writer import atomic_write_json
@@ -347,35 +345,7 @@ def compute_outputs(
                 signal=sig, votes=votes,
             ))
 
-    # 8) summary
-    sig_counter: dict[str, int] = {'resonance': 0, 'transmission': 0, 'divergence': 0}
-    for ts in theme_signals:
-        if ts.signal:
-            sig_counter[ts.signal] += 1
-    top_id = sorted_ids[0] if sorted_ids else None
-    top_theme: TopTheme | None = None
-    if top_id:
-        top_t = next(t for t in themes if t.id == top_id)
-        top_theme = TopTheme(
-            id=top_id, name=top_t.name, primary_us=top_t.primary_us,
-            composite_strength=display_strengths[top_id].composite,
-        )
-
-    cn_codes_unique: set[str] = set()
-    for t in themes:
-        for cn in t.cn_etfs:
-            cn_codes_unique.add(cn.code)
-
-    summary = SignalsSummary(
-        themes_total=len(themes),
-        etfs_total=len(cn_codes_unique),
-        resonance_count=sig_counter['resonance'],
-        transmission_count=sig_counter['transmission'],
-        divergence_count=sig_counter['divergence'],
-        top_theme=top_theme,
-    )
-
-    # 9) 构造 JSON（schema 1.1：加 us_strength / cn_strength / primary_cn）
+    # 8) 构造 JSON（schema 1.1：加 us_strength / cn_strength / primary_cn）
     def _strength_dump(s: Strength | None) -> dict[str, Any] | None:
         return s.model_dump() if s else None
 
@@ -438,7 +408,6 @@ def compute_outputs(
     signals_json: dict[str, Any] = {
         'schema_version': '1.0',
         'generated_at': asof_bjt.isoformat(),
-        'summary': summary.model_dump(),
         'theme_signals': [ts.model_dump() for ts in theme_signals],
         'pair_signals': [ps.model_dump() for ps in pair_signals],
     }

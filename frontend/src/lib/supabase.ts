@@ -19,9 +19,14 @@ export function getSupabase(): SupabaseClient {
   if (!client) {
     client = createClient(url, anonKey, {
       auth: {
-        persistSession:  true,
-        autoRefreshToken: true,
+        persistSession:    true,
+        autoRefreshToken:  true,
         detectSessionInUrl: true,
+        // HashRouter 占用第一个 #, implicit flow 的 #access_token=xxx 会和
+        // #/auth/callback 形成双 # (https://site/#/auth/callback#access_token=...),
+        // supabase-js 解析失败 → OAuth 永远不登录. PKCE 用 ?code=xxx (query string),
+        // HashRouter 不动 query, 规避冲突.
+        flowType: 'pkce',
       },
     });
   }

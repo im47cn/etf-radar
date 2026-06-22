@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # 用于触发 deploy-frontend workflow
 
 concurrency:
   group: data-refresh

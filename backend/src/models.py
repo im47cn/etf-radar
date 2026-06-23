@@ -1,4 +1,5 @@
 """Pydantic 模型 — 与 JSON Schema 1:1 对应"""
+from datetime import date as _Date, datetime as _Datetime
 from typing import Literal, Optional
 from pydantic import BaseModel, Field, model_validator
 
@@ -166,3 +167,29 @@ class MetaInfo(BaseModel):
     stale_minutes: int = 0
     calendar: CalendarInfo
     backfilled: bool = False
+
+
+class EtfTopHolding(BaseModel):
+    """单只 ETF top-N 持仓中的一行个股。
+
+    code 可能是 6 位 A 股，也可能是港股通 5 位（如 00700）。
+    """
+    code: str
+    name: str
+    weight: float = Field(ge=0, le=100)
+
+
+class EtfHoldingsSnapshot(BaseModel):
+    """单只 ETF 在某一披露日的 top-N 持仓快照。"""
+    etf_code: str
+    etf_name: str
+    disclosure_date: _Date
+    fetched_at: _Datetime
+    top_holdings: list[EtfTopHolding] = Field(max_length=10)
+
+
+class StockSpot(BaseModel):
+    """个股某日盘口快照（用于 stocks_spot.json）。"""
+    name: str
+    close: float
+    r_1d: Optional[float] = None

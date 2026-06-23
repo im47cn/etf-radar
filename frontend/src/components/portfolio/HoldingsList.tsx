@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { useHoldings } from '@/hooks/useHoldings';
 import { usePortfolioScores } from '@/hooks/usePortfolioScores';
+import { useDataContext } from '@/providers/dataContext';
+import { useUserEvents } from '@/hooks/useUserEvents';
+import { usePortfolioEventDetection } from '@/hooks/usePortfolioEventDetection';
+import { useSnapshotsTimeline } from '@/hooks/useSnapshotsTimeline';
 import { HoldingScoreCard } from './HoldingScoreCard';
 import { HoldingsEditor } from './HoldingsEditor';
 import { PortfolioSummary } from './PortfolioSummary';
 import { OpportunityScanner } from './OpportunityScanner';
+import { EventTimeline } from './EventTimeline';
 
 export const HoldingsList = () => {
   const { remove, holdings } = useHoldings();
@@ -13,6 +18,29 @@ export const HoldingsList = () => {
   const [editingCode, setEditingCode] = useState<string | null>(null);
   const editing = editingCode ? holdings.find(h => h.etf_code === editingCode) ?? null : null;
   const editorOpen = editingCode !== null;
+
+  // 快照索引：取最新两日日期，供事件检测使用
+  const { index } = useSnapshotsTimeline();
+  const snapsLen = index?.snapshots.length ?? 0;
+  const todayDate     = snapsLen >= 1 ? index!.snapshots[snapsLen - 1].date : undefined;
+  const yesterdayDate = snapsLen >= 2 ? index!.snapshots[snapsLen - 2].date : undefined;
+
+  // themeNames map：themeId → name，供 EventTimeline 展示
+  const data = useDataContext();
+  const themeNames = new Map<string, string>(
+    data.themes?.themes.map(t => [t.id, t.name]) ?? []
+  );
+
+  // 仅取 covered（有 themeId）持仓用于信号差异检测
+  const holdingsForDiff = scores
+    .filter(s => s.status === 'covered' && s.themeId)
+    .map(s => ({ themeId: s.themeId! }));
+
+  // 触发事件检测（同日节流，内部有 localStorage guard）
+  usePortfolioEventDetection({ todayDate, yesterdayDate, holdings: holdingsForDiff });
+
+  // 事件流数据（useUserEvents 消费 EventsContext）
+  const { events, unreadCount, markAllRead } = useUserEvents();
 
   if (loading) {
     return <div className="p-8 text-center text-gray-500">加载持仓...</div>;
@@ -51,6 +79,12 @@ export const HoldingsList = () => {
             ))}
           </div>
           <PortfolioSummary scores={scores} />
+          <EventTimeline
+            events={events}
+            themeNames={themeNames}
+            unreadCount={unreadCount}
+            markAllRead={markAllRead}
+          />
           <OpportunityScanner themes={themes} ownedThemeIds={ownedThemeIds} />
         </>
       )}

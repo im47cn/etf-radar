@@ -39,8 +39,8 @@ describe('StocksPage', () => {
   it('renders empty state when theme has no primary_cn', () => {
     mockThemes = [
       { id: 'us_only', name: '纯美股主题', us_etfs: ['SOXX'], primary_us: 'SOXX',
-        primary_cn: null, tags: [], note: '', returns: {} as any, strength: {} as any,
-        us_strength: null, cn_strength: null, rank: {} as any } as unknown as Theme,
+        primary_cn: null, tags: [], note: '', returns: {} as unknown, strength: {} as unknown,
+        us_strength: null, cn_strength: null, rank: {} as unknown } as unknown as Theme,
     ];
     renderAt('/theme/us_only/stocks');
     expect(screen.getByText(/美股个股数据.*Phase 2/)).toBeInTheDocument();
@@ -49,8 +49,8 @@ describe('StocksPage', () => {
   it('renders stock rows when holdings + spot are available', async () => {
     mockThemes = [
       { id: 'semi', name: '半导体', us_etfs: ['SOXX'], primary_us: 'SOXX',
-        primary_cn: '512480', tags: [], note: '', returns: {} as any, strength: {} as any,
-        us_strength: null, cn_strength: null, rank: {} as any } as unknown as Theme,
+        primary_cn: '512480', tags: [], note: '', returns: {} as unknown, strength: {} as unknown,
+        us_strength: null, cn_strength: null, rank: {} as unknown } as unknown as Theme,
     ];
     fetchSpy.mockImplementation((input: RequestInfo | URL) => {
       const url = String(input);

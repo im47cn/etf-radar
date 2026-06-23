@@ -23,8 +23,8 @@ const formatPct = (n: number | null): string => {
 };
 
 export const FocusedThemePanel = ({ theme, onClose }: Props) => {
-  if (!theme) return null;
   const navigate = useNavigate();
+  if (!theme) return null;
   const [pt] = themesToRotationPoints([theme]);
   const quadrantName = pt ? QUADRANT_NAME[pt.quadrant] : '';
 

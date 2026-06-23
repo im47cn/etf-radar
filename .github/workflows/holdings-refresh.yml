@@ -1,0 +1,56 @@
+name: Holdings Refresh
+
+on:
+  schedule:
+    - cron: '30 0 1 * *'      # 每月 1 日 00:30 UTC (08:30 BJT)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: holdings-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.DATA_BOT_PAT }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v8.2.0
+        id: setup-uv
+        continue-on-error: true
+        with:
+          version: "0.11.x"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup uv (retry on transient network failure)
+        if: steps.setup-uv.outcome == 'failure'
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          version: "0.11.x"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: cd backend && uv sync --extra dev
+      - name: Run holdings pipeline
+        run: cd backend && uv run python -m src.holdings_pipeline --data-root=../data --config-dir=../config
+      - name: Commit holdings
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/holdings/
+          if git diff --staged --quiet; then
+            echo "no holdings changes, skip commit"
+            exit 0
+          fi
+          git commit -m "data: refresh ETF holdings $(date -u +%Y-%m-%d)"
+          git pull --rebase
+          git push
+      - name: Trigger deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-frontend.yml --ref main

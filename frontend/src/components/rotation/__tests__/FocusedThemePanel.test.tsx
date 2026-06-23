@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { FocusedThemePanel } from '../FocusedThemePanel';
 import type { Theme } from '@/types/themes';
 
@@ -21,12 +22,20 @@ const themeAI: Theme = {
 
 describe('FocusedThemePanel', () => {
   it('does not render when theme is null', () => {
-    const { container } = render(<FocusedThemePanel theme={null} onClose={() => {}} />);
+    const { container } = render(
+      <MemoryRouter>
+        <FocusedThemePanel theme={null} onClose={() => {}} />
+      </MemoryRouter>
+    );
     expect(container.firstChild).toBeNull();
   });
 
   it('renders theme name, quadrant, strength, rank, 20d return', () => {
-    render(<FocusedThemePanel theme={themeAI} onClose={() => {}} />);
+    render(
+      <MemoryRouter>
+        <FocusedThemePanel theme={themeAI} onClose={() => {}} />
+      </MemoryRouter>
+    );
     expect(screen.getByText('AI 主题')).toBeInTheDocument();
     expect(screen.getByText(/97/)).toBeInTheDocument();
     expect(screen.getByText(/#1/)).toBeInTheDocument();
@@ -34,7 +43,11 @@ describe('FocusedThemePanel', () => {
   });
 
   it('renders ETF chips (decorative, no click handler)', () => {
-    render(<FocusedThemePanel theme={themeAI} onClose={() => {}} />);
+    render(
+      <MemoryRouter>
+        <FocusedThemePanel theme={themeAI} onClose={() => {}} />
+      </MemoryRouter>
+    );
     expect(screen.getByText(/SOXX/)).toBeInTheDocument();
     expect(screen.getByText('SMH')).toBeInTheDocument();
   });
@@ -42,7 +55,11 @@ describe('FocusedThemePanel', () => {
   it('close button calls onClose', async () => {
     const onClose = vi.fn();
     const user = userEvent.setup();
-    render(<FocusedThemePanel theme={themeAI} onClose={onClose} />);
+    render(
+      <MemoryRouter>
+        <FocusedThemePanel theme={themeAI} onClose={onClose} />
+      </MemoryRouter>
+    );
     await user.click(screen.getByRole('button', { name: /关闭/ }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });

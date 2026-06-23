@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { themesToRotationPoints } from '@/lib/rotation';
 import type { Theme } from '@/types/themes';
 
@@ -23,6 +24,7 @@ const formatPct = (n: number | null): string => {
 
 export const FocusedThemePanel = ({ theme, onClose }: Props) => {
   if (!theme) return null;
+  const navigate = useNavigate();
   const [pt] = themesToRotationPoints([theme]);
   const quadrantName = pt ? QUADRANT_NAME[pt.quadrant] : '';
 
@@ -61,6 +63,15 @@ export const FocusedThemePanel = ({ theme, onClose }: Props) => {
             {etf}{etf === theme.primary_us ? ' (primary)' : ''}
           </span>
         ))}
+      </div>
+      <div className="mt-4 pt-3 border-t border-gray-200">
+        <button
+          type="button"
+          onClick={() => navigate(`/theme/${theme.id}/stocks`)}
+          className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+        >
+          查看主题成分股 →
+        </button>
       </div>
     </section>
   );

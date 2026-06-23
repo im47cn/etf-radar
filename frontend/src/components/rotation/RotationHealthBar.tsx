@@ -32,15 +32,16 @@ const HealthCell = ({ label, score, grade, tooltip }: HealthCellProps) => {
   const display = grade === 'insufficient' ? '—' : score.toString();
   const ariaLabel = `${label} ${display}${grade === 'insufficient' ? '' : ' 分'} ${GRADE_LABEL[grade]}`;
   return (
+    // 窄屏 padding/字号同步压缩, 释放垂直空间给象限图
     <div
-      className="bg-white px-4 py-2 flex items-center justify-between"
+      className="bg-white px-2 py-1 sm:px-4 sm:py-2 flex items-center justify-between gap-1"
       role="status"
       aria-label={ariaLabel}
       title={tooltip}
     >
-      <span className="text-xs text-gray-600">{label}</span>
-      <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold tabular-nums">{display}</span>
+      <span className="text-xs text-gray-600 shrink-0">{label}</span>
+      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+        <span className="text-base sm:text-lg font-semibold tabular-nums">{display}</span>
         <span className={GRADE_BADGE_CLASS[grade]}>{GRADE_LABEL[grade]}</span>
       </div>
     </div>
@@ -52,8 +53,10 @@ export interface RotationHealthBarProps {
 }
 
 export const RotationHealthBar = ({ health }: RotationHealthBarProps) => (
+  // 始终两列: 移动端窄屏下也并排展示, 避免吃掉一整行高度.
+  // 窄屏空间够用: 每 cell 约 160px (=320/2), 容纳 label+score+badge 无溢出.
   <div
-    className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-200 border rounded overflow-hidden mb-4"
+    className="grid grid-cols-2 gap-px bg-gray-200 border rounded overflow-hidden mb-4"
     role="region"
     aria-label="分布健康度"
   >

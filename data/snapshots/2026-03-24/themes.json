@@ -39,16 +39,16 @@
         "composite": 0
       },
       "cn_strength": {
-        "short": 25,
-        "mid": 37,
-        "long": 51,
-        "composite": 40
+        "short": 29,
+        "mid": 40,
+        "long": 53,
+        "composite": 43
       },
       "rank": {
-        "short": 27,
-        "mid": 27,
-        "long": 27,
-        "composite": 27
+        "short": 28,
+        "mid": 28,
+        "long": 28,
+        "composite": 28
       }
     },
     {
@@ -76,22 +76,22 @@
         "r_ytd": 0.08415176832504777
       },
       "strength": {
-        "short": 91,
+        "short": 92,
         "mid": 81,
         "long": 81,
         "composite": 83
       },
       "us_strength": {
-        "short": 91,
+        "short": 92,
         "mid": 81,
         "long": 81,
         "composite": 83
       },
       "cn_strength": {
-        "short": 25,
-        "mid": 37,
-        "long": 51,
-        "composite": 40
+        "short": 29,
+        "mid": 40,
+        "long": 53,
+        "composite": 43
       },
       "rank": {
         "short": 4,
@@ -119,32 +119,32 @@
         "r_5d": -0.029521854182071726,
         "r_20d": 0.024066653754163777,
         "r_60d": -0.14399870751416158,
-        "r_120d": -0.1837118901066138,
+        "r_120d": -0.18371178928169957,
         "r_ytd": -0.11375887753999837
       },
       "strength": {
-        "short": 10,
-        "mid": 23,
-        "long": 20,
+        "short": 9,
+        "mid": 25,
+        "long": 19,
         "composite": 19
       },
       "us_strength": {
-        "short": 10,
-        "mid": 23,
-        "long": 20,
+        "short": 9,
+        "mid": 25,
+        "long": 19,
         "composite": 19
       },
       "cn_strength": {
-        "short": 22,
-        "mid": 34,
-        "long": 40,
-        "composite": 34
+        "short": 27,
+        "mid": 37,
+        "long": 43,
+        "composite": 37
       },
       "rank": {
-        "short": 22,
-        "mid": 22,
-        "long": 22,
-        "composite": 22
+        "short": 23,
+        "mid": 23,
+        "long": 23,
+        "composite": 23
       }
     },
     {
@@ -172,28 +172,28 @@
         "r_ytd": -0.06645575970034705
       },
       "strength": {
-        "short": 30,
-        "mid": 27,
-        "long": 30,
-        "composite": 29
+        "short": 28,
+        "mid": 29,
+        "long": 32,
+        "composite": 30
       },
       "us_strength": {
-        "short": 30,
-        "mid": 27,
-        "long": 30,
-        "composite": 29
+        "short": 28,
+        "mid": 29,
+        "long": 32,
+        "composite": 30
       },
       "cn_strength": {
         "short": 82,
-        "mid": 49,
+        "mid": 51,
         "long": 5,
-        "composite": 38
+        "composite": 39
       },
       "rank": {
-        "short": 15,
-        "mid": 15,
-        "long": 15,
-        "composite": 15
+        "short": 14,
+        "mid": 14,
+        "long": 14,
+        "composite": 14
       }
     },
     {
@@ -307,28 +307,28 @@
         "r_ytd": -0.0009853434726468597
       },
       "strength": {
-        "short": 48,
-        "mid": 41,
-        "long": 52,
-        "composite": 47
+        "short": 49,
+        "mid": 42,
+        "long": 53,
+        "composite": 48
       },
       "us_strength": {
-        "short": 48,
-        "mid": 41,
-        "long": 52,
-        "composite": 47
+        "short": 49,
+        "mid": 42,
+        "long": 53,
+        "composite": 48
       },
       "cn_strength": {
-        "short": 32,
-        "mid": 61,
-        "long": 54,
-        "composite": 52
+        "short": 36,
+        "mid": 63,
+        "long": 57,
+        "composite": 55
       },
       "rank": {
-        "short": 11,
-        "mid": 11,
-        "long": 11,
-        "composite": 11
+        "short": 10,
+        "mid": 10,
+        "long": 10,
+        "composite": 10
       }
     },
     {
@@ -355,26 +355,66 @@
       "strength": {
         "short": 64,
         "mid": 60,
-        "long": 73,
+        "long": 74,
         "composite": 66
       },
       "us_strength": {
         "short": 64,
         "mid": 60,
-        "long": 73,
+        "long": 74,
         "composite": 66
       },
       "cn_strength": {
-        "short": 34,
-        "mid": 75,
-        "long": 67,
-        "composite": 64
+        "short": 38,
+        "mid": 77,
+        "long": 66,
+        "composite": 65
       },
       "rank": {
-        "short": 6,
-        "mid": 6,
-        "long": 6,
-        "composite": 6
+        "short": 5,
+        "mid": 5,
+        "long": 5,
+        "composite": 5
+      }
+    },
+    {
+      "id": "cn_chemicals",
+      "name": "化工",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "159870",
+      "tags": [
+        "化工",
+        "新材料",
+        "周期"
+      ],
+      "note": "国内化工细分（无窄口径美股锚点，cn_only）",
+      "returns": {
+        "r_1d": 0.009523881511255541,
+        "r_5d": -0.0642422687283537,
+        "r_20d": -0.10666298461230574,
+        "r_60d": 0.11276012658800108,
+        "r_120d": 0.1813741384379148,
+        "r_ytd": 0.013118852429114503
+      },
+      "strength": {
+        "short": 14,
+        "mid": 67,
+        "long": 76,
+        "composite": 60
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 14,
+        "mid": 67,
+        "long": 76,
+        "composite": 60
+      },
+      "rank": {
+        "short": 8,
+        "mid": 8,
+        "long": 8,
+        "composite": 8
       }
     },
     {
@@ -403,26 +443,26 @@
       "strength": {
         "short": 13,
         "mid": 8,
-        "long": 33,
-        "composite": 19
+        "long": 35,
+        "composite": 20
       },
       "us_strength": {
         "short": 13,
         "mid": 8,
-        "long": 33,
-        "composite": 19
+        "long": 35,
+        "composite": 20
       },
       "cn_strength": {
-        "short": 7,
-        "mid": 14,
-        "long": 24,
-        "composite": 17
+        "short": 11,
+        "mid": 18,
+        "long": 27,
+        "composite": 20
       },
       "rank": {
-        "short": 23,
-        "mid": 23,
-        "long": 23,
-        "composite": 23
+        "short": 22,
+        "mid": 22,
+        "long": 22,
+        "composite": 22
       }
     },
     {
@@ -450,21 +490,21 @@
       },
       "strength": {
         "short": 3,
-        "mid": 13,
-        "long": 58,
+        "mid": 12,
+        "long": 59,
         "composite": 29
       },
       "us_strength": {
         "short": 3,
-        "mid": 13,
-        "long": 58,
+        "mid": 12,
+        "long": 59,
         "composite": 29
       },
       "cn_strength": {
         "short": 2,
-        "mid": 18,
-        "long": 72,
-        "composite": 36
+        "mid": 21,
+        "long": 70,
+        "composite": 37
       },
       "rank": {
         "short": 16,
@@ -495,28 +535,28 @@
         "r_ytd": 0.031951644164053244
       },
       "strength": {
-        "short": 27,
-        "mid": 35,
-        "long": 68,
+        "short": 25,
+        "mid": 36,
+        "long": 69,
         "composite": 47
       },
       "us_strength": {
-        "short": 27,
-        "mid": 35,
-        "long": 68,
+        "short": 25,
+        "mid": 36,
+        "long": 69,
         "composite": 47
       },
       "cn_strength": {
         "short": 4,
-        "mid": 30,
-        "long": 75,
+        "mid": 32,
+        "long": 73,
         "composite": 43
       },
       "rank": {
-        "short": 12,
-        "mid": 12,
-        "long": 12,
-        "composite": 12
+        "short": 11,
+        "mid": 11,
+        "long": 11,
+        "composite": 11
       }
     },
     {
@@ -543,28 +583,28 @@
         "r_ytd": -0.23103314428709584
       },
       "strength": {
-        "short": 7,
-        "mid": 4,
+        "short": 6,
+        "mid": 3,
         "long": 9,
-        "composite": 7
+        "composite": 6
       },
       "us_strength": {
-        "short": 7,
-        "mid": 4,
+        "short": 6,
+        "mid": 3,
         "long": 9,
-        "composite": 7
+        "composite": 6
       },
       "cn_strength": {
-        "short": 13,
-        "mid": 2,
+        "short": 18,
+        "mid": 4,
         "long": 9,
-        "composite": 7
+        "composite": 9
       },
       "rank": {
-        "short": 26,
-        "mid": 26,
-        "long": 26,
-        "composite": 26
+        "short": 27,
+        "mid": 27,
+        "long": 27,
+        "composite": 27
       }
     },
     {
@@ -588,17 +628,17 @@
         "r_ytd": -0.1655144384775733
       },
       "strength": {
-        "short": 9,
-        "mid": 5,
-        "long": 19,
-        "composite": 11
+        "short": 13,
+        "mid": 6,
+        "long": 22,
+        "composite": 14
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 9,
-        "mid": 5,
-        "long": 19,
-        "composite": 11
+        "short": 13,
+        "mid": 6,
+        "long": 22,
+        "composite": 14
       },
       "rank": {
         "short": 25,
@@ -631,28 +671,76 @@
         "r_ytd": -0.03199068817131304
       },
       "strength": {
-        "short": 96,
-        "mid": 31,
-        "long": 40,
-        "composite": 48
+        "short": 97,
+        "mid": 33,
+        "long": 43,
+        "composite": 50
       },
       "us_strength": {
-        "short": 96,
-        "mid": 31,
-        "long": 40,
-        "composite": 48
+        "short": 97,
+        "mid": 33,
+        "long": 43,
+        "composite": 50
       },
       "cn_strength": {
-        "short": 62,
-        "mid": 53,
-        "long": 46,
-        "composite": 52
+        "short": 64,
+        "mid": 55,
+        "long": 49,
+        "composite": 54
       },
       "rank": {
-        "short": 10,
-        "mid": 10,
-        "long": 10,
+        "short": 9,
+        "mid": 9,
+        "long": 9,
+        "composite": 9
+      }
+    },
+    {
+      "id": "cn_insurance",
+      "name": "保险",
+      "us_etfs": [
+        "KIE",
+        "IAK"
+      ],
+      "primary_us": "KIE",
+      "primary_cn": "159851",
+      "tags": [
+        "保险",
+        "金融",
+        "大金融"
+      ],
+      "note": "A股保险对应美股保险（KIE 与 KBE 同 SPDR 系列）",
+      "returns": {
+        "r_1d": -0.0005480730741443049,
+        "r_5d": -0.018904265344487813,
+        "r_20d": -0.03395555458060459,
+        "r_60d": -0.10402570115409225,
+        "r_120d": -0.07040778820108856,
+        "r_ytd": -0.07863645476366737
+      },
+      "strength": {
+        "short": 35,
+        "mid": 18,
+        "long": 28,
+        "composite": 25
+      },
+      "us_strength": {
+        "short": 35,
+        "mid": 18,
+        "long": 28,
+        "composite": 25
+      },
+      "cn_strength": {
+        "short": 5,
+        "mid": 8,
+        "long": 14,
         "composite": 10
+      },
+      "rank": {
+        "short": 20,
+        "mid": 20,
+        "long": 20,
+        "composite": 20
       }
     },
     {
@@ -678,28 +766,28 @@
         "r_ytd": 0.07159932602110004
       },
       "strength": {
-        "short": 33,
+        "short": 31,
         "mid": 68,
-        "long": 77,
+        "long": 78,
         "composite": 65
       },
       "us_strength": {
-        "short": 33,
+        "short": 31,
         "mid": 68,
-        "long": 77,
+        "long": 78,
         "composite": 65
       },
       "cn_strength": {
         "short": 89,
-        "mid": 92,
+        "mid": 93,
         "long": 85,
         "composite": 89
       },
       "rank": {
-        "short": 7,
-        "mid": 7,
-        "long": 7,
-        "composite": 7
+        "short": 6,
+        "mid": 6,
+        "long": 6,
+        "composite": 6
       }
     },
     {
@@ -726,28 +814,28 @@
         "r_ytd": -0.016427779608120016
       },
       "strength": {
-        "short": 17,
-        "mid": 19,
-        "long": 62,
-        "composite": 36
+        "short": 16,
+        "mid": 21,
+        "long": 63,
+        "composite": 37
       },
       "us_strength": {
-        "short": 17,
-        "mid": 19,
-        "long": 62,
-        "composite": 36
+        "short": 16,
+        "mid": 21,
+        "long": 63,
+        "composite": 37
       },
       "cn_strength": {
-        "short": 42,
-        "mid": 20,
-        "long": 16,
-        "composite": 23
+        "short": 46,
+        "mid": 23,
+        "long": 20,
+        "composite": 26
       },
       "rank": {
-        "short": 14,
-        "mid": 14,
-        "long": 14,
-        "composite": 14
+        "short": 13,
+        "mid": 13,
+        "long": 13,
+        "composite": 13
       }
     },
     {
@@ -775,28 +863,28 @@
         "r_ytd": 0.0034825705887586217
       },
       "strength": {
-        "short": 23,
-        "mid": 45,
-        "long": 48,
-        "composite": 42
+        "short": 22,
+        "mid": 46,
+        "long": 50,
+        "composite": 43
       },
       "us_strength": {
-        "short": 23,
-        "mid": 45,
-        "long": 48,
-        "composite": 42
+        "short": 22,
+        "mid": 46,
+        "long": 50,
+        "composite": 43
       },
       "cn_strength": {
-        "short": 20,
-        "mid": 31,
-        "long": 56,
-        "composite": 39
+        "short": 25,
+        "mid": 34,
+        "long": 59,
+        "composite": 42
       },
       "rank": {
-        "short": 13,
-        "mid": 13,
-        "long": 13,
-        "composite": 13
+        "short": 12,
+        "mid": 12,
+        "long": 12,
+        "composite": 12
       }
     },
     {
@@ -822,28 +910,28 @@
         "r_ytd": 0.09722650407581708
       },
       "strength": {
-        "short": 20,
+        "short": 19,
         "mid": 64,
         "long": 86,
         "composite": 64
       },
       "us_strength": {
-        "short": 20,
+        "short": 19,
         "mid": 64,
         "long": 86,
         "composite": 64
       },
       "cn_strength": {
-        "short": 6,
-        "mid": 44,
-        "long": 59,
-        "composite": 42
+        "short": 7,
+        "mid": 47,
+        "long": 61,
+        "composite": 45
       },
       "rank": {
-        "short": 8,
-        "mid": 8,
-        "long": 8,
-        "composite": 8
+        "short": 7,
+        "mid": 7,
+        "long": 7,
+        "composite": 7
       }
     },
     {
@@ -866,17 +954,17 @@
         "r_ytd": -0.10821358464023284
       },
       "strength": {
-        "short": 17,
-        "mid": 8,
-        "long": 21,
-        "composite": 15
+        "short": 21,
+        "mid": 11,
+        "long": 24,
+        "composite": 18
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 17,
-        "mid": 8,
-        "long": 21,
-        "composite": 15
+        "short": 21,
+        "mid": 11,
+        "long": 24,
+        "composite": 18
       },
       "rank": {
         "short": 24,
@@ -905,23 +993,23 @@
         "r_ytd": -0.07775936469913416
       },
       "strength": {
-        "short": 11,
-        "mid": 27,
-        "long": 32,
-        "composite": 26
+        "short": 16,
+        "mid": 30,
+        "long": 35,
+        "composite": 29
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 11,
-        "mid": 27,
-        "long": 32,
-        "composite": 26
+        "short": 16,
+        "mid": 30,
+        "long": 35,
+        "composite": 29
       },
       "rank": {
-        "short": 18,
-        "mid": 18,
-        "long": 18,
-        "composite": 18
+        "short": 17,
+        "mid": 17,
+        "long": 17,
+        "composite": 17
       }
     },
     {
@@ -944,23 +1032,23 @@
         "r_ytd": -0.09511714824306536
       },
       "strength": {
-        "short": 30,
-        "mid": 24,
-        "long": 29,
-        "composite": 27
+        "short": 34,
+        "mid": 27,
+        "long": 32,
+        "composite": 30
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 30,
-        "mid": 24,
-        "long": 29,
-        "composite": 27
+        "short": 34,
+        "mid": 27,
+        "long": 32,
+        "composite": 30
       },
       "rank": {
-        "short": 17,
-        "mid": 17,
-        "long": 17,
-        "composite": 17
+        "short": 15,
+        "mid": 15,
+        "long": 15,
+        "composite": 15
       }
     },
     {
@@ -983,23 +1071,23 @@
         "r_ytd": -0.10550135081051326
       },
       "strength": {
-        "short": 28,
-        "mid": 10,
-        "long": 35,
-        "composite": 24
+        "short": 32,
+        "mid": 14,
+        "long": 38,
+        "composite": 27
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 28,
-        "mid": 10,
-        "long": 35,
-        "composite": 24
+        "short": 32,
+        "mid": 14,
+        "long": 38,
+        "composite": 27
       },
       "rank": {
-        "short": 19,
-        "mid": 19,
-        "long": 19,
-        "composite": 19
+        "short": 18,
+        "mid": 18,
+        "long": 18,
+        "composite": 18
       }
     },
     {
@@ -1021,17 +1109,17 @@
         "r_ytd": -0.10067460870894515
       },
       "strength": {
-        "short": 15,
-        "mid": 16,
-        "long": 27,
-        "composite": 20
+        "short": 20,
+        "mid": 19,
+        "long": 30,
+        "composite": 24
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 15,
-        "mid": 16,
-        "long": 27,
-        "composite": 20
+        "short": 20,
+        "mid": 19,
+        "long": 30,
+        "composite": 24
       },
       "rank": {
         "short": 21,
@@ -1048,10 +1136,10 @@
       "primary_cn": "159805",
       "tags": [
         "传媒",
-        "游戏",
+        "广告",
         "TMT"
       ],
-      "note": "",
+      "note": "传媒宽口径（含出版/广电/广告）；游戏专项见 cn_gaming",
       "returns": {
         "r_1d": 0.02388173200338738,
         "r_5d": -0.06633447382034142,
@@ -1061,102 +1149,63 @@
         "r_ytd": -0.07936174067411991
       },
       "strength": {
-        "short": 19,
-        "mid": 12,
-        "long": 38,
-        "composite": 24
+        "short": 23,
+        "mid": 16,
+        "long": 41,
+        "composite": 27
       },
       "us_strength": null,
       "cn_strength": {
-        "short": 19,
-        "mid": 12,
-        "long": 38,
-        "composite": 24
+        "short": 23,
+        "mid": 16,
+        "long": 41,
+        "composite": 27
       },
       "rank": {
-        "short": 20,
-        "mid": 20,
-        "long": 20,
-        "composite": 20
+        "short": 19,
+        "mid": 19,
+        "long": 19,
+        "composite": 19
       }
     },
     {
-      "id": "cn_dividend",
-      "name": "红利",
+      "id": "cn_gaming",
+      "name": "游戏动漫",
       "us_etfs": [],
       "primary_us": null,
-      "primary_cn": "510880",
+      "primary_cn": "159869",
       "tags": [
-        "红利",
-        "高股息"
+        "游戏",
+        "动漫",
+        "TMT"
       ],
-      "note": "",
+      "note": "国内手游为主，中美游戏成份股差异大，cn_only",
       "returns": {
-        "r_1d": 0.010764366587158484,
-        "r_5d": -0.012161901197401574,
-        "r_20d": 0.024463210945320498,
-        "r_60d": 0.029176495397418664,
-        "r_120d": 0.0373991856231859,
-        "r_ytd": 0.027602930949988037
+        "r_1d": 0.022383028769132462,
+        "r_5d": -0.08119740712421013,
+        "r_20d": -0.20059882798574677,
+        "r_60d": -0.11488027599842214,
+        "r_120d": -0.26206017445450464,
+        "r_ytd": -0.17305610334816462
       },
       "strength": {
-        "short": 58,
-        "mid": 78,
-        "long": 65,
-        "composite": 69
-      },
-      "us_strength": null,
-      "cn_strength": {
-        "short": 58,
-        "mid": 78,
-        "long": 65,
-        "composite": 69
-      },
-      "rank": {
-        "short": 5,
-        "mid": 5,
-        "long": 5,
-        "composite": 5
-      }
-    },
-    {
-      "id": "cn_star_100",
-      "name": "科创100",
-      "us_etfs": [],
-      "primary_us": null,
-      "primary_cn": "588220",
-      "tags": [
-        "科创板",
-        "中小盘",
-        "成长"
-      ],
-      "note": "",
-      "returns": {
-        "r_1d": 0.02155255838573428,
-        "r_5d": -0.021097828964635926,
-        "r_20d": -0.08380795727209214,
-        "r_60d": 0.08294908298075093,
-        "r_120d": 0.03765832380058771,
-        "r_ytd": -0.012712035588361861
-      },
-      "strength": {
-        "short": 67,
-        "mid": 64,
-        "long": 61,
-        "composite": 63
-      },
-      "us_strength": null,
-      "cn_strength": {
-        "short": 67,
-        "mid": 64,
-        "long": 61,
-        "composite": 63
-      },
-      "rank": {
         "short": 9,
-        "mid": 9,
-        "long": 9,
+        "mid": 2,
+        "long": 16,
         "composite": 9
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 9,
+        "mid": 2,
+        "long": 16,
+        "composite": 9
+      },
+      "rank": {
+        "short": 26,
+        "mid": 26,
+        "long": 26,
+        "composite": 26
       }
     },
     {

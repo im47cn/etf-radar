@@ -91,13 +91,24 @@
       "description": "美股锂电池动量观察中"
     },
     {
+      "theme_id": "cn_chemicals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "化工（A 股本土赛道）"
+    },
+    {
       "theme_id": "robotics",
       "signal": "transmission",
       "trigger_cn_etf": "562500",
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": null
       },
       "description": "美股领先, A股尚未完全跟随"
     },
@@ -147,14 +158,25 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": "divergence",
+      "signal": "transmission",
       "trigger_cn_etf": "512800",
       "votes": {
         "short": "transmission",
-        "mid": "divergence",
+        "mid": "transmission",
         "long": "divergence"
       },
-      "description": "美股A股短期方向不一致"
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "cn_insurance",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股保险动量观察中"
     },
     {
       "theme_id": "solar_clean_energy",
@@ -187,7 +209,7 @@
         "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股航天军工动量观察中"
+      "description": "美股航天军工中长期走强"
     },
     {
       "theme_id": "rare_earth",
@@ -267,7 +289,7 @@
       "description": "传媒（A 股本土赛道）"
     },
     {
-      "theme_id": "cn_dividend",
+      "theme_id": "cn_gaming",
       "signal": null,
       "trigger_cn_etf": null,
       "votes": {
@@ -275,18 +297,7 @@
         "mid": null,
         "long": null
       },
-      "description": "红利（A 股本土赛道）"
-    },
-    {
-      "theme_id": "cn_star_100",
-      "signal": null,
-      "trigger_cn_etf": null,
-      "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
-      },
-      "description": "科创100（A 股本土赛道）"
+      "description": "游戏动漫（A 股本土赛道）"
     },
     {
       "theme_id": "cn_power",
@@ -442,7 +453,7 @@
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -450,9 +461,9 @@
       "cn_code": "159559",
       "mapping_score": 31,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": null
       }
@@ -510,11 +521,23 @@
       "cn_code": "512800",
       "mapping_score": 12,
       "confidence": 90,
-      "signal": "divergence",
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": "divergence",
+        "mid": "transmission",
         "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_insurance",
+      "cn_code": "159851",
+      "mapping_score": 19,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
       }
     },
     {
@@ -580,7 +603,7 @@
     {
       "theme_id": "rare_earth",
       "cn_code": "516780",
-      "mapping_score": 40,
+      "mapping_score": 39,
       "confidence": 90,
       "signal": null,
       "votes": {

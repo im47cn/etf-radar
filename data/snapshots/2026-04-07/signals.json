@@ -91,6 +91,17 @@
       "description": "美股领先, A股尚未完全跟随"
     },
     {
+      "theme_id": "cn_chemicals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "化工（A 股本土赛道）"
+    },
+    {
       "theme_id": "robotics",
       "signal": null,
       "trigger_cn_etf": null,
@@ -103,23 +114,23 @@
     },
     {
       "theme_id": "gold",
+      "signal": "resonance",
+      "trigger_cn_etf": "518880",
+      "votes": {
+        "short": "resonance",
+        "mid": null,
+        "long": "resonance"
+      },
+      "description": "美股黄金动量观察中"
+    },
+    {
+      "theme_id": "cn_base_metals",
       "signal": null,
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
         "mid": null,
         "long": null
-      },
-      "description": "美股黄金动量观察中"
-    },
-    {
-      "theme_id": "cn_base_metals",
-      "signal": "resonance",
-      "trigger_cn_etf": "512400",
-      "votes": {
-        "short": "resonance",
-        "mid": "transmission",
-        "long": "resonance"
       },
       "description": "美股有色金属动量观察中"
     },
@@ -155,6 +166,17 @@
         "long": null
       },
       "description": "美股银行动量观察中"
+    },
+    {
+      "theme_id": "cn_insurance",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股保险动量观察中"
     },
     {
       "theme_id": "solar_clean_energy",
@@ -267,7 +289,7 @@
       "description": "传媒（A 股本土赛道）"
     },
     {
-      "theme_id": "cn_dividend",
+      "theme_id": "cn_gaming",
       "signal": null,
       "trigger_cn_etf": null,
       "votes": {
@@ -275,18 +297,7 @@
         "mid": null,
         "long": null
       },
-      "description": "红利（A 股本土赛道）"
-    },
-    {
-      "theme_id": "cn_star_100",
-      "signal": null,
-      "trigger_cn_etf": null,
-      "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
-      },
-      "description": "科创100（A 股本土赛道）"
+      "description": "游戏动漫（A 股本土赛道）"
     },
     {
       "theme_id": "cn_power",
@@ -392,7 +403,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -462,9 +473,9 @@
       "cn_code": "518880",
       "mapping_score": 63,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
         "long": "resonance"
       }
@@ -474,9 +485,9 @@
       "cn_code": "512400",
       "mapping_score": 52,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "transmission",
         "long": "resonance"
       }
@@ -513,7 +524,19 @@
       "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "resonance",
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "cn_insurance",
+      "cn_code": "159851",
+      "mapping_score": 18,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
         "long": null
       }
     },

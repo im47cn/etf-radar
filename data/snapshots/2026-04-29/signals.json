@@ -15,14 +15,14 @@
     },
     {
       "theme_id": "semiconductor",
-      "signal": "resonance",
-      "trigger_cn_etf": "512480",
+      "signal": "transmission",
+      "trigger_cn_etf": "159516",
       "votes": {
         "short": "resonance",
-        "mid": "resonance",
-        "long": null
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股半导体中长期走强"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cybersecurity",
@@ -91,6 +91,17 @@
       "description": "美股锂电池中长期走强"
     },
     {
+      "theme_id": "cn_chemicals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "化工（A 股本土赛道）"
+    },
+    {
       "theme_id": "robotics",
       "signal": null,
       "trigger_cn_etf": null,
@@ -157,6 +168,17 @@
       "description": "美股银行动量观察中"
     },
     {
+      "theme_id": "cn_insurance",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股保险动量观察中"
+    },
+    {
       "theme_id": "solar_clean_energy",
       "signal": null,
       "trigger_cn_etf": null,
@@ -191,14 +213,14 @@
     },
     {
       "theme_id": "rare_earth",
-      "signal": "transmission",
-      "trigger_cn_etf": "516780",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
         "short": null,
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": null,
+        "long": null
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股稀土/新材料动量观察中"
     },
     {
       "theme_id": "cn_liquor",
@@ -267,7 +289,7 @@
       "description": "传媒（A 股本土赛道）"
     },
     {
-      "theme_id": "cn_dividend",
+      "theme_id": "cn_gaming",
       "signal": null,
       "trigger_cn_etf": null,
       "votes": {
@@ -275,18 +297,7 @@
         "mid": null,
         "long": null
       },
-      "description": "红利（A 股本土赛道）"
-    },
-    {
-      "theme_id": "cn_star_100",
-      "signal": null,
-      "trigger_cn_etf": null,
-      "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
-      },
-      "description": "科创100（A 股本土赛道）"
+      "description": "游戏动漫（A 股本土赛道）"
     },
     {
       "theme_id": "cn_power",
@@ -330,9 +341,9 @@
       "cn_code": "512480",
       "mapping_score": 21,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "resonance",
         "long": null
       }
@@ -382,7 +393,7 @@
       "votes": {
         "short": null,
         "mid": "resonance",
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -518,6 +529,18 @@
       }
     },
     {
+      "theme_id": "cn_insurance",
+      "cn_code": "159851",
+      "mapping_score": 20,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
       "theme_id": "solar_clean_energy",
       "cn_code": "515790",
       "mapping_score": 28,
@@ -582,10 +605,10 @@
       "cn_code": "516780",
       "mapping_score": 62,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": null,
-        "mid": "transmission",
+        "mid": null,
         "long": "transmission"
       }
     }

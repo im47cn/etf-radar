@@ -1,7 +1,11 @@
 """holdings_pipeline 主流程及辅助函数测试"""
-from datetime import date
+import json
+from datetime import date, datetime, timezone
+from pathlib import Path
+from unittest.mock import patch
 
-from src.holdings_pipeline import candidate_quarters
+from src.holdings_pipeline import candidate_quarters, run_holdings_pipeline
+from src.models import EtfHoldingsSnapshot, EtfTopHolding
 
 
 def test_candidate_quarters_january():
@@ -26,15 +30,6 @@ def test_candidate_quarters_mid_quarter():
 def test_candidate_quarters_returns_four():
     out = candidate_quarters(date(2026, 7, 15))
     assert len(out) == 4
-
-
-import json
-from datetime import datetime, timezone
-from pathlib import Path
-from unittest.mock import patch
-
-from src.holdings_pipeline import run_holdings_pipeline
-from src.models import EtfHoldingsSnapshot, EtfTopHolding
 
 
 def _make_snap(code: str, quarter: date) -> EtfHoldingsSnapshot:

@@ -35,8 +35,8 @@
 后端
 ├── 季度管道 holdings_pipeline (月初 cron)
 │   └── akshare fund_portfolio_hold_em → data/holdings/{etf_code}.json
-├── 日频增量 stock_spot_provider (并入现有 cn-refresh nightly job)
-│   └── 一次 akshare stock_zh_a_spot_em → 筛选 holdings 涉及个股 → stocks_spot.json
+├── 日频增量 stocks_spot_pipeline (独立 cron，工作日交易时段每 30 min)
+│   └── 一次 akshare stock_zh_a_spot_em → 筛选 holdings 涉及个股 → data/latest/stocks_spot.json
 └── 新模型 Holding / ETFHoldings / StockSpot
 
 前端
@@ -51,8 +51,9 @@
 | 决策 | 原因 |
 |---|---|
 | 持仓走独立 `data/holdings/*.json`，不嵌入日频 snapshot | 季度数据进每日快照会无谓膨胀 diff |
-| 个股 spot 进每日 snapshot，但只覆盖 holdings 涉及个股（约 200-500 只）| 避免拉全市场 5000+ 个股，控制 snapshot 体积 |
+| 个股 spot 写 `data/latest/stocks_spot.json`，只覆盖 holdings 涉及个股（约 200-500 只）| 避免拉全市场 5000+ 个股；用 latest 单文件避免每日 snapshot 膨胀 |
 | 持仓抓取走独立 GitHub Action（月度 cron），不并入现有 cn-refresh | 避免每日 nightly job 调一次 28 个 ETF 持仓接口 |
+| 个股 spot 走**独立** GitHub Action（30 min cron + 不触发 deploy），不并入主 pipeline | 解耦 spot 失败与主链路 timestamp；提升刷新频率至盘中分钟级；不触发 deploy 由 cn-refresh 搭便车部署（最长延迟 15 min）|
 | 前端聚合在 client-side | 不引入中间快照表，简化数据契约 |
 | 入口集中在 `FocusedThemePanel` | 用户已在主题上下文中，认知负担最小 |
 
@@ -95,7 +96,7 @@
 }
 ```
 
-### 3.3 `data/snapshots/{date}/stocks_spot.json`（每日快照）
+### 3.3 `data/latest/stocks_spot.json`（盘中刷新单文件）
 
 ```json
 {
@@ -111,7 +112,8 @@
 **字段说明**：
 - `stocks` 为对象（按代码查询），仅含 holdings 中出现的个股代码并集
 - `r_1d` 为今日涨跌幅小数（如 0.025 = +2.5%），停牌或缺失时为 `null`
-- 体积预估：每日 +30-80KB
+- 体积预估：单文件 30-80 KB，原地覆盖（不进 `data/snapshots/`）
+- 刷新频率：工作日 BJT 09:00-15:30 每 30 min（由独立 cron 触发）
 
 ---
 
@@ -163,7 +165,7 @@ def run_holdings_pipeline(
 ) -> HoldingsPipelineReport: ...
 ```
 
-### 4.3 个股日频快照 `stock_spot_provider.py`（新增）
+### 4.3 个股快照 `stock_spot_provider.py`（新增）
 
 **位置**：`backend/src/providers/stock_spot_provider.py`
 
@@ -171,26 +173,48 @@ def run_holdings_pipeline(
 1. 扫描 `data/holdings/*.json` 收集个股代码并集
 2. 调 `ak.stock_zh_a_spot_em()` 一次性拿 A 股全市场快照
 3. 按持仓代码筛选并组装 `stocks_spot.json`
-4. 写入当日 snapshot 目录
+4. 原地写 `data/latest/stocks_spot.json`（不进 `data/snapshots/{date}/`）
 
 **失败兜底**：
 - 全市场 spot 调用失败 → 写空 `stocks_spot.json` + warning
 - 单股缺失（停牌/退市）→ entry 缺失，前端按 `—` 展示
 
-### 4.4 集成到现有 cn-refresh pipeline
+### 4.4 独立 pipeline 入口 `stocks_spot_pipeline.py`（新增）
 
-在 `backend/src/pipeline.py`（现有 `python -m src.pipeline --mode=cn` 的入口）的 snapshot 生成步骤后追加：
+**位置**：`backend/src/stocks_spot_pipeline.py`
+
+stocks_spot 与主 pipeline **完全解耦**：
+
 ```python
-from src.providers.stock_spot_provider import write_stocks_spot_snapshot
-
-write_stocks_spot_snapshot(
-    snapshot_dir=output_dir / date_str,
-    holdings_dir=data_root / "holdings",
-)
+# python -m src.stocks_spot_pipeline --data-root=./data
+def main() -> None:
+    args = parser.parse_args()
+    write_stocks_spot_snapshot(
+        out_path=args.data_root / 'latest' / 'stocks_spot.json',
+        holdings_dir=args.data_root / 'holdings',
+    )
 ```
-仅在 `mode in {"cn", "cn-intraday", "all"}` 时触发，美股模式 (`mode="us"`) 跳过。
 
-### 4.5 新增 GitHub Action `holdings-refresh.yml`
+**关键约束**：
+- 主 `pipeline.py` **不再**调用 `write_stocks_spot_snapshot`（由反向回归测试 `test_main_pipeline_does_not_write_stocks_spot` 守护）
+- spot 失败不会影响 `themes.json` / `etfs.json` / `signals.json` / `meta.json` 的时间戳
+- 调用频率与主 pipeline 完全独立（30 min vs 5 min）
+
+### 4.5 新增 GitHub Action `stocks-spot-refresh.yml`
+
+**位置**：`.github/workflows/stocks-spot-refresh.yml`
+
+**触发**：`cron: '*/30 1-7 * * 1-5'` = UTC 01:00-07:30 工作日 = BJT 09:00-15:30，每 30 min（每个交易日 14 次），支持 workflow_dispatch
+
+**步骤**：
+1. checkout（使用 `DATA_BOT_PAT` 以支持 commit-then-push）
+2. setup-python + setup-uv（沿用 `cn-refresh.yml` 的 uv 重试策略）
+3. 运行 `cd backend && uv run python -m src.stocks_spot_pipeline --data-root=../data`
+4. 若 `data/latest/stocks_spot.json` 有变更，commit + pull-rebase + push
+
+**搭便车部署**：本 workflow **不** trigger `deploy-frontend.yml`。前端拿到新 spot 数据的延迟 = 下一次 `cn-refresh.yml` cron 触发（最长 15 min）。这是有意的成本/延迟权衡。
+
+### 4.6 新增 GitHub Action `holdings-refresh.yml`
 
 **位置**：`.github/workflows/holdings-refresh.yml`
 
@@ -202,17 +226,20 @@ write_stocks_spot_snapshot(
 3. 运行 `cd backend && uv run python -m src.holdings_pipeline --data-root=../data --config-dir=../config`
 4. 若 `data/holdings/` 有变更，commit 到 main 分支（沿用现有 commit-bot 模式）
 
-### 4.6 后端文件清单
+### 4.7 后端文件清单
 
 | 文件 | 操作 |
 |---|---|
 | `backend/src/holdings_pipeline.py` | 新增（含 CLI 入口 `if __name__ == "__main__"`）|
 | `backend/src/providers/stock_spot_provider.py` | 新增 |
+| `backend/src/stocks_spot_pipeline.py` | 新增（独立 CLI 入口；不被 `pipeline.py` 调用）|
 | `backend/src/models.py` | 增加 Holding / ETFHoldings / StockSpot |
-| `backend/src/pipeline.py` | 在 cn 模式 snapshot 后追加 stock_spot 步骤 |
-| `.github/workflows/holdings-refresh.yml` | 新增 |
+| `backend/src/pipeline.py` | **不**写 stocks_spot（由独立 pipeline 负责，保留反向回归测试守护）|
+| `.github/workflows/holdings-refresh.yml` | 新增（月度，月初触发）|
+| `.github/workflows/stocks-spot-refresh.yml` | 新增（盘中 30 min 一次，不触发 deploy）|
 | `backend/tests/test_holdings_pipeline.py` | 新增 |
 | `backend/tests/test_stock_spot_provider.py` | 新增 |
+| `backend/tests/test_stocks_spot_pipeline.py` | 新增（含 `test_main_pipeline_does_not_write_stocks_spot` 反向回归）|
 | `backend/tests/contracts/test_holdings_schema.py` | 新增 |
 
 ---
@@ -280,8 +307,8 @@ useEtfHoldings(etfCodes: string[]): {
 ```ts
 useStocksSpot(): Record<string, StockSpot> | null
 ```
-- 从当前 snapshot 的 `stocks_spot.json` 加载
-- 复用现有 snapshot 加载层（`useSnapshotIndex` / `useLatestSnapshot`）
+- 从 `data/latest/stocks_spot.json` 加载（独立单文件，不依赖 snapshot 索引）
+- 404 时优雅退化为 `null`，UI 价格列按 `—` 展示
 
 ### 5.5 聚合函数：`aggregator.ts`（新增）
 
@@ -400,7 +427,8 @@ StocksPage (/theme/:id/stocks)
 | **akshare `fund_portfolio_hold_em` 接口不稳定 / 字段变更** | Phase 1 第一步先做 spike：用真实代码（512480、159870 等）跑 3-5 次确认返回结构。封装 provider 时严格做字段映射 |
 | **季度数据滞后**（3 月只能拿到去年 Q4 持仓） | UI 醒目展示 `disclosure_date`，必要时显示"距披露日 X 天" |
 | **港股通 / 跨市场代码混入**（如腾讯 00700） | `Holding.code` 字段允许非 6 位代码；spot provider 跳过非 A 股代码并 warning，UI 显示"港股暂不支持显示行情" |
-| **个股 spot 调用拖慢 nightly job** | `stock_zh_a_spot_em` 是一次调用拿全市场，预期 < 3s，可接受。极端情况设 30s 超时，失败兜底空文件 |
+| **个股 spot 调用拖慢主 pipeline** | 已通过独立 cron 解耦：spot 失败不影响主链路 timestamp，由 `test_main_pipeline_does_not_write_stocks_spot` 反向回归守护 |
+| **盘中 30 min cron 偶发 push 冲突**（与 cn-refresh commit-bot 同分支） | workflow 使用 `git pull --rebase` 后 push；`concurrency: stocks-spot-refresh` 避免自身重叠 |
 | **持仓数据缺失主题** | EmptyState 明确告知，不阻塞其他主题正常使用 |
 | **GitHub Pages 静态资源缓存** | `data/holdings/*.json` 通过现有 CDN，刷新策略与 themes.json 一致（commit hash 影响 ETag） |
 | **季度首日 cron 抢跑披露窗口** | 每月 1 日运行，但披露窗口是 1-2 月（年报）、4-5 月（一季报）等。如果抓不到最新季度，退到最近可用季度，记录 stale 标记 |
@@ -412,11 +440,11 @@ StocksPage (/theme/:id/stocks)
 
 - [ ] akshare `fund_portfolio_hold_em` spike 验证通过（接口可用 + 字段稳定）
 - [ ] holdings 数据全量首次落盘，所有 A 股主题至少有 1 个 ETF 有 Top10 数据
-- [ ] `stocks_spot.json` 在最新 snapshot 中可用
+- [ ] `data/latest/stocks_spot.json` 由独立 cron 产出可用
 - [ ] 前端子页面在 dev 环境正常渲染（含 EmptyState）
 - [ ] 单元测试 + 契约测试全绿
 - [ ] Playwright e2e 通过
-- [ ] 部署到 GitHub Pages 生产后烟雾测试新数据 URL（`data/holdings/index.json`、`data/snapshots/{latest}/stocks_spot.json`）
+- [ ] 部署到 GitHub Pages 生产后烟雾测试新数据 URL（`data/holdings/index.json`、`data/latest/stocks_spot.json`）
 - [ ] `docs/CONVENTIONS.md` 或 README 补充新数据契约文档
 
 ---
@@ -430,3 +458,12 @@ StocksPage (/theme/:id/stocks)
 | **Phase 4**（可选）| 持仓数据接入 portfolio event 系统（持仓股异动事件） | 1 周 |
 
 Phase 2/3 的设计稿将在 Phase 1 上线后独立创建，避免过早设计带来的契约迭代成本。
+
+---
+
+## 修订记录
+
+| 日期 | 提交 | 变更 |
+|---|---|---|
+| 2026-06-23 | (初版) | Phase 1 设计稿首次发布 |
+| 2026-06-23 | `74712ee` | **拆分 stocks_spot 为独立 pipeline + cron**。原方案让 `pipeline.py` 在 cn 模式 snapshot 后顺带写 stocks_spot，与主链路耦合。重构后：新增 `backend/src/stocks_spot_pipeline.py` 独立 CLI；主 `pipeline.py` 不再写 stocks_spot（反向回归测试守护）；新增 `.github/workflows/stocks-spot-refresh.yml`（工作日交易时段 30 min cron，不触发 deploy，由 cn-refresh 搭便车部署）。收益：spot 失败与主链路解耦；刷新频率从日级提升到 30 min；前端 `useStocksSpot` 改读 `data/latest/stocks_spot.json` 单文件。|

@@ -45,13 +45,13 @@ const renderRow = ({ theme, marketView = 'us' }: RenderRowOpts) =>
     },
   );
 
-describe('ThemeRow A 股专属 pill', () => {
-  it('does NOT render pill for mapped theme', () => {
+describe('ThemeRow cn-only flag', () => {
+  it('does NOT render flag for mapped theme', () => {
     renderRow({ theme: mkTheme() });
-    expect(screen.queryByText('A股专属')).toBeNull();
+    expect(screen.queryByText('🇨🇳')).toBeNull();
   });
 
-  it('renders pill for cn-only theme', () => {
+  it('renders flag for cn-only theme', () => {
     renderRow({
       theme: mkTheme({
         id: 'cn_x',
@@ -62,7 +62,7 @@ describe('ThemeRow A 股专属 pill', () => {
         us_strength: null,
       }),
     });
-    expect(screen.getByText('A股专属')).toBeInTheDocument();
+    expect(screen.getByText('🇨🇳')).toBeInTheDocument();
   });
 });
 

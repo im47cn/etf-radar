@@ -4,10 +4,11 @@ import { usePortfolioScores } from '@/hooks/usePortfolioScores';
 import { HoldingScoreCard } from './HoldingScoreCard';
 import { HoldingsEditor } from './HoldingsEditor';
 import { PortfolioSummary } from './PortfolioSummary';
+import { OpportunityScanner } from './OpportunityScanner';
 
 export const HoldingsList = () => {
   const { remove, holdings } = useHoldings();
-  const { scores, loading } = usePortfolioScores();
+  const { scores, loading, ownedThemeIds, themes } = usePortfolioScores();
   // null = 不开; '' = 新增模式; etfCode = 编辑模式
   const [editingCode, setEditingCode] = useState<string | null>(null);
   const editing = editingCode ? holdings.find(h => h.etf_code === editingCode) ?? null : null;
@@ -50,6 +51,7 @@ export const HoldingsList = () => {
             ))}
           </div>
           <PortfolioSummary scores={scores} />
+          <OpportunityScanner themes={themes} ownedThemeIds={ownedThemeIds} />
         </>
       )}
 

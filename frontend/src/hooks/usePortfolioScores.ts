@@ -17,21 +17,22 @@ import type {
 export interface UsePortfolioScoresResult {
   scores: HoldingScore[];
   loading: boolean;
-  /** 命中的主题 id 集合（用于现有页 ⭐/金圈叠加） */
+  /** 命中的主题 id 集合（用于现有页 ⭐/金圈叠加 + Phase 2 排除） */
   ownedThemeIds: Set<string>;
+  /** 全市场主题（Phase 2 机会扫描的输入；已转换为 engine 友好的 ThemeMetric 形态） */
+  themes: ThemeMetric[];
 }
 
 export function usePortfolioScores(): UsePortfolioScoresResult {
   const { holdings, loading } = useHoldings();
   const data = useDataContext();
 
-  const scores = useMemo(() => {
-    if (!data?.themes || !data?.etfs) return [];
-
-    // data.themes: ThemesFile = { themes: Theme[] }
-    // engine 现按 theme_id 反查, 不再依赖 primary_cn 索引;
-    // primary_cn 字段保留兼容 ThemeMetric 类型定义, 缺则空串
-    const themes: ThemeMetric[] = data.themes.themes.map((t) => ({
+  // data.themes: ThemesFile = { themes: Theme[] }
+  // engine 现按 theme_id 反查, 不再依赖 primary_cn 索引;
+  // primary_cn 字段保留兼容 ThemeMetric 类型定义, 缺则空串
+  const themes: ThemeMetric[] = useMemo(() => {
+    if (!data?.themes) return [];
+    return data.themes.themes.map((t) => ({
       id:          t.id,
       name:        t.name,
       primary_cn:  t.primary_cn ?? '',
@@ -39,6 +40,10 @@ export function usePortfolioScores(): UsePortfolioScoresResult {
       us_strength: t.us_strength ?? undefined,
       cn_strength: t.cn_strength ?? undefined,
     }));
+  }, [data]);
+
+  const scores = useMemo(() => {
+    if (!data?.themes || !data?.etfs) return [];
 
     // data.etfs: EtfsFile = { etfs: Etf[] }
     // price 可空 → 仅保留有价格的 ETF（无价无法算市值/盈亏）
@@ -64,7 +69,7 @@ export function usePortfolioScores(): UsePortfolioScoresResult {
       }));
 
     return scorePortfolio({ holdings, themes, etfs, themeSignals });
-  }, [holdings, data]);
+  }, [holdings, data, themes]);
 
   const ownedThemeIds = useMemo(() => {
     const set = new Set<string>();
@@ -74,5 +79,5 @@ export function usePortfolioScores(): UsePortfolioScoresResult {
     return set;
   }, [scores]);
 
-  return { scores, loading, ownedThemeIds };
+  return { scores, loading, ownedThemeIds, themes };
 }

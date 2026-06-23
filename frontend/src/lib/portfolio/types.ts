@@ -87,3 +87,13 @@ export interface ScoreInputs {
   etfs:         EtfMetric[];
   themeSignals: ThemeSignalEntry[];
 }
+
+// ========== Phase 2: 机会扫描产物 ==========
+export interface Opportunity {
+  themeId:     string;
+  themeName:   string;
+  primaryCn:   string;          // 该主题主映射 A 股 ETF 代码（UI 用于展示与跳转）
+  strength:    Strength;        // 复用 Strength（含 composite/short/mid/long）
+  l2Tag:       StrengthTag;     // 复用 strengthTag 输出
+  momentumTag: MomentumTag | null; // 复用 momentumTag 输出
+}

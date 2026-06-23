@@ -63,7 +63,7 @@ export const ThemeRow = ({ index, theme, signal, dimension, marketView, selected
           )}
           {theme.name}
           {isCnOnly(theme) && (
-            <span className="ml-1" aria-label="cn-only">🇨🇳</span>
+            <span className="ml-1">🇨🇳</span>
           )}
         </div>
         <div className="text-xs text-gray-500">{theme.us_etfs.join(' / ')}</div>

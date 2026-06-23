@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-23T07:05:45.517768+08:00",
+  "generated_at": "2026-06-23T08:32:37.841410+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -91,6 +91,17 @@
       "description": "美股锂电池动量观察中"
     },
     {
+      "theme_id": "cn_chemicals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "化工（A 股本土赛道）"
+    },
+    {
       "theme_id": "robotics",
       "signal": "transmission",
       "trigger_cn_etf": "562500",
@@ -157,6 +168,17 @@
       "description": "美股银行动量观察中"
     },
     {
+      "theme_id": "cn_insurance",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股保险动量观察中"
+    },
+    {
       "theme_id": "solar_clean_energy",
       "signal": null,
       "trigger_cn_etf": null,
@@ -191,14 +213,14 @@
     },
     {
       "theme_id": "rare_earth",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "516780",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股稀土/新材料动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cn_liquor",
@@ -267,7 +289,7 @@
       "description": "传媒（A 股本土赛道）"
     },
     {
-      "theme_id": "cn_dividend",
+      "theme_id": "cn_gaming",
       "signal": null,
       "trigger_cn_etf": null,
       "votes": {
@@ -275,18 +297,7 @@
         "mid": null,
         "long": null
       },
-      "description": "红利（A 股本土赛道）"
-    },
-    {
-      "theme_id": "cn_star_100",
-      "signal": null,
-      "trigger_cn_etf": null,
-      "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
-      },
-      "description": "科创100（A 股本土赛道）"
+      "description": "游戏动漫（A 股本土赛道）"
     },
     {
       "theme_id": "cn_power",
@@ -352,13 +363,13 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 10,
+      "mapping_score": 23,
       "confidence": 60,
       "signal": "resonance",
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "resonance"
+        "long": "transmission"
       }
     },
     {
@@ -518,6 +529,18 @@
       }
     },
     {
+      "theme_id": "cn_insurance",
+      "cn_code": "159851",
+      "mapping_score": 5,
+      "confidence": 90,
+      "signal": null,
+      "votes": {
+        "short": "transmission",
+        "mid": "divergence",
+        "long": null
+      }
+    },
+    {
       "theme_id": "solar_clean_energy",
       "cn_code": "515790",
       "mapping_score": 9,
@@ -582,10 +605,10 @@
       "cn_code": "516780",
       "mapping_score": 47,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "resonance",
-        "mid": "divergence",
+        "mid": "transmission",
         "long": "transmission"
       }
     }

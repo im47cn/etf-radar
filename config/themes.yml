@@ -73,6 +73,15 @@ themes:
     cn_etfs:
       - {code: '159755', name: 电池ETF, tracking: 中证电池主题, match_type: exact}
 
+  - id: cn_chemicals
+    name: 化工
+    tags: [化工, 新材料, 周期]
+    primary_cn: '159870'
+    note: "国内化工细分（无窄口径美股锚点，cn_only）"
+    cn_etfs:
+      - {code: '159870', name: 化工ETF, tracking: 中证细分化工产业, match_type: exact}
+      - {code: '516020', name: 化工龙头ETF, tracking: 中证细分化工产业龙头, match_type: wide}
+
   - id: robotics
     name: 机器人
     us_etfs: [BOTZ, ROBO, ARKQ]
@@ -126,6 +135,15 @@ themes:
     note: "A股银行对应美股商业+区域银行"
     cn_etfs:
       - {code: '512800', name: 银行ETF, tracking: 中证银行, match_type: exact}
+
+  - id: cn_insurance
+    name: 保险
+    us_etfs: [KIE, IAK]
+    primary_us: KIE
+    tags: [保险, 金融, 大金融]
+    note: "A股保险对应美股保险（KIE 与 KBE 同 SPDR 系列）"
+    cn_etfs:
+      - {code: '159851', name: 保险ETF, tracking: 中证全指保险, match_type: exact}
 
   - id: solar_clean_energy
     name: 光伏/清洁能源
@@ -203,24 +221,19 @@ themes:
 
   - id: cn_media
     name: 传媒
-    tags: [传媒, 游戏, TMT]
+    tags: [传媒, 广告, TMT]
     primary_cn: '159805'
+    note: "传媒宽口径（含出版/广电/广告）；游戏专项见 cn_gaming"
     cn_etfs:
       - {code: '159805', name: 传媒ETF, tracking: 中证传媒, match_type: exact}
 
-  - id: cn_dividend
-    name: 红利
-    tags: [红利, 高股息]
-    primary_cn: '510880'
+  - id: cn_gaming
+    name: 游戏动漫
+    tags: [游戏, 动漫, TMT]
+    primary_cn: '159869'
+    note: "国内手游为主，中美游戏成份股差异大，cn_only"
     cn_etfs:
-      - {code: '510880', name: 红利ETF, tracking: 上证红利, match_type: exact}
-
-  - id: cn_star_100
-    name: 科创100
-    tags: [科创板, 中小盘, 成长]
-    primary_cn: '588220'
-    cn_etfs:
-      - {code: '588220', name: 科创100ETF鹏华, tracking: 上证科创板100, match_type: exact}
+      - {code: '159869', name: 游戏ETF, tracking: 中证动漫游戏, match_type: exact}
 
   - id: cn_power
     name: 电力

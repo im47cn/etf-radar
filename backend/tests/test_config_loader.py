@@ -25,8 +25,8 @@ def test_load_themes_missing_file() -> None:
 def test_real_themes_yml_count() -> None:
     real = Path(__file__).parent.parent.parent / 'config' / 'themes.yml'
     themes = load_themes(real)
-    # 12 mapped + 15 CN-only (7 独立行业 + 半导体设备/科创100 + 拆分: 券商/煤炭/银行/有色/电池/油气)
-    assert len(themes) == 27
+    # 13 mapped (含拆分: 银行/保险/煤炭/有色/电池/油气) + 15 CN-only (含化工/游戏，已剔除红利/科创100 风格因子)
+    assert len(themes) == 28
 
 
 def test_load_themes_includes_cn_only_count():
@@ -36,7 +36,7 @@ def test_load_themes_includes_cn_only_count():
     assert len(cn_only) >= 7, f"expected >=7 cn_only themes, got {len(cn_only)}"
     expected_ids = {
         'cn_liquor', 'cn_consumer_staples', 'cn_medical_devices',
-        'cn_home_appliances', 'cn_real_estate', 'cn_media', 'cn_dividend',
+        'cn_home_appliances', 'cn_real_estate', 'cn_media', 'cn_power',
     }
     actual = {t.id for t in cn_only}
     assert expected_ids.issubset(actual), f"missing: {expected_ids - actual}"

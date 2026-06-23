@@ -46,6 +46,7 @@ from .output.writer import atomic_write_json
 from .providers.akshare_em_provider import AkshareEmProvider
 from .providers.akshare_sina_provider import AkshareSinaProvider
 from .providers.base import EmptyDataError, EtfDataProvider, ProviderError
+from .providers.stock_spot_provider import write_stocks_spot_snapshot
 from .providers.yfinance_provider import YfinanceProvider
 from .scoring.mapping import mapping_score
 from .scoring.returns import compute_returns
@@ -485,6 +486,13 @@ def run_pipeline(
     atomic_write_json(data_root / 'latest' / 'etfs.json', etfs_json)
     atomic_write_json(data_root / 'latest' / 'signals.json', signals_json)
     atomic_write_json(data_root / 'latest' / 'meta.json', meta_json)
+
+    # 个股 spot：仅在 cn 数据参与的模式下写入；intraday 也包含 cn 故同步写
+    write_stocks_spot_snapshot(
+        out_path=data_root / 'latest' / 'stocks_spot.json',
+        holdings_dir=data_root / 'holdings',
+    )
+
     log.info(f'pipeline done, failed={len(us_failed) + len(cn_failed)}')
 
 

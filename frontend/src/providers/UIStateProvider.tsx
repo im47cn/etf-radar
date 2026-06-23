@@ -12,7 +12,7 @@ import {
 
 const DEFAULT_DIM: DimName = 'short';
 const DEFAULT_SIG: SignalFilter = 'all';
-const DEFAULT_MV: MarketView = 'us';
+const DEFAULT_MV: MarketView = 'cn-all';
 
 // 容错解析: 非法值统一回退默认, 避免外部输入污染 state.
 function parseDim(s: string | null): DimName {
@@ -39,7 +39,7 @@ function parseMv(s: string | null): MarketView {
  *
  * searchQuery 仅内存态: 输入高频且属个人查询, 不进 URL 历史.
  *
- * 默认值 (`dim=short`, `sig=all`, `mv=us`) 不写入 URL, 保持 URL 简洁.
+ * 默认值 (`dim=short`, `sig=all`, `mv=cn-all`) 不写入 URL, 保持 URL 简洁.
  * 写入一律用 `{ replace: true }`, 避免点击 bubble / 切 tab 污染浏览器历史.
  */
 export const UIStateProvider: React.FC<{ children: React.ReactNode }> = ({

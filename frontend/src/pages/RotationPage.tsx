@@ -7,6 +7,7 @@ import { QuadrantLegend } from '@/components/rotation/QuadrantLegend';
 import { RotationHealthBar } from '@/components/rotation/RotationHealthBar';
 import { computeRotationHealth } from '@/lib/rotationHealth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { MarketViewSelector } from '@/components/FilterBar/MarketViewSelector';
 
 export const RotationPage = () => {
   const { themes, isLoading, error } = useDataContext();
@@ -55,6 +56,7 @@ export const RotationPage = () => {
       <div className="bg-white border rounded p-4">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-bold">主题轮动象限图</h2>
+          <MarketViewSelector />
         </div>
         <p className="text-xs text-gray-600 mb-4">
           X 轴为长期强度 (60d), Y 轴为短期强度 (1d), 中线 50 切四象限。气泡大小反映综合排名。

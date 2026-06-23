@@ -21,19 +21,19 @@ const renderWith = () =>
   );
 
 describe('MarketViewSelector', () => {
-  it('默认渲染 us 高亮', () => {
+  it('默认渲染 cn-all 高亮 (A 股投资者开箱即用)', () => {
     renderWith();
-    expect(screen.getByTestId('mv-val').textContent).toBe('us');
-    expect(screen.getByRole('button', { name: /美股/i })).toHaveAttribute(
+    expect(screen.getByTestId('mv-val').textContent).toBe('cn-all');
+    expect(screen.getByRole('button', { name: /A股/i })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
   });
 
-  it('点击 A 股 切到 cn-all', () => {
+  it('点击 美股 切到 us', () => {
     renderWith();
-    fireEvent.click(screen.getByRole('button', { name: /A股/i }));
-    expect(screen.getByTestId('mv-val').textContent).toBe('cn-all');
+    fireEvent.click(screen.getByRole('button', { name: /美股/i }));
+    expect(screen.getByTestId('mv-val').textContent).toBe('us');
   });
 
   it('role=group + 两个 aria-pressed 按钮', () => {

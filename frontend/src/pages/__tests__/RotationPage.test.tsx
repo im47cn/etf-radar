@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { RotationPage } from '../RotationPage';
+import { UIStateProvider } from '@/providers/UIStateProvider';
 import type { Theme } from '@/types/themes';
 
 const mockUseDataContext = vi.fn();
@@ -51,7 +52,9 @@ const mkTheme = (id: string): Theme => ({
 const renderPage = () =>
   render(
     <MemoryRouter>
-      <RotationPage />
+      <UIStateProvider>
+        <RotationPage />
+      </UIStateProvider>
     </MemoryRouter>,
   );
 

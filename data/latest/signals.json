@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-23T10:27:03.573402+08:00",
+  "generated_at": "2026-06-23T11:04:14.102288+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": "transmission",
+      "signal": "resonance",
       "trigger_cn_etf": "512760",
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股存储芯片中长期走强"
     },
     {
       "theme_id": "semiconductor",
@@ -26,14 +26,14 @@
     },
     {
       "theme_id": "cybersecurity",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "512720",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       },
-      "description": "美股网络安全动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "ai_compute",
@@ -84,7 +84,7 @@
       "signal": "resonance",
       "trigger_cn_etf": "159755",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "resonance",
         "long": "resonance"
       },
@@ -125,12 +125,12 @@
     },
     {
       "theme_id": "cn_base_metals",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "512400",
       "votes": {
         "short": null,
-        "mid": null,
-        "long": null
+        "mid": "resonance",
+        "long": "resonance"
       },
       "description": "美股有色金属动量观察中"
     },
@@ -203,7 +203,7 @@
     {
       "theme_id": "aerospace_defense",
       "signal": "divergence",
-      "trigger_cn_etf": "512660",
+      "trigger_cn_etf": "512710",
       "votes": {
         "short": null,
         "mid": "divergence",
@@ -216,9 +216,9 @@
       "signal": "transmission",
       "trigger_cn_etf": "516780",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": "resonance"
       },
       "description": "美股领先, A股尚未完全跟随"
     },
@@ -329,11 +329,11 @@
       "cn_code": "512760",
       "mapping_score": 21,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -377,10 +377,10 @@
       "cn_code": "512720",
       "mapping_score": 1,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": null,
+        "mid": "transmission",
         "long": null
       }
     },
@@ -439,7 +439,7 @@
       "confidence": 90,
       "signal": "resonance",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "resonance",
         "long": "resonance"
       }
@@ -463,8 +463,8 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
-        "mid": "transmission",
+        "short": "transmission",
+        "mid": null,
         "long": null
       }
     },
@@ -485,10 +485,10 @@
       "cn_code": "512400",
       "mapping_score": 40,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": "transmission",
-        "mid": null,
+        "short": null,
+        "mid": "resonance",
         "long": "resonance"
       }
     },
@@ -535,7 +535,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "divergence",
         "long": null
       }
@@ -559,7 +559,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": "transmission",
         "long": "divergence"
       }
@@ -581,11 +581,11 @@
       "cn_code": "512660",
       "mapping_score": 33,
       "confidence": 90,
-      "signal": "divergence",
+      "signal": null,
       "votes": {
-        "short": null,
-        "mid": "divergence",
-        "long": "divergence"
+        "short": "transmission",
+        "mid": null,
+        "long": null
       }
     },
     {
@@ -607,9 +607,9 @@
       "confidence": 90,
       "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": "resonance"
       }
     }
   ]

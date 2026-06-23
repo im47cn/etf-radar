@@ -11,7 +11,16 @@ export const LATEST_URLS = {
   signals: `${BASE}latest/signals.json`,
   meta: `${BASE}latest/meta.json`,
   snapshotsIndex: `${BASE}latest/snapshots-index.json`,
+  stocksSpot: `${BASE}latest/stocks_spot.json`,
 } as const;
 
 // themes_path 形如 "snapshots/<date>/themes.json" (已含 snapshots/ 前缀, 由 backend 写入)
 export const frameUrl = (themesPath: string): string => `${BASE}${themesPath}`;
+
+// holdings 季度数据（独立于 snapshots）
+export const HOLDINGS_URLS = {
+  index: `${BASE}holdings/index.json`,
+} as const;
+
+export const holdingsEtfUrl = (etfCode: string): string =>
+  `${BASE}holdings/${etfCode}.json`;

@@ -9,6 +9,7 @@ import { RadarPage } from '@/pages/RadarPage';
 import { RotationPage } from '@/pages/RotationPage';
 import { PortfolioPage } from '@/pages/PortfolioPage';
 import { AuthCallback } from '@/pages/AuthCallback';
+import { StocksPage } from '@/pages/StocksPage';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
                     <Route path="/rotation"       element={<RotationPage />} />
                     <Route path="/portfolio"      element={<PortfolioPage />} />
                     <Route path="/auth/callback"  element={<AuthCallback />} />
+                    <Route path="/theme/:id/stocks" element={<StocksPage />} />
                   </Routes>
                 </div>
               </UIStateProvider>

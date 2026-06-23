@@ -1,15 +1,15 @@
 // frontend/src/lib/portfolio/eventDiff.ts
 // 主题级事件差分 — 纯函数，无副作用，不依赖网络/DB
 
-import type { Snapshot, PendingEvent } from './eventTypes';
+import { PAYLOAD_VERSION, type Snapshot, type PendingEvent } from './eventTypes';
 
 /** spec §3.7 — composite 强度三档分界 */
 const THRESHOLDS = [25, 50, 75] as const;
 
 export interface HoldingForDiff {
   themeId: string;
-  /** 持仓 ETF 代码 — 可选，仅用于上层日志/告警回链；事件聚合仍按 themeId 去重 */
-  etfCode?: string;
+  /** 持仓 ETF 代码 — 事件 payload 携带，用于 UI 回链「事件影响了你持仓的 SOXX / SMH」 */
+  etfCode: string;
 }
 
 /**
@@ -19,23 +19,29 @@ export interface HoldingForDiff {
  *   event_type + payload 推导（参见 EventItem.tsx）。
  *
  * 去重策略：同一主题被多个 ETF 持有时，按 themeId 聚合，事件仅生成一组
- *   （由 event_signature 中的 themeId 保证唯一）。
+ *   （由 event_signature 中的 themeId 保证唯一）；payload.etf_codes
+ *   收集该主题下用户持仓的全部 ETF 代码（保持输入顺序，去重）。
  */
 export function detectEvents(
   today:     Snapshot,
   yesterday: Snapshot,
   holdings:  HoldingForDiff[],
 ): PendingEvent[] {
-  const events: PendingEvent[] = [];
-  const seenThemes = new Set<string>();
-
+  // 先按 themeId 聚合 etfCodes（保持输入顺序去重）
+  const themeToEtfs = new Map<string, string[]>();
   for (const h of holdings) {
-    // 同主题多 ETF 只处理一次
-    if (seenThemes.has(h.themeId)) continue;
-    seenThemes.add(h.themeId);
+    const list = themeToEtfs.get(h.themeId);
+    if (list) {
+      if (!list.includes(h.etfCode)) list.push(h.etfCode);
+    } else {
+      themeToEtfs.set(h.themeId, [h.etfCode]);
+    }
+  }
 
-    const t = today.themes.get(h.themeId);
-    const y = yesterday.themes.get(h.themeId);
+  const events: PendingEvent[] = [];
+  for (const [themeId, etfCodes] of themeToEtfs) {
+    const t = today.themes.get(themeId);
+    const y = yesterday.themes.get(themeId);
     // 新增或下架主题：静默跳过，不产生事件
     if (!t || !y) continue;
 
@@ -43,9 +49,9 @@ export function detectEvents(
     if (t.quadrant !== y.quadrant) {
       events.push({
         event_type:      'theme_quadrant_change',
-        theme_id:        h.themeId,
-        event_signature: `theme_quadrant_change:${h.themeId}:${today.date}:${y.quadrant}_to_${t.quadrant}`,
-        payload:         { from: y.quadrant, to: t.quadrant },
+        theme_id:        themeId,
+        event_signature: `theme_quadrant_change:${themeId}:${today.date}:${y.quadrant}_to_${t.quadrant}`,
+        payload:         { version: PAYLOAD_VERSION, from: y.quadrant, to: t.quadrant, etf_codes: etfCodes },
         asof_date:       today.date,
       });
     }
@@ -57,18 +63,18 @@ export function detectEvents(
       if (yComp < threshold && tComp >= threshold) {
         events.push({
           event_type:      'theme_strength_cross_up',
-          theme_id:        h.themeId,
-          event_signature: `theme_strength_cross_up:${h.themeId}:${today.date}:${threshold}`,
-          payload:         { threshold, from: yComp, to: tComp },
+          theme_id:        themeId,
+          event_signature: `theme_strength_cross_up:${themeId}:${today.date}:${threshold}`,
+          payload:         { version: PAYLOAD_VERSION, threshold, from: yComp, to: tComp, etf_codes: etfCodes },
           asof_date:       today.date,
         });
       }
       if (yComp >= threshold && tComp < threshold) {
         events.push({
           event_type:      'theme_strength_cross_down',
-          theme_id:        h.themeId,
-          event_signature: `theme_strength_cross_down:${h.themeId}:${today.date}:${threshold}`,
-          payload:         { threshold, from: yComp, to: tComp },
+          theme_id:        themeId,
+          event_signature: `theme_strength_cross_down:${themeId}:${today.date}:${threshold}`,
+          payload:         { version: PAYLOAD_VERSION, threshold, from: yComp, to: tComp, etf_codes: etfCodes },
           asof_date:       today.date,
         });
       }
@@ -78,9 +84,9 @@ export function detectEvents(
     if (t.signal !== y.signal && t.signal !== null && y.signal !== null) {
       events.push({
         event_type:      'theme_signal_change',
-        theme_id:        h.themeId,
-        event_signature: `theme_signal_change:${h.themeId}:${today.date}:${y.signal}_to_${t.signal}`,
-        payload:         { from: y.signal, to: t.signal },
+        theme_id:        themeId,
+        event_signature: `theme_signal_change:${themeId}:${today.date}:${y.signal}_to_${t.signal}`,
+        payload:         { version: PAYLOAD_VERSION, from: y.signal, to: t.signal, etf_codes: etfCodes },
         asof_date:       today.date,
       });
     }

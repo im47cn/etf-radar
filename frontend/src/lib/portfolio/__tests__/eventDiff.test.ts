@@ -21,7 +21,9 @@ describe('detectEvents', () => {
     expect(quadrant!.event_signature).toBe(
       'theme_quadrant_change:cn_chemical:2026-06-23:weak_to_leading',
     );
-    expect(quadrant!.payload).toEqual({ from: 'weak', to: 'leading' });
+    expect(quadrant!.payload).toEqual({
+      version: 1, from: 'weak', to: 'leading', etf_codes: ['cn_chemical-etf'],
+    });
   });
 
   it('上穿阈值产生 theme_strength_cross_up 事件（每档单独）', () => {
@@ -31,7 +33,9 @@ describe('detectEvents', () => {
     expect(upEvents[0].event_signature).toBe(
       'theme_strength_cross_up:cn_consume:2026-06-23:25',
     );
-    expect(upEvents[0].payload).toEqual({ threshold: 25, from: 24, to: 26 });
+    expect(upEvents[0].payload).toEqual({
+      version: 1, threshold: 25, from: 24, to: 26, etf_codes: ['cn_consume-etf'],
+    });
   });
 
   it('下穿阈值产生 theme_strength_cross_down 事件（多档同时）', () => {
@@ -44,7 +48,9 @@ describe('detectEvents', () => {
     const events = detectEvents(today, yesterday, holdings(['cn_consume']));
     const sig = events.find(e => e.event_type === 'theme_signal_change');
     expect(sig).toBeDefined();
-    expect(sig!.payload).toEqual({ from: 'divergence', to: 'resonance' });
+    expect(sig!.payload).toEqual({
+      version: 1, from: 'divergence', to: 'resonance', etf_codes: ['cn_consume-etf'],
+    });
     expect(sig!.event_signature).toBe(
       'theme_signal_change:cn_consume:2026-06-23:divergence_to_resonance',
     );
@@ -58,6 +64,18 @@ describe('detectEvents', () => {
     );
     const sigs = new Set(events.map(e => e.event_signature));
     expect(sigs.size).toBe(events.length);
+  });
+
+  it('同主题多 ETF 持仓 — payload.etf_codes 聚合输入顺序且去重', () => {
+    const events = detectEvents(
+      today, yesterday,
+      [{ themeId: 'cn_chemical', etfCode: '512480' },
+       { themeId: 'cn_chemical', etfCode: '512560' },
+       { themeId: 'cn_chemical', etfCode: '512480' }],  // 重复
+    );
+    const quadrant = events.find(e => e.event_type === 'theme_quadrant_change');
+    expect(quadrant).toBeDefined();
+    expect(quadrant!.payload.etf_codes).toEqual(['512480', '512560']);
   });
 
   it('主题在 yesterday 缺失 — 跳过（新增主题不报错）', () => {
@@ -100,5 +118,13 @@ describe('detectEvents', () => {
     };
     const events = detectEvents(t, y, [{ themeId: 'x', etfCode: 'x-etf' }]);
     expect(events.filter(e => e.event_type === 'theme_strength_cross_down')).toHaveLength(1);
+  });
+
+  it('每个 payload 都带 version: 1', () => {
+    const events = detectEvents(today, yesterday, holdings(['cn_chemical', 'cn_consume']));
+    expect(events.length).toBeGreaterThan(0);
+    for (const e of events) {
+      expect(e.payload.version).toBe(1);
+    }
   });
 });

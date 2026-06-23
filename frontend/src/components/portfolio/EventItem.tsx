@@ -3,10 +3,17 @@
 
 import type { UserEvent } from '@/lib/portfolio/eventTypes';
 import type { Quadrant, SignalKind } from '@/lib/portfolio/types';
+import { formatAffectedEtfs } from '@/lib/portfolio/eventDisplay';
 
 interface Props {
   event:     UserEvent;
   themeName: string;
+  /**
+   * 当前持仓 ETF 代码集合（O(1) 查询）。
+   * 提供则渲染副标题"影响你持仓的 SOXX"/"曾涉及你持仓的 SOXX（已卖出）"；
+   * 不提供则不显示副标题（向后兼容旧调用方）。
+   */
+  currentHoldings?: Set<string>;
 }
 
 type Tone = 'green' | 'red' | 'gray';
@@ -78,9 +85,11 @@ const TONE_BAR: Record<Tone, string> = {
   gray:  'bg-gray-400',
 };
 
-export const EventItem = ({ event, themeName }: Props) => {
+export const EventItem = ({ event, themeName, currentHoldings }: Props) => {
   const t = tone(event);
   const isRead = event.read_at !== null;
+  // 仅在传入 currentHoldings 时计算交集副标题，未传入则不显示
+  const affected = currentHoldings ? formatAffectedEtfs(event, currentHoldings) : null;
 
   return (
     <div
@@ -98,6 +107,12 @@ export const EventItem = ({ event, themeName }: Props) => {
         <div className={`text-sm ${isRead ? 'text-gray-500' : 'text-gray-800'}`}>
           {label(event, themeName)}
         </div>
+        {/* 持仓影响副标题（条件渲染：传 currentHoldings 且事件有 etf_codes 才显示） */}
+        {affected && (
+          <div data-testid="event-affected" className={`text-xs mt-0.5 ${isRead ? 'text-gray-400' : 'text-blue-600'}`}>
+            {affected}
+          </div>
+        )}
         {/* 日期 */}
         <div className="text-xs text-gray-400 mt-0.5">{event.asof_date}</div>
       </div>

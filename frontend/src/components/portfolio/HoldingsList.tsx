@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useHoldings } from '@/hooks/useHoldings';
 import { usePortfolioScores } from '@/hooks/usePortfolioScores';
 import { useDataContext } from '@/providers/dataContext';
@@ -34,13 +34,20 @@ export const HoldingsList = () => {
   // 仅取 covered（有 themeId）持仓用于信号差异检测
   const holdingsForDiff = scores
     .filter(s => s.status === 'covered' && s.themeId)
-    .map(s => ({ themeId: s.themeId! }));
+    .map(s => ({ themeId: s.themeId!, etfCode: s.etfCode }));
 
   // 触发事件检测（同日节流，内部有 localStorage guard）
   usePortfolioEventDetection({ todayDate, yesterdayDate, holdings: holdingsForDiff });
 
   // 事件流数据（useUserEvents 消费 EventsContext）
   const { events, unreadCount, markAllRead } = useUserEvents();
+
+  // 当前持仓 ETF 代码集合 —— 透传给 EventTimeline 计算"事件影响你持仓的 SOXX"
+  // useMemo 避免每次 render 重建 Set 触发下游不必要 re-render
+  const currentHoldings = useMemo(
+    () => new Set(holdings.map(h => h.etf_code)),
+    [holdings],
+  );
 
   if (loading) {
     return <div className="p-8 text-center text-gray-500">加载持仓...</div>;
@@ -84,6 +91,7 @@ export const HoldingsList = () => {
             themeNames={themeNames}
             unreadCount={unreadCount}
             markAllRead={markAllRead}
+            currentHoldings={currentHoldings}
           />
           <OpportunityScanner themes={themes} ownedThemeIds={ownedThemeIds} />
         </>

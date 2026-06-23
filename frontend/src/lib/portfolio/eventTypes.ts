@@ -24,24 +24,45 @@ export type EventType =
   | 'theme_signal_change';
 
 // ── Payload 形状定义 ──────────────────────────────────────────────────────────
+//
+// 命名约定：snake_case 与 DB jsonb 字段（asof_date / event_signature 等）保持一致。
+//
+// 字段语义：
+//   - `version`：payload schema 版本号；未来 schema 变更时升 2/3，配合 zod
+//      discriminatedUnion('version', ...) 支持历史行兼容渲染。
+//   - `etf_codes`：事件**触发瞬间**用户持仓的 ETF 代码快照。
+//      UNIQUE (user_id, event_signature) + ignoreDuplicates=true 决定了同主题/同日/
+//      同跃迁只插一行，**后续持仓变化不会回写已落库事件**——事件是历史记录，不应被
+//      篡改。UI 若想显示「当前仍持有的 ETF」，应用 etf_codes ∩ current_holdings
+//      实时计算（见 eventDisplay.ts.formatAffectedEtfs）。
+
+/** payload schema 当前版本号 */
+export const PAYLOAD_VERSION = 1 as const;
+export type PayloadVersion = typeof PAYLOAD_VERSION;
 
 /** 象限切换 payload */
 export interface QuadrantChangePayload {
-  from: Quadrant;
-  to:   Quadrant;
+  version:   PayloadVersion;
+  from:      Quadrant;
+  to:        Quadrant;
+  etf_codes: string[];
 }
 
 /** 强度阈值穿越 payload（上穿 / 下穿共用） */
 export interface StrengthCrossPayload {
+  version:   PayloadVersion;
   threshold: 25 | 50 | 75;
   from:      number;
   to:        number;
+  etf_codes: string[];
 }
 
 /** 信号变化 payload */
 export interface SignalChangePayload {
-  from: SignalKind;
-  to:   SignalKind;
+  version:   PayloadVersion;
+  from:      SignalKind;
+  to:        SignalKind;
+  etf_codes: string[];
 }
 
 // ── 差分产出（尚未落库）—— discriminated union ────────────────────────────────
@@ -64,18 +85,31 @@ export type UserEvent =
 
 // ── Zod 行级校验 schema — 与上方 UserEvent union 保持一致 ────────────────────
 
+const EtfCodesSchema = z.array(z.string());
+
+// version 用 default(1) 兼容历史 jsonb 行（早期落库无 version 字段视为 v1）;
+// 未来出 v2 时，本 schema 升级为 literal(1)，旧行通过升级器迁移或在 zod
+// discriminatedUnion('version', [v1, v2, ...]) 分流处理.
+const VersionSchema = z.literal(PAYLOAD_VERSION).optional().default(PAYLOAD_VERSION);
+
 const QuadrantChangePayloadSchema = z.object({
-  from: z.enum(['leading', 'weakening', 'following', 'weak']),
-  to:   z.enum(['leading', 'weakening', 'following', 'weak']),
+  version:   VersionSchema,
+  from:      z.enum(['leading', 'weakening', 'following', 'weak']),
+  to:        z.enum(['leading', 'weakening', 'following', 'weak']),
+  etf_codes: EtfCodesSchema,
 });
 const StrengthCrossPayloadSchema = z.object({
+  version:   VersionSchema,
   threshold: z.union([z.literal(25), z.literal(50), z.literal(75)]),
   from:      z.number(),
   to:        z.number(),
+  etf_codes: EtfCodesSchema,
 });
 const SignalChangePayloadSchema = z.object({
-  from: z.enum(['resonance', 'transmission', 'divergence']),
-  to:   z.enum(['resonance', 'transmission', 'divergence']),
+  version:   VersionSchema,
+  from:      z.enum(['resonance', 'transmission', 'divergence']),
+  to:        z.enum(['resonance', 'transmission', 'divergence']),
+  etf_codes: EtfCodesSchema,
 });
 
 /** UserEvent 公共字段 */

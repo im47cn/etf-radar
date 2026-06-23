@@ -45,7 +45,7 @@ describe('usePortfolioEventDetection', () => {
     localStorageMock.setItem(STORAGE_KEY, '2026-06-23');
     renderHook(() => usePortfolioEventDetection({
       todayDate: '2026-06-23', yesterdayDate: '2026-06-22',
-      holdings: [{ themeId: 'cn_tech' }],
+      holdings: [{ themeId: 'cn_tech', etfCode: '510300' }],
     }));
     await new Promise(r => setTimeout(r, 50));
     expect(upsertSpy).not.toHaveBeenCalled();
@@ -54,7 +54,7 @@ describe('usePortfolioEventDetection', () => {
   it('snapshots 都就位时触发 detectEvents + upsertEvents + 写 localStorage', async () => {
     renderHook(() => usePortfolioEventDetection({
       todayDate: '2026-06-23', yesterdayDate: '2026-06-22',
-      holdings: [{ themeId: 'cn_tech' }],
+      holdings: [{ themeId: 'cn_tech', etfCode: '510300' }],
     }));
     await waitFor(() => {
       expect(localStorageMock.getItem(STORAGE_KEY)).toBe('2026-06-23');
@@ -76,7 +76,7 @@ describe('usePortfolioEventDetection', () => {
   it('日期缺失时不触发', async () => {
     renderHook(() => usePortfolioEventDetection({
       todayDate: undefined, yesterdayDate: '2026-06-22',
-      holdings: [{ themeId: 'cn_tech' }],
+      holdings: [{ themeId: 'cn_tech', etfCode: '510300' }],
     }));
     await new Promise(r => setTimeout(r, 50));
     expect(upsertSpy).not.toHaveBeenCalled();

@@ -8,7 +8,7 @@ const themes = new Map<string, string>([['cn_tech', '科技'], ['cn_chem', '化�
 const mkEvent = (id: string, themeId: string, read = false): UserEvent => ({
   id, user_id: 'u1', event_type: 'theme_quadrant_change',
   theme_id: themeId, event_signature: `sig_${id}`,
-  payload: { from: 'weak', to: 'leading' },
+  payload: { version: 1, from: 'weak', to: 'leading', etf_codes: ['510300'] },
   asof_date: '2026-06-23',
   created_at: '2026-06-23T01:00:00Z', read_at: read ? '2026-06-23T02:00:00Z' : null,
 });

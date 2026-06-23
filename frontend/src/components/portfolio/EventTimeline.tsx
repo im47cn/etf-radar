@@ -10,6 +10,11 @@ interface Props {
   themeNames:  Map<string, string>;
   unreadCount: number;
   markAllRead: () => Promise<{ error: string | null }>;
+  /**
+   * 当前持仓 ETF 代码集合，透传给 EventItem 渲染持仓影响副标题。
+   * 不传则副标题不显示（向后兼容）。
+   */
+  currentHoldings?: Set<string>;
 }
 
 /**
@@ -18,7 +23,7 @@ interface Props {
  *   - 未知 themeId 使用 themeId 原始值兜底，防止崩溃
  *   - 立场：仅"事件事实陈述"，无买卖指令
  */
-export const EventTimeline = ({ events, themeNames, unreadCount, markAllRead }: Props) => {
+export const EventTimeline = ({ events, themeNames, unreadCount, markAllRead, currentHoldings }: Props) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -63,6 +68,7 @@ export const EventTimeline = ({ events, themeNames, unreadCount, markAllRead }: 
                     key={e.id}
                     event={e}
                     themeName={themeNames.get(e.theme_id) ?? e.theme_id}
+                    currentHoldings={currentHoldings}
                   />
                 ))}
               </div>

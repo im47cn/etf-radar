@@ -2,7 +2,8 @@
 import math
 from statistics import mean
 
-from scipy.stats import percentileofscore  # type: ignore[import-untyped]
+import numpy as np  # type: ignore[import-untyped]
+from scipy.stats import percentileofscore, rankdata  # type: ignore[import-untyped]
 
 from ..models import DimName, Returns
 
@@ -70,10 +71,10 @@ def composite_strength(
 
 
 def batch_strength_per_dim(
-    returns_array: 'np.ndarray',
+    returns_array: np.ndarray,
     k: float,
     days_in_dim: int,
-) -> 'np.ndarray':
+) -> np.ndarray:
     """向量化版本：N 只股一次性算百分位 + 动量。
 
     避免 N² 复杂度（原 strength_per_dim 每只股都遍历 pool）。
@@ -87,8 +88,6 @@ def batch_strength_per_dim(
     Returns:
         长度 N 的 float ndarray，有效值在 [0, 99]，无效为 NaN。
     """
-    import numpy as np
-    from scipy.stats import rankdata  # type: ignore[import-untyped]
 
     n = len(returns_array)
     if n == 0:

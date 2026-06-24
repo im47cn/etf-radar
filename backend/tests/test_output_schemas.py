@@ -87,3 +87,46 @@ def test_themes_schema_validates_mapped_entry():
         }],
     }
     validate(instance=doc, schema=_schema())
+
+
+def test_stock_indicators_roundtrip():
+    from src.models import StockIndicators
+    payload = {
+        'name': 'TCL中环', 'strength_60d': 87, 'strength_20d': 91,
+        'rsi_14': 62.3, 'vol_ratio': 1.85, 'leader': '⭐⭐',
+    }
+    obj = StockIndicators.model_validate(payload)
+    assert obj.model_dump() == payload
+
+
+def test_stock_indicators_null_fields():
+    from src.models import StockIndicators
+    payload = {
+        'name': '退市股', 'strength_60d': None, 'strength_20d': None,
+        'rsi_14': None, 'vol_ratio': None, 'leader': '',
+    }
+    obj = StockIndicators.model_validate(payload)
+    assert obj.strength_60d is None
+    assert obj.leader == ''
+
+
+def test_stock_ohlc_roundtrip():
+    from datetime import date, datetime, timezone
+    from src.models import StockOhlc, StockOhlcBar
+    obj = StockOhlc(
+        code='002129', name='TCL中环',
+        generated_at=datetime(2026, 6, 25, 8, 30, tzinfo=timezone.utc),
+        bars=[StockOhlcBar(date=date(2026, 4, 1), o=12.3, h=12.65, l=12.2, c=12.5, v=5230000)],
+    )
+    dumped = obj.model_dump(mode='json')
+    StockOhlc.model_validate(dumped)
+    assert dumped['bars'][0]['v'] == 5230000
+
+
+def test_stock_ohlc_bars_max_60():
+    """bars 列表长度允许 0-60 任意值（spec 约定 ≤ 60 但停牌日跳过可少于）"""
+    from src.models import StockOhlc
+    StockOhlc.model_validate({
+        'code': '999999', 'name': '空', 'generated_at': '2026-06-25T00:00:00+00:00',
+        'bars': [],
+    })

@@ -193,3 +193,35 @@ class StockSpot(BaseModel):
     name: str
     close: float
     r_1d: Optional[float] = None
+
+
+class StockIndicators(BaseModel):
+    """主题成分股每日指标聚合（写入 data/stocks/holdings_indicators.json::stocks[code]）。
+
+    所有数值字段在数据不足 / 停牌时设为 None；前端统一显示「—」。
+    leader 字段为非空字符串时表示龙头标签。
+    """
+    name: str
+    strength_60d: Optional[int] = Field(default=None, ge=0, le=99)
+    strength_20d: Optional[int] = Field(default=None, ge=0, le=99)
+    rsi_14: Optional[float] = Field(default=None, ge=0, le=100)
+    vol_ratio: Optional[float] = Field(default=None, ge=0)
+    leader: str = ''  # "⭐⭐⭐" | "⭐⭐" | "⭐" | ""
+
+
+class StockOhlcBar(BaseModel):
+    """单日 OHLC 加成交量。"""
+    date: _Date
+    o: float
+    h: float
+    l: float
+    c: float
+    v: int = Field(ge=0)
+
+
+class StockOhlc(BaseModel):
+    """单只个股 60 日 K 线（写入 data/stocks/ohlc/{code}.json）。"""
+    code: str
+    name: str
+    generated_at: _Datetime
+    bars: list[StockOhlcBar] = Field(max_length=60)

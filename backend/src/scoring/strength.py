@@ -67,3 +67,45 @@ def composite_strength(
     assert abs(w_short + w_mid + w_long - 1.0) < 1e-9, \
         f"weights must sum to 1.0, got {w_short + w_mid + w_long}"
     return round(w_short * short + w_mid * mid + w_long * long)
+
+
+def batch_strength_per_dim(
+    returns_array: 'np.ndarray',
+    k: float,
+    days_in_dim: int,
+) -> 'np.ndarray':
+    """向量化版本：N 只股一次性算百分位 + 动量。
+
+    避免 N² 复杂度（原 strength_per_dim 每只股都遍历 pool）。
+    输入 NaN 自动传播；返回数组中无效位置保持 NaN。
+
+    Args:
+        returns_array: N 只股票的收益率数组（可含 NaN）
+        k: sigmoid 陡峭系数
+        days_in_dim: 维度天数（用于年化计算）
+
+    Returns:
+        长度 N 的 float ndarray，有效值在 [0, 99]，无效为 NaN。
+    """
+    import numpy as np
+    from scipy.stats import rankdata  # type: ignore[import-untyped]
+
+    n = len(returns_array)
+    if n == 0:
+        return np.array([], dtype=float)
+
+    valid_mask = ~np.isnan(returns_array)
+    n_valid = int(valid_mask.sum())
+
+    P = np.full(n, np.nan)
+    if n_valid > 0:
+        ranks = rankdata(returns_array[valid_mask], method='average')
+        P[valid_mask] = (ranks / n_valid) * 100
+
+    annualized = returns_array * (252 / days_in_dim)
+    M = 100.0 / (1.0 + np.exp(-k * annualized))
+
+    raw = 0.5 * P + 0.5 * M
+    score = np.clip(np.round(raw), 0, 99)
+    score[np.isnan(raw)] = np.nan
+    return score

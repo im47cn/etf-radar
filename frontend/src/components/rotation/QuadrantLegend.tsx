@@ -54,5 +54,14 @@ export const QuadrantLegend = () => (
         </span>
       ))}
     </div>
+    {/* 持仓主题: 金色外圈, 与 RotationScatterWithTrails.OwnedRings 视觉一致 */}
+    <div className="flex items-center gap-2 pt-1 border-t border-gray-200">
+      <svg width="16" height="16" aria-hidden>
+        <circle cx="8" cy="8" r="3" fill="#94a3b8" />
+        <circle cx="8" cy="8" r="6" fill="none" stroke="#facc15" strokeWidth="1.5" />
+      </svg>
+      <span className="font-medium text-gray-700">持仓主题</span>
+      <span className="text-gray-500">(气泡叠加金色外圈)</span>
+    </div>
   </div>
 );

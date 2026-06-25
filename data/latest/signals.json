@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-25T15:52:02.990110+08:00",
+  "generated_at": "2026-06-25T20:14:35.447061+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -202,14 +202,14 @@
     },
     {
       "theme_id": "aerospace_defense",
-      "signal": "transmission",
-      "trigger_cn_etf": "512660",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "divergence"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股航天军工动量观察中"
     },
     {
       "theme_id": "rare_earth",
@@ -221,6 +221,17 @@
         "long": null
       },
       "description": "美股稀土/新材料动量观察中"
+    },
+    {
+      "theme_id": "cn_rare_metals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "稀有金属（A 股本土赛道）"
     },
     {
       "theme_id": "cn_liquor",
@@ -581,9 +592,9 @@
       "cn_code": "512660",
       "mapping_score": 33,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": "divergence"
       }

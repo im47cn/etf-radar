@@ -1,7 +1,5 @@
 """RSI(14) 与 量比 计算"""
-import math
 
-import pytest
 
 from src.scoring.stock_indicators import compute_rsi, compute_volume_ratio
 

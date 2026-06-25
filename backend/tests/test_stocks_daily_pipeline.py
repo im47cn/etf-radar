@@ -1,11 +1,10 @@
 """daily pipeline: 追加今日 spot → 算 indicators → 写文件"""
 import json
-from datetime import date, datetime, timezone
+from datetime import date
 from pathlib import Path
 from unittest.mock import patch
 
 import pandas as pd
-import pytest
 
 from src.stocks_daily_pipeline import run_daily_pipeline
 

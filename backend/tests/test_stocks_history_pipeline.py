@@ -1,10 +1,9 @@
 """backfill pipeline 端到端测试（mock provider）"""
 import json
-from datetime import date, datetime, timezone
+from datetime import date
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 
 from src.models import StockOhlcBar
 from src.stocks_history_pipeline import run_history_backfill

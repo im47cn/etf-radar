@@ -1,8 +1,6 @@
 """batch_strength_per_dim 与 strength_per_dim 逐元素等价（round 后 ±1 误差容忍）"""
-import math
 
 import numpy as np
-import pytest
 
 from src.scoring.strength import batch_strength_per_dim, strength_per_dim
 

@@ -214,7 +214,7 @@ class StockOhlcBar(BaseModel):
     date: _Date
     o: float
     h: float
-    l: float
+    l: float  # noqa: E741 — OHLCV 行业惯例字段名，对应 low
     c: float
     v: int = Field(ge=0)
 

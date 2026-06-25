@@ -17,7 +17,6 @@ import json
 import logging
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import cast
 
 import akshare as ak
 import numpy as np

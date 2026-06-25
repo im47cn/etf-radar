@@ -20,26 +20,43 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.DATA_BOT_PAT }}
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+      - name: Check CN trading day
+        id: cal
+        run: |
+          pip install chinese-calendar -q
+          is_trading=$(python -c "
+          from datetime import datetime, timezone, timedelta
+          import chinese_calendar
+          today = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
+          ok = chinese_calendar.is_workday(today) and not chinese_calendar.is_holiday(today)
+          print('true' if ok else 'false')
+          ")
+          echo "is_trading=$is_trading" >> $GITHUB_OUTPUT
+          echo "trading_day=$is_trading"
+      - uses: actions/checkout@v6
+        if: steps.cal.outputs.is_trading == 'true'
+        with:
+          token: ${{ secrets.DATA_BOT_PAT }}
       - uses: astral-sh/setup-uv@v8.2.0
+        if: steps.cal.outputs.is_trading == 'true'
         id: setup-uv
         continue-on-error: true
         with:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup uv (retry on transient network failure)
-        if: steps.setup-uv.outcome == 'failure'
+        if: steps.cal.outputs.is_trading == 'true' && steps.setup-uv.outcome == 'failure'
         uses: astral-sh/setup-uv@v8.2.0
         with:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: cd backend && uv sync --extra dev
+      - if: steps.cal.outputs.is_trading == 'true'
+        run: cd backend && uv sync --extra dev
       - name: Decide mode
+        if: steps.cal.outputs.is_trading == 'true'
         id: mode
         run: |
           # 仅 01:15 UTC (09:15 BJT) 跑 full 模式; 其余 intraday
@@ -51,9 +68,11 @@ jobs:
             echo "mode=intraday" >> $GITHUB_OUTPUT
           fi
       - name: Run pipeline
+        if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.pipeline --mode=${{ steps.mode.outputs.mode }} --data-root=../data --config-dir=../config
         continue-on-error: true
       - name: Commit data
+        if: steps.cal.outputs.is_trading == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -66,6 +85,7 @@ jobs:
           git pull --rebase
           git push
       - name: Trigger deploy
+        if: steps.cal.outputs.is_trading == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run deploy-frontend.yml --ref main

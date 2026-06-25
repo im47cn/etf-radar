@@ -63,9 +63,9 @@ def test_backfill_writes_snapshots_and_index(
         meta = json.loads((snap_root / snapshot_dirs[0] / 'meta.json').read_text())
         assert meta['backfilled'] is True
 
-        # themes.json 含 28 主题 (13 mapped 含拆分 + 15 CN-only 含化工/游戏，剔除风格因子)
+        # themes.json 含 29 主题 (13 mapped 含拆分 + 16 CN-only 含化工/游戏/稀有金属，剔除风格因子)
         themes = json.loads((snap_root / snapshot_dirs[0] / 'themes.json').read_text())
-        assert len(themes['themes']) == 28
+        assert len(themes['themes']) == 29
 
         # snapshots-index.json 生成且含全部日期
         idx = json.loads((data_root / 'latest' / 'snapshots-index.json').read_text())

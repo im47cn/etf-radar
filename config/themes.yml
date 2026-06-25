@@ -183,6 +183,16 @@ themes:
     cn_etfs:
       - {code: '516780', name: 稀土ETF, tracking: 中证稀土产业, match_type: exact}
 
+  - id: cn_rare_metals
+    name: 稀有金属
+    tags: [稀有金属, 锂, 钴, 钨钼, 锡, 小金属]
+    primary_cn: '159608'
+    note: "跟踪中证稀有金属主题指数(930632)，权重含锂(>13%)、钴、稀土(>15%)、钨、锡等；与 rare_earth(纯稀土产业链)和 cn_base_metals(铜铝铅锌)成份差异显著；cn_only"
+    cn_etfs:
+      - {code: '159608', name: 稀有金属ETF, tracking: 中证稀有金属主题, match_type: exact}
+      - {code: '562800', name: 稀有金属ETF嘉实, tracking: 中证稀有金属主题, match_type: exact}
+      - {code: '159671', name: 稀有金属ETF工银, tracking: 中证稀有金属主题, match_type: exact}
+
   # ── A 股独立行业主题（无对应 US ETF）──────────────────────────────────
   - id: cn_liquor
     name: 白酒

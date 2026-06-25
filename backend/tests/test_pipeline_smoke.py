@@ -43,12 +43,12 @@ def test_pipeline_full_mode_creates_files(
         assert (latest / 'meta.json').exists()
 
         themes = json.loads((latest / 'themes.json').read_text(encoding='utf-8'))
-        # 28: 13 mapped (含拆分) + 15 CN-only (含化工/游戏，剔除风格因子)
-        assert len(themes['themes']) == 28
+        # 29: 13 mapped (含拆分) + 16 CN-only (含化工/游戏/稀有金属，剔除风格因子)
+        assert len(themes['themes']) == 29
         assert themes['schema_version'] == '1.1'
 
         signals = json.loads((latest / 'signals.json').read_text(encoding='utf-8'))
-        assert len(signals['theme_signals']) == 28
+        assert len(signals['theme_signals']) == 29
 
         meta = json.loads((latest / 'meta.json').read_text(encoding='utf-8'))
         assert meta['providers']['us']['status'] == 'ok'

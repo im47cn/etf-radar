@@ -24,3 +24,12 @@ export const HOLDINGS_URLS = {
 
 export const holdingsEtfUrl = (etfCode: string): string =>
   `${BASE}holdings/${etfCode}.json`;
+
+// Phase 2 个股指标
+export const STOCKS_URLS = {
+  holdingsIndicators: `${BASE}stocks/holdings_indicators.json`,
+  index: `${BASE}stocks/index.json`,
+} as const;
+
+export const stockOhlcUrl = (stockCode: string): string =>
+  `${BASE}stocks/ohlc/${stockCode}.json`;

@@ -7,6 +7,8 @@
  * 注意：本文件类型名与 @/lib/portfolio/types 的 Holding（用户持仓）刻意不重名。
  */
 
+import type { StockIndicators } from './stockIndicators';
+
 export interface EtfTopHolding {
   code: string;       // 6 位 A 股或 5 位港股
   name: string;
@@ -50,4 +52,5 @@ export interface AggregatedStock {
   cumulativeWeight: number;   // 同股出现在多 ETF 时累加
   sourceEtfs: string[];       // 出现在哪些 ETF 代码中（去重）
   spot: StockSpot | null;     // null 表示停牌或 spot 缺失
+  indicators?: StockIndicators;  // Phase 2 新增，可选；缺失时表格显示 "—"
 }

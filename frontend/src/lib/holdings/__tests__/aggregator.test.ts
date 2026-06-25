@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { aggregateHoldings } from '../aggregator';
 import type { EtfHoldingsSnapshot, StockSpot } from '@/types/holdings';
+import type { StockIndicators } from '@/types/stockIndicators';
 
 const snap = (etf: string, holdings: Array<[string, string, number]>): EtfHoldingsSnapshot => ({
   etf_code: etf,
@@ -65,5 +66,42 @@ describe('aggregateHoldings', () => {
       {},
     );
     expect(out.map(s => s.code)).toEqual(['C', 'A', 'B']);
+  });
+});
+
+describe('aggregateHoldings with indicators', () => {
+  it('joins indicators by code', () => {
+    const snap: EtfHoldingsSnapshot = {
+      etf_code: '512480', etf_name: 'x',
+      disclosure_date: '2026-03-31', fetched_at: '2026-06-23T00:00:00+00:00',
+      top_holdings: [{ code: '002129', name: 'TCL中环', weight: 8.5 }],
+    };
+    const indicators = new Map<string, StockIndicators>([
+      ['002129', { name: 'TCL中环', strength_60d: 87, strength_20d: 91,
+                   rsi_14: 62.3, vol_ratio: 1.85, leader: '⭐⭐' }],
+    ]);
+    const out = aggregateHoldings([snap], {}, indicators);
+    expect(out[0].indicators?.strength_60d).toBe(87);
+    expect(out[0].indicators?.leader).toBe('⭐⭐');
+  });
+
+  it('indicators undefined when missing', () => {
+    const snap: EtfHoldingsSnapshot = {
+      etf_code: 'x', etf_name: 'x',
+      disclosure_date: '2026-03-31', fetched_at: '2026-06-23T00:00:00+00:00',
+      top_holdings: [{ code: '999999', name: '无指标股', weight: 5.0 }],
+    };
+    const out = aggregateHoldings([snap], {}, new Map());
+    expect(out[0].indicators).toBeUndefined();
+  });
+
+  it('works without indicators param (backward compat)', () => {
+    const snap: EtfHoldingsSnapshot = {
+      etf_code: 'x', etf_name: 'x',
+      disclosure_date: '2026-03-31', fetched_at: '2026-06-23T00:00:00+00:00',
+      top_holdings: [{ code: '002129', name: 'x', weight: 5.0 }],
+    };
+    const out = aggregateHoldings([snap], {});
+    expect(out[0].indicators).toBeUndefined();
   });
 });

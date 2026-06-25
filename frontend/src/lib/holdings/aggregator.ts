@@ -3,16 +3,17 @@ import type {
   EtfHoldingsSnapshot,
   StockSpot,
 } from '@/types/holdings';
+import type { StockIndicators } from '@/types/stockIndicators';
 
 /**
- * 把多个 ETF 的 top-N 持仓合并为唯一个股清单：
- * - 同一股票出现在多个 ETF 中，权重累加，sourceEtfs 收集所有 ETF 代码
- * - 按累计权重降序排序；并列按 code 字典升序保证确定性
- * - spot 缺失 → spot = null
+ * 把多个 ETF 的 top-N 持仓合并为唯一个股清单。
+ * Phase 2 扩展：可选 indicators 参数（Map<code, StockIndicators>）
+ * 在聚合时 join 到 .indicators 字段；跨主题股自然按 code 去重。
  */
 export function aggregateHoldings(
   snapshots: EtfHoldingsSnapshot[],
   spots: Record<string, StockSpot>,
+  indicators?: Map<string, StockIndicators>,
 ): AggregatedStock[] {
   const map = new Map<string, AggregatedStock>();
 
@@ -31,6 +32,7 @@ export function aggregateHoldings(
           cumulativeWeight: h.weight,
           sourceEtfs: [snap.etf_code],
           spot: spots[h.code] ?? null,
+          indicators: indicators?.get(h.code),
         });
       }
     }

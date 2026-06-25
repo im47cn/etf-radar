@@ -45,10 +45,19 @@ class BackfillReport:
     def failed_count(self) -> int: return len(self.failed)
 
 
+_SINA_PREFIX_RE = r'^(sh|sz|bj)'
+
+
 def _fetch_universe() -> list[str]:
-    """从 akshare 拉全市场股票 code 列表。"""
-    df = ak.stock_zh_a_spot_em()
-    codes: list[str] = df['代码'].astype(str).tolist()
+    """从 akshare 新浪 spot 拉全市场股票 code 列表，剥前缀返回 6 位。
+
+    新浪 spot 的「代码」列已带 sh/sz/bj 前缀（如 'sh600519'），下游统一用 6 位
+    作为 universe/series 的 key。
+    """
+    df = ak.stock_zh_a_spot()
+    codes: list[str] = (
+        df['代码'].astype(str).str.replace(_SINA_PREFIX_RE, '', regex=True).tolist()
+    )
     return codes
 
 

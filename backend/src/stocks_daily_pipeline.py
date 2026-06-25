@@ -33,8 +33,14 @@ WINDOW_DAYS = 75
 K_SIGMOID = 2.0
 
 
+_SINA_PREFIX_RE = r'^(sh|sz|bj)'
+
+
 def _fetch_today_spot() -> pd.DataFrame:
-    return ak.stock_zh_a_spot_em()
+    """新浪 spot 接口。代码列剥前缀（sh600519 → 600519），与 universe 对齐。"""
+    df = ak.stock_zh_a_spot()
+    df['代码'] = df['代码'].astype(str).str.replace(_SINA_PREFIX_RE, '', regex=True)
+    return df
 
 
 def _read_holdings_codes(holdings_dir: Path) -> set[str]:

@@ -7,6 +7,11 @@ on:
       - 'frontend/**'
       - 'data/latest/**'
       - '.github/workflows/deploy-frontend.yml'
+      # 前端需要 holdings_indicators.json + ohlc/*.json + index.json，包含 data/stocks/**
+      # close_series/volume_series 是 backend-only 大矩阵（~5000 只股票），排除掉避免无意义触发
+      - 'data/stocks/**'
+      - '!data/stocks/close_series.json'
+      - '!data/stocks/volume_series.json'
   workflow_dispatch:
 
 permissions:

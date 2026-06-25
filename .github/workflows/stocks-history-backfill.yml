@@ -8,8 +8,8 @@ on:
         default: '75'
         required: true
       max_workers:
-        description: 'akshare 并发数（默认 4，实测安全上限 3-5）'
-        default: '4'
+        description: 'akshare 并发数（默认 1：PyMiniRacer V8 在 macOS arm64 多线程必 crash，Linux runner 未验证，保守起见单线程）'
+        default: '1'
         required: true
 
 permissions:

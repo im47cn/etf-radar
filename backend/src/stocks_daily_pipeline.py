@@ -66,21 +66,40 @@ def _read_holdings_names(holdings_dir: Path) -> dict[str, str]:
 
 
 def _append_series(series_data: dict[str, Any], today: date, today_values: dict[str, float | int | None]) -> dict[str, Any]:
-    """追加今日一格，截窗保留尾部 WINDOW_DAYS 行。"""
-    new_dates = series_data['dates'] + [today.isoformat()]
-    new_dates = new_dates[-WINDOW_DAYS:]
+    """追加今日一格，截窗保留尾部 WINDOW_DAYS 行。
+
+    Idempotent：如果 dates[-1] 已等于 today（例如 backfill 末日 == 今天），则
+    原地替换末位、不重复追加，避免数据脏化（r_1d 失真、git history 污染）。
+    替换场景下 today_values 中缺失的 code 保留原值（兼容停牌/spot 字段缺失）。
+    """
+    today_str = today.isoformat()
+    existing_dates: list[str] = series_data['dates']
+    existing_stocks: dict[str, list[float | int | None]] = series_data['stocks']
+    is_replace = bool(existing_dates) and existing_dates[-1] == today_str
+
+    if is_replace:
+        new_dates = existing_dates[:]
+    else:
+        new_dates = (existing_dates + [today_str])[-WINDOW_DAYS:]
+
     new_stocks: dict[str, list[float | int | None]] = {}
-    for code, hist in series_data['stocks'].items():
-        appended = hist + [today_values.get(code)]
-        new_stocks[code] = appended[-WINDOW_DAYS:]
-    # 处理今日新增的股（之前 series 没有）
+    for code, hist in existing_stocks.items():
+        if is_replace:
+            updated = hist[:]
+            if code in today_values:
+                updated[-1] = today_values[code]
+            new_stocks[code] = updated[-WINDOW_DAYS:]
+        else:
+            appended = hist + [today_values.get(code)]
+            new_stocks[code] = appended[-WINDOW_DAYS:]
+
+    # 新增股票（today_values 有但 series 之前没有）
     for code, val in today_values.items():
         if code not in new_stocks:
-            n_existing = len(new_dates) - 1
-            padded: list[float | int | None] = []
-            padded.extend([None] * n_existing)
+            padded: list[float | int | None] = [None] * (len(new_dates) - 1)
             padded.append(val)
             new_stocks[code] = padded[-WINDOW_DAYS:]
+
     series_data['dates'] = new_dates
     series_data['stocks'] = new_stocks
     return series_data

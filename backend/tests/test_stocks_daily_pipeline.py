@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from src.stocks_daily_pipeline import run_daily_pipeline
+from src.stocks_daily_pipeline import _append_series, run_daily_pipeline
 
 
 def _make_close_series(codes: list[str], n_days: int = 75) -> dict:
@@ -104,6 +104,29 @@ def test_daily_handles_spot_fetch_failure_keeps_existing(tmp_path: Path):
 
     hi = json.loads((out_dir / 'holdings_indicators.json').read_text())
     assert hi['generated_at'] == 'old'
+
+
+def test_append_series_idempotent_when_today_matches_last_date():
+    """末日等于 today → 替换末位，不重复追加（避免污染 r_1d 与 git history）"""
+    series = {
+        'dates': ['2026-06-23', '2026-06-24', '2026-06-25'],
+        'stocks': {'600519': [1222.0, 1207.0, 1199.0]},  # 末位是 backfill 时的 close
+    }
+    result = _append_series(series, date(2026, 6, 25), {'600519': 1212.1})  # spot 给的新 close
+    assert result['dates'] == ['2026-06-23', '2026-06-24', '2026-06-25']  # 长度不变
+    assert result['stocks']['600519'] == [1222.0, 1207.0, 1212.1]  # 末位被替换
+
+
+def test_append_series_idempotent_preserves_missing_codes():
+    """替换模式下，today_values 缺失的 code 保留原值（停牌/spot 字段缺失）"""
+    series = {
+        'dates': ['2026-06-24', '2026-06-25'],
+        'stocks': {'600519': [1207.0, 1199.0], '000333': [50.0, 51.0]},
+    }
+    # spot 只覆盖 600519，没覆盖 000333（模拟停牌）
+    result = _append_series(series, date(2026, 6, 25), {'600519': 1212.1})
+    assert result['stocks']['600519'] == [1207.0, 1212.1]
+    assert result['stocks']['000333'] == [50.0, 51.0]  # 原值保留
 
 
 def test_daily_includes_leader_field(tmp_path: Path):

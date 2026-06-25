@@ -33,7 +33,7 @@ jobs:
           ")
           echo "is_trading=$is_trading" >> $GITHUB_OUTPUT
           echo "trading_day=$is_trading"
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: steps.cal.outputs.is_trading == 'true'
         with:
           token: ${{ secrets.DATA_BOT_PAT }}

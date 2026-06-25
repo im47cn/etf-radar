@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-25T06:58:06.307921+08:00",
+  "generated_at": "2026-06-25T09:56:08.756563+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": "transmission",
+      "signal": "resonance",
       "trigger_cn_etf": "512760",
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股存储芯片中长期走强"
     },
     {
       "theme_id": "semiconductor",
@@ -26,14 +26,14 @@
     },
     {
       "theme_id": "cybersecurity",
-      "signal": "transmission",
+      "signal": "resonance",
       "trigger_cn_etf": "512720",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股网络安全中长期走强"
     },
     {
       "theme_id": "ai_compute",
@@ -202,14 +202,14 @@
     },
     {
       "theme_id": "aerospace_defense",
-      "signal": "transmission",
-      "trigger_cn_etf": "512660",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "divergence"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股航天军工动量观察中"
     },
     {
       "theme_id": "rare_earth",
@@ -329,11 +329,11 @@
       "cn_code": "512760",
       "mapping_score": 23,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -377,10 +377,10 @@
       "cn_code": "512720",
       "mapping_score": 1,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "resonance",
         "long": "resonance"
       }
     },
@@ -439,7 +439,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": "resonance"
       }
@@ -461,10 +461,10 @@
       "cn_code": "159559",
       "mapping_score": 28,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       }
     },
@@ -489,7 +489,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -581,9 +581,9 @@
       "cn_code": "512660",
       "mapping_score": 33,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": "divergence"
       }
@@ -608,8 +608,8 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
-        "long": "transmission"
+        "mid": "transmission",
+        "long": "resonance"
       }
     }
   ]

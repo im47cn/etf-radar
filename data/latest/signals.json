@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-25T10:28:07.264773+08:00",
+  "generated_at": "2026-06-25T11:04:00.446072+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "512760",
       "votes": {
         "short": "resonance",
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股存储芯片中长期走强"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "semiconductor",
@@ -106,7 +106,7 @@
       "signal": "transmission",
       "trigger_cn_etf": "562500",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": "transmission"
       },
@@ -213,14 +213,14 @@
     },
     {
       "theme_id": "rare_earth",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "516780",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "resonance"
       },
-      "description": "美股稀土/新材料动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cn_liquor",
@@ -329,11 +329,11 @@
       "cn_code": "512760",
       "mapping_score": 23,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
         "short": "resonance",
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       }
     },
     {
@@ -451,7 +451,7 @@
       "confidence": 90,
       "signal": "transmission",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": "transmission"
       }
@@ -464,7 +464,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "transmission",
+        "mid": null,
         "long": null
       }
     },
@@ -605,9 +605,9 @@
       "cn_code": "516780",
       "mapping_score": 56,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
         "long": "resonance"
       }

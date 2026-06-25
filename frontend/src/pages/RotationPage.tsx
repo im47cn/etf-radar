@@ -8,11 +8,15 @@ import { RotationHealthBar } from '@/components/rotation/RotationHealthBar';
 import { computeRotationHealth } from '@/lib/rotationHealth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MarketViewSelector } from '@/components/FilterBar/MarketViewSelector';
+import { useUIState } from '@/providers/uiStateContext';
+import { marketViewToRotationMode } from '@/lib/marketView';
 
 export const RotationPage = () => {
   const { themes, isLoading, error } = useDataContext();
   const { snapshotsFrames, index, prefetch } = useSnapshotsTimeline();
   const { ownedThemeIds } = usePortfolioScores();
+  const { state: uiState } = useUIState();
+  const rotationMode = marketViewToRotationMode(uiState.marketView);
 
   // availableDates: 给 slider 决定上限用; 与 snapshotsFrames (cache 子集) 解耦.
   // 让 slider 能覆盖 MAX_TRAIL_DAYS (30) 而不被 PREFETCH_RECENT (10) 卡住.
@@ -29,8 +33,8 @@ export const RotationPage = () => {
   // 与手写依赖一致 (否则 optional chaining 会被推断为更宽的 `themes`).
   const themesArr = themes?.themes;
   const health = useMemo(
-    () => (themesArr ? computeRotationHealth(themesArr) : null),
-    [themesArr],
+    () => (themesArr ? computeRotationHealth(themesArr, rotationMode) : null),
+    [themesArr, rotationMode],
   );
 
   if (isLoading) {

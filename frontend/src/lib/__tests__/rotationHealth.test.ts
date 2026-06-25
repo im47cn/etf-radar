@@ -142,6 +142,28 @@ describe('gradeRobustness', () => {
   });
 });
 
+describe('grade* with mode=cn (A 股阈值: Coverage P25=81 P50=89, Robustness P25=71 P50=75)', () => {
+  it('gradeCoverage uses CN thresholds', () => {
+    expect(gradeCoverage(89, 10, 'cn')).toBe('healthy');
+    expect(gradeCoverage(88.9, 10, 'cn')).toBe('caution');
+    expect(gradeCoverage(81, 10, 'cn')).toBe('caution');
+    expect(gradeCoverage(80.9, 10, 'cn')).toBe('imbalanced');
+    // 同样的分数在 us 模式下判定不同, 证明阈值确实分流
+    expect(gradeCoverage(82, 10, 'us')).toBe('healthy');
+    expect(gradeCoverage(82, 10, 'cn')).toBe('caution');
+  });
+
+  it('gradeRobustness uses CN thresholds', () => {
+    expect(gradeRobustness(75, 10, 'cn')).toBe('healthy');
+    expect(gradeRobustness(74.9, 10, 'cn')).toBe('caution');
+    expect(gradeRobustness(71, 10, 'cn')).toBe('caution');
+    expect(gradeRobustness(70.9, 10, 'cn')).toBe('imbalanced');
+    // 76 在 us 仅 caution, 在 cn 已 healthy (A 股 P50 更低)
+    expect(gradeRobustness(76, 10, 'us')).toBe('caution');
+    expect(gradeRobustness(76, 10, 'cn')).toBe('healthy');
+  });
+});
+
 import { computeRotationHealth } from '../rotationHealth';
 import type { Theme } from '@/types/themes';
 
@@ -198,5 +220,34 @@ describe('computeRotationHealth', () => {
     const h = computeRotationHealth(themes);
     expect(Number.isInteger(h.coverage.score)).toBe(true);
     expect(Number.isInteger(h.robustness.score)).toBe(true);
+  });
+
+  it('uses us_strength when mode=us, cn_strength when mode=cn', () => {
+    // 构造: us 维度全部挤在 leading (低覆盖度); cn 维度均匀分布在四象限 (高覆盖度).
+    // 若 mode 未生效, 两次调用结果应一致.
+    const mkDual = (id: string, us: [number, number], cn: [number, number]): Theme => ({
+      id,
+      name: id,
+      us_etfs: ['X'],
+      primary_us: 'X',
+      primary_cn: 'Y',
+      tags: [],
+      note: '',
+      returns: { r_1d: 0, r_5d: 0, r_20d: 0, r_60d: 0, r_120d: 0, r_ytd: 0 },
+      strength: { short: us[1], mid: 50, long: us[0], composite: 50 },
+      us_strength: { short: us[1], mid: 50, long: us[0], composite: 50 },
+      cn_strength: { short: cn[1], mid: 50, long: cn[0], composite: 50 },
+      rank: { short: 1, mid: 1, long: 1, composite: 1 },
+    });
+    const themes: Theme[] = [
+      mkDual('a', [80, 80], [80, 80]),
+      mkDual('b', [80, 80], [20, 80]),
+      mkDual('c', [80, 80], [20, 20]),
+      mkDual('d', [80, 80], [80, 20]),
+    ];
+    const us = computeRotationHealth(themes, 'us');
+    const cn = computeRotationHealth(themes, 'cn');
+    expect(us.coverage.score).toBe(0); // 全部 leading, 熵=0
+    expect(cn.coverage.score).toBe(100); // 四象限均匀, 熵=最大
   });
 });

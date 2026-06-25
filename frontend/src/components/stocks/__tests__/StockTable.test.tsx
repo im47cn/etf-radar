@@ -37,12 +37,12 @@ describe('StockTable', () => {
     expect(screen.getByText('159870')).toBeInTheDocument();
   });
 
-  it('uses blue for positive r_1d and red for negative (matches ThemeRow)', () => {
+  it('uses red for positive r_1d and green for negative (Chinese market red-up/green-down)', () => {
     const { container, rerender } = render(
       <StockTable stocks={[row({ spot: { name: 'x', close: 1, r_1d: 0.01 } })]} />
     );
-    expect(container.querySelector('.text-blue-600')).toBeInTheDocument();
-    rerender(<StockTable stocks={[row({ spot: { name: 'x', close: 1, r_1d: -0.01 } })]} />);
     expect(container.querySelector('.text-red-600')).toBeInTheDocument();
+    rerender(<StockTable stocks={[row({ spot: { name: 'x', close: 1, r_1d: -0.01 } })]} />);
+    expect(container.querySelector('.text-green-600')).toBeInTheDocument();
   });
 });

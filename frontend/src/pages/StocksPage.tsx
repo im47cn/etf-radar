@@ -3,8 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDataContext } from '@/providers/dataContext';
 import { useEtfHoldings } from '@/lib/holdings/useEtfHoldings';
 import { useStocksSpot } from '@/lib/holdings/useStocksSpot';
+import { useStockIndicators } from '@/lib/holdings/useStockIndicators';
 import { aggregateHoldings } from '@/lib/holdings/aggregator';
 import { StockTable } from '@/components/stocks/StockTable';
+import { ThemeStructureSummary } from '@/components/stocks/ThemeStructureSummary';
 import { EmptyState } from '@/components/stocks/EmptyState';
 
 export const StocksPage = () => {
@@ -21,10 +23,11 @@ export const StocksPage = () => {
 
   const { data: holdings, loading: holdingsLoading } = useEtfHoldings(etfCodes);
   const { spots, loading: spotsLoading } = useStocksSpot();
+  const { data: indicators } = useStockIndicators();
 
   const aggregated = useMemo(
-    () => aggregateHoldings(holdings, spots ?? {}),
-    [holdings, spots],
+    () => aggregateHoldings(holdings, spots ?? {}, indicators),
+    [holdings, spots, indicators],
   );
 
   if (!theme) {
@@ -65,7 +68,10 @@ export const StocksPage = () => {
       ) : aggregated.length === 0 ? (
         <EmptyState message="本主题暂无持仓披露，将在下个季度更新" />
       ) : (
-        <StockTable stocks={aggregated} />
+        <>
+          <ThemeStructureSummary stocks={aggregated} />
+          <StockTable stocks={aggregated} />
+        </>
       )}
     </div>
   );

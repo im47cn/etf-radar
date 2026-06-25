@@ -54,7 +54,7 @@ describe('StocksPage', () => {
     ];
     fetchSpy.mockImplementation((input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.includes('512480.json')) {
+      if (url.includes('512480.json') && url.includes('holdings/')) {
         return Promise.resolve(new Response(JSON.stringify({
           etf_code: '512480', etf_name: '半导体ETF',
           disclosure_date: '2026-03-31', fetched_at: '2026-06-23T00:00:00+00:00',
@@ -67,10 +67,55 @@ describe('StocksPage', () => {
           stocks: { '002129': { name: 'TCL中环', close: 12.5, r_1d: 0.025 } },
         })));
       }
+      if (url.includes('holdings_indicators.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          schema_version: '1.0', generated_at: '...',
+          stocks: {},
+        })));
+      }
       return Promise.resolve(new Response('', { status: 404 }));
     });
     renderAt('/theme/semi/stocks');
     await waitFor(() => expect(screen.getByText('TCL中环')).toBeInTheDocument());
     expect(screen.getByText('002129')).toBeInTheDocument();
+  });
+
+  it('renders indicators columns and structure summary when present', async () => {
+    mockThemes = [
+      { id: 'semi', name: '半导体', us_etfs: ['SOXX'], primary_us: 'SOXX',
+        primary_cn: '512480', tags: [], note: '', returns: {} as unknown,
+        strength: {} as unknown, us_strength: null, cn_strength: null,
+        rank: {} as unknown } as unknown as Theme,
+    ];
+    fetchSpy.mockImplementation((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('512480.json') && url.includes('holdings/')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          etf_code: '512480', etf_name: '半导体ETF',
+          disclosure_date: '2026-03-31', fetched_at: '2026-06-23T00:00:00+00:00',
+          top_holdings: [{ code: '002129', name: 'TCL中环', weight: 8.5 }],
+        })));
+      }
+      if (url.includes('stocks_spot.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          schema_version: '1.0', generated_at: '...',
+          stocks: { '002129': { name: 'TCL中环', close: 12.5, r_1d: 0.025 } },
+        })));
+      }
+      if (url.includes('holdings_indicators.json')) {
+        return Promise.resolve(new Response(JSON.stringify({
+          schema_version: '1.0', generated_at: '...',
+          stocks: { '002129': { name: 'TCL中环', strength_60d: 87, strength_20d: 91,
+                                rsi_14: 62.3, vol_ratio: 1.85, leader: '⭐⭐' } },
+        })));
+      }
+      return Promise.resolve(new Response('', { status: 404 }));
+    });
+    renderAt('/theme/semi/stocks');
+    await waitFor(() => expect(screen.getByText('TCL中环')).toBeInTheDocument());
+    expect(screen.getByText('87')).toBeInTheDocument();   // strength_60d 徽章值
+    expect(screen.getByText('62.3')).toBeInTheDocument(); // RSI 值
+    expect(screen.getByText('⭐⭐')).toBeInTheDocument(); // leader 列
+    expect(screen.getByLabelText('主题结构摘要')).toBeInTheDocument();
   });
 });

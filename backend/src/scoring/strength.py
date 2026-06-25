@@ -2,7 +2,7 @@
 import math
 from statistics import mean
 
-import numpy as np  # type: ignore[import-untyped]
+import numpy as np
 from scipy.stats import percentileofscore, rankdata  # type: ignore[import-untyped]
 
 from ..models import DimName, Returns

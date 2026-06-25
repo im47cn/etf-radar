@@ -1,8 +1,8 @@
 """个股技术指标计算（RSI / 量比）"""
 from __future__ import annotations
 
-import pandas as pd
-from ta.momentum import RSIIndicator
+import pandas as pd  # type: ignore[import-untyped]
+from ta.momentum import RSIIndicator  # type: ignore[import-untyped]
 
 
 def compute_rsi(closes: list[float | None], period: int = 14) -> float | None:

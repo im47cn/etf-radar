@@ -5,8 +5,8 @@ import logging
 import time
 from dataclasses import dataclass
 
-import akshare as ak
-import pandas as pd
+import akshare as ak  # type: ignore[import-untyped]
+import pandas as pd  # type: ignore[import-untyped]
 
 from ..models import StockOhlcBar
 

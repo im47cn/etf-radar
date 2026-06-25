@@ -17,10 +17,11 @@ import json
 import logging
 from datetime import date, datetime, timezone
 from pathlib import Path
+from typing import Any
 
-import akshare as ak
+import akshare as ak  # type: ignore[import-untyped]
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 
 from .scoring.leader_rule import classify_leader
 from .scoring.stock_indicators import compute_rsi, compute_volume_ratio
@@ -58,11 +59,11 @@ def _read_holdings_names(holdings_dir: Path) -> dict[str, str]:
     return names
 
 
-def _append_series(series_data: dict, today: date, today_values: dict[str, float | int | None]) -> dict:
+def _append_series(series_data: dict[str, Any], today: date, today_values: dict[str, float | int | None]) -> dict[str, Any]:
     """追加今日一格，截窗保留尾部 WINDOW_DAYS 行。"""
     new_dates = series_data['dates'] + [today.isoformat()]
     new_dates = new_dates[-WINDOW_DAYS:]
-    new_stocks: dict[str, list] = {}
+    new_stocks: dict[str, list[float | int | None]] = {}
     for code, hist in series_data['stocks'].items():
         appended = hist + [today_values.get(code)]
         new_stocks[code] = appended[-WINDOW_DAYS:]
@@ -70,8 +71,10 @@ def _append_series(series_data: dict, today: date, today_values: dict[str, float
     for code, val in today_values.items():
         if code not in new_stocks:
             n_existing = len(new_dates) - 1
-            new_stocks[code] = [None] * n_existing + [val]
-            new_stocks[code] = new_stocks[code][-WINDOW_DAYS:]
+            padded: list[float | int | None] = []
+            padded.extend([None] * n_existing)
+            padded.append(val)
+            new_stocks[code] = padded[-WINDOW_DAYS:]
     series_data['dates'] = new_dates
     series_data['stocks'] = new_stocks
     return series_data
@@ -131,7 +134,7 @@ def run_daily_pipeline(
     # 遍历 holdings 算 indicators
     holdings_codes = _read_holdings_codes(holdings_dir)
     holdings_names = _read_holdings_names(holdings_dir)
-    indicators: dict[str, dict] = {}
+    indicators: dict[str, dict[str, Any]] = {}
     for code in holdings_codes:
         if code not in close_data['stocks']:
             continue

@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-import akshare as ak
+import akshare as ak  # type: ignore[import-untyped]
 
 from .models import StockOhlc, StockOhlcBar
 from .providers.stock_history_provider import (
@@ -48,7 +48,8 @@ class BackfillReport:
 def _fetch_universe() -> list[str]:
     """从 akshare 拉全市场股票 code 列表。"""
     df = ak.stock_zh_a_spot_em()
-    return df['代码'].astype(str).tolist()
+    codes: list[str] = df['代码'].astype(str).tolist()
+    return codes
 
 
 def _read_holdings_codes(holdings_dir: Path) -> set[str]:

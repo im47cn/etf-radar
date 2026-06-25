@@ -17,30 +17,51 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.DATA_BOT_PAT }}
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+      - name: Check NYSE trading day
+        id: cal
+        run: |
+          pip install holidays -q
+          is_trading=$(python -c "
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          import holidays
+          today_et = datetime.now(ZoneInfo('America/New_York')).date()
+          nyse = holidays.financial_holidays('NYSE')
+          is_weekend = today_et.weekday() >= 5
+          is_holiday = today_et in nyse
+          print('true' if (not is_weekend and not is_holiday) else 'false')
+          ")
+          echo "is_trading=$is_trading" >> $GITHUB_OUTPUT
+          echo "trading_day=$is_trading"
+      - uses: actions/checkout@v6
+        if: steps.cal.outputs.is_trading == 'true'
+        with:
+          token: ${{ secrets.DATA_BOT_PAT }}
       - uses: astral-sh/setup-uv@v8.2.0
+        if: steps.cal.outputs.is_trading == 'true'
         id: setup-uv
         continue-on-error: true
         with:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup uv (retry on transient network failure)
-        if: steps.setup-uv.outcome == 'failure'
+        if: steps.cal.outputs.is_trading == 'true' && steps.setup-uv.outcome == 'failure'
         uses: astral-sh/setup-uv@v8.2.0
         with:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install backend deps
+        if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv sync --extra dev
       - name: Run pipeline (full)
+        if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.pipeline --mode=full --data-root=../data --config-dir=../config
         continue-on-error: true
       - name: Commit data
+        if: steps.cal.outputs.is_trading == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -53,6 +74,7 @@ jobs:
           git pull --rebase
           git push
       - name: Trigger deploy
+        if: steps.cal.outputs.is_trading == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run deploy-frontend.yml --ref main

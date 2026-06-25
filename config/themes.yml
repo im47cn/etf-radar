@@ -201,6 +201,18 @@ themes:
     cn_etfs:
       - {code: '512690', name: 酒ETF, tracking: 中证酒, match_type: exact}
 
+  - id: cn_consumer
+    name: 大消费
+    us_etfs: [XLP, XLY, VDC]
+    primary_us: XLP
+    primary_cn: '159928'
+    tags: [消费, 大消费, 宽口径]
+    note: "大消费宽口径板块：跨必选(主要消费)+可选；A股侧 159928/510150/159936 多锚点；美股侧 XLP(必选,与159928口径最近)+XLY(可选)+VDC(必选替代)，primary_us=XLP 对称 primary_cn=159928"
+    cn_etfs:
+      - {code: '159928', name: 消费ETF, tracking: 中证主要消费, match_type: wide}
+      - {code: '510150', name: 消费ETF易方达, tracking: 沪深300主要消费, match_type: wide}
+      - {code: '159936', name: 中证消费ETF, tracking: 中证全指主要消费, match_type: wide}
+
   - id: cn_consumer_staples
     name: 主要消费
     tags: [消费, 食品饮料]

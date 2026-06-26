@@ -223,6 +223,17 @@
       "description": "美股稀土/新材料动量观察中"
     },
     {
+      "theme_id": "cn_rare_metals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "稀有金属（A 股本土赛道）"
+    },
+    {
       "theme_id": "cn_liquor",
       "signal": null,
       "trigger_cn_etf": null,
@@ -232,6 +243,17 @@
         "long": null
       },
       "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer",
+      "signal": "transmission",
+      "trigger_cn_etf": "159928",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
+      },
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -365,10 +387,10 @@
       "cn_code": "159516",
       "mapping_score": 2,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": null,
+        "mid": "resonance",
         "long": null
       }
     },
@@ -403,7 +425,7 @@
       "confidence": 60,
       "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "transmission",
         "long": "transmission"
       }
@@ -596,7 +618,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
+        "mid": "transmission",
         "long": "resonance"
       }
     },
@@ -610,6 +632,42 @@
         "short": "transmission",
         "mid": null,
         "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159928",
+      "mapping_score": 3,
+      "confidence": 60,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 6,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": "resonance",
+        "mid": "transmission",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159936",
+      "mapping_score": 1,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": "transmission",
+        "long": null
       }
     }
   ]

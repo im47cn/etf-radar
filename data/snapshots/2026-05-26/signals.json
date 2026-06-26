@@ -70,14 +70,14 @@
     },
     {
       "theme_id": "new_energy_vehicle",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "515030",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "transmission",
+        "mid": "resonance",
+        "long": "transmission"
       },
-      "description": "美股新能源车动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cn_battery",
@@ -213,14 +213,25 @@
     },
     {
       "theme_id": "rare_earth",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "516780",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": null,
-        "long": "resonance"
+        "long": "transmission"
       },
-      "description": "美股稀土/新材料动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "cn_rare_metals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "稀有金属（A 股本土赛道）"
     },
     {
       "theme_id": "cn_liquor",
@@ -232,6 +243,17 @@
         "long": null
       },
       "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股大消费动量观察中"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -363,13 +385,13 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 26,
+      "mapping_score": 10,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
         "short": null,
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -425,11 +447,11 @@
       "cn_code": "515030",
       "mapping_score": 31,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": "resonance",
-        "long": null
+        "long": "transmission"
       }
     },
     {
@@ -440,7 +462,7 @@
       "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "resonance",
+        "mid": null,
         "long": null
       }
     },
@@ -453,7 +475,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -465,7 +487,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -605,11 +627,47 @@
       "cn_code": "516780",
       "mapping_score": 65,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": null,
-        "long": "resonance"
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159928",
+      "mapping_score": 10,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 7,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159936",
+      "mapping_score": 11,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
       }
     }
   ]

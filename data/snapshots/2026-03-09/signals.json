@@ -185,7 +185,7 @@
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": null
       },
       "description": "美股领先, A股尚未完全跟随"
     },
@@ -195,7 +195,7 @@
       "trigger_cn_etf": "512290",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "transmission"
       },
       "description": "美股领先, A股尚未完全跟随"
@@ -223,6 +223,17 @@
       "description": "美股稀土/新材料动量观察中"
     },
     {
+      "theme_id": "cn_rare_metals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "稀有金属（A 股本土赛道）"
+    },
+    {
       "theme_id": "cn_liquor",
       "signal": null,
       "trigger_cn_etf": null,
@@ -232,6 +243,17 @@
         "long": null
       },
       "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer",
+      "signal": "transmission",
+      "trigger_cn_etf": "159928",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
+      },
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -357,7 +379,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -428,7 +450,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "resonance"
       }
     },
@@ -549,7 +571,7 @@
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -560,7 +582,7 @@
       "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "transmission"
       }
     },
@@ -572,7 +594,7 @@
       "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "transmission"
       }
     },
@@ -603,13 +625,49 @@
     {
       "theme_id": "rare_earth",
       "cn_code": "516780",
-      "mapping_score": 65,
+      "mapping_score": 64,
       "confidence": 90,
       "signal": null,
       "votes": {
         "short": null,
         "mid": "resonance",
         "long": null
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159928",
+      "mapping_score": 1,
+      "confidence": 60,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 5,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": "transmission",
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159936",
+      "mapping_score": 9,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": "transmission",
+        "long": "divergence"
       }
     }
   ]

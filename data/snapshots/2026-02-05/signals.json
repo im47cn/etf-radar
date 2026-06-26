@@ -16,7 +16,7 @@
     {
       "theme_id": "semiconductor",
       "signal": "resonance",
-      "trigger_cn_etf": "512480",
+      "trigger_cn_etf": "159995",
       "votes": {
         "short": null,
         "mid": "resonance",
@@ -223,6 +223,17 @@
       "description": "美股稀土/新材料中长期走强"
     },
     {
+      "theme_id": "cn_rare_metals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "稀有金属（A 股本土赛道）"
+    },
+    {
       "theme_id": "cn_liquor",
       "signal": null,
       "trigger_cn_etf": null,
@@ -232,6 +243,17 @@
         "long": null
       },
       "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股大消费动量观察中"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -353,11 +375,11 @@
       "cn_code": "159995",
       "mapping_score": 11,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": null,
         "mid": "resonance",
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -368,8 +390,8 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "resonance",
-        "long": "transmission"
+        "mid": null,
+        "long": null
       }
     },
     {
@@ -610,6 +632,42 @@
         "short": null,
         "mid": "resonance",
         "long": "resonance"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159928",
+      "mapping_score": 5,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": "resonance",
+        "mid": "transmission",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 8,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": "resonance",
+        "mid": "transmission",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159936",
+      "mapping_score": 2,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": "transmission",
+        "long": null
       }
     }
   ]

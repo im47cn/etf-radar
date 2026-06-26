@@ -103,14 +103,14 @@
     },
     {
       "theme_id": "robotics",
-      "signal": "transmission",
-      "trigger_cn_etf": "562500",
+      "signal": "resonance",
+      "trigger_cn_etf": "159559",
       "votes": {
         "short": "transmission",
-        "mid": null,
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股机器人动量观察中"
     },
     {
       "theme_id": "gold",
@@ -185,7 +185,7 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "resonance"
+        "long": null
       },
       "description": "美股光伏/清洁能源中长期走强"
     },
@@ -213,14 +213,25 @@
     },
     {
       "theme_id": "rare_earth",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "516780",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "divergence",
-        "long": "resonance"
+        "long": "transmission"
       },
-      "description": "美股稀土/新材料动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "cn_rare_metals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "稀有金属（A 股本土赛道）"
     },
     {
       "theme_id": "cn_liquor",
@@ -232,6 +243,17 @@
         "long": null
       },
       "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股大消费动量观察中"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -363,13 +385,13 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 26,
+      "mapping_score": 11,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -449,11 +471,11 @@
       "cn_code": "562500",
       "mapping_score": 48,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -549,7 +571,7 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -605,11 +627,47 @@
       "cn_code": "516780",
       "mapping_score": 64,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "divergence",
-        "long": "resonance"
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159928",
+      "mapping_score": 13,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 8,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159936",
+      "mapping_score": 6,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
       }
     }
   ]

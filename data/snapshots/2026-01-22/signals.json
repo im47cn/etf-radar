@@ -70,14 +70,14 @@
     },
     {
       "theme_id": "new_energy_vehicle",
-      "signal": "resonance",
-      "trigger_cn_etf": "515030",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "resonance",
-        "long": "resonance"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股新能源车中长期走强"
+      "description": "美股新能源车动量观察中"
     },
     {
       "theme_id": "cn_battery",
@@ -108,7 +108,7 @@
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": null
+        "long": "resonance"
       },
       "description": "美股领先, A股尚未完全跟随"
     },
@@ -223,6 +223,17 @@
       "description": "美股稀土/新材料中长期走强"
     },
     {
+      "theme_id": "cn_rare_metals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "稀有金属（A 股本土赛道）"
+    },
+    {
       "theme_id": "cn_liquor",
       "signal": null,
       "trigger_cn_etf": null,
@@ -232,6 +243,17 @@
         "long": null
       },
       "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer",
+      "signal": "divergence",
+      "trigger_cn_etf": "159928",
+      "votes": {
+        "short": null,
+        "mid": "divergence",
+        "long": "divergence"
+      },
+      "description": "美股A股短期方向不一致"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -416,7 +438,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
+        "mid": "transmission",
         "long": null
       }
     },
@@ -425,10 +447,10 @@
       "cn_code": "515030",
       "mapping_score": 17,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "resonance",
+        "mid": null,
         "long": "resonance"
       }
     },
@@ -453,7 +475,7 @@
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -609,6 +631,42 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159928",
+      "mapping_score": 1,
+      "confidence": 60,
+      "signal": "divergence",
+      "votes": {
+        "short": null,
+        "mid": "divergence",
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 10,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159936",
+      "mapping_score": 17,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": "transmission",
+        "mid": null,
         "long": null
       }
     }

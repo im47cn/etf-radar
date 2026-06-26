@@ -191,14 +191,14 @@
     },
     {
       "theme_id": "biotech",
-      "signal": "divergence",
+      "signal": "transmission",
       "trigger_cn_etf": "512290",
       "votes": {
         "short": "transmission",
-        "mid": "divergence",
+        "mid": "transmission",
         "long": "divergence"
       },
-      "description": "美股A股短期方向不一致"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "aerospace_defense",
@@ -213,6 +213,17 @@
     },
     {
       "theme_id": "rare_earth",
+      "signal": "transmission",
+      "trigger_cn_etf": "516780",
+      "votes": {
+        "short": "transmission",
+        "mid": null,
+        "long": "transmission"
+      },
+      "description": "美股领先, A股尚未完全跟随"
+    },
+    {
+      "theme_id": "cn_rare_metals",
       "signal": null,
       "trigger_cn_etf": null,
       "votes": {
@@ -220,7 +231,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股稀土/新材料动量观察中"
+      "description": "稀有金属（A 股本土赛道）"
     },
     {
       "theme_id": "cn_liquor",
@@ -232,6 +243,17 @@
         "long": null
       },
       "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "美股大消费动量观察中"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -363,13 +385,13 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 26,
+      "mapping_score": 11,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -381,7 +403,7 @@
       "votes": {
         "short": null,
         "mid": "transmission",
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -441,7 +463,7 @@
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -453,7 +475,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -557,10 +579,10 @@
       "cn_code": "512290",
       "mapping_score": 8,
       "confidence": 90,
-      "signal": "divergence",
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": "divergence",
+        "mid": "transmission",
         "long": "divergence"
       }
     },
@@ -569,10 +591,10 @@
       "cn_code": "159992",
       "mapping_score": 5,
       "confidence": 90,
-      "signal": "divergence",
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": "divergence",
+        "mid": "transmission",
         "long": "divergence"
       }
     },
@@ -605,11 +627,47 @@
       "cn_code": "516780",
       "mapping_score": 64,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "resonance"
+        "long": "transmission"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159928",
+      "mapping_score": 12,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 7,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159936",
+      "mapping_score": 6,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": "divergence"
       }
     }
   ]

@@ -37,21 +37,21 @@
     },
     {
       "theme_id": "ai_compute",
-      "signal": "transmission",
+      "signal": "divergence",
       "trigger_cn_etf": "515980",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "divergence"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股A股短期方向不一致"
     },
     {
       "theme_id": "energy_oil",
       "signal": "resonance",
       "trigger_cn_etf": "162411",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "resonance",
         "long": "resonance"
       },
@@ -81,14 +81,14 @@
     },
     {
       "theme_id": "cn_battery",
-      "signal": "resonance",
-      "trigger_cn_etf": "159755",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "resonance",
-        "mid": "transmission",
-        "long": "resonance"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股锂电池中长期走强"
+      "description": "美股锂电池动量观察中"
     },
     {
       "theme_id": "cn_chemicals",
@@ -223,6 +223,17 @@
       "description": "美股稀土/新材料中长期走强"
     },
     {
+      "theme_id": "cn_rare_metals",
+      "signal": null,
+      "trigger_cn_etf": null,
+      "votes": {
+        "short": null,
+        "mid": null,
+        "long": null
+      },
+      "description": "稀有金属（A 股本土赛道）"
+    },
+    {
       "theme_id": "cn_liquor",
       "signal": null,
       "trigger_cn_etf": null,
@@ -232,6 +243,17 @@
         "long": null
       },
       "description": "白酒（A 股本土赛道）"
+    },
+    {
+      "theme_id": "cn_consumer",
+      "signal": "transmission",
+      "trigger_cn_etf": "510150",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
+      },
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -389,10 +411,10 @@
       "cn_code": "515980",
       "mapping_score": 13,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": "divergence",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "divergence"
       }
     },
@@ -415,7 +437,7 @@
       "confidence": 90,
       "signal": "resonance",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "resonance",
         "long": "resonance"
       }
@@ -437,11 +459,11 @@
       "cn_code": "159755",
       "mapping_score": 53,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
         "short": "resonance",
         "mid": "transmission",
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -547,7 +569,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": "resonance"
       }
@@ -584,7 +606,7 @@
       "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": "resonance",
+        "mid": null,
         "long": "resonance"
       }
     },
@@ -603,12 +625,48 @@
     {
       "theme_id": "rare_earth",
       "cn_code": "516780",
-      "mapping_score": 57,
+      "mapping_score": 56,
       "confidence": 90,
       "signal": "resonance",
       "votes": {
         "short": "resonance",
         "mid": "resonance",
+        "long": null
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159928",
+      "mapping_score": 6,
+      "confidence": 60,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 9,
+      "confidence": 60,
+      "signal": "transmission",
+      "votes": {
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
+      "cn_code": "159936",
+      "mapping_score": 4,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": "resonance",
+        "mid": "transmission",
         "long": null
       }
     }

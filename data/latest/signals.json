@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-26T12:49:57.221877+08:00",
+  "generated_at": "2026-06-26T14:27:10.287389+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
       "signal": "resonance",
-      "trigger_cn_etf": "512480",
+      "trigger_cn_etf": "512760",
       "votes": {
         "short": "resonance",
         "mid": "resonance",
@@ -26,21 +26,21 @@
     },
     {
       "theme_id": "cybersecurity",
-      "signal": "resonance",
-      "trigger_cn_etf": "512720",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "resonance",
-        "long": "resonance"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股网络安全中长期走强"
+      "description": "美股网络安全动量观察中"
     },
     {
       "theme_id": "ai_compute",
       "signal": "resonance",
       "trigger_cn_etf": "515980",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       },
@@ -48,12 +48,12 @@
     },
     {
       "theme_id": "energy_oil",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "162411",
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
-        "long": null
+        "long": "resonance"
       },
       "description": "美股原油/油气动量观察中"
     },
@@ -169,14 +169,14 @@
     },
     {
       "theme_id": "cn_insurance",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "159851",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       },
-      "description": "美股保险动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "solar_clean_energy",
@@ -194,7 +194,7 @@
       "signal": "transmission",
       "trigger_cn_etf": "159992",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": "transmission"
       },
@@ -213,14 +213,14 @@
     },
     {
       "theme_id": "rare_earth",
-      "signal": "transmission",
-      "trigger_cn_etf": "516780",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": null
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股稀土/新材料动量观察中"
     },
     {
       "theme_id": "cn_rare_metals",
@@ -351,11 +351,11 @@
       "cn_code": "512760",
       "mapping_score": 26,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": null,
-        "long": "transmission"
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -399,10 +399,10 @@
       "cn_code": "512720",
       "mapping_score": 0,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
-        "short": "transmission",
-        "mid": "resonance",
+        "short": null,
+        "mid": "transmission",
         "long": "resonance"
       }
     },
@@ -413,7 +413,7 @@
       "confidence": 90,
       "signal": "resonance",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       }
@@ -435,9 +435,9 @@
       "cn_code": "162411",
       "mapping_score": 41,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": null,
         "long": "resonance"
       }
@@ -463,7 +463,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -486,7 +486,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "resonance",
+        "mid": null,
         "long": null
       }
     },
@@ -511,7 +511,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": null
+        "long": "divergence"
       }
     },
     {
@@ -555,9 +555,9 @@
       "cn_code": "159851",
       "mapping_score": 0,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": null
       }
@@ -593,7 +593,7 @@
       "confidence": 90,
       "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": "transmission"
       }
@@ -627,11 +627,11 @@
       "cn_code": "516780",
       "mapping_score": 56,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
-        "mid": null,
-        "long": "transmission"
+        "short": null,
+        "mid": "transmission",
+        "long": "resonance"
       }
     },
     {
@@ -653,7 +653,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": null,
         "long": "divergence"
       }

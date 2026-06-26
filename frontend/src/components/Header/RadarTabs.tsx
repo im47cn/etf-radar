@@ -9,8 +9,8 @@ export const RadarTabs = () => {
   const { pathname } = useLocation();
   return (
     <div className="flex gap-1 text-sm">
-      <Link to="/" className={linkClass(pathname === '/')}>跨市雷达</Link>
-      <Link to="/rotation" className={linkClass(pathname === '/rotation')}>主题轮动</Link>
+      <Link to="/" className={linkClass(pathname === '/' || pathname === '/rotation')}>主题轮动</Link>
+      <Link to="/radar" className={linkClass(pathname === '/radar')}>跨市雷达</Link>
       <Link to="/portfolio" className={linkClass(pathname === '/portfolio')}>
         我的持仓
       </Link>

@@ -97,22 +97,29 @@ const renderAt = (path: string) =>
     <MemoryRouter initialEntries={[path]}>
       <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
         <Routes>
-          <Route path="/" element={<RadarPage />} />
+          <Route path="/" element={<RotationPage />} />
           <Route path="/rotation" element={<RotationPage />} />
+          <Route path="/radar" element={<RadarPage />} />
         </Routes>
       </SWRConfig>
     </MemoryRouter>,
   );
 
 describe('Router integration', () => {
-  it('renders RadarPage on /', () => {
+  it('renders RotationPage on /', () => {
     renderAt('/');
-    expect(screen.queryByTestId('rc-container')).toBeNull();
+    expect(screen.getByTestId('rc-container')).toBeInTheDocument();
+    expect(screen.getByText(/持续强势/)).toBeInTheDocument();
   });
 
-  it('renders RotationPage on /rotation', () => {
+  it('renders RotationPage on /rotation (legacy alias)', () => {
     renderAt('/rotation');
     expect(screen.getByTestId('rc-container')).toBeInTheDocument();
     expect(screen.getByText(/持续强势/)).toBeInTheDocument();
+  });
+
+  it('renders RadarPage on /radar', () => {
+    renderAt('/radar');
+    expect(screen.queryByTestId('rc-container')).toBeNull();
   });
 });

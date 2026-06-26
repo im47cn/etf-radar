@@ -22,8 +22,9 @@ export default function App() {
                 <div className="min-h-screen bg-gray-50">
                   <Header />
                   <Routes>
-                    <Route path="/"               element={<RadarPage />} />
+                    <Route path="/"               element={<RotationPage />} />
                     <Route path="/rotation"       element={<RotationPage />} />
+                    <Route path="/radar"          element={<RadarPage />} />
                     <Route path="/portfolio"      element={<PortfolioPage />} />
                     <Route path="/auth/callback"  element={<AuthCallback />} />
                     <Route path="/theme/:id/stocks" element={<StocksPage />} />

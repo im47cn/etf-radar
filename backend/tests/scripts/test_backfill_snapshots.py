@@ -9,6 +9,7 @@ import jsonschema  # type: ignore[import-untyped]
 import pandas as pd  # type: ignore[import-untyped]
 
 from scripts.backfill_snapshots import backfill
+from src.config_loader import load_themes
 
 CONFIG_DIR = Path(__file__).parents[3] / 'config'
 
@@ -63,9 +64,10 @@ def test_backfill_writes_snapshots_and_index(
         meta = json.loads((snap_root / snapshot_dirs[0] / 'meta.json').read_text())
         assert meta['backfilled'] is True
 
-        # themes.json 含 29 主题 (13 mapped 含拆分 + 16 CN-only 含化工/游戏/稀有金属，剔除风格因子)
+        # themes.json 主题数应与 themes.yml 配置一致 (动态推导, 避免新增主题后硬编码漂移)
+        expected_theme_count = len(load_themes(CONFIG_DIR / 'themes.yml'))
         themes = json.loads((snap_root / snapshot_dirs[0] / 'themes.json').read_text())
-        assert len(themes['themes']) == 29
+        assert len(themes['themes']) == expected_theme_count
 
         # snapshots-index.json 生成且含全部日期
         idx = json.loads((data_root / 'latest' / 'snapshots-index.json').read_text())

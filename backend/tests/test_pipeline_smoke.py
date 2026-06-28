@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd  # type: ignore[import-untyped]
 
+from src.config_loader import load_themes
 from src.pipeline import PipelineMode, run_pipeline
 
 
@@ -42,13 +43,14 @@ def test_pipeline_full_mode_creates_files(
         assert (latest / 'signals.json').exists()
         assert (latest / 'meta.json').exists()
 
+        # 主题数动态对齐 themes.yml 配置, 避免新增主题后硬编码漂移
+        expected_theme_count = len(load_themes(config_dir / 'themes.yml'))
         themes = json.loads((latest / 'themes.json').read_text(encoding='utf-8'))
-        # 29: 13 mapped (含拆分) + 16 CN-only (含化工/游戏/稀有金属，剔除风格因子)
-        assert len(themes['themes']) == 29
+        assert len(themes['themes']) == expected_theme_count
         assert themes['schema_version'] == '1.1'
 
         signals = json.loads((latest / 'signals.json').read_text(encoding='utf-8'))
-        assert len(signals['theme_signals']) == 29
+        assert len(signals['theme_signals']) == expected_theme_count
 
         meta = json.loads((latest / 'meta.json').read_text(encoding='utf-8'))
         assert meta['providers']['us']['status'] == 'ok'

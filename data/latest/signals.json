@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-01T11:03:54.370230+08:00",
+  "generated_at": "2026-07-01T12:55:18.363585+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -9,7 +9,7 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "resonance"
+        "long": "transmission"
       },
       "description": "美股存储芯片中长期走强"
     },
@@ -73,7 +73,7 @@
       "signal": "transmission",
       "trigger_cn_etf": "515030",
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
         "long": "transmission"
       },
@@ -81,12 +81,12 @@
     },
     {
       "theme_id": "cn_battery",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "159755",
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
-        "long": null
+        "long": "resonance"
       },
       "description": "美股锂电池动量观察中"
     },
@@ -169,14 +169,14 @@
     },
     {
       "theme_id": "cn_insurance",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "159851",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "divergence"
       },
-      "description": "美股保险动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "solar_clean_energy",
@@ -249,7 +249,7 @@
       "signal": "divergence",
       "trigger_cn_etf": "159936",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "divergence",
         "long": "divergence"
       },
@@ -355,7 +355,7 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "resonance"
+        "long": "transmission"
       }
     },
     {
@@ -437,7 +437,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": "resonance"
       }
@@ -449,7 +449,7 @@
       "confidence": 90,
       "signal": "transmission",
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
         "long": "transmission"
       }
@@ -459,9 +459,9 @@
       "cn_code": "159755",
       "mapping_score": 62,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": null,
         "long": "resonance"
       }
@@ -483,11 +483,11 @@
       "cn_code": "159559",
       "mapping_score": 33,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "resonance",
         "mid": "transmission",
-        "long": null
+        "long": "transmission"
       }
     },
     {
@@ -555,9 +555,9 @@
       "cn_code": "159851",
       "mapping_score": 9,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": "divergence"
       }
@@ -579,10 +579,10 @@
       "cn_code": "512290",
       "mapping_score": 9,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
+        "mid": null,
         "long": "transmission"
       }
     },
@@ -629,9 +629,9 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
-        "mid": "transmission",
-        "long": null
+        "short": "transmission",
+        "mid": null,
+        "long": "divergence"
       }
     },
     {
@@ -641,7 +641,7 @@
       "confidence": 60,
       "signal": "divergence",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "divergence",
         "long": "divergence"
       }
@@ -665,7 +665,7 @@
       "confidence": 60,
       "signal": "divergence",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "divergence",
         "long": "divergence"
       }

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-01T10:00:40.014440+08:00",
+  "generated_at": "2026-07-01T10:27:08.900658+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -169,14 +169,14 @@
     },
     {
       "theme_id": "cn_insurance",
-      "signal": "transmission",
-      "trigger_cn_etf": "159851",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "divergence"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股保险动量观察中"
     },
     {
       "theme_id": "solar_clean_energy",
@@ -194,7 +194,7 @@
       "signal": "transmission",
       "trigger_cn_etf": "159992",
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "transmission",
         "long": "transmission"
       },
@@ -385,7 +385,7 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 21,
+      "mapping_score": 10,
       "confidence": 60,
       "signal": "resonance",
       "votes": {
@@ -555,9 +555,9 @@
       "cn_code": "159851",
       "mapping_score": 9,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
         "long": "divergence"
       }
@@ -593,7 +593,7 @@
       "confidence": 90,
       "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "transmission",
         "long": "transmission"
       }
@@ -653,7 +653,7 @@
       "confidence": 60,
       "signal": "divergence",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "divergence",
         "long": "divergence"
       }

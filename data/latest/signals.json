@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-02T14:18:39.402192+08:00",
+  "generated_at": "2026-07-02T14:50:34.607845+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -158,14 +158,14 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": "transmission",
-      "trigger_cn_etf": "512800",
+      "signal": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "divergence"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股银行动量观察中"
     },
     {
       "theme_id": "cn_insurance",
@@ -543,9 +543,9 @@
       "cn_code": "512800",
       "mapping_score": 7,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": "divergence"
       }
@@ -571,7 +571,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -615,9 +615,9 @@
       "cn_code": "512710",
       "mapping_score": 32,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": "divergence"
       }

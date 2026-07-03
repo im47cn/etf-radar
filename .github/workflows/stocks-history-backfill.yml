@@ -48,5 +48,7 @@ jobs:
             echo "no changes"
           else
             git commit -m "data: stocks history backfill $(date -u +%FT%TZ)"
+            # backfill 耗时长(~90min), 期间 main 常已前进; 先 rebase 再推, 否则数据丢失
+            git pull --rebase
             git push
           fi

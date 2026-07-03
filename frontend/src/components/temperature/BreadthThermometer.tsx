@@ -49,17 +49,35 @@ export const BreadthThermometer = ({ market, periodLabel = 'MA20' }: Props) => {
 function buildSparkline(market: MarketPoint[]) {
   const W = 240;
   const H = 44;
-  const pts = market.map((p, i) => ({ x: i, y: p.rate }));
-  const xs = (i: number) => (market.length <= 1 ? 0 : (i / (market.length - 1)) * W);
+  const n = market.length;
+  const xs = (i: number) => (n <= 1 ? 0 : (i / (n - 1)) * W);
   const ys = (v: number) => H - (Math.max(0, Math.min(100, v)) / 100) * H;
-  const path = pts
+  const bandW = n <= 1 ? W : W / (n - 1);
+  // 逐日温度背景色带: 每天用其站上率对应的冷暖色
+  const bands = market.map((p, i) => {
+    if (p.rate == null) return null;
+    const left = Math.max(0, xs(i) - bandW / 2);
+    const right = Math.min(W, xs(i) + bandW / 2);
+    return (
+      <rect key={i} x={left} y={0} width={Math.max(0.6, right - left)} height={H} fill={breadthColor(p.rate)} />
+    );
+  });
+  const path = market
+    .map((p, i) => ({ x: i, y: p.rate }))
     .filter((p) => p.y != null)
     .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${xs(p.x).toFixed(1)} ${ys(p.y as number).toFixed(1)}`)
     .join(' ');
   return (
-    <svg width={W} height={H} className="overflow-visible">
-      <line x1={0} y1={ys(50)} x2={W} y2={ys(50)} stroke="#e5e7eb" strokeDasharray="2 2" />
-      <path d={path} fill="none" stroke="#3b82f6" strokeWidth={1.5} />
+    <svg
+      width="100%"
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="none"
+      className="block rounded"
+    >
+      <g>{bands}</g>
+      <line x1={0} y1={ys(50)} x2={W} y2={ys(50)} stroke="#94a3b8" strokeDasharray="2 2" strokeWidth={0.5} vectorEffect="non-scaling-stroke" />
+      <path d={path} fill="none" stroke="#1e293b" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }

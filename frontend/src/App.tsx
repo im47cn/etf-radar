@@ -10,6 +10,7 @@ import { RotationPage } from '@/pages/RotationPage';
 import { PortfolioPage } from '@/pages/PortfolioPage';
 import { AuthCallback } from '@/pages/AuthCallback';
 import { StocksPage } from '@/pages/StocksPage';
+import { TemperaturePage } from '@/pages/TemperaturePage';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
                     <Route path="/"               element={<RotationPage />} />
                     <Route path="/rotation"       element={<RotationPage />} />
                     <Route path="/radar"          element={<RadarPage />} />
+                    <Route path="/temperature"    element={<TemperaturePage />} />
                     <Route path="/portfolio"      element={<PortfolioPage />} />
                     <Route path="/auth/callback"  element={<AuthCallback />} />
                     <Route path="/theme/:id/stocks" element={<StocksPage />} />

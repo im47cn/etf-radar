@@ -11,11 +11,17 @@ const renderAt = (path: string) =>
   );
 
 describe('RadarTabs', () => {
-  it('renders 3 tab links', () => {
+  it('renders tab links', () => {
     renderAt('/');
     expect(screen.getByText('主题轮动').closest('a')).toHaveAttribute('href', '/');
     expect(screen.getByText('跨市雷达').closest('a')).toHaveAttribute('href', '/radar');
+    expect(screen.getByText('市场温度').closest('a')).toHaveAttribute('href', '/temperature');
     expect(screen.getByText('我的持仓').closest('a')).toHaveAttribute('href', '/portfolio');
+  });
+
+  it('marks temperature tab active on /temperature', () => {
+    renderAt('/temperature');
+    expect(screen.getByText('市场温度').closest('a')!.className).toMatch(/bg-blue-600/);
   });
 
   it('marks rotation tab active on root path', () => {

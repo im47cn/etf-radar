@@ -11,6 +11,7 @@ export const RadarTabs = () => {
     <div className="flex gap-1 text-sm">
       <Link to="/" className={linkClass(pathname === '/' || pathname === '/rotation')}>主题轮动</Link>
       <Link to="/radar" className={linkClass(pathname === '/radar')}>跨市雷达</Link>
+      <Link to="/temperature" className={linkClass(pathname === '/temperature')}>市场温度</Link>
       <Link to="/portfolio" className={linkClass(pathname === '/portfolio')}>
         我的持仓
       </Link>

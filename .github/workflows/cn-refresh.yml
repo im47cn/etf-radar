@@ -71,6 +71,11 @@ jobs:
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.pipeline --mode=${{ steps.mode.outputs.mode }} --data-root=../data --config-dir=../config
         continue-on-error: true
+      - name: Refresh market temperature (breadth)
+        if: steps.cal.outputs.is_trading == 'true'
+        # dapanyuntu 第三方接口, 失败不阻断主流程; 保留上一份快照
+        run: cd backend && uv run python -m src.market_breadth.pipeline --data-root=../data
+        continue-on-error: true
       - name: Commit data
         if: steps.cal.outputs.is_trading == 'true'
         run: |

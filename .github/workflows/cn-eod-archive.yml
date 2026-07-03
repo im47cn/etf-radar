@@ -2,7 +2,7 @@ name: CN EOD Archive
 
 on:
   schedule:
-    - cron: '30 7 * * 1-5'   # 工作日 BJT 15:30 (UTC 07:30)
+    - cron: '0 10 * * 1-5'   # 工作日 BJT 18:00 (UTC 10:00) — 收盘后 EOD 日线结算完成再归档
   workflow_dispatch:
 
 permissions:
@@ -52,6 +52,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv sync --extra dev
+      # 收盘后再全量抓一次: 此时 EOD 日线已结算, latest/ 拿到当日真数据.
+      # 若仍抓到陈旧数据 (provider 滞后/失败), 下游 archive 的新鲜度护栏会拒绝归档.
+      - name: Refresh full (settled EOD data)
+        if: steps.cal.outputs.is_trading == 'true'
+        run: cd backend && uv run python -m src.pipeline --mode=full --data-root=../data --config-dir=../config
+        continue-on-error: true
       - name: Archive latest → snapshots/<today-bjt>
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.pipeline --mode=archive --data-root=../data --config-dir=../config
@@ -61,8 +67,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # snapshots/ 是归档主体, latest/snapshots-index.json 是 archive 模式新写的索引
-          git add data/snapshots/ data/latest/snapshots-index.json
+          # snapshots/ 是归档主体; latest/ 一并提交, 让前端实时视图也拿到收盘结算后的 EOD 数据
+          git add data/snapshots/ data/latest/
           if git diff --staged --quiet; then
             echo "no archive changes, skip commit"
             echo "changed=false" >> $GITHUB_OUTPUT

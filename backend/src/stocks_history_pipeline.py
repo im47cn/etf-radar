@@ -1,7 +1,7 @@
 """一次性历史 K 线 backfill 管道。
 
 入口:
-  python -m src.stocks_history_pipeline [--days 75] [--max-workers 4]
+  python -m src.stocks_history_pipeline [--days 150] [--max-workers 4]
 
 写入:
   data/stocks/close_series.json        全市场收盘价矩阵
@@ -170,7 +170,7 @@ def run_history_backfill(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--data-root', type=Path, default=Path('data'))
-    parser.add_argument('--days', type=int, default=75)
+    parser.add_argument('--days', type=int, default=150)  # 150 交易日: 给 MA120 宽度留 ~30 日序列 buffer
     parser.add_argument('--max-workers', type=int, default=4)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO,

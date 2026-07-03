@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       days:
-        description: '回溯天数（默认 75，给 60 日指标留 buffer）'
-        default: '75'
+        description: '回溯天数（默认 150，支撑 MA120 宽度；给 60 日指标留 buffer）'
+        default: '150'
         required: true
       max_workers:
         description: 'akshare 并发数（默认 1：PyMiniRacer V8 在 macOS arm64 多线程必 crash，Linux runner 未验证，保守起见单线程）'

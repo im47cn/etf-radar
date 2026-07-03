@@ -29,7 +29,7 @@ from .scoring.strength import batch_strength_per_dim
 
 log = logging.getLogger(__name__)
 
-WINDOW_DAYS = 75
+WINDOW_DAYS = 150  # 保留 150 交易日: 支撑 MA120 宽度; r_20d/r_60d 用固定偏移取值, 加窗不改 strength
 K_SIGMOID = 2.0
 
 

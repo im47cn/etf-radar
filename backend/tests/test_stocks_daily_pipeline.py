@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from src.stocks_daily_pipeline import _append_series, run_daily_pipeline
+from src.stocks_daily_pipeline import WINDOW_DAYS, _append_series, run_daily_pipeline
 
 
 def _make_close_series(codes: list[str], n_days: int = 75) -> dict:
@@ -51,8 +51,11 @@ def test_daily_appends_today_and_writes_indicators(tmp_path: Path):
     out_dir.mkdir()
     (out_dir / 'ohlc').mkdir()
     universe_codes = ['002129', '603501', '600519']
-    (out_dir / 'close_series.json').write_text(json.dumps(_make_close_series(universe_codes)))
-    (out_dir / 'volume_series.json').write_text(json.dumps(_make_volume_series(universe_codes)))
+    # 播种满窗 (WINDOW_DAYS)，append 今日后应截窗回 WINDOW_DAYS
+    (out_dir / 'close_series.json').write_text(
+        json.dumps(_make_close_series(universe_codes, n_days=WINDOW_DAYS)))
+    (out_dir / 'volume_series.json').write_text(
+        json.dumps(_make_volume_series(universe_codes, n_days=WINDOW_DAYS)))
 
     with patch('src.stocks_daily_pipeline._fetch_today_spot',
                return_value=_fake_spot_df(universe_codes)):
@@ -61,7 +64,7 @@ def test_daily_appends_today_and_writes_indicators(tmp_path: Path):
         )
 
     cs = json.loads((out_dir / 'close_series.json').read_text())
-    assert len(cs['dates']) == 75
+    assert len(cs['dates']) == WINDOW_DAYS
     assert cs['dates'][-1] == '2026-06-25'
     assert cs['stocks']['002129'][-1] == 11.0
 

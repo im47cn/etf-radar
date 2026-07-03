@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 
 from src.models import StockOhlcBar
-from src.stocks_history_pipeline import run_history_backfill
+from src.stocks_history_pipeline import _guard_no_regress, run_history_backfill
 
 
 def _bars(code: str, n: int = 75) -> list[StockOhlcBar]:
@@ -81,3 +81,47 @@ def test_backfill_isolates_per_stock_failure(tmp_path: Path):
     assert report.success_count == 2
     assert report.failed_count == 1
     assert 'bad' in report.failed
+
+
+def test_guard_no_regress_keeps_newer_daily_tail(tmp_path: Path):
+    """现有 series 末位晚于 backfill 末位 → 保留 daily 已写入的最新格, 不回退."""
+    existing = tmp_path / 'close_series.json'
+    existing.write_text(json.dumps({
+        'dates': ['2026-01-01', '2026-01-02', '2026-01-03'],  # daily 已 append 到 01-03
+        'stocks': {'A': [10.0, 11.0, 12.0], 'B': [20.0, 21.0, 22.0]},
+    }))
+    # backfill 只算到 01-02 (历史接口当日未 roll)
+    new_dates = [date(2026, 1, 1), date(2026, 1, 2)]
+    new_matrix = {'A': [10.0, 11.0], 'B': [20.0, 21.0]}
+
+    dates, matrix = _guard_no_regress(existing, new_dates, new_matrix, days=75)
+
+    assert dates == ['2026-01-01', '2026-01-02', '2026-01-03']  # 01-03 被保留
+    assert matrix['A'] == [10.0, 11.0, 12.0]
+    assert matrix['B'] == [20.0, 21.0, 22.0]
+
+
+def test_guard_no_regress_passthrough_when_not_older(tmp_path: Path):
+    """backfill 末位 >= 现有末位 → 原样覆盖, 无 tail 拼接."""
+    existing = tmp_path / 'close_series.json'
+    existing.write_text(json.dumps({
+        'dates': ['2026-01-01', '2026-01-02'],
+        'stocks': {'A': [10.0, 11.0]},
+    }))
+    new_dates = [date(2026, 1, 2), date(2026, 1, 3)]  # backfill 更新, 含 01-03
+    new_matrix = {'A': [11.5, 12.0]}
+
+    dates, matrix = _guard_no_regress(existing, new_dates, new_matrix, days=75)
+
+    assert dates == ['2026-01-02', '2026-01-03']
+    assert matrix == {'A': [11.5, 12.0]}
+
+
+def test_guard_no_regress_no_existing_file(tmp_path: Path):
+    """首次 backfill (无现有文件) → 直接返回新数据."""
+    new_dates = [date(2026, 1, 1), date(2026, 1, 2)]
+    new_matrix = {'A': [10.0, 11.0]}
+    dates, matrix = _guard_no_regress(
+        tmp_path / 'missing.json', new_dates, new_matrix, days=75)
+    assert dates == ['2026-01-01', '2026-01-02']
+    assert matrix == new_matrix

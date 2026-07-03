@@ -72,6 +72,49 @@ def _read_holdings_codes(holdings_dir: Path) -> set[str]:
     return codes
 
 
+def _guard_no_regress(
+    existing_path: Path,
+    new_dates: list,
+    new_matrix: dict,
+    days: int,
+) -> tuple[list[str], dict]:
+    """写入护栏: 防 backfill 全量覆盖回退掉 daily 已 append 的最新 bar.
+
+    触发场景: 某交易日 T 盘后 daily 已写入 T 格, 之后手动跑 backfill, 而历史 K 线
+    接口当日尚未 roll 出 T bar (只到 T-1). 若直接覆盖, T 格会回退消失 (次日 daily 才补回).
+    护栏: 若现有 series 末位日期晚于 backfill 结果末位, 把现有更新的尾部列拼回后再截窗.
+    与 daily 的 _append_series 互补: daily 防自身重复追加, 本护栏防 backfill 覆盖 daily.
+    """
+    new_date_strs: list[str] = [d.isoformat() for d in new_dates]
+    if not existing_path.exists() or not new_date_strs:
+        return new_date_strs, new_matrix
+    try:
+        existing = json.loads(existing_path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return new_date_strs, new_matrix
+    ex_dates: list[str] = existing.get('dates', [])
+    ex_stocks: dict[str, list] = existing.get('stocks', {})
+    # 现有中晚于 backfill 末位的日期 = backfill 缺失、需保留的更新格
+    tail = [d for d in ex_dates if d > new_date_strs[-1]]
+    if not tail:
+        return new_date_strs, new_matrix  # 无回退, 正常覆盖
+    ex_pos = {d: i for i, d in enumerate(ex_dates)}
+    codes = set(new_matrix) | set(ex_stocks)
+    merged: dict[str, list] = {}
+    for code in codes:
+        base = list(new_matrix.get(code, [None] * len(new_date_strs)))
+        if len(base) < len(new_date_strs):
+            base += [None] * (len(new_date_strs) - len(base))
+        ex_row = ex_stocks.get(code, [])
+        tail_vals = [ex_row[ex_pos[d]] if ex_pos[d] < len(ex_row) else None for d in tail]
+        merged[code] = (base + tail_vals)[-days:]
+    log.warning(
+        f'no-regress guard: backfill 末位 {new_date_strs[-1]} 旧于现有 {tail[-1]}, '
+        f'保留 {len(tail)} 个最新格'
+    )
+    return (new_date_strs + tail)[-days:], merged
+
+
 def run_history_backfill(
     holdings_dir: Path,
     out_dir: Path,
@@ -127,17 +170,23 @@ def run_history_backfill(
         close_matrix[code] = closes
         volume_matrix[code] = volumes
 
+    # 写入护栏: 防 backfill 覆盖回退掉 daily 已 append 的最新 bar
+    close_dates, close_matrix = _guard_no_regress(
+        out_dir / 'close_series.json', all_dates, close_matrix, days)
+    volume_dates, volume_matrix = _guard_no_regress(
+        out_dir / 'volume_series.json', all_dates, volume_matrix, days)
+
     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     (out_dir / 'close_series.json').write_text(json.dumps({
         'schema_version': '1.0',
         'generated_at': now,
-        'dates': [d.isoformat() for d in all_dates],
+        'dates': close_dates,
         'stocks': close_matrix,
     }, ensure_ascii=False))
     (out_dir / 'volume_series.json').write_text(json.dumps({
         'schema_version': '1.0',
         'generated_at': now,
-        'dates': [d.isoformat() for d in all_dates],
+        'dates': volume_dates,
         'stocks': volume_matrix,
     }, ensure_ascii=False))
 
@@ -160,7 +209,7 @@ def run_history_backfill(
         'schema_version': '1.0',
         'generated_at': now,
         'ohlc_codes': ohlc_codes,
-        'last_trade_date': all_dates[-1].isoformat() if all_dates else None,
+        'last_trade_date': close_dates[-1] if close_dates else None,
     }, ensure_ascii=False))
 
     log.info(f'backfill done: success={report.success_count} failed={report.failed_count}')

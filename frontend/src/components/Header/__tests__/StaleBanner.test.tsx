@@ -58,6 +58,18 @@ describe('StaleBanner', () => {
     expect(screen.getByText(/已过期 90 分钟/)).toBeInTheDocument();
   });
 
+  it('陈旧超过一天时按"天"显示而非巨大分钟数', () => {
+    mockMeta.value = buildMeta({
+      stale_minutes: 2880, // 2 天
+      providers: {
+        us: { status: 'ok', name: 'yfinance' },
+        cn: { status: 'stale', name: 'akshare-em' },
+      },
+    });
+    render(<StaleBanner />);
+    expect(screen.getByText(/已过期 2 天/)).toBeInTheDocument();
+  });
+
   it('shows fallback warning when only fallback_symbols present', () => {
     mockMeta.value = buildMeta({
       providers: {

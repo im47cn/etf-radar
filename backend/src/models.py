@@ -167,6 +167,9 @@ class MetaInfo(BaseModel):
     stale_minutes: int = 0
     calendar: CalendarInfo
     backfilled: bool = False
+    # 每市场最新 bar 日期 (ISO date). 供新鲜度护栏在归档前校验, None=无数据.
+    cn_data_date: Optional[str] = None
+    us_data_date: Optional[str] = None
 
 
 class EtfTopHolding(BaseModel):

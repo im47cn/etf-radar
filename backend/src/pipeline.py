@@ -11,7 +11,7 @@ import argparse
 import logging
 import random
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -126,6 +126,12 @@ def _collect_cn_ohlc(
 
         time.sleep(random.uniform(0.3, 1.0))
     return out, fallback_map, failed
+
+
+def _latest_bar_date(ohlc: dict[str, pd.DataFrame]) -> date | None:
+    """一组 OHLC 中最新的 bar 日期 (跨 symbol 取 max), 空则 None."""
+    dates = [df['date'].dt.date.max() for df in ohlc.values() if not df.empty]
+    return max(dates) if dates else None
 
 
 def _theme_returns(t: ThemeConfig, us_ohlc: dict[str, pd.DataFrame]) -> Returns:
@@ -421,8 +427,25 @@ def compute_outputs(
         'pair_signals': [ps.model_dump() for ps in pair_signals],
     }
 
-    if cn_failed:
-        cn_status: ProviderStatus = 'degraded'
+    # 数据新鲜度: 每市场最新 bar 日期
+    cn_data_date = _latest_bar_date(cn_ohlc)
+    us_data_date = _latest_bar_date(us_ohlc)
+
+    # CN 陈旧判定: 是 CN 交易日、已收盘、但最新 bar 仍停在更早日期.
+    # 盘中 (session active) 当日 bar 未形成属正常, 不算陈旧, 避免误报.
+    cn_stale = (
+        is_cn_trading_day(today_bjt)
+        and not is_cn_session_active(asof_bjt)
+        and cn_data_date is not None
+        and cn_data_date < today_bjt
+    )
+    stale_minutes = (today_bjt - cn_data_date).days * 1440 if cn_stale and cn_data_date else 0
+
+    # 状态优先级: stale > degraded > fallback > ok (陈旧最需暴露).
+    if cn_stale:
+        cn_status: ProviderStatus = 'stale'
+    elif cn_failed:
+        cn_status = 'degraded'
     elif cn_fallback_map:
         cn_status = 'fallback'
     else:
@@ -437,7 +460,9 @@ def compute_outputs(
         },
         failed_symbols=us_failed + cn_failed,
         fallback_symbols=cn_fallback_map,
-        stale_minutes=0,
+        stale_minutes=stale_minutes,
+        cn_data_date=cn_data_date.isoformat() if cn_data_date else None,
+        us_data_date=us_data_date.isoformat() if us_data_date else None,
         calendar=CalendarInfo(
             us_trading_today=is_us_trading_day(today_bjt),
             cn_trading_today=is_cn_trading_day(today_bjt),
@@ -501,12 +526,16 @@ def main() -> None:
                         format='%(asctime)s %(levelname)s %(name)s: %(message)s')
 
     if args.mode == PipelineMode.ARCHIVE:
-        from .output.archiver import archive_latest
+        from .output.archiver import StaleDataError, archive_latest
         # 使用 BJT 日期作为归档目录, 与 A 股市场对齐
         # archive_latest 内部已自动重建 snapshots-index.json (见 archiver.py 不变量)
         today_bjt = datetime.now(tz=BJT).date()
-        dst = archive_latest(args.data_root, today_bjt)
-        log.info(f'archived to {dst} (snapshots-index rebuilt)')
+        try:
+            dst = archive_latest(args.data_root, today_bjt)
+            log.info(f'archived to {dst} (snapshots-index rebuilt)')
+        except StaleDataError as e:
+            # 数据陈旧: 跳过归档 (当日留空缺口), 不写陈旧快照污染历史.
+            log.error(f'archive skipped: {e}')
         return
     run_pipeline(args.mode, args.data_root, args.config_dir)
 

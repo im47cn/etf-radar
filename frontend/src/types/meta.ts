@@ -29,5 +29,8 @@ export const MetaFileSchema = z.object({
     us_session_active: z.boolean(),
     cn_session_active: z.boolean(),
   }),
+  // 每市场最新 bar 日期 (ISO date). 历史快照 (schema<1.1) 可缺, 故 nullish.
+  cn_data_date: z.string().nullish(),
+  us_data_date: z.string().nullish(),
 });
 export type MetaFile = z.infer<typeof MetaFileSchema>;

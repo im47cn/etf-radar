@@ -1,5 +1,6 @@
 import json
 import tempfile
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -8,10 +9,14 @@ import pandas as pd  # type: ignore[import-untyped]
 from src.config_loader import load_themes
 from src.pipeline import PipelineMode, run_pipeline
 
+_BJT = timezone(timedelta(hours=8))
+
 
 def _make_fake_ohlc(n: int = 200, base: float = 100.0) -> pd.DataFrame:
+    # 数据止于"今日 BJT", 与 run_pipeline 的 now() asof 对齐, 避免被新鲜度护栏判为陈旧.
+    end = pd.Timestamp(datetime.now(_BJT).date())
     return pd.DataFrame({
-        'date': pd.date_range('2025-01-01', periods=n, tz='UTC'),
+        'date': pd.date_range(end=end, periods=n, tz='UTC'),
         'open': [base] * n, 'high': [base * 1.01] * n, 'low': [base * 0.99] * n,
         'close': [base + i * 0.5 for i in range(n)],
         'volume': [10000] * n, 'amount': [base * 10000.0] * n,

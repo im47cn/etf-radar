@@ -49,6 +49,65 @@ def test_compute_outputs_asof_reflects_in_generated_at(config):
     assert themes_json['generated_at'].startswith('2026-04-15T16:00')
 
 
+def _make_ohlc_ending(end: str, n: int, base: float = 100.0, step: float = 0.5) -> pd.DataFrame:
+    """末尾 bar 落在 end 的 OHLC (用于构造陈旧/新鲜场景)."""
+    dates = pd.date_range(end=end, periods=n, tz='UTC')
+    return pd.DataFrame({
+        'date': dates,
+        'open': [base] * n, 'high': [base * 1.01] * n, 'low': [base * 0.99] * n,
+        'close': [base + i * step for i in range(n)],
+        'volume': [10000] * n, 'amount': [base * 10000.0] * n,
+    })
+
+
+def test_compute_outputs_records_cn_data_date(config):
+    """meta.cn_data_date 应等于 CN OHLC 的最新 bar 日期."""
+    themes, algo = config
+    us_ohlc = {sym: _make_ohlc('2025-01-01', 200) for t in themes for sym in t.us_etfs}
+    cn_ohlc = {cn.code: _make_ohlc('2025-01-01', 200) for t in themes for cn in t.cn_etfs}
+    asof = datetime(2026, 4, 15, 16, 0, tzinfo=BJT)
+
+    _, _, _, meta = compute_outputs(
+        themes, us_ohlc, cn_ohlc, [], [], algo, asof_bjt=asof, mode=PipelineMode.FULL,
+    )
+
+    expected = max(df['date'].dt.date.max() for df in cn_ohlc.values())
+    assert meta['cn_data_date'] == expected.isoformat()
+
+
+def test_compute_outputs_flags_stale_cn_post_close(config):
+    """CN 交易日收盘后, 数据仍停在上一交易日 → stale_minutes>0 且 provider=stale."""
+    themes, algo = config
+    us_ohlc = {sym: _make_ohlc('2025-01-01', 200) for t in themes for sym in t.us_etfs}
+    # CN 数据止于 06-25, asof=06-26 16:00 (周五收盘后) → 陈旧一个交易日
+    cn_ohlc = {cn.code: _make_ohlc_ending('2026-06-25', 200) for t in themes for cn in t.cn_etfs}
+    asof = datetime(2026, 6, 26, 16, 0, tzinfo=BJT)
+
+    _, _, _, meta = compute_outputs(
+        themes, us_ohlc, cn_ohlc, [], [], algo, asof_bjt=asof, mode=PipelineMode.FULL,
+    )
+
+    assert meta['cn_data_date'] == '2026-06-25'
+    assert meta['stale_minutes'] > 0
+    assert meta['providers']['cn']['status'] == 'stale'
+
+
+def test_compute_outputs_not_stale_during_active_session(config):
+    """盘中 (session active) 当日 bar 尚未形成属正常, 不应误报陈旧."""
+    themes, algo = config
+    us_ohlc = {sym: _make_ohlc('2025-01-01', 200) for t in themes for sym in t.us_etfs}
+    cn_ohlc = {cn.code: _make_ohlc_ending('2026-06-25', 200) for t in themes for cn in t.cn_etfs}
+    # 06-26 10:00 盘中: 今日 bar 未收, 数据停在 06-25 属正常
+    asof = datetime(2026, 6, 26, 10, 0, tzinfo=BJT)
+
+    _, _, _, meta = compute_outputs(
+        themes, us_ohlc, cn_ohlc, [], [], algo, asof_bjt=asof, mode=PipelineMode.INTRADAY,
+    )
+
+    assert meta['stale_minutes'] == 0
+    assert meta['providers']['cn']['status'] != 'stale'
+
+
 def test_compute_outputs_calendar_reflects_asof_date(config):
     """calendar.cn_trading_today 应基于 asof_bjt 日期判定"""
     themes, algo = config
@@ -154,7 +213,8 @@ def test_compute_outputs_cn_fallback_status(config):
     """cn_failed=[], cn_fallback_map 非空时，cn provider status 应为 'fallback'"""
     themes, algo = config
     us_ohlc = {sym: _make_ohlc('2025-01-01', 200) for t in themes for sym in t.us_etfs}
-    cn_ohlc = {cn.code: _make_ohlc('2025-01-01', 200) for t in themes for cn in t.cn_etfs}
+    # CN 数据对齐 asof (新鲜), 以隔离 fallback 状态而非触发新鲜度护栏
+    cn_ohlc = {cn.code: _make_ohlc_ending('2026-04-15', 200) for t in themes for cn in t.cn_etfs}
     asof = datetime(2026, 4, 15, 16, 0, tzinfo=BJT)
 
     _, _, _, meta_json = compute_outputs(

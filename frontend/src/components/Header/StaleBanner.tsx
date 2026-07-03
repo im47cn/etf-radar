@@ -16,7 +16,12 @@ export const StaleBanner = () => {
   let message: string;
   if (stale) {
     variant = 'destructive';
-    message = `数据获取异常 — 已过期 ${meta.stale_minutes} 分钟`;
+    // 陈旧达日级时按"天"表述, 避免 "1440 分钟" 这类难读的巨大分钟数.
+    const age =
+      meta.stale_minutes >= 1440
+        ? `${Math.floor(meta.stale_minutes / 1440)} 天`
+        : `${meta.stale_minutes} 分钟`;
+    message = `数据获取异常 — 已过期 ${age}`;
   } else if (degraded) {
     variant = 'destructive';
     message = `Provider 降级: ${meta.failed_symbols.join(', ')}`;

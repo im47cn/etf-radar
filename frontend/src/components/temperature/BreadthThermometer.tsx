@@ -45,7 +45,7 @@ export const BreadthThermometer = ({ market }: Props) => {
   );
 };
 
-function buildSparkline(market: MarketPoint[]): JSX.Element {
+function buildSparkline(market: MarketPoint[]) {
   const W = 240;
   const H = 44;
   const pts = market.map((p, i) => ({ x: i, y: p.rate }));

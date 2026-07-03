@@ -11,6 +11,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from typing import Any
 
 from .base import EmptyDataError, ProviderError
 
@@ -76,7 +77,7 @@ class DapanyuntuProvider:
         raise ProviderError(f'dapanyuntu fetch failed after {self.max_retries} attempts') from last_exc
 
 
-def _parse(payload: dict) -> BreadthRaw:
+def _parse(payload: dict[str, Any]) -> BreadthRaw:
     data = payload.get('data')
     dates = payload.get('dates')
     industries = payload.get('industries')

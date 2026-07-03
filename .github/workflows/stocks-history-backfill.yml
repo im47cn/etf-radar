@@ -21,7 +21,7 @@ concurrency:
 jobs:
   backfill:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120   # 单 worker 5531 只 ~90min; 150 天 backfill 需更长 (45min 会超时被 cancel)
     steps:
       - uses: actions/checkout@v4
         with:

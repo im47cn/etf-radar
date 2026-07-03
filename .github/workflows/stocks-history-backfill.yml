@@ -43,12 +43,19 @@ jobs:
         run: |
           git config user.name "data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          git add data/stocks/
-          if git diff --cached --quiet; then
-            echo "no changes"
-          else
-            git commit -m "data: stocks history backfill $(date -u +%FT%TZ)"
-            # backfill 耗时长(~90min), 期间 main 常已前进; 先 rebase 再推, 否则数据丢失
-            git pull --rebase
-            git push
+          if git diff --quiet -- data/stocks/; then
+            echo "no changes"; exit 0
           fi
+          # backfill 整体重算 data/stocks/ (与 daily 增量 append 会 rebase 冲突).
+          # 策略: 保存重算结果 -> reset 到最新 origin -> 覆盖 -> 提交 -> 推(带重试).
+          # 我方(整体重算)对 data/stocks/ 获胜, 其余文件取最新 origin.
+          rm -rf /tmp/bf-stocks && cp -a data/stocks /tmp/bf-stocks
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --hard origin/main
+            rm -rf data/stocks && cp -a /tmp/bf-stocks data/stocks
+            git add data/stocks/
+            git commit -m "data: stocks history backfill $(date -u +%FT%TZ)" || { echo "nothing to commit"; exit 0; }
+            git push && { echo "pushed"; exit 0; } || { echo "push rejected, retry $i"; sleep 10; }
+          done
+          echo "push failed after retries"; exit 1

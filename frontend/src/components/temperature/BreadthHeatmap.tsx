@@ -46,7 +46,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
     clip(r).series.map((v, i) => (
       <td
         key={viewDates[i] ?? i}
-        className="h-2.5 w-2.5 min-w-[0.625rem] border-r border-b border-white p-0"
+        className="h-3 w-3 min-w-[0.75rem] border-r border-b border-white p-0"
         style={{ backgroundColor: breadthColor(v) }}
         title={`${r.name} ${viewDates[i]}: ${v != null ? v.toFixed(1) + '%' : '无数据'}`}
       />
@@ -68,7 +68,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
           <tr>
             <th className={`${nameCol} z-20 bg-white`} />
             {viewDates.map((d) => (
-              <th key={d} className="h-8 w-2.5 min-w-[0.625rem] p-0 align-bottom">
+              <th key={d} className="h-8 w-3 min-w-[0.75rem] p-0 align-bottom">
                 <div className="mx-auto text-[8px] leading-none text-gray-400 [writing-mode:vertical-rl]">
                   {d.slice(5)}
                 </div>
@@ -85,11 +85,11 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
                 <tr>
                   <td className={`${nameCol} bg-white pr-2`}>
                     <button
-                      className="flex w-full items-center gap-0.5 text-[10px] leading-none font-medium text-gray-700 hover:text-blue-600"
+                      className="flex w-full items-center gap-0.5 text-xs leading-none text-gray-700 hover:text-blue-600"
                       onClick={() => toggle(r.name)}
                       aria-expanded={isOpen}
                     >
-                      <span className="w-2.5 shrink-0 text-gray-400">{kids.length ? (isOpen ? '▾' : '▸') : ''}</span>
+                      <span className="w-3 shrink-0 text-gray-400">{kids.length ? (isOpen ? '▾' : '▸') : ''}</span>
                       <span className="truncate">{r.name}</span>
                     </button>
                   </td>
@@ -99,7 +99,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
                   kids.map((k) => (
                     <tr key={`${r.name}/${k.name}`}>
                       <td className={`${nameCol} bg-gray-50 pl-5 pr-2`}>
-                        <span className="block truncate text-[9px] leading-none text-gray-500">{k.name}</span>
+                        <span className="block truncate text-xs leading-none text-gray-500">{k.name}</span>
                       </td>
                       {cells(k)}
                     </tr>

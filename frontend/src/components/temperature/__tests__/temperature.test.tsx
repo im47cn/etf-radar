@@ -53,7 +53,7 @@ describe('normalizeMarketTemperature', () => {
 });
 
 describe('IndustryBreadthRanking', () => {
-  it('sorts by latest desc, null last, renders %', () => {
+  it('sorts l1 by latest desc, null last, renders %', () => {
     render(
       <IndustryBreadthRanking
         l1Rows={[
@@ -69,7 +69,7 @@ describe('IndustryBreadthRanking', () => {
     expect(screen.getByText('80.0%')).toBeInTheDocument();
   });
 
-  it('switches to l2 rows on 二级 toggle', () => {
+  it('expands l2 children on l1 click', () => {
     render(
       <IndustryBreadthRanking
         l1Rows={[{ name: '电子', series: [50], latest: 50 }]}
@@ -77,8 +77,25 @@ describe('IndustryBreadthRanking', () => {
       />,
     );
     expect(screen.queryByTitle('半导体')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText('二级'));
+    fireEvent.click(screen.getByTitle('电子'));
     expect(screen.getByTitle('半导体')).toBeInTheDocument();
+  });
+
+  it('展开全部 expands all groups then 收起全部 collapses', () => {
+    render(
+      <IndustryBreadthRanking
+        l1Rows={[{ name: '电子', series: [50], latest: 50 }, { name: '金融', series: [40], latest: 40 }]}
+        l2Rows={[
+          { name: '半导体', l1: '电子', series: [87], latest: 87 },
+          { name: '证券', l1: '金融', series: [60], latest: 60 },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByText('展开全部'));
+    expect(screen.getByTitle('半导体')).toBeInTheDocument();
+    expect(screen.getByTitle('证券')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('收起全部'));
+    expect(screen.queryByTitle('半导体')).not.toBeInTheDocument();
   });
 });
 

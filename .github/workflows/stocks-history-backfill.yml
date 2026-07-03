@@ -8,8 +8,8 @@ on:
         default: '150'
         required: true
       max_workers:
-        description: 'akshare 并发数（默认 1：PyMiniRacer V8 在 macOS arm64 多线程必 crash，Linux runner 未验证，保守起见单线程）'
-        default: '1'
+        description: 'akshare 并发数（默认 8：ubuntu-latest 无 macOS arm64 的 PyMiniRacer V8 崩溃问题，HTTP 走 Session 线程安全；单线程 5531 只 ~90min 有超时风险，8 并发 ~11min）'
+        default: '8'
         required: true
 
 permissions:
@@ -21,7 +21,7 @@ concurrency:
 jobs:
   backfill:
     runs-on: ubuntu-latest
-    timeout-minutes: 120   # 单 worker 5531 只 ~90min; 150 天 backfill 需更长 (45min 会超时被 cancel)
+    timeout-minutes: 120   # 8 并发 5531 只 ~11-23min; 保留 120min 作安全上限(限流/退化时兜底)
     steps:
       - uses: actions/checkout@v4
         with:

@@ -20,8 +20,9 @@ import json
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
+from typing import TypeVar
 
 import akshare as ak  # type: ignore[import-untyped]
 
@@ -32,6 +33,9 @@ from .providers.stock_history_provider import (
 )
 
 log = logging.getLogger(__name__)
+
+# close(float) / volume(int) 两用: 受限 TypeVar 让护栏返回类型跟随输入矩阵
+_Num = TypeVar('_Num', float, int)
 
 
 @dataclass
@@ -74,10 +78,10 @@ def _read_holdings_codes(holdings_dir: Path) -> set[str]:
 
 def _guard_no_regress(
     existing_path: Path,
-    new_dates: list,
-    new_matrix: dict,
+    new_dates: list[date],
+    new_matrix: dict[str, list[_Num | None]],
     days: int,
-) -> tuple[list[str], dict]:
+) -> tuple[list[str], dict[str, list[_Num | None]]]:
     """写入护栏: 防 backfill 全量覆盖回退掉 daily 已 append 的最新 bar.
 
     触发场景: 某交易日 T 盘后 daily 已写入 T 格, 之后手动跑 backfill, 而历史 K 线
@@ -93,14 +97,14 @@ def _guard_no_regress(
     except (OSError, ValueError):
         return new_date_strs, new_matrix
     ex_dates: list[str] = existing.get('dates', [])
-    ex_stocks: dict[str, list] = existing.get('stocks', {})
+    ex_stocks: dict[str, list[_Num | None]] = existing.get('stocks', {})
     # 现有中晚于 backfill 末位的日期 = backfill 缺失、需保留的更新格
     tail = [d for d in ex_dates if d > new_date_strs[-1]]
     if not tail:
         return new_date_strs, new_matrix  # 无回退, 正常覆盖
     ex_pos = {d: i for i, d in enumerate(ex_dates)}
     codes = set(new_matrix) | set(ex_stocks)
-    merged: dict[str, list] = {}
+    merged: dict[str, list[_Num | None]] = {}
     for code in codes:
         base = list(new_matrix.get(code, [None] * len(new_date_strs)))
         if len(base) < len(new_date_strs):

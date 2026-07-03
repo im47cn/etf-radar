@@ -53,8 +53,13 @@ jobs:
           git config user.email "data-bot@users.noreply.github.com"
           git add data/stocks/
           if git diff --cached --quiet; then
-            echo "no changes"
-          else
-            git commit -m "data: stocks daily $(date -u +%FT%TZ)"
-            git push
+            echo "no changes"; exit 0
           fi
+          git commit -m "data: stocks daily $(date -u +%FT%TZ)"
+          # daily 增量 append data/stocks/, 与并发 workflow(spot/industry-map/backfill)
+          # 可能同时 push 冲突. 策略: rebase 到最新 origin 后再 push, 带重试.
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && { echo "pushed"; exit 0; }
+            echo "push rejected, retry $i"; sleep 10
+          done
+          echo "push failed after retries"; exit 1

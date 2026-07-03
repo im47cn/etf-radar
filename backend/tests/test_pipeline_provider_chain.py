@@ -104,3 +104,50 @@ def test_empty_data_treated_as_failure(mock_sleep: MagicMock) -> None:
     assert '512000' in ohlc
     assert fallback_map == {'512000': 'akshare-sina'}
     assert failed == []
+
+
+def _make_dated_provider(name: str, bar_date: str) -> EtfDataProvider:
+    """Mock provider: 所有 symbol 都成功, 但最新 bar 停在指定日期。"""
+    mock = MagicMock(spec=EtfDataProvider)
+    mock.name = name
+
+    def fetch(symbol: str, lookback_days: int) -> pd.DataFrame:
+        return pd.DataFrame({
+            'date': pd.to_datetime([bar_date], utc=True),
+            'open': [1.0], 'high': [1.1], 'low': [0.9],
+            'close': [1.05], 'volume': [10000], 'amount': [10500.0],
+        })
+
+    mock.fetch_ohlc.side_effect = fetch
+    return mock
+
+
+@patch('src.pipeline.time.sleep')
+def test_stale_primary_triggers_fresh_fallback(mock_sleep: MagicMock) -> None:
+    """主源"成功但旧 bar"(< expected) 应视同失败, 采纳新鲜的备用源。"""
+    from datetime import date
+    themes = _themes_with(['512000'])
+    primary = _make_dated_provider('akshare-em', '2026-06-25')    # 旧
+    secondary = _make_dated_provider('akshare-sina', '2026-06-26')  # 新, == expected
+    ohlc, fallback_map, failed = _collect_cn_ohlc(
+        themes, [primary, secondary], expected_cn_date=date(2026, 6, 26),
+    )
+    assert ohlc['512000']['date'].dt.date.max() == date(2026, 6, 26)
+    assert fallback_map == {'512000': 'akshare-sina'}  # 采纳了 sina
+    assert failed == []
+
+
+@patch('src.pipeline.time.sleep')
+def test_all_stale_keeps_freshest_bar(mock_sleep: MagicMock) -> None:
+    """全源皆旧 → 保留最新的一份兜底 (不丢数据, 不进 failed)。"""
+    from datetime import date
+    themes = _themes_with(['512000'])
+    primary = _make_dated_provider('akshare-em', '2026-06-24')      # 更旧
+    secondary = _make_dated_provider('akshare-sina', '2026-06-25')  # 较新但仍 < expected
+    ohlc, fallback_map, failed = _collect_cn_ohlc(
+        themes, [primary, secondary], expected_cn_date=date(2026, 6, 26),
+    )
+    # 采纳最新的旧 bar (sina 的 06-25), 记 fallback, 陈旧暴露留给下游护栏
+    assert ohlc['512000']['date'].dt.date.max() == date(2026, 6, 25)
+    assert fallback_map == {'512000': 'akshare-sina'}
+    assert failed == []

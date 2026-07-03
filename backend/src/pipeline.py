@@ -14,7 +14,7 @@ import time
 from datetime import date, datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd  # type: ignore[import-untyped]
 
@@ -89,16 +89,20 @@ def _collect_us_ohlc(
 def _collect_cn_ohlc(
     themes: list[ThemeConfig],
     providers: list[EtfDataProvider],
+    expected_cn_date: date | None = None,
 ) -> tuple[dict[str, pd.DataFrame], dict[str, str], list[str]]:
     """A 股 ETF 数据采集 (provider chain).
 
-    单 symbol 内按 providers 顺序即时切换：首选失败立即试下一个，
-    第一个成功即停止。所有 provider 都失败的 symbol 进 failed 列表。
+    单 symbol 内按 providers 顺序即时切换：首选失败立即试下一个。
+    当 expected_cn_date 非空时, provider "成功但返回旧 bar" (最新 bar < 期望日)
+    视同失败, 继续试下一个源 (根治 em 静默旧 bar 不触发 sina 回退的残根)。
+    所有源都只有旧 bar 时, 保留其中**最新**的一份兜底返回 (不丢数据,
+    交由下游 cn_stale/archiver 护栏拦截)。所有源都抛异常才进 failed。
 
     返回:
       out: 成功获取的 OHLC 数据
       fallback_map: {symbol: provider.name} 走了非首选 provider 的 symbol
-      failed: 所有 provider 都失败的 symbol
+      failed: 所有 provider 都失败(异常)的 symbol
     """
     out: dict[str, pd.DataFrame] = {}
     fallback_map: dict[str, str] = {}
@@ -109,20 +113,38 @@ def _collect_cn_ohlc(
             codes.add(cn.code)
 
     for code in sorted(codes):
-        success_provider: EtfDataProvider | None = None
+        # 全源皆旧时保留最新的一份兜底
+        best_df: pd.DataFrame | None = None
+        best_provider: EtfDataProvider | None = None
+        best_date: date | None = None
         for provider in providers:
             try:
-                out[code] = provider.fetch_ohlc(code, lookback_days=400)
-                success_provider = provider
-                break
+                df = provider.fetch_ohlc(code, lookback_days=400)
             except (ProviderError, EmptyDataError) as e:
                 log.warning(f'CN fetch failed [{provider.name}] {code}: {e}')
                 continue
 
-        if success_provider is None:
+            bar_date = _df_latest_date(df)
+            if expected_cn_date is None or (
+                bar_date is not None and bar_date >= expected_cn_date
+            ):
+                # 无期望或够新 → 立即采纳
+                best_df, best_provider, best_date = df, provider, bar_date
+                break
+            # 旧 bar: 视同失败, 记录最新候选后继续试下一个源
+            if best_date is None or (bar_date is not None and bar_date > best_date):
+                best_df, best_provider, best_date = df, provider, bar_date
+            log.warning(
+                f'CN stale bar [{provider.name}] {code}: '
+                f'latest={bar_date} < expected={expected_cn_date}, 试下一源'
+            )
+
+        if best_provider is None:
             failed.append(code)
-        elif success_provider.name != providers[0].name:
-            fallback_map[code] = success_provider.name
+        else:
+            out[code] = best_df
+            if best_provider.name != providers[0].name:
+                fallback_map[code] = best_provider.name
 
         time.sleep(random.uniform(0.3, 1.0))
     return out, fallback_map, failed
@@ -132,6 +154,30 @@ def _latest_bar_date(ohlc: dict[str, pd.DataFrame]) -> date | None:
     """一组 OHLC 中最新的 bar 日期 (跨 symbol 取 max), 空则 None."""
     dates = [df['date'].dt.date.max() for df in ohlc.values() if not df.empty]
     return max(dates) if dates else None
+
+
+def _df_latest_date(df: pd.DataFrame | None) -> date | None:
+    """单个 OHLC 的最新 bar 日期, 空则 None."""
+    if df is None or df.empty:
+        return None
+    return cast('date | None', df['date'].dt.date.max())
+
+
+# A 股厂商 (em/sina) EOD 结算发布时点: 收盘后当日 bar 通常 18:00 BJT 前后才 roll 出.
+# 早于此时点即使已收盘, 缺当日 bar 也属正常, 不判陈旧 (避免 15:00-18:00 窗口误报回退).
+CN_SETTLE_HOUR = 18
+
+
+def _expected_cn_date(now_bjt: datetime) -> date | None:
+    """本次采集**应当**拿到的最新 CN bar 日期; 无明确期望时返回 None.
+
+    仅当"今天是 A 股交易日且已过厂商结算时点"才期望今日 bar; 盘中/结算前/
+    非交易日一律 None (拿到啥用啥), 由 fetch 层据此决定是否把旧 bar 视同失败.
+    """
+    today = now_bjt.date()
+    if is_cn_trading_day(today) and now_bjt.hour >= CN_SETTLE_HOUR:
+        return today
+    return None
 
 
 def _theme_returns(t: ThemeConfig, us_ohlc: dict[str, pd.DataFrame]) -> Returns:
@@ -496,11 +542,13 @@ def run_pipeline(
         AkshareSinaProvider(),
     ]
 
-    us_ohlc, us_failed = _collect_us_ohlc(themes, yf_provider)
-    cn_ohlc, cn_fallback_map, cn_failed = _collect_cn_ohlc(themes, cn_providers)
-
     now_utc = datetime.now(timezone.utc)
     now_bjt = now_utc.astimezone(BJT)
+
+    us_ohlc, us_failed = _collect_us_ohlc(themes, yf_provider)
+    cn_ohlc, cn_fallback_map, cn_failed = _collect_cn_ohlc(
+        themes, cn_providers, expected_cn_date=_expected_cn_date(now_bjt),
+    )
     themes_json, etfs_json, signals_json, meta_json = compute_outputs(
         themes, us_ohlc, cn_ohlc, us_failed, cn_failed, algo,
         asof_bjt=now_bjt, mode=mode, cn_fallback_map=cn_fallback_map,

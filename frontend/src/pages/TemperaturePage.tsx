@@ -4,6 +4,7 @@ import { PERIOD_KEYS, PERIOD_LABELS, type PeriodKey } from '@/types/marketTemper
 import { BreadthThermometer } from '@/components/temperature/BreadthThermometer';
 import { IndustryBreadthRanking } from '@/components/temperature/IndustryBreadthRanking';
 import { BreadthHeatmap } from '@/components/temperature/BreadthHeatmap';
+import { BreadthLegend } from '@/components/temperature/BreadthLegend';
 
 const periodBtn = (active: boolean, disabled: boolean): string => {
   if (disabled) return 'px-3 py-1 rounded text-gray-300 cursor-not-allowed text-sm';
@@ -50,6 +51,9 @@ export const TemperaturePage = () => {
           })}
         </div>
       </div>
+
+      {/* 页面级单一共享图例: 三图之上、两栏之前 */}
+      <BreadthLegend />
 
       <BreadthThermometer market={pd.market} periodLabel={PERIOD_LABELS[activePeriod]} />
 

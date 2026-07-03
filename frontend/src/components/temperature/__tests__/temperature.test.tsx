@@ -1,9 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { breadthColor, breadthLabel } from '@/lib/breadthColor';
+import {
+  breadthColor,
+  breadthLabel,
+  breadthTier,
+  breadthLevelColor,
+  breadthTextureCss,
+  TIERS,
+} from '@/lib/breadthColor';
 import { normalizeMarketTemperature } from '@/types/marketTemperature';
 import { IndustryBreadthRanking } from '../IndustryBreadthRanking';
 import { BreadthHeatmap } from '../BreadthHeatmap';
+import { BreadthLegend } from '../BreadthLegend';
 
 describe('breadthColor', () => {
   it('null -> 无数据灰', () => {
@@ -21,6 +29,57 @@ describe('breadthColor', () => {
     expect(breadthLabel(35)).toBe('偏冷');
     expect(breadthLabel(10)).toBe('冰点');
     expect(breadthLabel(null)).toBe('无数据');
+  });
+});
+
+describe('breadthTier / breadthLevelColor (色阶单一真源)', () => {
+  it('tier 边界: 阈值 30/50/70, 无数据 -> null', () => {
+    expect(breadthTier(null)).toBeNull();
+    expect(breadthTier(undefined)).toBeNull();
+    expect(breadthTier(29)?.key).toBe('cold');
+    expect(breadthTier(30)?.key).toBe('cool');
+    expect(breadthTier(49)?.key).toBe('cool');
+    expect(breadthTier(50)?.key).toBe('warm');
+    expect(breadthTier(69)?.key).toBe('warm');
+    expect(breadthTier(70)?.key).toBe('hot');
+  });
+
+  it('breadthLevelColor 由 breadthColor(tier.mid) 派生 (无硬编码 hex 双真源)', () => {
+    for (const t of TIERS) {
+      expect(breadthLevelColor(t.mid)).toBe(breadthColor(t.mid));
+    }
+    expect(breadthLevelColor(null)).toBe('#f1f5f9'); // 无数据灰
+  });
+
+  it('breadthLevelColor 对非中点值落档取该档中点色 (锁分档正确, 非恒等)', () => {
+    // 42 落 cool(30-50, mid 40); 若分档错位则与 breadthColor(40) 不等
+    for (const v of [10, 42, 63, 88]) {
+      const tier = breadthTier(v)!;
+      expect(breadthLevelColor(v)).toBe(breadthColor(tier.mid));
+      expect(breadthLevelColor(v)).not.toBe(breadthColor(v)); // 非中点 -> 与直接采样不同, 证明是离散派生
+    }
+  });
+});
+
+describe('breadthTextureCss (纹理编码 tier, 4 档互异)', () => {
+  it('四档 backgroundImage 互异, 无数据无纹理', () => {
+    const imgs = TIERS.map((t) => breadthTextureCss(t.mid).backgroundImage);
+    expect(new Set(imgs).size).toBe(4);
+    expect(breadthTextureCss(null)).toEqual({});
+    expect(breadthTextureCss(undefined)).toEqual({});
+  });
+});
+
+describe('BreadthLegend', () => {
+  it('渲染 4 档 (档名+区间), 含 role=list 与 aria-label', () => {
+    render(<BreadthLegend />);
+    const list = screen.getByRole('list', { name: '市场温度色阶图例' });
+    expect(list).toBeInTheDocument();
+    expect(list.querySelectorAll('li')).toHaveLength(4);
+    for (const t of TIERS) {
+      expect(screen.getByText(t.label)).toBeInTheDocument();
+      expect(screen.getByText(`${t.min}–${t.max}%`)).toBeInTheDocument();
+    }
   });
 });
 

@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from 'react';
 import type { BreadthRow } from '@/types/marketTemperature';
-import { breadthColor } from '@/lib/breadthColor';
+import { breadthColor, breadthTextureCss } from '@/lib/breadthColor';
 
 interface Props {
   dates: string[];
@@ -47,7 +47,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
       <td
         key={viewDates[i] ?? i}
         className="h-3 w-3 min-w-[0.75rem] border-r border-b border-white p-0"
-        style={{ backgroundColor: breadthColor(v) }}
+        style={{ backgroundColor: breadthColor(v), ...breadthTextureCss(v) }}
         title={`${r.name} ${viewDates[i]}: ${v != null ? v.toFixed(1) + '%' : '无数据'}`}
       />
     ));

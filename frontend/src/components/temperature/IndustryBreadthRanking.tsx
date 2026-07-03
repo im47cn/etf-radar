@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { BreadthRow } from '@/types/marketTemperature';
-import { breadthColor } from '@/lib/breadthColor';
+import { breadthColor, breadthTextureCss } from '@/lib/breadthColor';
 
 interface Props {
   l1Rows: BreadthRow[];
@@ -39,7 +39,7 @@ const Bar = ({ row, indent, caret, onClick, range }: BarProps) => (
     >
       <div
         className="h-4 rounded"
-        style={{ width: `${row.latest ?? 0}%`, backgroundColor: breadthColor(row.latest) }}
+        style={{ width: `${row.latest ?? 0}%`, backgroundColor: breadthColor(row.latest), ...breadthTextureCss(row.latest) }}
       />
       {range && (
         <>

@@ -11,6 +11,8 @@ import { PortfolioPage } from '@/pages/PortfolioPage';
 import { AuthCallback } from '@/pages/AuthCallback';
 import { StocksPage } from '@/pages/StocksPage';
 import { TemperaturePage } from '@/pages/TemperaturePage';
+import { MembershipPage } from '@/pages/MembershipPage';
+import { WatchlistPage } from '@/pages/WatchlistPage';
 
 export default function App() {
   return (
@@ -28,6 +30,8 @@ export default function App() {
                     <Route path="/radar"          element={<RadarPage />} />
                     <Route path="/temperature"    element={<TemperaturePage />} />
                     <Route path="/portfolio"      element={<PortfolioPage />} />
+                    <Route path="/membership"     element={<MembershipPage />} />
+                    <Route path="/watchlist"      element={<WatchlistPage />} />
                     <Route path="/auth/callback"  element={<AuthCallback />} />
                     <Route path="/theme/:id/stocks" element={<StocksPage />} />
                   </Routes>

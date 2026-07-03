@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MarketViewSelector } from '@/components/FilterBar/MarketViewSelector';
 import { useUIState } from '@/providers/uiStateContext';
 import { marketViewToRotationMode } from '@/lib/marketView';
+import { AddWatchButton } from '@/components/membership/AddWatchButton';
 
 export const RotationPage = () => {
   const { themes, etfs, isLoading, error } = useDataContext();
@@ -90,6 +91,19 @@ export const RotationPage = () => {
           ownedThemeIds={ownedThemeIds}
         />
         <QuadrantLegend />
+      </div>
+
+      {/* 会员自选快捷添加：把关注的主题加入自选，去「我的自选」集中查看当前状态 */}
+      <div className="bg-white border rounded p-4">
+        <h3 className="text-sm font-semibold mb-2">加入自选（会员）</h3>
+        <div className="flex flex-wrap gap-2">
+          {themes.themes.map((t) => (
+            <span key={t.id} className="inline-flex items-center gap-1 text-xs border rounded px-2 py-1">
+              {t.name}
+              <AddWatchButton itemType="theme" itemKey={t.id} />
+            </span>
+          ))}
+        </div>
       </div>
     </main>
   );

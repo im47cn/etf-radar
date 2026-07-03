@@ -4,9 +4,13 @@ import logging
 import pandas as pd  # type: ignore[import-untyped]
 import akshare as ak  # type: ignore[import-untyped]
 from .base import EtfDataProvider, ProviderError, EmptyDataError
+from ._http_retry import install_requests_retry
 from ..etl.standardize import standardize_ohlc
 
 log = logging.getLogger(__name__)
+
+# 同 em provider: 为 akshare 裸 requests.get 注入连接重试 (幂等)
+install_requests_retry()
 
 
 class AkshareSinaProvider(EtfDataProvider):

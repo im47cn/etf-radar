@@ -6,10 +6,15 @@ from zoneinfo import ZoneInfo
 import pandas as pd  # type: ignore[import-untyped]
 import akshare as ak  # type: ignore[import-untyped]
 from .base import EtfDataProvider, ProviderError, EmptyDataError
+from ._http_retry import install_requests_retry
 from ..etl.standardize import standardize_ohlc
 
 log = logging.getLogger(__name__)
 BJT = ZoneInfo('Asia/Shanghai')
+
+# akshare 内部裸 requests.get 无连接重试, eastmoney 间歇性 RemoteDisconnected 会直接失败.
+# 模块加载即注入带 urllib3 Retry 的 session, 抵御掉连接. (幂等, sina provider 复用同一注入)
+install_requests_retry()
 
 
 class AkshareEmProvider(EtfDataProvider):

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { breadthColor, breadthLabel } from '@/lib/breadthColor';
 import { MarketTemperatureSchema } from '@/types/marketTemperature';
 import { IndustryBreadthRanking } from '../IndustryBreadthRanking';
@@ -41,28 +41,52 @@ describe('IndustryBreadthRanking', () => {
   it('sorts by latest desc, null last, renders %', () => {
     render(
       <IndustryBreadthRanking
-        rows={[
+        l1Rows={[
           { name: '低', series: [10], latest: 10 },
           { name: '空', series: [null], latest: null },
           { name: '高', series: [80], latest: 80 },
         ]}
+        l2Rows={[]}
       />,
     );
     const names = screen.getAllByTitle(/^[低高空]$/).map((e) => e.textContent);
     expect(names).toEqual(['高', '低', '空']);
     expect(screen.getByText('80.0%')).toBeInTheDocument();
   });
-});
 
-describe('BreadthHeatmap', () => {
-  it('renders one cell per date per row', () => {
+  it('switches to l2 rows on 二级 toggle', () => {
     render(
-      <BreadthHeatmap
-        dates={['2026-07-01', '2026-07-02']}
-        rows={[{ name: '半导体', series: [40, null], latest: 40 }]}
+      <IndustryBreadthRanking
+        l1Rows={[{ name: '电子', series: [50], latest: 50 }]}
+        l2Rows={[{ name: '半导体', l1: '电子', series: [87], latest: 87 }]}
       />,
     );
+    expect(screen.queryByTitle('半导体')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('二级'));
+    expect(screen.getByTitle('半导体')).toBeInTheDocument();
+  });
+});
+
+describe('BreadthHeatmap (collapsible)', () => {
+  const props = {
+    dates: ['2026-07-01', '2026-07-02'],
+    l1Rows: [{ name: '电子', series: [50, 52], latest: 52 }],
+    l2Rows: [
+      { name: '半导体', l1: '电子', series: [40, null], latest: 40 },
+      { name: '消费电子', l1: '电子', series: [60, 44], latest: 44 },
+    ],
+  };
+
+  it('shows only l1 rows collapsed by default', () => {
+    render(<BreadthHeatmap {...props} />);
+    expect(screen.getByText('电子')).toBeInTheDocument();
+    expect(screen.queryByText('半导体')).not.toBeInTheDocument();
+  });
+
+  it('expands children on l1 click', () => {
+    render(<BreadthHeatmap {...props} />);
+    fireEvent.click(screen.getByText('电子'));
     expect(screen.getByTitle('半导体 2026-07-01: 40.0%')).toBeInTheDocument();
-    expect(screen.getByTitle('半导体 2026-07-02: 无数据')).toBeInTheDocument();
+    expect(screen.getByTitle('消费电子 2026-07-02: 44.0%')).toBeInTheDocument();
   });
 });

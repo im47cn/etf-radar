@@ -3,6 +3,7 @@ import { z } from 'zod';
 /** 单个行业的宽度序列; series 与快照 dates 等长, 无数据位为 null. */
 export const BreadthRowSchema = z.object({
   name: z.string(),
+  l1: z.string().optional(), // 仅二级行业携带其一级父级; 一级行业本身无此字段
   series: z.array(z.number().nullable()),
   latest: z.number().nullable(),
 });

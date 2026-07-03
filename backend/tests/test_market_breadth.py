@@ -88,6 +88,14 @@ def test_zero_and_missing_become_null():
     assert l2['银行']['series'] == [10.0, None]
 
 
+def test_l2_rows_carry_l1_parent():
+    snap = compute_market_temperature(_raw())
+    l2 = {r['name']: r for r in snap['industries_l2']}
+    assert l2['半导体']['l1'] == '电子'
+    assert l2['消费电子']['l1'] == '电子'
+    assert l2['银行']['l1'] == '银行'
+
+
 def test_l1_equal_weight_mean():
     snap = compute_market_temperature(_raw())
     l1 = {r['name']: r for r in snap['industries_l1']}

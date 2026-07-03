@@ -64,8 +64,9 @@ def compute_market_temperature(raw: BreadthRaw) -> dict[str, Any]:
     unknown: set[str] = set()
     for ii, name in enumerate(industries):
         series: list[float | None] = [grid.get((ii, di)) for di in range(n_dates)]
-        l2_rows.append({'name': name, 'series': series, 'latest': _series_latest(series)})
-        if to_l1(name) == OTHER_L1:
+        l1 = to_l1(name)
+        l2_rows.append({'name': name, 'l1': l1, 'series': series, 'latest': _series_latest(series)})
+        if l1 == OTHER_L1:
             unknown.add(name)
     if unknown:
         log.warning('dapanyuntu 未知二级行业(归入%s): %s', OTHER_L1, sorted(unknown))

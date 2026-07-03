@@ -5,14 +5,16 @@ import { usePortfolioScores } from '@/hooks/usePortfolioScores';
 import { RotationTrailsOverlay } from '@/components/rotation/RotationTrailsOverlay';
 import { QuadrantLegend } from '@/components/rotation/QuadrantLegend';
 import { RotationHealthBar } from '@/components/rotation/RotationHealthBar';
+import { MarketThermometer } from '@/components/rotation/MarketThermometer';
 import { computeRotationHealth } from '@/lib/rotationHealth';
+import { computeMarketBreadth } from '@/lib/marketBreadth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MarketViewSelector } from '@/components/FilterBar/MarketViewSelector';
 import { useUIState } from '@/providers/uiStateContext';
 import { marketViewToRotationMode } from '@/lib/marketView';
 
 export const RotationPage = () => {
-  const { themes, isLoading, error } = useDataContext();
+  const { themes, etfs, isLoading, error } = useDataContext();
   const { snapshotsFrames, index, prefetch } = useSnapshotsTimeline();
   const { ownedThemeIds } = usePortfolioScores();
   const { state: uiState } = useUIState();
@@ -36,6 +38,19 @@ export const RotationPage = () => {
     () => (themesArr ? computeRotationHealth(themesArr, rotationMode) : null),
     [themesArr, rotationMode],
   );
+
+  // 市场温度计: 与象限图 (RRG 相对图) 正交, 补全市场普涨/普跌盲区.
+  // CN 模式用 41 只主题 ETF 的 r_1d; US 模式用有 us_strength 的主题美股锚点 r_1d.
+  const etfsArr = etfs?.etfs;
+  const breadth = useMemo(() => {
+    const values =
+      rotationMode === 'cn'
+        ? (etfsArr ?? []).map((e) => e.returns.r_1d)
+        : (themesArr ?? [])
+            .filter((t) => t.us_strength !== null)
+            .map((t) => t.returns.r_1d);
+    return computeMarketBreadth(values);
+  }, [rotationMode, etfsArr, themesArr]);
 
   if (isLoading) {
     return <div data-testid="rotation-skeleton" className="h-[500px] animate-pulse bg-gray-100 rounded m-4" />;
@@ -65,6 +80,7 @@ export const RotationPage = () => {
         <p className="text-xs text-gray-600 mb-4">
           X 轴为长期强度 (60d), Y 轴为短期强度 (1d), 中线 50 切四象限。气泡大小反映综合排名。
         </p>
+        <MarketThermometer breadth={breadth} />
         {health && <RotationHealthBar health={health} />}
         <RotationTrailsOverlay
           themes={themes.themes}

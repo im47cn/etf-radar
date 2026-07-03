@@ -21,9 +21,9 @@ the rest conversationally.
 
 ## Status (update the checkboxes as you complete each item)
 
-- [ ] Fill backend guidelines
-- [ ] Fill frontend guidelines
-- [ ] Add code examples
+- [x] Fill backend guidelines (5 files + index, 2026-07-04)
+- [x] Fill frontend guidelines (6 files + index, 2026-07-04)
+- [x] Add code examples (真实 file 路径 + 团队铁律 from docs/CONVENTIONS.md)
 
 ---
 

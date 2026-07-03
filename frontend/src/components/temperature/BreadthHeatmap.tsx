@@ -6,14 +6,22 @@ interface Props {
   dates: string[];
   l1Rows: BreadthRow[];
   l2Rows: BreadthRow[];
+  /** 只显示最近 N 个交易日, 避免长周期(如 150 日)矩阵过宽 + 前导无数据留白. */
+  maxCols?: number;
 }
 
 /**
  * 行业(行) × 交易日(列) 站上率颜色矩阵, 按一级行业折叠.
- * 默认只显示 26 个一级行业(聚合); 点开某一级展开其下二级行业.
+ * 默认只显示一级行业(聚合); 点开某一级展开其下二级行业.
+ * 只画最近 maxCols 列 (长周期 SMA 前导无值, 且列太多过宽).
  */
-export const BreadthHeatmap = ({ dates, l1Rows, l2Rows }: Props) => {
+export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // 最近 maxCols 列: 裁 dates 与每行 series 的尾部
+  const start = Math.max(0, dates.length - maxCols);
+  const viewDates = useMemo(() => dates.slice(start), [dates, start]);
+  const clip = (r: BreadthRow): BreadthRow => ({ ...r, series: r.series.slice(start) });
 
   // l1 名 -> 其二级子行业(保持后端已排序顺序)
   const childrenByL1 = useMemo(() => {
@@ -33,13 +41,14 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows }: Props) => {
       return next;
     });
 
+  // 传入已裁剪的行, 用 viewDates 对齐
   const cells = (r: BreadthRow) =>
-    r.series.map((v, i) => (
+    clip(r).series.map((v, i) => (
       <td
-        key={dates[i] ?? i}
+        key={viewDates[i] ?? i}
         className="h-4 w-3"
         style={{ backgroundColor: breadthColor(v) }}
-        title={`${r.name} ${dates[i]}: ${v != null ? v.toFixed(1) + '%' : '无数据'}`}
+        title={`${r.name} ${viewDates[i]}: ${v != null ? v.toFixed(1) + '%' : '无数据'}`}
       />
     ));
 
@@ -53,7 +62,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows }: Props) => {
         <thead>
           <tr>
             <th className="sticky left-0 z-10 bg-white" />
-            {dates.map((d) => (
+            {viewDates.map((d) => (
               <th key={d} className="h-6 w-3 align-bottom">
                 <span className="block origin-bottom-left -rotate-90 whitespace-nowrap text-[8px] text-gray-400">
                   {d.slice(5)}

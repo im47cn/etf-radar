@@ -46,7 +46,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
     clip(r).series.map((v, i) => (
       <td
         key={viewDates[i] ?? i}
-        className="h-3 w-3 p-0"
+        className="h-2.5 w-2.5 p-0"
         style={{ backgroundColor: breadthColor(v) }}
         title={`${r.name} ${viewDates[i]}: ${v != null ? v.toFixed(1) + '%' : '无数据'}`}
       />
@@ -66,7 +66,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
           <tr>
             <th className={`${nameCol} z-20 bg-white`} />
             {viewDates.map((d) => (
-              <th key={d} className="h-8 w-3 p-0 align-bottom">
+              <th key={d} className="h-8 w-2.5 p-0 align-bottom">
                 <div className="mx-auto text-[8px] leading-none text-gray-400 [writing-mode:vertical-rl]">
                   {d.slice(5)}
                 </div>

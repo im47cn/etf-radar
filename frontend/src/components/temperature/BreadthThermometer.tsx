@@ -4,10 +4,11 @@ import { breadthColor, breadthLabel } from '@/lib/breadthColor';
 
 interface Props {
   market: MarketPoint[];
+  periodLabel?: string;
 }
 
-/** 全市场温度计: 当日站上率大数字 + 冷暖标签 + 31 日迷你趋势线. */
-export const BreadthThermometer = ({ market }: Props) => {
+/** 全市场温度计: 当日站上率大数字 + 冷暖标签 + 迷你趋势线. */
+export const BreadthThermometer = ({ market, periodLabel = 'MA20' }: Props) => {
   const latest = useMemo(() => {
     for (let i = market.length - 1; i >= 0; i--) {
       if (market[i].rate != null) return market[i];
@@ -33,7 +34,7 @@ export const BreadthThermometer = ({ market }: Props) => {
       </div>
       <div className="flex-1">
         <div className="mb-1 text-xs text-gray-400">
-          近 {market.length} 交易日 · 个股 MA20 站上率
+          近 {market.length} 交易日 · 个股 {periodLabel} 站上率
         </div>
         {spark}
         <div className="mt-1 flex justify-between text-[10px] text-gray-400">

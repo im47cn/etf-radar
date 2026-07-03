@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { breadthColor, breadthLabel } from '@/lib/breadthColor';
-import { MarketTemperatureSchema } from '@/types/marketTemperature';
+import { normalizeMarketTemperature } from '@/types/marketTemperature';
 import { IndustryBreadthRanking } from '../IndustryBreadthRanking';
 import { BreadthHeatmap } from '../BreadthHeatmap';
 
@@ -24,16 +24,31 @@ describe('breadthColor', () => {
   });
 });
 
-describe('MarketTemperatureSchema', () => {
-  it('parses valid snapshot with nulls', () => {
+describe('normalizeMarketTemperature', () => {
+  it('normalizes legacy 1.0 flat -> ma20 period', () => {
     const snap = {
-      schema_version: '1.0', generated_at: 'x', source: 'dapanyuntu', metric: 'ma20_above_ratio',
-      dates: ['2026-07-01', '2026-07-02'],
+      schema_version: '1.0', dates: ['2026-07-01', '2026-07-02'],
       market: [{ date: '2026-07-01', rate: 36.7 }, { date: '2026-07-02', rate: null }],
       industries_l1: [{ name: '电子', series: [50, null], latest: 50 }],
       industries_l2: [{ name: '半导体', series: [40, 50], latest: 50 }],
     };
-    expect(() => MarketTemperatureSchema.parse(snap)).not.toThrow();
+    const n = normalizeMarketTemperature(snap);
+    expect(n.available).toEqual(['ma20']);
+    expect(n.periods.ma20!.industries_l2[0].name).toBe('半导体');
+  });
+
+  it('normalizes 2.0 and reports available periods (ma120 all-null excluded)', () => {
+    const pd = (rate: number | null) => ({
+      market: [{ date: 'd0', rate }],
+      industries_l1: [{ name: '电子', series: [rate], latest: rate }],
+      industries_l2: [{ name: '半导体', l1: '电子', series: [rate], latest: rate }],
+    });
+    const snap = {
+      schema_version: '2.0', dates: ['d0'],
+      periods: { ma20: pd(32.9), ma60: pd(25.7), ma120: pd(null) },
+    };
+    const n = normalizeMarketTemperature(snap);
+    expect(n.available).toEqual(['ma20', 'ma60']); // ma120 全 null 不可用
   });
 });
 

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
-import type { BreadthRow, BreadthLevel } from '@/types/marketTemperature';
+import type { BreadthRow } from '@/types/marketTemperature';
 import { breadthColor } from '@/lib/breadthColor';
+
+type Level = 'l1' | 'l2';
 
 interface Props {
   l1Rows: BreadthRow[];
@@ -14,7 +16,7 @@ const tabBtn = (active: boolean): string =>
 
 /** 行业当日站上率条形排行, 自带一级/二级切换. null 值排末尾. */
 export const IndustryBreadthRanking = ({ l1Rows, l2Rows }: Props) => {
-  const [level, setLevel] = useState<BreadthLevel>('l1');
+  const [level, setLevel] = useState<Level>('l1');
   const rows = level === 'l1' ? l1Rows : l2Rows;
 
   const sorted = useMemo(

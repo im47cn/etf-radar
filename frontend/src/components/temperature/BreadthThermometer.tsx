@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { MarketPoint } from '@/types/marketTemperature';
-import { breadthColor, breadthLabel } from '@/lib/breadthColor';
+import { breadthColor, breadthLabel, breadthLevelColor } from '@/lib/breadthColor';
 
 interface Props {
   market: MarketPoint[];
@@ -59,7 +59,7 @@ function buildSparkline(market: MarketPoint[]) {
     const left = Math.max(0, xs(i) - bandW / 2);
     const right = Math.min(W, xs(i) + bandW / 2);
     return (
-      <rect key={i} x={left} y={0} width={Math.max(0.6, right - left)} height={H} fill={breadthColor(p.rate)} />
+      <rect key={i} x={left} y={0} width={Math.max(0.6, right - left)} height={H} fill={breadthLevelColor(p.rate)} />
     );
   });
   const path = market

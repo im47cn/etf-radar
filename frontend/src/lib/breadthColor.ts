@@ -47,3 +47,16 @@ export function breadthLabel(rate: number | null | undefined): string {
   if (rate >= 30) return '偏冷';
   return '冰点';
 }
+
+/**
+ * 离散温度级别色 (与 breadthLabel 4 档阈值一致, 取各档中点色).
+ * 用于只需区分级别的场景(如温度背景色带), 而非连续渐变.
+ * 冰点<30 / 偏冷30-50 / 偏暖50-70 / 过热>=70.
+ */
+export function breadthLevelColor(rate: number | null | undefined): string {
+  if (rate == null || Number.isNaN(rate)) return NO_DATA;
+  if (rate >= 70) return '#fdba74';  // 过热 — 浅橙
+  if (rate >= 50) return '#fef08a';  // 偏暖 — 浅黄
+  if (rate >= 30) return '#bbf7d0';  // 偏冷 — 浅绿
+  return '#bae6fd';                  // 冰点 — 浅蓝
+}

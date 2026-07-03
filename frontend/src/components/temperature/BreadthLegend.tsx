@@ -8,13 +8,16 @@ export const BreadthLegend = () => (
   <ul
     role="list"
     aria-label="市场温度色阶图例"
-    className="flex flex-wrap items-center gap-3"
+    className="flex flex-nowrap items-center justify-between gap-x-1 sm:justify-start sm:gap-x-3"
   >
     {TIERS.map((t) => (
-      <li key={t.key} className="flex items-center gap-1.5 text-xs text-gray-600">
+      <li
+        key={t.key}
+        className="flex items-center gap-1 whitespace-nowrap text-[11px] text-gray-600 sm:gap-1.5 sm:text-xs"
+      >
         <span
           aria-hidden
-          className="h-3 w-4 rounded-sm border border-gray-300"
+          className="h-3 w-4 shrink-0 rounded-sm border border-gray-300"
           style={{ backgroundColor: breadthColor(t.mid), ...breadthTextureCss(t.mid) }}
         />
         <span>

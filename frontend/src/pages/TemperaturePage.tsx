@@ -33,7 +33,7 @@ export const TemperaturePage = () => {
   return (
     <main className="flex flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-800">市场温度 · 个股 MA 站上率</h1>
+        <h1 className="text-lg font-semibold text-gray-800">个股 MA 站上率</h1>
         <div className="flex gap-1">
           {PERIOD_KEYS.map((k) => {
             const disabled = !data.available.includes(k);

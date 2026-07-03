@@ -81,6 +81,19 @@ describe('IndustryBreadthRanking', () => {
     expect(screen.getByTitle('半导体')).toBeInTheDocument();
   });
 
+  it('shows child min-max range on l1 bar (whisker title)', () => {
+    render(
+      <IndustryBreadthRanking
+        l1Rows={[{ name: '金融', series: [40], latest: 40 }]}
+        l2Rows={[
+          { name: '证券', l1: '金融', series: [100], latest: 100 },
+          { name: '银行', l1: '金融', series: [10], latest: 10 },
+        ]}
+      />,
+    );
+    expect(screen.getByTitle('子行业区间 10.0–100.0%')).toBeInTheDocument();
+  });
+
   it('展开全部 expands all groups then 收起全部 collapses', () => {
     render(
       <IndustryBreadthRanking

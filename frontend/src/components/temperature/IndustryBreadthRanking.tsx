@@ -18,9 +18,11 @@ interface BarProps {
   indent?: boolean;
   caret?: string;
   onClick?: () => void;
+  /** 一级行业: 其下二级行业站上率的 min/max 区间, 叠加"须"式标记直观展示分布. */
+  range?: { min: number; max: number };
 }
 
-const Bar = ({ row, indent, caret, onClick }: BarProps) => (
+const Bar = ({ row, indent, caret, onClick, range }: BarProps) => (
   <div className="flex items-center gap-2 text-xs">
     <button
       className={`flex ${indent ? 'w-24 pl-5' : 'w-24'} shrink-0 items-center gap-0.5 truncate text-left ${onClick ? 'hover:text-blue-600' : 'cursor-default'} ${indent ? 'text-gray-500' : 'text-gray-700'}`}
@@ -31,17 +33,39 @@ const Bar = ({ row, indent, caret, onClick }: BarProps) => (
       {caret !== undefined && <span className="w-3 shrink-0 text-gray-400">{caret}</span>}
       <span className="truncate">{row.name}</span>
     </button>
-    <div className="relative h-4 flex-1 rounded bg-gray-100">
+    <div
+      className="relative h-4 flex-1 rounded bg-gray-100"
+      title={range ? `子行业区间 ${range.min.toFixed(1)}–${range.max.toFixed(1)}%` : undefined}
+    >
       <div
         className="h-4 rounded"
         style={{ width: `${row.latest ?? 0}%`, backgroundColor: breadthColor(row.latest) }}
       />
+      {range && (
+        <>
+          {/* 连接线: min→max */}
+          <div
+            className="absolute top-1/2 h-px -translate-y-1/2 bg-gray-500/70"
+            style={{ left: `${range.min}%`, width: `${Math.max(0, range.max - range.min)}%` }}
+          />
+          {/* 端点须: min / max */}
+          <div className="absolute inset-y-1 w-px bg-gray-600" style={{ left: `${range.min}%` }} />
+          <div className="absolute inset-y-1 w-px bg-gray-600" style={{ left: `${range.max}%` }} />
+        </>
+      )}
     </div>
     <span className="w-12 shrink-0 text-right tabular-nums text-gray-700">
       {row.latest != null ? `${row.latest.toFixed(1)}%` : '—'}
     </span>
   </div>
 );
+
+/** 一级行业下二级行业 latest 的 min/max (过滤 null); 无有效子行业返回 null. */
+const childRange = (kids: BreadthRow[]): { min: number; max: number } | null => {
+  const vals = kids.map((k) => k.latest).filter((v): v is number => v != null);
+  if (vals.length < 2) return null; // 单个子行业无区间意义
+  return { min: Math.min(...vals), max: Math.max(...vals) };
+};
 
 /** 行业当日站上率条形排行, 门类折叠树 + 一键展开全部. */
 export const IndustryBreadthRanking = ({ l1Rows, l2Rows }: Props) => {
@@ -92,6 +116,7 @@ export const IndustryBreadthRanking = ({ l1Rows, l2Rows }: Props) => {
                 row={r}
                 caret={kids.length ? (isOpen ? '▾' : '▸') : ''}
                 onClick={kids.length ? () => toggle(r.name) : undefined}
+                range={childRange(kids) ?? undefined}
               />
               {isOpen && kids.map((k) => <Bar key={`${r.name}/${k.name}`} row={k} indent caret="" />)}
             </div>

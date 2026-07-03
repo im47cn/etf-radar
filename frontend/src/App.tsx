@@ -23,7 +23,7 @@ export default function App() {
                 <div className="min-h-screen bg-gray-50">
                   <Header />
                   <Routes>
-                    <Route path="/"               element={<RotationPage />} />
+                    <Route path="/"               element={<TemperaturePage />} />
                     <Route path="/rotation"       element={<RotationPage />} />
                     <Route path="/radar"          element={<RadarPage />} />
                     <Route path="/temperature"    element={<TemperaturePage />} />

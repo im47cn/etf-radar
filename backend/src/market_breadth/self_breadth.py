@@ -27,13 +27,17 @@ def _rate(above: int, valid: int) -> float | None:
 
 
 def _rows_from(
-    above: dict[str, list[int]], valid: dict[str, list[int]], dates: list[str]
+    above: dict[str, list[int]], valid: dict[str, list[int]], dates: list[str],
+    parent: dict[str, str] | None = None,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     n = len(dates)
     for name in above:
         series = [_rate(above[name][i], valid[name][i]) for i in range(n)]
-        rows.append({'name': name, 'series': series, 'latest': _series_latest(series)})
+        row: dict[str, Any] = {'name': name, 'series': series, 'latest': _series_latest(series)}
+        if parent is not None and name in parent:
+            row['l1'] = parent[name]  # 二级行携带一级父级, 供前端折叠分组
+        rows.append(row)
     return _sort_by_latest(rows)
 
 
@@ -49,6 +53,7 @@ def _period_breadth(
     l1_above: dict[str, list[int]] = defaultdict(lambda: [0] * n_dates)
     l2_valid: dict[str, list[int]] = defaultdict(lambda: [0] * n_dates)
     l2_above: dict[str, list[int]] = defaultdict(lambda: [0] * n_dates)
+    l2_parent: dict[str, str] = {}  # 大类(l2) -> 门类(l1)
 
     for code, closes in stocks.items():
         # 非 null 收盘 + 原始日期下标
@@ -79,12 +84,15 @@ def _period_breadth(
             if l2 is not None:
                 l2_valid[l2][day] += 1
                 l2_above[l2][day] += above
+        if l2 is not None and l1 is not None:
+            l2_parent[l2] = l1
 
     return {
         'mkt_valid': mkt_valid,
         'mkt_above': mkt_above,
         'l1': (l1_above, l1_valid),
         'l2': (l2_above, l2_valid),
+        'l2_parent': l2_parent,
     }
 
 
@@ -109,7 +117,7 @@ def compute_self_breadth(
         out_periods[f'ma{period}'] = {
             'market': market,
             'industries_l1': _rows_from(l1_above, l1_valid, dates),
-            'industries_l2': _rows_from(l2_above, l2_valid, dates),
+            'industries_l2': _rows_from(l2_above, l2_valid, dates, parent=acc['l2_parent']),
         }
 
     return {

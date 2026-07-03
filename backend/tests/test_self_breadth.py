@@ -56,6 +56,10 @@ def test_industry_l1_l2_aggregation():
     assert l1['电子']['series'][2] == 50.0
     assert l2['半导体']['series'][2] == 100.0
     assert l2['消费电子']['series'][2] == 0.0
+    # 二级行携带一级父级 (供前端折叠), 一级行不带
+    assert l2['半导体']['l1'] == '电子'
+    assert l2['消费电子']['l1'] == '电子'
+    assert 'l1' not in l1['电子']
 
 
 def test_unmapped_stock_in_market_not_industry():

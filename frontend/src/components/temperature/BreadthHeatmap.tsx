@@ -46,11 +46,14 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
     clip(r).series.map((v, i) => (
       <td
         key={viewDates[i] ?? i}
-        className="h-4 w-3"
+        className="h-3 w-2.5"
         style={{ backgroundColor: breadthColor(v) }}
         title={`${r.name} ${viewDates[i]}: ${v != null ? v.toFixed(1) + '%' : '无数据'}`}
       />
     ));
+
+  // 名称列固定宽 + 右边框, 防止数据列滑到其下被遮挡
+  const nameCol = 'sticky left-0 z-10 w-28 min-w-[7rem] max-w-[7rem] border-r border-gray-200';
 
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white p-4">
@@ -61,9 +64,9 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
       <table className="border-separate" style={{ borderSpacing: 1 }}>
         <thead>
           <tr>
-            <th className="sticky left-0 z-10 bg-white" />
+            <th className={`${nameCol} z-20 bg-white`} />
             {viewDates.map((d) => (
-              <th key={d} className="h-6 w-3 align-bottom">
+              <th key={d} className="h-6 w-2.5 align-bottom">
                 <span className="block origin-bottom-left -rotate-90 whitespace-nowrap text-[8px] text-gray-400">
                   {d.slice(5)}
                 </span>
@@ -78,14 +81,14 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
             return (
               <Fragment key={r.name}>
                 <tr>
-                  <td className="sticky left-0 z-10 bg-white pr-2 whitespace-nowrap text-right">
+                  <td className={`${nameCol} bg-white pr-2`}>
                     <button
-                      className="text-[11px] font-medium text-gray-700 hover:text-blue-600"
+                      className="flex w-full items-center gap-0.5 text-[11px] font-medium text-gray-700 hover:text-blue-600"
                       onClick={() => toggle(r.name)}
                       aria-expanded={isOpen}
                     >
-                      <span className="inline-block w-3 text-gray-400">{kids.length ? (isOpen ? '▾' : '▸') : ''}</span>
-                      {r.name}
+                      <span className="w-3 shrink-0 text-gray-400">{kids.length ? (isOpen ? '▾' : '▸') : ''}</span>
+                      <span className="truncate">{r.name}</span>
                     </button>
                   </td>
                   {cells(r)}
@@ -93,8 +96,8 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
                 {isOpen &&
                   kids.map((k) => (
                     <tr key={`${r.name}/${k.name}`}>
-                      <td className="sticky left-0 z-10 bg-gray-50 py-px pr-2 pl-4 whitespace-nowrap text-right text-[10px] text-gray-500">
-                        {k.name}
+                      <td className={`${nameCol} bg-gray-50 py-px pl-5 pr-2`}>
+                        <span className="block truncate text-[10px] text-gray-500">{k.name}</span>
                       </td>
                       {cells(k)}
                     </tr>

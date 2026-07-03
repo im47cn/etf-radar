@@ -46,7 +46,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
     clip(r).series.map((v, i) => (
       <td
         key={viewDates[i] ?? i}
-        className="h-2.5 w-2.5 min-w-[0.625rem] p-0"
+        className="h-2.5 w-2.5 min-w-[0.625rem] border-r border-b border-white p-0"
         style={{ backgroundColor: breadthColor(v) }}
         title={`${r.name} ${viewDates[i]}: ${v != null ? v.toFixed(1) + '%' : '无数据'}`}
       />
@@ -56,12 +56,14 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
   const nameCol = 'sticky left-0 z-10 w-28 min-w-[7rem] max-w-[7rem] border-r border-gray-200';
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white p-4">
+    <div className="rounded-lg border border-gray-200 bg-white p-4">
+      {/* 标题在滚动容器外, 横向滚动时不跟随 */}
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-medium text-gray-700">历史热力图 · 行业 × 交易日</span>
         <span className="text-[11px] text-gray-400">点一级行业展开二级</span>
       </div>
-      <table className="border-separate" style={{ borderSpacing: 1 }}>
+      <div className="overflow-x-auto">
+      <table className="border-separate" style={{ borderSpacing: 0 }}>
         <thead>
           <tr>
             <th className={`${nameCol} z-20 bg-white`} />
@@ -107,6 +109,7 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };

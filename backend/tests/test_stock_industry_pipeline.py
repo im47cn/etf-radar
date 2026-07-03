@@ -22,21 +22,21 @@ def _df(rows):
 
 def test_parse_picks_latest_cninfo_standard():
     df = _df([
-        {'行业大类': '饮料', '行业中类': '白酒', '分类标准': '巨潮行业分类标准', '变更日期': '2019-11-12'},
-        {'行业大类': '主要消费', '行业中类': '食品', '分类标准': '中证行业分类标准(旧)', '变更日期': '2020-03-16'},
-        {'行业大类': '饮料制造', '行业中类': '白酒Ⅱ', '分类标准': '巨潮行业分类标准', '变更日期': '2021-06-01'},
+        {'行业门类': '主要消费', '行业大类': '饮料', '分类标准': '巨潮行业分类标准', '变更日期': '2019-11-12'},
+        {'行业门类': '消费', '行业大类': '食品', '分类标准': '中证行业分类标准(旧)', '变更日期': '2020-03-16'},
+        {'行业门类': '主要消费', '行业大类': '饮料制造', '分类标准': '巨潮行业分类标准', '变更日期': '2021-06-01'},
     ])
-    assert parse_industry(df) == {'l1': '饮料制造', 'l2': '白酒Ⅱ'}
+    assert parse_industry(df) == {'l1': '主要消费', 'l2': '饮料制造'}
 
 
 def test_parse_no_cninfo_returns_none():
-    df = _df([{'行业大类': 'x', '行业中类': 'y', '分类标准': '中证行业分类标准', '变更日期': '2020-01-01'}])
+    df = _df([{'行业门类': 'x', '行业大类': 'y', '分类标准': '中证行业分类标准', '变更日期': '2020-01-01'}])
     assert parse_industry(df) is None
 
 
 def test_parse_empty_or_nan():
     assert parse_industry(pd.DataFrame()) is None
-    df = _df([{'行业大类': None, '行业中类': '白酒', '分类标准': '巨潮行业分类标准', '变更日期': '2021-01-01'}])
+    df = _df([{'行业门类': None, '行业大类': '饮料', '分类标准': '巨潮行业分类标准', '变更日期': '2021-01-01'}])
     assert parse_industry(df) is None
 
 
@@ -45,7 +45,7 @@ def test_fetch_wraps_error():
         def stock_industry_change_cninfo(self, symbol):
             raise ConnectionError('boom')
     with pytest.raises(StockIndustryFetchError):
-        fetch_stock_industry('600519', _ak=Boom())
+        fetch_stock_industry('600519', _ak=Boom(), retries=1, delay=0)
 
 
 # ---------- build_map ----------

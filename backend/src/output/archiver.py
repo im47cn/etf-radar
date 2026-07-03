@@ -6,7 +6,8 @@ from pathlib import Path
 
 from .snapshots_index import write_snapshots_index
 
-FILES = ['themes.json', 'etfs.json', 'signals.json', 'meta.json', 'market_temperature.json']
+FILES = ['themes.json', 'etfs.json', 'signals.json', 'meta.json', 'market_temperature.json',
+         'market_breadth_qc.json', 'market_breadth_qc_dapanyuntu.json']
 
 
 class StaleDataError(Exception):

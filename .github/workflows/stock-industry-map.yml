@@ -1,0 +1,50 @@
+name: stock-industry-map
+
+# 月级刷新 个股→巨潮行业映射 (data/stocks/stock_industry_map.json).
+# 成分变动慢, 低频足够; 失败保留上次 good map (管线内已合并容错).
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_workers:
+        description: '巨潮并发数'
+        default: '8'
+        required: true
+  schedule:
+    - cron: '0 20 1 * *'   # 每月 1 号 UTC 20:00 (BJT 次日 04:00)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stock-industry-map
+
+jobs:
+  refresh-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DATA_BOT_PAT }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install uv
+        run: pip install uv
+      - name: Install deps
+        run: cd backend && uv sync --all-extras
+      - name: Refresh industry map
+        run: cd backend && uv run python -m src.market_breadth.stock_industry_pipeline
+             --data-root ../data --max-workers ${{ inputs.max_workers || '8' }}
+      - name: Commit & push
+        run: |
+          git config user.name "data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add data/stocks/stock_industry_map.json
+          if git diff --cached --quiet; then
+            echo "no changes"
+          else
+            git commit -m "data: stock industry map $(date -u +%FT%TZ)"
+            git pull --rebase && git push
+          fi

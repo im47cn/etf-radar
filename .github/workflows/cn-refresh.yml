@@ -71,10 +71,19 @@ jobs:
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.pipeline --mode=${{ steps.mode.outputs.mode }} --data-root=../data --config-dir=../config
         continue-on-error: true
-      - name: Refresh market temperature (breadth)
+      - name: Refresh dapanyuntu breadth (QC 对账源)
         if: steps.cal.outputs.is_trading == 'true'
-        # dapanyuntu 第三方接口, 失败不阻断主流程; 保留上一份快照
+        # dapanyuntu 第三方接口, 失败不阻断; 现降级为 QC 对账源, 写 qc_dapanyuntu.json
         run: cd backend && uv run python -m src.market_breadth.pipeline --data-root=../data
+        continue-on-error: true
+      - name: Compute self breadth (个股 MA20/60/120, 主展示)
+        if: steps.cal.outputs.is_trading == 'true'
+        # 读 close_series + 巨潮映射, 产出 market_temperature.json (schema 2.0)
+        run: cd backend && uv run python -m src.market_breadth.self_breadth --data-root=../data
+        continue-on-error: true
+      - name: Reconcile self vs dapanyuntu (全市场 MA20 QC)
+        if: steps.cal.outputs.is_trading == 'true'
+        run: cd backend && uv run python -m src.market_breadth.reconcile --data-root=../data
         continue-on-error: true
       - name: Commit data
         if: steps.cal.outputs.is_trading == 'true'

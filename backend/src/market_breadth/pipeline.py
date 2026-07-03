@@ -108,9 +108,11 @@ def run(data_root: Path, provider: DapanyuntuProvider | None = None) -> Path:
     provider = provider or DapanyuntuProvider()
     raw = provider.fetch_breadth()
     snapshot = compute_market_temperature(raw)
-    out = Path(data_root) / 'latest' / 'market_temperature.json'
+    # 自建多周期宽度上线后, market_temperature.json 由 self_breadth 产出;
+    # dapanyuntu 降级为 QC 对账源, 单写 qc 文件.
+    out = Path(data_root) / 'latest' / 'market_breadth_qc_dapanyuntu.json'
     atomic_write_json(out, snapshot)
-    log.info('market_temperature written: %d dates, %d L1, %d L2',
+    log.info('dapanyuntu QC written: %d dates, %d L1, %d L2',
              len(snapshot['dates']), len(snapshot['industries_l1']), len(snapshot['industries_l2']))
     return out
 

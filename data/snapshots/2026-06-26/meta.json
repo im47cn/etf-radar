@@ -1,63 +1,22 @@
 {
   "schema_version": "1.1",
   "last_full_refresh": {
-    "us": "2026-06-26T15:54:00.305520+08:00",
-    "cn": "2026-06-26T15:54:00.305520+08:00"
+    "us": "2026-06-26T16:00:00+08:00",
+    "cn": "2026-06-26T16:00:00+08:00"
   },
-  "last_intraday_refresh": "2026-06-26T15:54:00.305520+08:00",
+  "last_intraday_refresh": null,
   "providers": {
     "us": {
       "status": "ok",
       "name": "yfinance"
     },
     "cn": {
-      "status": "fallback",
+      "status": "ok",
       "name": "akshare-em"
     }
   },
   "failed_symbols": [],
-  "fallback_symbols": {
-    "159516": "akshare-sina",
-    "159559": "akshare-sina",
-    "159608": "akshare-sina",
-    "159671": "akshare-sina",
-    "159755": "akshare-sina",
-    "159805": "akshare-sina",
-    "159851": "akshare-sina",
-    "159869": "akshare-sina",
-    "159870": "akshare-sina",
-    "159883": "akshare-sina",
-    "159928": "akshare-sina",
-    "159936": "akshare-sina",
-    "159992": "akshare-sina",
-    "159995": "akshare-sina",
-    "159996": "akshare-sina",
-    "162411": "akshare-sina",
-    "510150": "akshare-sina",
-    "512000": "akshare-sina",
-    "512200": "akshare-sina",
-    "512290": "akshare-sina",
-    "512400": "akshare-sina",
-    "512480": "akshare-sina",
-    "512660": "akshare-sina",
-    "512690": "akshare-sina",
-    "512720": "akshare-sina",
-    "512760": "akshare-sina",
-    "512800": "akshare-sina",
-    "513050": "akshare-sina",
-    "513330": "akshare-sina",
-    "515030": "akshare-sina",
-    "515220": "akshare-sina",
-    "515790": "akshare-sina",
-    "515980": "akshare-sina",
-    "516020": "akshare-sina",
-    "516780": "akshare-sina",
-    "518880": "akshare-sina",
-    "561560": "akshare-sina",
-    "562500": "akshare-sina",
-    "562800": "akshare-sina",
-    "588000": "akshare-sina"
-  },
+  "fallback_symbols": {},
   "stale_minutes": 0,
   "calendar": {
     "us_trading_today": true,
@@ -65,7 +24,9 @@
     "us_session_active": false,
     "cn_session_active": false
   },
-  "backfilled": false,
+  "backfilled": true,
+  "cn_data_date": "2026-06-26",
+  "us_data_date": "2026-06-26",
   "theme_kinds": {
     "mapped": 18,
     "cn_only": 12

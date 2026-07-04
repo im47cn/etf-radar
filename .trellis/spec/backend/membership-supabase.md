@@ -21,6 +21,9 @@
 - **afdian query-order 请求**（验真用）：`POST https://afdian.com/api/open/query-order`（**必须用 `.com`**——`.net` 已停用，Supabase 边缘 DNS 解析 `.net` 直接失败），body `{user_id, params:'{"out_trade_no":"…"}', ts, sign}`，`sign = md5(token + "params"+params + "ts"+ts + "user_id"+user_id)`（key 升序拼接、**小写 md5**、无分隔符）。
 - **env（Edge Function secrets）**：`AFDIAN_TOKEN`、`AFDIAN_USER_ID` 必填；`AFDIAN_PLAN_ID` 可选白名单；`SERVERCHAN_SENDKEY` 可选（配置则支付失败推送 Server酱微信告警）。`SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` **由 Supabase 运行时自动注入，禁止手动 `secrets set`**（`SUPABASE_` 前缀被保留、会被拒）。
 - **支付失败告警**：`shouldAlert(outcome, outTradeNo)` 决定是否推送——非 `{activated,dup,ping}` 结局 + 非 afdian 测试假单（`AFDIAN_SAMPLE_ORDER`）即告警。告警走 Server酱 `POST sctapi.ftqq.com/<sendkey>.send`，异常吞掉不影响 webhook 返回 200；SENDKEY 未配置则静默跳过。
+- **告警内容**：`buildAlert()` 拼 Markdown——结局含义 + note 原因 + 权威订单(金额/月数/plan/**留言**/afdian 用户) + 北京时间 + 处理建议 + 快捷操作链接。
+- **一键重试（A）**：`GET ?action=retry&order=<no>&sig=<hmac>`，`sig=HMAC-SHA256(service_role_key, order)`（只有本函数能生成）；无效签名返回 403 HTML。重试**始终走完整 handlePayload 核实**（假单/无绑定码照样失败，杜绝滥开），且**不再发告警**（防告警→重试→告警循环）。返回人可读 HTML。
+- **Supabase 跳转（C）**：告警内 `dashboard/project/<ref>/editor` 链接，`ref` 从 `SUPABASE_URL` 解析。
 - **前端 env**：`VITE_AFDIAN_MONTHLY_URL`、`VITE_AFDIAN_YEARLY_URL`（缺省 `#`）。
 - **周期**：权威订单 `month>=12 → 'yearly'` 否则 `'monthly'`；`current_period_end = max(now, 现有到期日) + month 个月`（续订叠加）。
 

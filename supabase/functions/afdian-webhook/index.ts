@@ -84,7 +84,7 @@ export function createAfdianVerifier(cfg: {
       const body = JSON.stringify({ user_id: cfg.userId, params, ts, sign });
       let json: { ec?: number; data?: { list?: AfdianOrder[] } };
       try {
-        const resp = await doFetch("https://afdian.net/api/open/query-order", {
+        const resp = await doFetch("https://afdian.com/api/open/query-order", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body,
@@ -94,7 +94,13 @@ export function createAfdianVerifier(cfg: {
         console.error("query-order 调用失败:", (e as Error).message);
         return null;
       }
-      if (json?.ec !== 200) return null;
+      if (json?.ec !== 200) {
+        // ec≠200 通常是 sign/token 问题(如 400005 sign validation failed)。
+        // 单独打日志, 避免与"订单查无"混为一条含糊记录。
+        const j = json as { ec?: number; em?: string };
+        console.error(`query-order 拒绝: ec=${j.ec} em=${j.em ?? ""}`);
+        return null;
+      }
       const list = json.data?.list ?? [];
       // 在返回列表中精确匹配本单号（query-order 可能返回多单）。
       return list.find((o) => o.out_trade_no === outTradeNo) ?? null;

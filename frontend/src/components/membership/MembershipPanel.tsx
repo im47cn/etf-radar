@@ -3,12 +3,11 @@ import { getSupabase } from '@/lib/supabase';
 import { useSubscription } from '@/lib/subscription/useSubscription';
 import { Disclaimer } from './Disclaimer';
 
-// 爱发电订阅链接。默认指向创作者页（列出全部方案，用户自选月/年）；
-// env 若配置则优先（可将年费指向独立方案链接）。用 || 兼容未配置(undefined)与空串。
-// 注意：默认值不能是 '#'——在 HashRouter 下点 '#' 会跳到默认页(市场温度)。
-const AFDIAN_HOME = 'https://www.afdian.com/a/im47cn';
-const AFDIAN_MONTHLY_URL = import.meta.env.VITE_AFDIAN_MONTHLY_URL || AFDIAN_HOME;
-const AFDIAN_YEARLY_URL  = import.meta.env.VITE_AFDIAN_YEARLY_URL || AFDIAN_HOME;
+// 爱发电订阅链接来自构建时环境变量（生产在 deploy-frontend.yml 由
+// vars.AFDIAN_MONTHLY_URL/YEARLY_URL 注入；本地在 .env.local）。
+// 未配置时按钮禁用并提示——绝不硬编码 URL，也绝不用 '#'（HashRouter 下会跳默认页）。
+const AFDIAN_MONTHLY_URL = import.meta.env.VITE_AFDIAN_MONTHLY_URL || '';
+const AFDIAN_YEARLY_URL  = import.meta.env.VITE_AFDIAN_YEARLY_URL || '';
 
 const PLAN_LABEL: Record<string, string> = { monthly: '月度会员', yearly: '年度会员' };
 
@@ -18,24 +17,41 @@ function fmtDate(iso: string | null): string {
 }
 
 // 定价卡：只描述权益与价格，不含任何操作动词。
+// href 为空（未配置订阅链接）时渲染为禁用态，避免无效跳转。
 const PriceCard = ({
   title, price, unit, note, href,
-}: { title: string; price: string; unit: string; note?: string; href: string }) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noreferrer"
-    className="flex-1 block p-5 border rounded-lg hover:border-blue-500 hover:shadow-sm transition"
-  >
-    <div className="text-sm text-gray-600">{title}</div>
-    <div className="mt-1">
-      <span className="text-3xl font-bold">¥{price}</span>
-      <span className="text-gray-500 text-sm"> / {unit}</span>
-    </div>
-    {note && <div className="mt-1 text-xs text-green-600">{note}</div>}
-    <div className="mt-3 text-sm text-blue-600">前往爱发电订阅 →</div>
-  </a>
-);
+}: { title: string; price: string; unit: string; note?: string; href: string }) => {
+  const body = (
+    <>
+      <div className="text-sm text-gray-600">{title}</div>
+      <div className="mt-1">
+        <span className="text-3xl font-bold">¥{price}</span>
+        <span className="text-gray-500 text-sm"> / {unit}</span>
+      </div>
+      {note && <div className="mt-1 text-xs text-green-600">{note}</div>}
+      <div className={`mt-3 text-sm ${href ? 'text-blue-600' : 'text-gray-400'}`}>
+        {href ? '前往爱发电订阅 →' : '订阅入口配置中'}
+      </div>
+    </>
+  );
+  if (!href) {
+    return (
+      <div className="flex-1 block p-5 border rounded-lg opacity-60 cursor-not-allowed" aria-disabled>
+        {body}
+      </div>
+    );
+  }
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="flex-1 block p-5 border rounded-lg hover:border-blue-500 hover:shadow-sm transition"
+    >
+      {body}
+    </a>
+  );
+};
 
 // 绑定码块：调 issue_bind_code RPC 取码，引导用户下单时填入订单留言。
 const BindCodeBlock = () => {

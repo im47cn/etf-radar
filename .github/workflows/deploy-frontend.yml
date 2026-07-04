@@ -41,6 +41,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_AFDIAN_MONTHLY_URL: ${{ vars.AFDIAN_MONTHLY_URL }}
+          VITE_AFDIAN_YEARLY_URL: ${{ vars.AFDIAN_YEARLY_URL }}
         run: |
           cd frontend
           npm run build

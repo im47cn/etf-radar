@@ -73,3 +73,41 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: 会员订阅 MVP(爱发电订阅闭环+自选盯盘)
+
+**Date**: 2026-07-04
+**Task**: 07-03-membership-subscription-mvp
+**Branch**: `main`
+
+### Summary
+
+真实变现方向: 定位「活跃散户 × 效率/全景/沉淀」,合规上只卖工具与信息不荐股(全站文案禁操作动词+免责声明). 收款用爱发电(afdian)做 MVP(免营业执照/免备案),跑通后再迁微信官方支付. 纯 serverless: 复用现有 Supabase OAuth, 新增 subscriptions/bind_codes/watchlist/webhook_events 四表+RLS+两个 SECURITY DEFINER RPC(issue_bind_code/add_watchlist). 阶段 1/2/4(数据层+前端hook+UI)一次实现,阶段 3(afdian-webhook Edge Function)后补. 定价 ¥6/月·¥58/年.
+
+### 关键技术决策 / 踩坑
+
+- **afdian webhook 无 sign 字段**: 首版误做「对 payload 验签」,查证官方规范后重写为「拿 out_trade_no 反向调 query-order API 核实订单真实且 status=2,以返回订单为权威源防伪造」. sign 规则 md5(token+"params"{params}"ts"{ts}"user_id"{uid}) 小写. 用官方已知答案向量断言避免自证.
+- **会员门控铁律**: subscriptions 无 authenticated 写策略(状态不可前端伪造); 「仅会员可写」由 add_watchlist RPC 服务端硬校验; webhook_events 对 authenticated 完全不可见; 到期回落零后台(useSubscription 前端判 periodEnd>now).
+- **SUPABASE_URL/SERVICE_ROLE_KEY** Edge Function 自动注入,禁手动 secrets set.
+- 绑定码方案(留言填码打通 afdian↔supabase)有 UX 摩擦,是 MVP 已知权衡; 二期迁官方支付消除.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ea82c66` | feat(membership): 数据层+前端hook+UI(阶段1/2/4) |
+| `218e43e` | feat(membership): afdian-webhook Edge Function(阶段3) |
+
+### Testing
+
+- [OK] 前端 445 passed, 后端 262 passed, Edge Function deno test 16 passed, tsc/lint 干净
+
+### Status
+
+[OK] **代码完成并推送 main**; 部署待人工(SQL Editor 执行 003 迁移 + supabase secrets/deploy + afdian 回调 URL + 真实订单端到端联调 + 轮换泄漏 token)
+
+### Next Steps
+
+- 部署上线(见 spec/backend/membership-supabase.md Runbook)
+- 二期: 邮件变化摘要推送(Resend+pg_cron)、全量历史回看+导出、微信官方支付迁移、年费独立方案

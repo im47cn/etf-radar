@@ -18,7 +18,7 @@
 - **前端 hook**：`useSubscription() -> {state:'loading'|'member'|'non-member', plan, periodEnd, refresh}`；`useWatchlist() -> {items, add, remove}`。
 
 ### 3. Contracts
-- **afdian query-order 请求**（验真用）：`POST https://afdian.net/api/open/query-order`，body `{user_id, params:'{"out_trade_no":"…"}', ts, sign}`，`sign = md5(token + "params"+params + "ts"+ts + "user_id"+user_id)`（key 升序拼接、**小写 md5**、无分隔符）。
+- **afdian query-order 请求**（验真用）：`POST https://afdian.com/api/open/query-order`（**必须用 `.com`**——`.net` 已停用，Supabase 边缘 DNS 解析 `.net` 直接失败），body `{user_id, params:'{"out_trade_no":"…"}', ts, sign}`，`sign = md5(token + "params"+params + "ts"+ts + "user_id"+user_id)`（key 升序拼接、**小写 md5**、无分隔符）。
 - **env（Edge Function secrets）**：`AFDIAN_TOKEN`、`AFDIAN_USER_ID` 必填；`AFDIAN_PLAN_ID` 可选白名单。`SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` **由 Supabase 运行时自动注入，禁止手动 `secrets set`**（`SUPABASE_` 前缀被保留、会被拒）。
 - **前端 env**：`VITE_AFDIAN_MONTHLY_URL`、`VITE_AFDIAN_YEARLY_URL`（缺省 `#`）。
 - **周期**：权威订单 `month>=12 → 'yearly'` 否则 `'monthly'`；`current_period_end = max(now, 现有到期日) + month 个月`（续订叠加）。
@@ -72,7 +72,15 @@ if (!order || order.status !== 2) return audit('order_verify_failed')
 4. **到期回落零后台**：`useSubscription` 前端判 `status==='active' && periodEnd>now()`，无定时任务。
 
 ## 部署 Runbook（要点）
-- `supabase link --project-ref <REF>` → `supabase secrets set AFDIAN_TOKEN=… AFDIAN_USER_ID=…` → `supabase functions deploy afdian-webhook --no-verify-jwt`。
+- `supabase functions deploy afdian-webhook --project-ref <REF> --no-verify-jwt`（无需 link，直接带 `--project-ref`；deploy 命令须在**项目根目录**跑，否则找不到 `supabase/functions/...`）。
+- `supabase secrets set AFDIAN_TOKEN=… AFDIAN_USER_ID=…`（`SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` 运行时自动注入，禁手动设）。
 - SQL Editor 执行 `003_membership.sql`。
 - afdian 后台回调 URL：`https://<REF>.supabase.co/functions/v1/afdian-webhook`。
 - 上线前用一笔真实小额订单端到端联调（验真已用官方向量证明，剩字段名以真实响应为准）。
+
+## 上线排障踩坑（2026-07-04 实战）
+1. **afdian ping 报「请检查地址」**：多为 ping 响应体没有 `{"ec":200}`。① 确认部署的是本函数（curl 应返回带 `ec` 的体，而非占位 `{"ok":true}`）② ping(`data.type==='test'`) 必须在 `loadEnv()` 之前放行——否则 secrets 未设全时 loadEnv 抛异常→500→ping 失败。
+2. **`dns error: failed to lookup afdian.net`**：域名用错。**必须 `afdian.com`**，`.net` 已停用、Supabase 边缘解析失败。
+3. **`order_verify_failed / query-order 未核实到订单`** 有歧义，可能是：① 订单真不存在（如 afdian 后台「测试推送」用的是官方文档**示例假单号** `202106232138371083454010626`，查无属正常）② **sign/token 错误**（`ec=400005 sign validation failed`）。代码已对 ec≠200 单独打日志区分。**token 轮换后必须同步更新 Supabase secret**，否则一直 sign 失败。
+4. **快速验证 token/签名**：本机 `deno run` 直调 query-order（params `{"page":1}` 列订单），`ec=200 em=order` 即 token+签名有效；`ec=400005` 即 token 错。
+5. **access token 反复贴/撤易 401**：优先 `supabase login`（磁盘持久化），避免用一次撤一次导致 deploy 中途 401。

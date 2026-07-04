@@ -95,6 +95,13 @@ VITE_AFDIAN_YEARLY_URL=<年费方案链接，建好后填>
 | `dup` | 重复回调 | 正常（幂等） |
 | `activated` | 成功 | ✅ |
 
+### 上线实战踩坑（2026-07-04）
+- **afdian ping 报「请检查地址」**：先 `curl -X POST <URL> -d '{"data":{"type":"test"}}'`，应返回带 `ec` 的体（如 `{"ec":200,...}`）。若返回 `{"ok":true}` 说明部署的不是本函数，需 `deploy` 覆盖。
+- **`order_verify_failed` 但订单确实存在**：多半是 **Supabase secret 里的 `AFDIAN_TOKEN` 是旧的/已轮换**——token 换了必须同步更新 secret，否则 `ec=400005 sign validation failed`。快速自查：本机 `deno run` 直调 query-order（`params={"page":1}`），`ec=200 em=order` 即 token 有效。
+- **afdian 后台「测试推送」永远 `order_verify_failed`**：它用官方文档示例假单号 `202106232138371083454010626`，query-order 查无属正常。**只有真实付款订单能激活**。
+- **query-order DNS 失败**：域名必须 `afdian.com`（`.net` 已停用）。
+- **deploy 报 401 / 找不到文件**：deploy 要在**项目根目录**跑；access token 反复贴撤易 401，优先 `supabase login`。
+
 ---
 
 ## 安全清单

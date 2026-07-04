@@ -3,9 +3,12 @@ import { getSupabase } from '@/lib/supabase';
 import { useSubscription } from '@/lib/subscription/useSubscription';
 import { Disclaimer } from './Disclaimer';
 
-// 爱发电订阅链接（占位 env；未配置时给 # 占位，阶段 0 补真实链接）
-const AFDIAN_MONTHLY_URL = import.meta.env.VITE_AFDIAN_MONTHLY_URL ?? '#';
-const AFDIAN_YEARLY_URL  = import.meta.env.VITE_AFDIAN_YEARLY_URL ?? '#';
+// 爱发电订阅链接。默认指向创作者页（列出全部方案，用户自选月/年）；
+// env 若配置则优先（可将年费指向独立方案链接）。用 || 兼容未配置(undefined)与空串。
+// 注意：默认值不能是 '#'——在 HashRouter 下点 '#' 会跳到默认页(市场温度)。
+const AFDIAN_HOME = 'https://www.afdian.com/a/im47cn';
+const AFDIAN_MONTHLY_URL = import.meta.env.VITE_AFDIAN_MONTHLY_URL || AFDIAN_HOME;
+const AFDIAN_YEARLY_URL  = import.meta.env.VITE_AFDIAN_YEARLY_URL || AFDIAN_HOME;
 
 const PLAN_LABEL: Record<string, string> = { monthly: '月度会员', yearly: '年度会员' };
 

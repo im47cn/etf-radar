@@ -61,8 +61,10 @@ supabase login
 supabase link --project-ref <PROJECT_REF>
 supabase secrets set AFDIAN_TOKEN=<新token> AFDIAN_USER_ID=<user_id>
 # 可选白名单：supabase secrets set AFDIAN_PLAN_ID=<plan_id>
+# 可选支付失败告警：supabase secrets set SERVERCHAN_SENDKEY=<Server酱SENDKEY>
 supabase functions deploy afdian-webhook --no-verify-jwt
 ```
+- **支付失败告警**：配置 `SERVERCHAN_SENDKEY`（https://sct.ftqq.com/ 获取）后，真实付款单未激活（no_bind_code/no_user/plan_mismatch/order_verify_failed/error）会推送微信告警（自动过滤 afdian 测试推送假单）；不配置则不告警。
 - `--no-verify-jwt` 必须：afdian 匿名 POST，无 JWT。
 - 部署输出函数地址：`https://<PROJECT_REF>.supabase.co/functions/v1/afdian-webhook`
 

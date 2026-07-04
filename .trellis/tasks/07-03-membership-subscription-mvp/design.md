@@ -67,13 +67,16 @@ UNIQUE (user_id, item_type, item_key)
 
 ### 3.2 Edge Function `afdian-webhook`（`supabase/functions/afdian-webhook/`）
 - 部署为 Supabase Edge Function（Deno），用 **service_role key** 写库。
+- **验真方式（重要修正）**：afdian Webhook 回调 **payload 不含 sign 字段，无法做签名比对**。正确做法是拿回调的 `out_trade_no` **反向调 afdian `query-order` API 核实订单真实存在且已支付**，并以 API 返回的订单为权威数据源（防伪造 webhook）。
 - 步骤：
-  1. **验签**：按 afdian 规则校验 `sign = md5(token + 排序拼接参数)`；不符 → 返回 200 但不处理（afdian 要求 200 否则重试），记录告警日志。
-  2. **幂等**：读 `data.order.out_trade_no`；若 `subscriptions.afdian_trade_no` 已等于该单 → 直接返回 `{ec:200}`。
-  3. **解析绑定码**：从订单 `remark` 提取绑定码，查 `bind_codes` 未 consumed 的记录 → 得 `user_id`；无匹配 → 记录「待认领订单」日志并返回 200（不激活，可人工补）。
-  4. **计算周期**：按订单 `plan_id`/金额判定 monthly/yearly，`current_period_end = now() + interval`（续订则在原到期日上叠加）。
-  5. **写库**：`upsert subscriptions`（status=active）、`update bind_codes set consumed=true`。
-- **失败可见性**：所有异常路径写入 `webhook_events` 审计表（raw payload + 处理结论），满足验收「不静默吞错」。
+  1. **解析**：读 `data.order.out_trade_no`；ping/test 回调直接返回 `{ec:200}`。
+  2. **幂等**：若 `subscriptions.afdian_trade_no` 已等于该单 → 直接返回 `{ec:200}`（在核实前短路，省一次 API 调用）。
+  3. **核实**：POST `https://afdian.net/api/open/query-order`，body `{user_id, params:'{"out_trade_no":"…"}', ts, sign}`，其中 `sign = md5(token + "params"+params + "ts"+ts + "user_id"+user_id)`（按 key 升序拼接、小写 md5）。校验 `ec===200` 且 list 中匹配到该单且 `status===2`（已支付）。失败 → `webhook_events(outcome='order_verify_failed')` → 返回 200。
+  4. **解析绑定码**：从**权威订单** `remark` 提取绑定码，查 `bind_codes` 未 consumed → 得 `user_id`；无匹配 → 审计「待认领」并返回 200（可人工补）。
+  5. **计算周期**：按权威订单 `month` 判定 `month>=12 ? yearly : monthly`，`current_period_end = max(now, 现有到期日) + month 个月`（续订叠加）。可选 `AFDIAN_PLAN_ID` 白名单校验。
+  6. **写库**：`upsert subscriptions`（status=active）、`update bind_codes set consumed=true`。
+- **验签正确性保障**：`computeAfdianSign` 用 afdian 官方公开向量（`md5('123params{"a":333}ts1624339905user_idabc')==a4acc28b81598b7e5d84ebdc3e91710c`）做已知答案断言，避免自证。
+- **失败可见性**：所有异常路径写入 `webhook_events` 审计表（raw payload + outcome），满足验收「不静默吞错」。
 
 ### 3.3 到期回落
 - 无定时任务（MVP 不引 pfg_cron）。`useSubscription` 前端判定：`status==='active' && current_period_end > now()` 才算会员，否则 non-member。到期无需后台改状态即自然失效；`status` 字段仅作历史记录。

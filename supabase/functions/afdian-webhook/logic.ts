@@ -137,6 +137,19 @@ export interface HandleResult {
   outcome: string; // 便于测试断言
 }
 
+// afdian 后台「测试推送」用的官方文档示例假单号，query-order 查无属正常，不告警。
+export const AFDIAN_SAMPLE_ORDER = "202106232138371083454010626";
+
+// 正常/噪音结局：无需告警。其余结局视为需要人工关注的失败。
+const NON_ALERT_OUTCOMES = new Set(["activated", "dup", "ping"]);
+
+// 是否应发失败告警：非正常结局 + 不是测试推送假单。
+export function shouldAlert(outcome: string, outTradeNo: string | null | undefined): boolean {
+  if (NON_ALERT_OUTCOMES.has(outcome)) return false;
+  if (outTradeNo === AFDIAN_SAMPLE_ORDER) return false; // 过滤 afdian 测试推送噪音
+  return true;
+}
+
 export async function handlePayload(
   payload: AfdianPayload,
   deps: Deps,

@@ -318,3 +318,22 @@ Deno.test("serveRequest: 无任何 env 时 ping 仍返回 200 {ec:200}", async (
   const json = await resp.json();
   assertEquals(json.ec, 200); // afdian 校验 ec===200
 });
+
+// ---- shouldAlert：支付失败告警判定 ----
+import { AFDIAN_SAMPLE_ORDER, shouldAlert } from "./logic.ts";
+
+Deno.test("shouldAlert: 正常/噪音结局不告警", () => {
+  for (const o of ["activated", "dup", "ping"]) {
+    assertEquals(shouldAlert(o, "REALORDER123"), false);
+  }
+});
+
+Deno.test("shouldAlert: 真实付款单未激活 → 告警", () => {
+  for (const o of ["no_bind_code", "no_user", "plan_mismatch", "order_verify_failed", "error"]) {
+    assertEquals(shouldAlert(o, "REALORDER123"), true);
+  }
+});
+
+Deno.test("shouldAlert: afdian 测试推送假单不告警(噪音过滤)", () => {
+  assertEquals(shouldAlert("order_verify_failed", AFDIAN_SAMPLE_ORDER), false);
+});

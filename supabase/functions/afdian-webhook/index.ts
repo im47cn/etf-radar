@@ -11,6 +11,7 @@ import {
   Deps,
   handlePayload,
   OrderVerifier,
+  shouldAlert,
   Store,
   SubscriptionRow,
 } from "./logic.ts";
@@ -121,7 +122,28 @@ function loadEnv() {
     afdianToken: get("AFDIAN_TOKEN"),
     afdianUserId: get("AFDIAN_USER_ID"),
     afdianPlanId: Deno.env.get("AFDIAN_PLAN_ID") || undefined,
+    // 可选：Server酱 SENDKEY，用于支付失败告警。未配置则不告警（优雅降级）。
+    alertSendkey: Deno.env.get("SERVERCHAN_SENDKEY") || undefined,
   };
+}
+
+// 发失败告警到 Server酱（POST sctapi.ftqq.com/<SENDKEY>.send）。
+// 告警失败绝不影响 webhook 主流程——调用方需 try/catch 兜住。
+async function sendServerChanAlert(
+  sendkey: string,
+  title: string,
+  desp: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  const body = new URLSearchParams({ title, desp });
+  const resp = await fetchImpl(`https://sctapi.ftqq.com/${sendkey}.send`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  if (!resp.ok) {
+    console.error(`Server酱告警返回非 2xx: ${resp.status}`);
+  }
 }
 
 // 200 + {ec:200}，afdian 才不会重试。
@@ -168,6 +190,22 @@ export async function serveRequest(req: Request): Promise<Response> {
   };
 
   const result = await handlePayload(payload, deps);
+
+  // 支付失败告警：真实付款单未激活（no_bind_code/no_user/plan_mismatch 等）时推送，
+  // 过滤 afdian 测试推送假单。告警异常吞掉，绝不影响返回 200。
+  const outTradeNo = payload?.data?.order?.out_trade_no ?? null;
+  if (env.alertSendkey && shouldAlert(result.outcome, outTradeNo)) {
+    try {
+      await sendServerChanAlert(
+        env.alertSendkey,
+        `⚠️ 会员支付未激活: ${result.outcome}`,
+        `订单号: ${outTradeNo ?? "(无)"}\n结局: ${result.outcome}\n请查 Supabase webhook_events 明细并按需手动补开会员。`,
+      );
+    } catch (e) {
+      console.error("告警发送失败:", (e as Error).message);
+    }
+  }
+
   return jsonOk(result.outcome);
 }
 

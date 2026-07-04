@@ -135,6 +135,8 @@ export interface HandleResult {
   ec: number;
   em: string;
   outcome: string; // 便于测试断言
+  note?: string; // 失败原因(人类可读)，供告警拼接
+  order?: AfdianOrder; // 权威订单(核实通过后可用，含 remark/金额/月数)，供告警拼接
 }
 
 // afdian 后台「测试推送」用的官方文档示例假单号，query-order 查无属正常，不告警。
@@ -150,87 +152,153 @@ export function shouldAlert(outcome: string, outTradeNo: string | null | undefin
   return true;
 }
 
+// 结局码 → 人类可读含义
+const OUTCOME_MEANING: Record<string, string> = {
+  no_bind_code: "用户付款成功，但订单留言未填绑定码 → 无法关联账号",
+  no_user: "订单留言的绑定码无匹配或已被使用 → 无法关联账号",
+  plan_mismatch: "订单 plan_id 不在白名单，未激活",
+  order_verify_failed: "订单核实失败：不存在/未支付，或 afdian token/签名失效",
+  error: "webhook 载荷异常（如缺 out_trade_no）",
+};
+
+// 结局码 → 处理建议
+const OUTCOME_HINT: Record<string, string> = {
+  no_bind_code:
+    "用户已付款但没填绑定码。据下方「用户留言/afdian 用户」定位用户 → SQL Editor 手动 upsert subscriptions 补开；或联系用户按 /membership 绑定码重新填写。",
+  no_user:
+    "绑定码错误/过期。据「用户留言」判断用户意图 → 手动补开；或让用户在 /membership 重取绑定码。",
+  plan_mismatch: "检查 AFDIAN_PLAN_ID 白名单是否遗漏了该 plan。",
+  order_verify_failed:
+    "多为 AFDIAN_TOKEN secret 非当前有效 token（sign 失败），或订单确不存在。核对 secret 是否为最新 token。",
+  error: "检查 webhook 载荷；通常为 afdian 异常回调，可忽略。",
+};
+
+// 拼装富文本告警（Server酱 desp 支持 Markdown）。now 显式传入便于测试。
+export function buildAlert(
+  result: HandleResult,
+  outTradeNo: string | null,
+  supabaseRef: string | undefined,
+  now: Date,
+  retryUrl?: string, // 一键重试链接（已签名），可空
+): { title: string; desp: string } {
+  const o = result.order;
+  const bj = new Date(now.getTime() + 8 * 3600 * 1000)
+    .toISOString().replace("T", " ").slice(0, 19);
+  const lines = [
+    `**${OUTCOME_MEANING[result.outcome] ?? result.outcome}**`,
+    "",
+    `- 结局码：\`${result.outcome}\``,
+    `- 订单号：\`${outTradeNo ?? "(无)"}\``,
+    result.note ? `- 详情：${result.note}` : "",
+    o ? `- 金额：¥${o.total_amount ?? "?"}　月数：${o.month ?? "?"}　plan：\`${o.plan_id ?? "?"}\`` : "",
+    o && o.remark != null ? `- 用户留言：${JSON.stringify(o.remark)}` : "",
+    o && o.user_id ? `- afdian 用户：\`${o.user_id}\`` : "",
+    `- 时间：${bj}（北京）`,
+    "",
+    "**如何处理**",
+    OUTCOME_HINT[result.outcome] ?? "查 webhook_events 明细人工判断。",
+    "",
+    "**快捷操作**",
+    retryUrl ? `- [🔄 一键重试处理](${retryUrl})（修好根因后点此重跑该订单）` : "",
+    supabaseRef
+      ? `- [📋 打开 Supabase 表编辑器](https://supabase.com/dashboard/project/${supabaseRef}/editor)`
+      : "",
+  ].filter(Boolean);
+  return { title: `⚠️ 会员支付未激活：${result.outcome}`, desp: lines.join("\n") };
+}
+
 export async function handlePayload(
   payload: AfdianPayload,
   deps: Deps,
 ): Promise<HandleResult> {
-  const ok = (outcome: string): HandleResult => ({ ec: 200, em: "", outcome });
+  // 统一收口：outcome + 可选 note/order，便于上层告警拼接细节。
+  const done = (
+    outcome: string,
+    note?: string,
+    order?: AfdianOrder,
+  ): HandleResult => ({ ec: 200, em: "", outcome, note, order });
 
   // 1. ping/test 直接放行
   if (payload?.data?.type === "test") {
-    return ok("ping");
+    return done("ping");
   }
 
   // 2. 拿回调里的 out_trade_no（webhook body 仅用于此，不作权威数据）
   const tradeNo = payload?.data?.order?.out_trade_no;
   if (!tradeNo) {
+    const note = "缺少 order.out_trade_no";
     await deps.store.insertWebhookEvent({
       out_trade_no: null,
       outcome: "error",
       raw_payload: payload,
-      note: "缺少 order.out_trade_no",
+      note,
     });
-    return ok("error");
+    return done("error", note);
   }
 
   // 3. 幂等：同一订单号已处理过则跳过（在昂贵的核实调用之前）
   const dup = await deps.store.findSubscriptionByTradeNo(tradeNo);
   if (dup) {
+    const note = "订单已处理，跳过";
     await deps.store.insertWebhookEvent({
       out_trade_no: tradeNo,
       outcome: "dup",
       raw_payload: payload,
-      note: "订单已处理，跳过",
+      note,
     });
-    return ok("dup");
+    return done("dup", note);
   }
 
   // 4. 反向核实：调 query-order 拿权威订单，要求存在且 status===2（已支付）
   const order = await deps.verifier.fetchOrder(tradeNo);
   if (!order || order.status !== 2) {
+    const note = order
+      ? `订单 status=${order.status ?? ""} 非已支付`
+      : "query-order 未核实到订单（订单不存在 或 token/签名失败）";
     await deps.store.insertWebhookEvent({
       out_trade_no: tradeNo,
       outcome: "order_verify_failed",
       raw_payload: payload,
-      note: order
-        ? `订单 status=${order.status ?? ""} 非已支付`
-        : "query-order 未核实到订单",
+      note,
     });
-    return ok("order_verify_failed");
+    return done("order_verify_failed", note, order ?? undefined);
   }
 
   // 5. 可选 plan 白名单（用权威订单的 plan_id）
   if (deps.afdianPlanId && order.plan_id !== deps.afdianPlanId) {
+    const note = `plan_id=${order.plan_id ?? ""} 不在白名单`;
     await deps.store.insertWebhookEvent({
       out_trade_no: tradeNo,
       outcome: "plan_mismatch",
       raw_payload: payload,
-      note: `plan_id=${order.plan_id ?? ""} 不在白名单`,
+      note,
     });
-    return ok("plan_mismatch");
+    return done("plan_mismatch", note, order);
   }
 
   // 6. 绑定码（用权威订单的 remark）
   const code = extractBindCode(order.remark);
   if (!code) {
+    const note = "留言未含绑定码（用户下单时未按提示填写绑定码）";
     await deps.store.insertWebhookEvent({
       out_trade_no: tradeNo,
       outcome: "no_bind_code",
       raw_payload: payload,
-      note: "留言未含绑定码",
+      note,
     });
-    return ok("no_bind_code");
+    return done("no_bind_code", note, order);
   }
 
   const bind = await deps.store.findUnconsumedBindCode(code);
   if (!bind) {
+    const note = `绑定码 ${code} 无匹配或已消费`;
     await deps.store.insertWebhookEvent({
       out_trade_no: tradeNo,
       outcome: "no_user",
       raw_payload: payload,
-      note: `绑定码 ${code} 无匹配或已消费`,
+      note,
     });
-    return ok("no_user");
+    return done("no_user", note, order);
   }
 
   // 7. 周期计算 + 写库（数据全部取自权威订单）
@@ -252,12 +320,13 @@ export async function handlePayload(
     afdian_trade_no: tradeNo,
   });
   await deps.store.consumeBindCode(bind.id);
+  const note = `user=${bind.user_id} plan=${plan} months=${months}`;
   await deps.store.insertWebhookEvent({
     out_trade_no: tradeNo,
     outcome: "activated",
     raw_payload: payload,
-    note: `user=${bind.user_id} plan=${plan} months=${months}`,
+    note,
   });
 
-  return ok("activated");
+  return done("activated", note, order);
 }

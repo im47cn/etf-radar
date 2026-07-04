@@ -7,6 +7,7 @@ import {
   AfdianOrder,
   AfdianPayload,
   BindCodeRow,
+  buildAlert,
   computeAfdianSign,
   Deps,
   handlePayload,
@@ -116,8 +117,11 @@ function loadEnv() {
     if (!v) throw new Error(`缺少环境变量: ${k}`);
     return v;
   };
+  const supabaseUrl = get("SUPABASE_URL");
   return {
-    supabaseUrl: get("SUPABASE_URL"),
+    supabaseUrl,
+    // 从 https://<ref>.supabase.co 解析项目 ref，用于告警里拼 Dashboard 链接。
+    supabaseRef: supabaseUrl.replace(/^https?:\/\//, "").split(".")[0] || undefined,
     serviceRoleKey: get("SUPABASE_SERVICE_ROLE_KEY"),
     afdianToken: get("AFDIAN_TOKEN"),
     afdianUserId: get("AFDIAN_USER_ID"),
@@ -154,7 +158,87 @@ function jsonOk(outcome?: string): Response {
   });
 }
 
+// 面向人（微信里点链接后在浏览器打开）的极简 HTML 响应。
+function htmlResp(body: string, status = 200): Response {
+  return new Response(
+    `<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">` +
+      `<body style="font-family:system-ui;max-width:640px;margin:40px auto;padding:0 16px;line-height:1.7">${body}</body>`,
+    { status, headers: { "content-type": "text/html; charset=utf-8" } },
+  );
+}
+
+// HMAC-SHA256 十六进制签名。用 service_role key 作密钥——只有本函数能生成有效重试链接。
+async function hmacSign(key: string, msg: string): Promise<string> {
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey(
+    "raw", enc.encode(key), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", k, enc.encode(msg));
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+type Env = ReturnType<typeof loadEnv>;
+
+// 组装处理依赖（POST webhook 与 GET 重试共用）。
+function makeDeps(env: Env): Deps {
+  const client = createClient(env.supabaseUrl, env.serviceRoleKey, {
+    auth: { persistSession: false },
+  });
+  const now = () => new Date();
+  return {
+    store: createSupabaseStore(client),
+    verifier: createAfdianVerifier({
+      token: env.afdianToken,
+      userId: env.afdianUserId,
+      now,
+    }),
+    afdianPlanId: env.afdianPlanId,
+    now,
+  };
+}
+
+// 生成签名重试链接（用于告警里的「一键重试」）。缺 ref/order 则返回 undefined。
+async function makeRetryUrl(env: Env, outTradeNo: string | null): Promise<string | undefined> {
+  if (!env.supabaseRef || !outTradeNo) return undefined;
+  const sig = await hmacSign(env.serviceRoleKey, outTradeNo);
+  return `https://${env.supabaseRef}.supabase.co/functions/v1/afdian-webhook` +
+    `?action=retry&order=${encodeURIComponent(outTradeNo)}&sig=${sig}`;
+}
+
+// GET ?action=retry：验签后重跑该订单（一键处理）。始终走完整核实，假单/无码照样失败。
+async function handleRetry(url: URL): Promise<Response> {
+  const order = url.searchParams.get("order") ?? "";
+  const sig = url.searchParams.get("sig") ?? "";
+  const env = loadEnv();
+  const expect = await hmacSign(env.serviceRoleKey, order);
+  if (!order || sig !== expect) {
+    return htmlResp("<h2>❌ 链接无效或已被篡改</h2><p>请从最新告警重新进入。</p>", 403);
+  }
+  // 合成一个仅含 out_trade_no 的 payload 重跑（重试路径不再发告警，避免循环）。
+  const deps = makeDeps(env);
+  const result = await handlePayload(
+    { data: { order: { out_trade_no: order } } },
+    deps,
+  );
+  if (result.outcome === "activated") {
+    return htmlResp(`<h2>✅ 已激活会员</h2><p>订单 <code>${order}</code> 处理成功。</p>`);
+  }
+  if (result.outcome === "dup") {
+    return htmlResp(`<h2>ℹ️ 该订单此前已处理</h2><p>订单 <code>${order}</code> 已是激活/处理过状态，无需重复。</p>`);
+  }
+  return htmlResp(
+    `<h2>⚠️ 仍未激活</h2><p>订单 <code>${order}</code> 结局：<code>${result.outcome}</code></p>` +
+      `<p>${result.note ?? ""}</p><p>请先修复根因（如更新 AFDIAN_TOKEN、或据留言人工补开）再重试。</p>`,
+  );
+}
+
 export async function serveRequest(req: Request): Promise<Response> {
+  const url = new URL(req.url);
+
+  // GET 一键重试（人从微信告警点入）
+  if (req.method === "GET" && url.searchParams.get("action") === "retry") {
+    return await handleRetry(url);
+  }
   if (req.method !== "POST") {
     return jsonOk("method_not_allowed");
   }
@@ -174,21 +258,7 @@ export async function serveRequest(req: Request): Promise<Response> {
   }
 
   const env = loadEnv();
-  const client = createClient(env.supabaseUrl, env.serviceRoleKey, {
-    auth: { persistSession: false },
-  });
-  const now = () => new Date();
-  const deps: Deps = {
-    store: createSupabaseStore(client),
-    verifier: createAfdianVerifier({
-      token: env.afdianToken,
-      userId: env.afdianUserId,
-      now,
-    }),
-    afdianPlanId: env.afdianPlanId,
-    now,
-  };
-
+  const deps = makeDeps(env);
   const result = await handlePayload(payload, deps);
 
   // 支付失败告警：真实付款单未激活（no_bind_code/no_user/plan_mismatch 等）时推送，
@@ -196,11 +266,9 @@ export async function serveRequest(req: Request): Promise<Response> {
   const outTradeNo = payload?.data?.order?.out_trade_no ?? null;
   if (env.alertSendkey && shouldAlert(result.outcome, outTradeNo)) {
     try {
-      await sendServerChanAlert(
-        env.alertSendkey,
-        `⚠️ 会员支付未激活: ${result.outcome}`,
-        `订单号: ${outTradeNo ?? "(无)"}\n结局: ${result.outcome}\n请查 Supabase webhook_events 明细并按需手动补开会员。`,
-      );
+      const retryUrl = await makeRetryUrl(env, outTradeNo);
+      const { title, desp } = buildAlert(result, outTradeNo, env.supabaseRef, new Date(), retryUrl);
+      await sendServerChanAlert(env.alertSendkey, title, desp);
     } catch (e) {
       console.error("告警发送失败:", (e as Error).message);
     }

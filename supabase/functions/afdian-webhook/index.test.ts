@@ -337,3 +337,35 @@ Deno.test("shouldAlert: 真实付款单未激活 → 告警", () => {
 Deno.test("shouldAlert: afdian 测试推送假单不告警(噪音过滤)", () => {
   assertEquals(shouldAlert("order_verify_failed", AFDIAN_SAMPLE_ORDER), false);
 });
+
+// ---- buildAlert：富文本告警拼装 ----
+import { buildAlert } from "./logic.ts";
+
+Deno.test("buildAlert: no_bind_code 含订单留言/金额/处理建议/链接", () => {
+  const result = {
+    ec: 200, em: "", outcome: "no_bind_code",
+    note: "留言未含绑定码（用户下单时未按提示填写绑定码）",
+    order: { out_trade_no: "T100", total_amount: "6.00", month: 1, plan_id: "plan_m", remark: "谢谢", user_id: "afd_u1", status: 2 },
+  };
+  const { title, desp } = buildAlert(result, "T100", "jamnwgemingjwudjhaak", new Date("2026-07-04T04:00:00Z"));
+  assertEquals(title, "⚠️ 会员支付未激活：no_bind_code");
+  // 关键调试信息都在
+  for (const frag of ["T100", "¥6.00", "谢谢", "afd_u1", "12:00:00", "如何处理", "supabase.com/dashboard/project/jamnwgemingjwudjhaak"]) {
+    assertEquals(desp.includes(frag), true, `desp 应含 ${frag}`);
+  }
+});
+
+Deno.test("buildAlert: 无 order 时也能拼(order_verify_failed)", () => {
+  const result = { ec: 200, em: "", outcome: "order_verify_failed", note: "query-order 未核实到订单（订单不存在 或 token/签名失败）" };
+  const { desp } = buildAlert(result, "T200", undefined, new Date("2026-07-04T00:00:00Z"));
+  assertEquals(desp.includes("token/签名"), true);
+  assertEquals(desp.includes("dashboard/project"), false); // 无 ref 不拼链接
+});
+
+Deno.test("buildAlert: 传入 retryUrl 则含一键重试链接", () => {
+  const result = { ec: 200, em: "", outcome: "no_bind_code", note: "留言未含绑定码" };
+  const { desp } = buildAlert(result, "T300", "ref123", new Date("2026-07-04T00:00:00Z"), "https://ref123.supabase.co/functions/v1/afdian-webhook?action=retry&order=T300&sig=abc");
+  assertEquals(desp.includes("一键重试处理"), true);
+  assertEquals(desp.includes("action=retry&order=T300&sig=abc"), true);
+  assertEquals(desp.includes("快捷操作"), true);
+});

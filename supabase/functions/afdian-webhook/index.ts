@@ -139,6 +139,12 @@ export async function serveRequest(req: Request): Promise<Response> {
     return jsonOk("bad_json");
   }
 
+  // ping/test 校验不依赖任何密钥，必须在 loadEnv 之前放行——
+  // 否则 afdian 后台配置回调时（此时 secrets 可能尚未设全）loadEnv 抛异常→500→ping 不通。
+  if (payload?.data?.type === "test") {
+    return jsonOk("ping");
+  }
+
   const env = loadEnv();
   const client = createClient(env.supabaseUrl, env.serviceRoleKey, {
     auth: { persistSession: false },

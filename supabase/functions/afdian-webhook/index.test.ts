@@ -300,3 +300,21 @@ Deno.test("plan 白名单不匹配 → plan_mismatch 不激活", async () => {
   assertEquals(r.outcome, "plan_mismatch");
   assertEquals(state.upserts.length, 0);
 });
+
+// ---- serveRequest HTTP 层：ping 必须在 loadEnv 之前放行 ----
+// 回归：afdian 配置回调时 secrets 可能尚未设全，ping 不应因缺环境变量而 500。
+import { serveRequest } from "./index.ts";
+
+Deno.test("serveRequest: 无任何 env 时 ping 仍返回 200 {ec:200}", async () => {
+  // 测试进程未设 AFDIAN_*/SUPABASE_* env，模拟 secrets 未设全的场景。
+  // 若 ping 未在 loadEnv 之前放行，此处会因缺环境变量抛异常 → 测试失败。
+  const req = new Request("https://x/functions/v1/afdian-webhook", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ec: 200, data: { type: "test" } }),
+  });
+  const resp = await serveRequest(req);
+  assertEquals(resp.status, 200);
+  const json = await resp.json();
+  assertEquals(json.ec, 200); // afdian 校验 ec===200
+});

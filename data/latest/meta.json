@@ -1,28 +1,64 @@
 {
   "schema_version": "1.1",
   "last_full_refresh": {
-    "us": "2026-07-06T14:18:09.766680+08:00",
-    "cn": "2026-07-06T14:18:09.766680+08:00"
+    "us": "2026-07-06T16:57:10.129076+08:00",
+    "cn": "2026-07-06T16:57:10.129076+08:00"
   },
-  "last_intraday_refresh": "2026-07-06T14:18:09.766680+08:00",
+  "last_intraday_refresh": "2026-07-06T16:57:10.129076+08:00",
   "providers": {
     "us": {
       "status": "ok",
       "name": "yfinance"
     },
     "cn": {
-      "status": "ok",
+      "status": "fallback",
       "name": "akshare-em"
     }
   },
   "failed_symbols": [],
-  "fallback_symbols": {},
+  "fallback_symbols": {
+    "159851": "akshare-sina",
+    "159869": "akshare-sina",
+    "159870": "akshare-sina",
+    "159883": "akshare-sina",
+    "159928": "akshare-sina",
+    "159936": "akshare-sina",
+    "159992": "akshare-sina",
+    "159995": "akshare-sina",
+    "159996": "akshare-sina",
+    "162411": "akshare-sina",
+    "510150": "akshare-sina",
+    "512000": "akshare-sina",
+    "512200": "akshare-sina",
+    "512290": "akshare-sina",
+    "512400": "akshare-sina",
+    "512480": "akshare-sina",
+    "512660": "akshare-sina",
+    "512690": "akshare-sina",
+    "512710": "akshare-sina",
+    "512720": "akshare-sina",
+    "512760": "akshare-sina",
+    "512800": "akshare-sina",
+    "513050": "akshare-sina",
+    "513330": "akshare-sina",
+    "515030": "akshare-sina",
+    "515220": "akshare-sina",
+    "515790": "akshare-sina",
+    "515980": "akshare-sina",
+    "516020": "akshare-sina",
+    "516780": "akshare-sina",
+    "518880": "akshare-sina",
+    "561560": "akshare-sina",
+    "562500": "akshare-sina",
+    "562800": "akshare-sina",
+    "588000": "akshare-sina"
+  },
   "stale_minutes": 0,
   "calendar": {
     "us_trading_today": true,
     "cn_trading_today": true,
     "us_session_active": false,
-    "cn_session_active": true
+    "cn_session_active": false
   },
   "backfilled": false,
   "cn_data_date": "2026-07-06",

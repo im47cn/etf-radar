@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "test": "deno test --allow-env"
+  },
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "std/": "https://deno.land/std@0.224.0/"
+  }
+}

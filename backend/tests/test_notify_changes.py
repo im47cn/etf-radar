@@ -129,10 +129,22 @@ def test_latest_market_rate_ok() -> None:
     assert latest_market_rate(temp) == 40.3
 
 
+def test_latest_market_rate_out_of_order() -> None:
+    # 序列非升序：仍应取最大 date 对应的 rate（非位置末元素），防补写历史误报 C。
+    temp = {"periods": {"ma20": {"market": [
+        {"date": "2026-07-03", "rate": 40.3},
+        {"date": "2026-07-02", "rate": 33.5},  # 位置末元素是旧日期
+    ]}}}
+    assert latest_market_rate(temp) == 40.3
+
+
 def test_latest_market_rate_missing() -> None:
     assert latest_market_rate(None) is None
     assert latest_market_rate({}) is None
     assert latest_market_rate({"periods": {"ma20": {"market": []}}}) is None
+    # 序列元素缺 date / 非 dict → 无有效点 → None。
+    assert latest_market_rate({"periods": {"ma20": {"market": [{"rate": 40.0}]}}}) is None
+    assert latest_market_rate({"periods": {"ma20": {"market": ["bad"]}}}) is None
 
 
 # ========== prev-day 目录回溯（非目录名减一天） ==========

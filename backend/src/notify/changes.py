@@ -179,7 +179,8 @@ def latest_market_rate(temperature: dict[str, object] | None) -> float | None:
     """从 market_temperature snapshot 取全市场 ma20 站上率的最新值。
 
     结构：{periods: {ma20: {market: [{date, rate}, ...]}}}。
-    数据缺失 / 结构不符 / 空序列 → None（供 diff_temperature 安全跳过 C）。
+    按序列内最大 date 对应的 rate 取值（非位置末元素），防数据乱序 / 补写历史时
+    静默取错值导致 C 全员误报。数据缺失 / 结构不符 / 空序列 → None（安全跳过 C）。
     """
     if not temperature:
         return None
@@ -192,10 +193,20 @@ def latest_market_rate(temperature: dict[str, object] | None) -> float | None:
     series = ma20.get("market")
     if not isinstance(series, list) or not series:
         return None
-    last = series[-1]
-    if not isinstance(last, dict):
+    latest_point: dict[str, object] | None = None
+    latest_date: str | None = None
+    for point in series:
+        if not isinstance(point, dict):
+            continue
+        d = point.get("date")
+        if not isinstance(d, str):
+            continue
+        if latest_date is None or d > latest_date:
+            latest_date = d
+            latest_point = point
+    if latest_point is None:
         return None
-    rate = last.get("rate")
+    rate = latest_point.get("rate")
     return float(rate) if isinstance(rate, (int, float)) else None
 
 

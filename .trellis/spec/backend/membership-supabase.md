@@ -82,6 +82,20 @@ if (!order || order.status !== 2) return audit('order_verify_failed')
 - afdian 后台回调 URL：`https://<REF>.supabase.co/functions/v1/afdian-webhook`。
 - 上线前用一笔真实小额订单端到端联调（验真已用官方向量证明，剩字段名以真实响应为准）。
 
+## 会员每日变化摘要邮件推送（二期，2026-07-07）
+> 独立子系统，`backend/src/notify/`。定位留存引擎，卖「省盯盘」不卖预测（合规 + 规避信号弱）。
+
+- **触发集 A+C+D**（B 宽度跨档经 research **剔除**：theme/ETF 无宽度维度、无 theme→行业映射）。A=象限迁移(long/short vs 50)，C=全市场温度档切换，D=composite 跨 50。**按标的聚合**（同标的 A+D 合一行，优先级 A>D）。
+- **温度 4 档边界 30/50/70**：真源 `frontend/src/lib/breadthColor.ts` `breadthTier()`。跨语言无法 import → Python `changes.py:temperature_tier` **同值移植 + 单测钉死边界**防漂移。改前端边界必须同步改 Python。
+- **数据模型**（迁移 `004_notify.sql`）：`notify_prefs`(email_enabled, unsub_token UNIQUE, 本人 RLS)、`digest_log`(run_date, user_id, outcome, **UNIQUE(run_date,user_id)** 幂等; 仅 service_role)。
+- **幂等铁律**：发信**前**先 `digest_log_exists(run_date,user_id)` 命中即 skip——UNIQUE 只挡审计重复、挡不住重发；违反则重跑 CI 会重发邮件、破 prd「每天最多 1 封」。
+- **温度取值**：`latest_market_rate` 按序列内**最大 date** 取（非 `series[-1]`），防乱序/补写历史误报 C（全员广播，错报成本高）。`market_temperature` 缺失日跳过 C 不报错。
+- **prev-day**：`find_prev_snapshot_dir` 按 `data/snapshots/` **实际存在目录**回溯（非目录名减一天，跨周末/假期）。
+- **发信/取邮箱**：零新依赖（urllib 自封 `SupabaseRest`）；邮箱走 Supabase Auth Admin REST `/auth/v1/admin/users/{id}`（service_role 可读，无需 profiles 冗余）。Resend `POST api.resend.com/emails`。dry-run（`NOTIFY_DRY_RUN=1`/`--dry-run`）不真发仍写 log。
+- **退订**：`supabase/functions/notify-unsub`（Deno），GET `?token=` 匹配 `notify_prefs.unsub_token` 置 `email_enabled=false`，返回 HTML，幂等。
+- **编排**：`.github/workflows/membership-digest.yml`（手动触发版，`workflow_dispatch` dry_run 默认 true）；联调后启用 cron（BJT 18:30，EOD 归档后）。secrets：`RESEND_API_KEY`、`SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`，可选 `vars.NOTIFY_MAIL_FROM`（需 Resend 验证发件域名）。
+- **合规**：邮件零操作动词（A「进入/退出强势象限」、D「强度上穿/下穿 50」、C「升温/降温」），含免责声明 + 退订链接。
+
 ## 上线排障踩坑（2026-07-04 实战）
 1. **afdian ping 报「请检查地址」**：多为 ping 响应体没有 `{"ec":200}`。① 确认部署的是本函数（curl 应返回带 `ec` 的体，而非占位 `{"ok":true}`）② ping(`data.type==='test'`) 必须在 `loadEnv()` 之前放行——否则 secrets 未设全时 loadEnv 抛异常→500→ping 失败。
 2. **`dns error: failed to lookup afdian.net`**：域名用错。**必须 `afdian.com`**，`.net` 已停用、Supabase 边缘解析失败。

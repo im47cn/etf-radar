@@ -55,12 +55,12 @@ const PriceCard = ({
 
 // 权益对比表：直观呈现免费用户与会员的功能差异。
 // '✓' 已支持，'—' 不支持，字符串为特殊状态（如即将推出）。
-const FEATURE_ROWS: { name: string; free: string; member: string; highlight?: boolean }[] = [
+const FEATURE_ROWS: { name: string; desc?: string; free: string; member: string; highlight?: boolean }[] = [
   { name: '市场温度 / 宽度', free: '✓', member: '✓' },
   { name: '板块轮动雷达',   free: '✓', member: '✓' },
   { name: 'ETF 雷达榜单',   free: '✓', member: '✓' },
   { name: '持仓管理',       free: '✓', member: '✓' },
-  { name: '自选盯盘',       free: '—', member: '✓', highlight: true },
+  { name: '自选盯盘', desc: '把关注的主题 / A股 ETF 加入自选，集中查看当前状态', free: '—', member: '✓', highlight: true },
   { name: '每日变化摘要邮件', free: '—', member: '即将推出', highlight: true },
 ];
 
@@ -82,7 +82,10 @@ const FeatureComparison = () => (
       <tbody>
         {FEATURE_ROWS.map((row) => (
           <tr key={row.name} className={`border-b ${row.highlight ? 'bg-blue-50/50' : ''}`}>
-            <td className={`py-2 px-2 ${row.highlight ? 'font-medium' : 'text-gray-700'}`}>{row.name}</td>
+            <td className={`py-2 px-2 ${row.highlight ? 'font-medium' : 'text-gray-700'}`}>
+              {row.name}
+              {row.desc && <div className="text-xs font-normal text-gray-500 mt-0.5">{row.desc}</div>}
+            </td>
             <td className={`py-2 px-2 text-center ${cellClass(row.free)}`}>{row.free}</td>
             <td className={`py-2 px-2 text-center ${cellClass(row.member)}`}>{row.member}</td>
           </tr>
@@ -132,10 +135,7 @@ export const MembershipPanel = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white border rounded-lg shadow-sm">
-      <h1 className="text-2xl font-bold mb-1">会员中心</h1>
-      <p className="text-sm text-gray-600 mb-4">
-        会员可使用自选盯盘：把关注的主题 / A股 ETF 加入自选，集中查看它们的当前状态。
-      </p>
+      <h1 className="text-2xl font-bold mb-4">会员中心</h1>
 
       {/* 当前订阅状态 */}
       <div className="mb-6 p-4 bg-gray-50 rounded">

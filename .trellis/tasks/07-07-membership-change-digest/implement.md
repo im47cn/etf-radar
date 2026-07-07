@@ -38,9 +38,9 @@
 - **验证**：`deno test`；部署后 curl 验证。
 
 ## 阶段 6：触发编排 + 整合验收
-- [ ] `cn-eod-archive.yml` 追加 digest job（或独立 workflow），工作日 EOD 后运行，幂等。
+- [x] 独立 workflow `.github/workflows/membership-digest.yml`（手动触发版）：`workflow_dispatch`（dry_run 输入默认 true、可选 run_date）+ 交易日门 + uv sync + `python -m src.notify.digest`。cron 注释待联调后启用（BJT 18:30，EOD 归档后）。NOTIFY_DRY_RUN 仅 dispatch+dry_run=true 时空跑，schedule 真发。
+- [ ] 联调（需 Resend 域名 + 迁移 004 + secrets）后：先手动 dry-run 核对 → 关闭 dry_run 真发 → 启用 cron。
 - [ ] 逐条核对 prd Acceptance Criteria；合规文案终审。
-- [ ] 前后端既有测试全绿。
 - [ ] `trellis-check` → `trellis-update-spec` → 提交 → `/trellis:finish-work`。
 
 ## 验证命令速查

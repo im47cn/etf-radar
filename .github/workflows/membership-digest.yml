@@ -1,0 +1,77 @@
+name: Membership Change Digest
+
+# 会员每日变化摘要邮件推送（二期）。
+# 当前为【手动触发版】：联调（Resend 域名验证 + 迁移 004 执行 + secrets 配置）通过前，
+# 不挂 cron 以免每天 CI 报红。联调 OK 后取消下方 schedule 注释即转每日自动。
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '空跑（不真发邮件，仅打印将发内容并写 digest_log）'
+        type: boolean
+        default: true
+      run_date:
+        description: '指定运行日期 YYYY-MM-DD（留空=今日 BJT）'
+        type: string
+        default: ''
+  # 联调通过后启用：EOD 归档（18:00 BJT）之后半小时跑，确保当日 snapshot 已提交。
+  # schedule:
+  #   - cron: '30 10 * * 1-5'   # 工作日 BJT 18:30 (UTC 10:30)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: membership-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check CN trading day
+        id: cal
+        run: |
+          pip install chinese-calendar -q
+          is_trading=$(python -c "
+          from datetime import datetime, timezone, timedelta
+          import chinese_calendar
+          today = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
+          ok = chinese_calendar.is_workday(today) and not chinese_calendar.is_holiday(today)
+          print('true' if ok else 'false')
+          ")
+          echo "is_trading=$is_trading" >> $GITHUB_OUTPUT
+      # 手动触发时无论是否交易日都放行（用户按需）；schedule 触发时仅交易日跑。
+      - name: Gate
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ steps.cal.outputs.is_trading }}" = "true" ]; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+          fi
+      - uses: actions/checkout@v6
+        if: steps.gate.outputs.run == 'true'
+      - uses: astral-sh/setup-uv@v8.2.0
+        if: steps.gate.outputs.run == 'true'
+        with:
+          version: "0.11.x"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - if: steps.gate.outputs.run == 'true'
+        run: cd backend && uv sync --extra dev
+      - name: Run digest
+        if: steps.gate.outputs.run == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFY_MAIL_FROM: ${{ vars.NOTIFY_MAIL_FROM }}
+          # 仅当手动触发且 dry_run=true 时空跑(1)；dry_run=false 或 schedule(inputs 为空) 均真发(0)。
+          NOTIFY_DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '0' }}
+        run: |
+          cd backend
+          ARGS=""
+          if [ -n "${{ github.event.inputs.run_date }}" ]; then
+            ARGS="--run-date ${{ github.event.inputs.run_date }}"
+          fi
+          uv run python -m src.notify.digest $ARGS

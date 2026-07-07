@@ -59,15 +59,15 @@ const FEATURE_ROWS: { name: string; desc?: string; free: string; member: string;
   { name: '市场温度 / 宽度', free: '✓', member: '✓' },
   { name: '板块轮动雷达',   free: '✓', member: '✓' },
   { name: 'ETF 雷达榜单',   free: '✓', member: '✓' },
-  { name: '持仓管理',       free: '✓', member: '✓' },
+  { name: '持仓管理',       free: '最多 5 支', member: '不限', highlight: true },
   { name: '自选盯盘', desc: '把关注的主题 / A股 ETF 加入自选，集中查看当前状态', free: '—', member: '✓', highlight: true },
   { name: '每日变化摘要邮件', free: '—', member: '即将推出', highlight: true },
 ];
 
 const cellClass = (v: string): string =>
-  v === '✓' ? 'text-green-600 font-medium'
+  v === '✓' || v === '不限' ? 'text-green-600 font-medium'
   : v === '—' ? 'text-gray-300'
-  : 'text-blue-600 text-xs';
+  : 'text-gray-600 text-xs';
 
 const FeatureComparison = () => (
   <div className="mb-6 overflow-x-auto">

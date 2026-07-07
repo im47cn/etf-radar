@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useHoldings } from '@/hooks/useHoldings';
+import { useSubscription } from '@/lib/subscription/useSubscription';
+import { FREE_HOLDINGS_LIMIT } from '@/lib/portfolio/limits';
 import { usePortfolioScores } from '@/hooks/usePortfolioScores';
 import { useDataContext } from '@/providers/dataContext';
 import { useUserEvents } from '@/hooks/useUserEvents';
@@ -14,6 +17,10 @@ import { EventTimeline } from './EventTimeline';
 export const HoldingsList = () => {
   const { remove, holdings } = useHoldings();
   const { scores, loading, ownedThemeIds, themes } = usePortfolioScores();
+  // 免费版持仓上限：非会员满 5 支时禁止新增（服务端触发器兜底强制）。
+  const { state } = useSubscription();
+  const isMember = state === 'member';
+  const atLimit = !isMember && holdings.length >= FREE_HOLDINGS_LIMIT;
   // null = 不开; '' = 新增模式; etfCode = 编辑模式
   const [editingCode, setEditingCode] = useState<string | null>(null);
   const editing = editingCode ? holdings.find(h => h.etf_code === editingCode) ?? null : null;
@@ -56,11 +63,24 @@ export const HoldingsList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">我的持仓（{scores.length} 只）</h2>
-        <button
-          onClick={() => setEditingCode('')}
-          className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm"
-        >+ 添加持仓</button>
+        <div className="flex items-baseline gap-2">
+          <h2 className="text-lg font-semibold">我的持仓（{scores.length} 只）</h2>
+          {!isMember && (
+            <span className="text-xs text-gray-500">免费版 {holdings.length}/{FREE_HOLDINGS_LIMIT}</span>
+          )}
+        </div>
+        {atLimit ? (
+          <Link
+            to="/membership"
+            className="px-3 py-1.5 bg-amber-500 text-white rounded text-sm hover:bg-amber-600"
+            title={`免费版最多 ${FREE_HOLDINGS_LIMIT} 支，升级会员解锁不限`}
+          >升级解锁更多</Link>
+        ) : (
+          <button
+            onClick={() => setEditingCode('')}
+            className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm"
+          >+ 添加持仓</button>
+        )}
       </div>
 
       {scores.length === 0 ? (

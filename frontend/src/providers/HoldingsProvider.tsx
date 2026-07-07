@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
 import { isSupabaseConfigured, getSupabase } from '@/lib/supabase';
 import { HoldingSchema, type Holding } from '@/lib/portfolio/types';
+import { FREE_HOLDINGS_LIMIT } from '@/lib/portfolio/limits';
 import { useAuth } from '@/hooks/useAuth';
 import { HoldingsContext, type UseHoldingsResult, type UpsertInput, type UpdateInput } from './holdingsContext';
 
@@ -92,7 +93,13 @@ function useHoldingsImpl(): UseHoldingsResult {
       .from('user_holdings')
       .upsert(payload, { onConflict: 'user_id,etf_code' });
 
-    if (error) return { error: error.message };
+    if (error) {
+      // 命中免费版持仓上限触发器（005 迁移），转成可读提示。
+      if (error.message.includes('HOLDINGS_LIMIT')) {
+        return { error: `免费版最多 ${FREE_HOLDINGS_LIMIT} 支持仓，升级会员可解锁不限` };
+      }
+      return { error: error.message };
+    }
     await refresh();
     return { error: null, merged };
   }, [user, holdings, refresh]);

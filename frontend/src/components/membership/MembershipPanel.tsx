@@ -53,6 +53,45 @@ const PriceCard = ({
   );
 };
 
+// 权益对比表：直观呈现免费用户与会员的功能差异。
+// '✓' 已支持，'—' 不支持，字符串为特殊状态（如即将推出）。
+const FEATURE_ROWS: { name: string; free: string; member: string; highlight?: boolean }[] = [
+  { name: '市场温度 / 宽度', free: '✓', member: '✓' },
+  { name: '板块轮动雷达',   free: '✓', member: '✓' },
+  { name: 'ETF 雷达榜单',   free: '✓', member: '✓' },
+  { name: '持仓管理',       free: '✓', member: '✓' },
+  { name: '自选盯盘',       free: '—', member: '✓', highlight: true },
+  { name: '每日变化摘要邮件', free: '—', member: '即将推出', highlight: true },
+];
+
+const cellClass = (v: string): string =>
+  v === '✓' ? 'text-green-600 font-medium'
+  : v === '—' ? 'text-gray-300'
+  : 'text-blue-600 text-xs';
+
+const FeatureComparison = () => (
+  <div className="mb-6 overflow-x-auto">
+    <table className="w-full text-sm border-collapse min-w-[20rem]">
+      <thead>
+        <tr className="border-b">
+          <th className="py-2 px-2 text-left font-medium text-gray-600">功能</th>
+          <th className="py-2 px-2 text-center font-medium text-gray-500 w-24">免费用户</th>
+          <th className="py-2 px-2 text-center font-medium text-blue-700 w-24">会员</th>
+        </tr>
+      </thead>
+      <tbody>
+        {FEATURE_ROWS.map((row) => (
+          <tr key={row.name} className={`border-b ${row.highlight ? 'bg-blue-50/50' : ''}`}>
+            <td className={`py-2 px-2 ${row.highlight ? 'font-medium' : 'text-gray-700'}`}>{row.name}</td>
+            <td className={`py-2 px-2 text-center ${cellClass(row.free)}`}>{row.free}</td>
+            <td className={`py-2 px-2 text-center ${cellClass(row.member)}`}>{row.member}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
 // 绑定码块：调 issue_bind_code RPC 取码，引导用户下单时填入订单留言。
 const BindCodeBlock = () => {
   const [code, setCode]   = useState<string | null>(null);
@@ -111,6 +150,7 @@ export const MembershipPanel = () => {
 
       {state !== 'member' && (
         <>
+          <FeatureComparison />
           <div className="flex flex-col sm:flex-row gap-3">
             <PriceCard title="月度会员" price="6"  unit="月" href={AFDIAN_MONTHLY_URL} />
             <PriceCard title="年度会员" price="58" unit="年" note="约 8 折" href={AFDIAN_YEARLY_URL} />

@@ -18,7 +18,10 @@
 
 ## Acceptance Criteria
 - [x] `npx playwright test e2e/portfolio.spec.ts --project=chromium` 全绿(3 passed)。
-- [ ] CI e2e job 转绿。
+- [x] CI e2e job 转绿(PR #25:backend/frontend/e2e/CodeRabbit/Sourcery 全 SUCCESS)。
+
+## 附带修复
+推送时发现并行会话的 C2 `AsOfBadge.tsx` 触发 `react-refresh/only-export-components` 打挂 frontend job(致 e2e 被 skip)。拆 `asOfLabel`+`todayBjt` 到独立 `asOfLabel.ts` 修复(commit 与本任务同批)。
 
 ## 复盘 / 预防
 - 改导航标签时应同步更新耦合的 e2e 断言(同一提交内)。

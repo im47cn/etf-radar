@@ -37,7 +37,7 @@
 - 合入后先 dry-run 跑 1-2 天,人工核对 findings 与拟触发动作正确 → 再关 dry-run 开真自愈。
 
 ## 验证命令
-```
+```shell
 cd backend && uv run --all-extras pytest tests/test_notify_alert.py tests/test_health_monitor.py -v 2>&1 | tail -25
 cd backend && uv run --all-extras pytest 2>&1 | tail -15
 ```

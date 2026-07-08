@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 4
+- **Total Sessions**: 5
 - **Last Active**: 2026-07-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~180 | Active |
+| `journal-1.md` | ~214 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 5 | 2026-07-08 | 修前端 e2e portfolio.spec 陈旧断言 + 连带修 C2 AsOfBadge lint | `37d89f9`, `5bb353e` | `feat/data-fetch-resilience` |
 | 4 | 2026-07-08 | C2 latest no-regress 护栏 + 前端数据截至日 | `7135bdc` | `feat/data-fetch-resilience` |
 | 3 | 2026-07-08 | 数据获取故障根治: 止血三连 + C1哨兵/C4韧性落地 | `b656d8f`, `60513fe` | `feat/data-fetch-resilience` |
 | 2 | 2026-07-03 | 市场温度: 自建个股多周期(MA20/60/120)宽度 + 全套UI迭代 | `e308f85`, `5e54eea`, `b9782bd` | `main` |

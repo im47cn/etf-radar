@@ -178,3 +178,37 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: 修前端 e2e portfolio.spec 陈旧断言 + 连带修 C2 AsOfBadge lint
+
+**Date**: 2026-07-08
+**Task**: 修前端 e2e portfolio.spec 陈旧断言 + 连带修 C2 AsOfBadge lint
+**Branch**: `feat/data-fetch-resilience`
+
+### Summary
+
+e2e portfolio.spec 两用例长期 red: 根因是导航标签早前缩短(我的持仓→持仓/主题轮动→轮动, 修移动端换行)但 e2e 未跟上, systematic-debugging 本地复现定位后更新断言+exact:true。推送时发现并行会话在同分支提交的 C2 AsOfBadge.tsx 触发 react-refresh/only-export-components 打挂 frontend job, 拆 asOfLabel 到独立文件修复。PR#25 五项 CI 全 SUCCESS(含 C1/C4/C2/e2e)。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `37d89f9` | (see git log) |
+| `5bb353e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

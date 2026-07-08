@@ -67,8 +67,9 @@ jobs:
         if: steps.cal.outputs.is_trading == 'true'
         env:
           GH_TOKEN: ${{ secrets.DATA_BOT_PAT }}
-          # 灰度开关: 置 '0' 则仅检测并打印, 不实际 dispatch backfill
-          SELF_HEAL_DISPATCH: '1'
+          # 灰度开关: 默认 '0'(仅检测并打印, 不 dispatch), 避免合入即无意自动触发回填。
+          # 灰度观察无误后, 在仓库 Variables 设 SELF_HEAL_DISPATCH=1 开启真自愈, 无需改代码。
+          SELF_HEAL_DISPATCH: ${{ vars.SELF_HEAL_DISPATCH || '0' }}
         run: |
           set +e
           cd backend && uv run python -m src.stocks_continuity --data-root ../data

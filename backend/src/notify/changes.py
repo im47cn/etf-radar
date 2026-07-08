@@ -21,8 +21,9 @@ MID_LINE = 50
 
 # 温度分档边界，同值移植自 frontend/src/lib/breadthColor.ts 的 breadthTier()：
 #   [0,25) 冰点 / [25,50) 偏冷 / [50,70) 偏暖 / [70,100] 过热。
-# 冰点尾部按 MA20 站上率历史 P20 校准（30→25），中枢 50 / 过热 70 不动。
-# 单测钉死这些边界，防与前端漂移。
+# 实证校准（全量 5526 只 × 2022-2026 多 regime）：冰点 25≈P20 / 过热 70≈P80，
+# 中枢 50 为理论中性线；MA20/60/120 三周期分位近乎重合，同一阈值通用。
+# 依据见 backend/research/breadth-calibration/README.md。单测钉死这些边界，防与前端漂移。
 TEMPERATURE_TIERS: tuple[tuple[int, str], ...] = (
     (70, "过热"),
     (50, "偏暖"),

@@ -17,7 +17,10 @@ const NO_DATA = '#f1f5f9'; // slate-100
  * 温度 4 档: 单一来源.
  * 图例/tier/纹理/文案全部由此派生, 消除双真源漂移.
  * key 内部键 / label 中文文案 / [min,max) 区间 / mid 取色中点 / hatch 纹理角度.
- * 阈值 25/50/70 与 breadthLabel 完全对齐 (冰点尾部按 MA20 站上率历史 P20 校准).
+ * 阈值 25/50/70 与 breadthLabel 完全对齐.
+ * 实证校准: 全量 5526 只 × 2022-2026 多 regime, 冰点 25≈P20 / 过热 70≈P80 (冷热两尾各~20%),
+ * 中枢 50 为理论无趋势中性线; MA20/60/120 三周期分位近乎重合, 故同一阈值通用.
+ * 依据见 backend/research/breadth-calibration/README.md.
  */
 export const TIERS = [
   { key: 'cold', label: '冰点', min: 0, max: 25, mid: 12, hatch: 45 }, //  '/'

@@ -111,3 +111,37 @@
 
 - 部署上线(见 spec/backend/membership-supabase.md Runbook)
 - 二期: 邮件变化摘要推送(Resend+pg_cron)、全量历史回看+导出、微信官方支付迁移、年费独立方案
+
+
+## Session 3: 数据获取故障根治: 止血三连 + C1哨兵/C4韧性落地
+
+**Date**: 2026-07-08
+**Task**: 数据获取故障根治: 止血三连 + C1哨兵/C4韧性落地
+**Branch**: `feat/data-fetch-resilience`
+
+### Summary
+
+生产数据链陈旧排查: eastmoney断连+stocks-daily被CANCELLED+09:15cron漏触发三者叠加, 手动重跑cn-refresh/stocks-daily/backfill止血并补齐07-07空洞。根治规划为parent(data-fetch-resilience)+4子任务; C4(个股日更韧性+自动补缺)已完成, C1(health-monitor哨兵+Server酱告警+自愈编排,含漏触发判据)本会话实现+双审(344 passed)+update-spec(health-monitoring.md)并提交。C2/C3仍待实现。分支feat/data-fetch-resilience未推送。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b656d8f` | (see git log) |
+| `60513fe` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -2,7 +2,7 @@
 
 触发集 = A + C + D（B 已在 research 阶段剔除）：
 - A 象限迁移（per theme）：象限 =（long vs 50, short vs 50）四象限，跨象限则触发。
-- C 全市场温度档位切换（全局）：站上率分档边界 30/50/70，同值移植自
+- C 全市场温度档位切换（全局）：站上率分档边界 25/50/70，同值移植自
   frontend/src/lib/breadthColor.ts 的 breadthTier()；温度数据任一侧缺失 → 跳过 C 不报错。
 - D 强度评分跨 50（per theme/etf）：strength.composite 上一交易日/今日分处 50 两侧则触发。
 
@@ -20,12 +20,13 @@ from typing import Literal
 MID_LINE = 50
 
 # 温度分档边界，同值移植自 frontend/src/lib/breadthColor.ts 的 breadthTier()：
-#   [0,30) 冰点 / [30,50) 偏冷 / [50,70) 偏暖 / [70,100] 过热。
+#   [0,25) 冰点 / [25,50) 偏冷 / [50,70) 偏暖 / [70,100] 过热。
+# 冰点尾部按 MA20 站上率历史 P20 校准（30→25），中枢 50 / 过热 70 不动。
 # 单测钉死这些边界，防与前端漂移。
 TEMPERATURE_TIERS: tuple[tuple[int, str], ...] = (
     (70, "过热"),
     (50, "偏暖"),
-    (30, "偏冷"),
+    (25, "偏冷"),
     (0, "冰点"),
 )
 
@@ -59,7 +60,7 @@ class TemperatureChange:
 
 
 def temperature_tier(rate: float | None) -> str | None:
-    """站上率 → 温度档位标签；无数据 → None。边界 30/50/70。"""
+    """站上率 → 温度档位标签；无数据 → None。边界 25/50/70。"""
     if rate is None:
         return None
     for lower, label in TEMPERATURE_TIERS:

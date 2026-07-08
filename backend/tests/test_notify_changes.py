@@ -20,13 +20,13 @@ def _s(short: int, long: int, composite: int) -> dict[str, int | None]:
     return {"short": short, "mid": 50, "long": long, "composite": composite}
 
 
-# ========== C：温度边界钉死（防与前端 breadthColor.ts 的 30/50/70 漂移） ==========
+# ========== C：温度边界钉死（防与前端 breadthColor.ts 的 25/50/70 漂移） ==========
 @pytest.mark.parametrize(
     "rate,expected",
     [
         (0, "冰点"),
-        (29.9, "冰点"),
-        (30, "偏冷"),
+        (24.9, "冰点"),
+        (25, "偏冷"),
         (49.9, "偏冷"),
         (50, "偏暖"),
         (69.9, "偏暖"),
@@ -44,7 +44,7 @@ def test_temperature_tier_none() -> None:
 
 # ========== C：温度档切换 / 未切 / 缺失跳过 ==========
 def test_diff_temperature_switch_up() -> None:
-    ch = diff_temperature(29.0, 55.0)
+    ch = diff_temperature(20.0, 55.0)
     assert isinstance(ch, TemperatureChange)
     assert ch.tier_prev == "冰点" and ch.tier_now == "偏暖"
     assert ch.direction == "up"

@@ -33,11 +33,11 @@ describe('breadthColor', () => {
 });
 
 describe('breadthTier / breadthLevelColor (色阶单一真源)', () => {
-  it('tier 边界: 阈值 30/50/70, 无数据 -> null', () => {
+  it('tier 边界: 阈值 25/50/70, 无数据 -> null', () => {
     expect(breadthTier(null)).toBeNull();
     expect(breadthTier(undefined)).toBeNull();
-    expect(breadthTier(29)?.key).toBe('cold');
-    expect(breadthTier(30)?.key).toBe('cool');
+    expect(breadthTier(24)?.key).toBe('cold');
+    expect(breadthTier(25)?.key).toBe('cool');
     expect(breadthTier(49)?.key).toBe('cool');
     expect(breadthTier(50)?.key).toBe('warm');
     expect(breadthTier(69)?.key).toBe('warm');
@@ -52,7 +52,7 @@ describe('breadthTier / breadthLevelColor (色阶单一真源)', () => {
   });
 
   it('breadthLevelColor 对非中点值落档取该档中点色 (锁分档正确, 非恒等)', () => {
-    // 42 落 cool(30-50, mid 40); 若分档错位则与 breadthColor(40) 不等
+    // 42 落 cool(25-50, mid 38); 若分档错位则与 breadthColor(38) 不等
     for (const v of [10, 42, 63, 88]) {
       const tier = breadthTier(v)!;
       expect(breadthLevelColor(v)).toBe(breadthColor(tier.mid));

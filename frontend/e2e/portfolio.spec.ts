@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Portfolio (anonymous)', () => {
-  test('Header 显示 我的持仓 链接', async ({ page }) => {
+  test('Header 显示 持仓 链接', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('link', { name: '我的持仓' })).toBeVisible();
+    await expect(page.getByRole('link', { name: '持仓', exact: true })).toBeVisible();
   });
 
   test('/portfolio 未登录显示登录卡或未配置卡', async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('Portfolio (anonymous)', () => {
   test('现有 / 和 /rotation 路由仍工作', async ({ page }) => {
     await page.goto('/');
     // HashRouter 初次着陆 URL 不带 # 是正常的；只要导航后能进 #/rotation 即说明路由健康
-    await page.getByRole('link', { name: '主题轮动' }).click();
+    await page.getByRole('link', { name: '轮动', exact: true }).click();
     await expect(page).toHaveURL(/#\/rotation/);
   });
 });

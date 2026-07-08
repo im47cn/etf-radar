@@ -288,28 +288,46 @@ def _query_runs() -> dict[str, Optional[dict[str, Any]]]:
                 timeout=30,
             )
             if out.returncode != 0:
+                # 区分"确无 run"与"gh/认证/环境故障": 后者打 warning 便于排查,
+                # 避免把工具故障静默当成 workflow 空档而误判/误补偿。
+                log.warning(
+                    "_query_runs(%s) gh 非零退出 %s: %s",
+                    wf, out.returncode, (out.stderr or "").strip(),
+                )
                 result[wf] = None
                 continue
             data = json.loads(out.stdout or "[]")
-            result[wf] = data[0] if data else None
+            result[wf] = data[0] if isinstance(data, list) and data else None
         except Exception as exc:  # gh 缺失/超时——记 None，evaluate 会判缺陷
             log.warning("_query_runs(%s) 失败: %s", wf, exc)
             result[wf] = None
     return result
 
 
-def _dispatch(workflow: str) -> None:
-    """触发补偿 workflow（gh workflow run）。异常仅 log，不中断巡检。"""
+def _dispatch(workflow: str) -> bool:
+    """触发补偿 workflow（gh workflow run）。
+
+    成功(gh 退出 0)返回 True;非零退出或异常仅 log 返回 False——
+    调用方据此决定是否计入 attempts,避免 dispatch 从未生效却耗尽补偿预算、误告警。
+    """
     try:
-        subprocess.run(
+        out = subprocess.run(
             ["gh", "workflow", "run", f"{workflow}.yml"],
             capture_output=True,
             text=True,
             timeout=30,
             check=False,
         )
+        if out.returncode != 0:
+            log.error(
+                "_dispatch(%s) 非零退出 %s: %s",
+                workflow, out.returncode, (out.stderr or "").strip(),
+            )
+            return False
+        return True
     except Exception as exc:
         log.error("_dispatch(%s) 失败: %s", workflow, exc)
+        return False
 
 
 # ----------------------------- heal_state 持久化 -----------------------------
@@ -368,21 +386,31 @@ def run(data_root: Path, dry_run: bool) -> list[Finding]:
 
     state_path = data_root / "health" / "heal_state.json"
     state = _load_state(state_path)
-    active_kinds = {f["kind"] for f in findings}
+    # 键 = kind:remedy_workflow。同一 kind 可对应多个补救目标(如 cn-refresh 与
+    # us-refresh 同时 workflow_missed_or_failed),必须各自独立计数,否则共享预算
+    # 会让后半部分 workflow 永不被补偿。
+    active_keys = {f'{f["kind"]}:{f["remedy_workflow"]}' for f in findings}
 
-    # 异常消失 → 重置该 kind 计数
-    for kind in list(state.keys()):
-        if kind not in active_kinds:
-            del state[kind]
+    # 异常消失 → 重置该键计数
+    for key in list(state.keys()):
+        if key not in active_keys:
+            del state[key]
 
     now_iso = datetime.now(timezone.utc).isoformat()
     for f in findings:
         kind = f["kind"]
-        entry = state.setdefault(kind, {"attempts": 0, "last_iso": None, "alerted": False})
+        state_key = f'{kind}:{f["remedy_workflow"]}'
+        entry = state.get(state_key)
+        # heal_state.json 被手改/损坏成非 dict 或缺 attempts 时, 重置为初始态,
+        # 避免后续 entry["attempts"] 抛 TypeError/KeyError。
+        if not isinstance(entry, dict) or "attempts" not in entry:
+            entry = {"attempts": 0, "last_iso": None, "alerted": False}
+            state[state_key] = entry
         if entry["attempts"] < MAX_ATTEMPTS:
-            _dispatch(f["remedy_workflow"])
-            entry["attempts"] += 1
-            entry["last_iso"] = now_iso
+            # 仅在 dispatch 真正成功时计数,失败则保持 attempts 不变、下轮重试。
+            if _dispatch(f["remedy_workflow"]):
+                entry["attempts"] += 1
+                entry["last_iso"] = now_iso
         elif not entry.get("alerted"):
             title = f"[etf-radar] 自愈耗尽: {kind}"
             desp = (

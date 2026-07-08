@@ -549,6 +549,9 @@ def _write_latest_guarded(
         try:
             existing_meta = json.loads(meta_path.read_text(encoding='utf-8'))
         except json.JSONDecodeError:
+            log.warning(
+                'latest/meta.json 损坏, no-regress 护栏按首次写入放行(行为不变, 仅告知)'
+            )
             existing_meta = None
     ok, reason = should_write_latest(meta_json, existing_meta)
     if not ok:

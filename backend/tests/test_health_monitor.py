@@ -274,7 +274,7 @@ def test_run_dispatch_then_alert_after_max(tmp_path, monkeypatch):
     dispatched = []
     alerted = []
     monkeypatch.setattr(hm, "_query_runs", lambda: {})
-    monkeypatch.setattr(hm, "_dispatch", lambda wf: dispatched.append(wf))
+    monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) or True)
     monkeypatch.setattr(hm, "send_alert", lambda title, desp: alerted.append(title) or True)
 
     # 前 MAX_ATTEMPTS 轮 → dispatch；之后转 alert。
@@ -295,7 +295,7 @@ def test_run_resets_count_when_finding_gone(tmp_path, monkeypatch):
     root = _write_data_root(tmp_path, degraded=True)
     dispatched = []
     monkeypatch.setattr(hm, "_query_runs", lambda: {})
-    monkeypatch.setattr(hm, "_dispatch", lambda wf: dispatched.append(wf))
+    monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) or True)
     monkeypatch.setattr(hm, "send_alert", lambda title, desp: True)
 
     hm.run(root, dry_run=False)
@@ -306,7 +306,7 @@ def test_run_resets_count_when_finding_gone(tmp_path, monkeypatch):
     (root / "latest" / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
     hm.run(root, dry_run=False)
     state = json.loads((root / "health" / "heal_state.json").read_text(encoding="utf-8"))
-    assert "cn_provider_degraded" not in state
+    assert "cn_provider_degraded:cn-refresh" not in state
 
     # 异常复现 → 重新从 attempt 1 开始
     (root / "latest" / "meta.json").write_text(
@@ -315,6 +315,50 @@ def test_run_resets_count_when_finding_gone(tmp_path, monkeypatch):
     )
     hm.run(root, dry_run=False)
     assert len(dispatched) == 2
+
+
+def test_run_dispatch_failure_does_not_count(tmp_path, monkeypatch):
+    """dispatch 失败(返回 False)不计入 attempts, 下轮继续重试, 不误告警。"""
+    root = _write_data_root(tmp_path, degraded=True)
+    dispatched = []
+    alerted = []
+    monkeypatch.setattr(hm, "_query_runs", lambda: {})
+    monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) and False)
+    monkeypatch.setattr(hm, "send_alert", lambda title, desp: alerted.append(title) or True)
+
+    for _ in range(hm.MAX_ATTEMPTS + 2):
+        hm.run(root, dry_run=False)
+
+    # 每轮都尝试 dispatch, 但从不计数 → 永不耗尽 → 不告警
+    assert len(dispatched) == hm.MAX_ATTEMPTS + 2
+    assert alerted == []
+    state = json.loads((root / "health" / "heal_state.json").read_text(encoding="utf-8"))
+    assert state["cn_provider_degraded:cn-refresh"]["attempts"] == 0
+
+
+def test_run_same_kind_different_remedy_independent_budget(tmp_path, monkeypatch):
+    """同 kind(workflow_missed_or_failed)不同 remedy 各自独立计数, 互不挤占预算。"""
+    root = _write_data_root(tmp_path, degraded=False)
+    findings = [
+        hm._finding("workflow_missed_or_failed", "warning", "cn-refresh missed", "cn-refresh"),
+        hm._finding("workflow_missed_or_failed", "warning", "us-refresh missed", "us-refresh"),
+    ]
+    dispatched = []
+    alerted = []
+    monkeypatch.setattr(hm, "_query_runs", lambda: {})
+    monkeypatch.setattr(hm, "evaluate", lambda *a, **k: findings)
+    monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) or True)
+    monkeypatch.setattr(hm, "send_alert", lambda title, desp: alerted.append(title) or True)
+
+    for _ in range(hm.MAX_ATTEMPTS):
+        hm.run(root, dry_run=False)
+    # 两个 remedy 各自 dispatch MAX_ATTEMPTS 次(未共享预算)
+    assert dispatched.count("cn-refresh") == hm.MAX_ATTEMPTS
+    assert dispatched.count("us-refresh") == hm.MAX_ATTEMPTS
+    assert alerted == []
+
+    hm.run(root, dry_run=False)  # 两者同时耗尽 → 两条独立告警
+    assert len(alerted) == 2
 
 
 def test_run_tolerates_corrupt_json(tmp_path, monkeypatch):

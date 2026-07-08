@@ -1,7 +1,7 @@
 """Server酱 失败告警渠道——薄封装,发信失败绝不拖垮巡检。
 
 风格对齐 digest.py 的 dataclass + from_env。与 digest.py（urllib）不同,
-这里用 requests（已作为传递依赖可用）以贴合 Server酱 简单表单 POST。
+这里用 requests（已在 pyproject 显式声明为依赖）以贴合 Server酱 简单表单 POST。
 
 关键契约:任何失败（无 key / dry-run / 网络异常 / 非 200）→ 返回 False 且不 raise,
 因为"告警失败"不应中断哨兵巡检本身。

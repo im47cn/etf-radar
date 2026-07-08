@@ -45,7 +45,9 @@ def main() -> int:
         print(f'close_series not found: {close_path}', file=sys.stderr)
         return 1
     data = json.loads(close_path.read_text(encoding='utf-8'))
-    dates: list[str] = data.get('dates', [])
+    # close_series 损坏成非 dict(list/null)时不应崩溃, 视作空序列。
+    raw_dates = data.get('dates', []) if isinstance(data, dict) else []
+    dates: list[str] = raw_dates if isinstance(raw_dates, list) else []
     gaps = missing_trading_days(dates)
     if gaps:
         print(','.join(d.isoformat() for d in gaps))

@@ -1,5 +1,6 @@
 import { StaleBanner } from './StaleBanner';
 import { UpdateBadge } from './UpdateBadge';
+import { AsOfBadge } from './AsOfBadge';
 import { RadarTabs } from './RadarTabs';
 import { UserMenu } from './UserMenu';
 import { EventBadge } from './EventBadge';
@@ -11,6 +12,7 @@ export const Header = () => (
         <div className="text-xl font-bold">ETF Radar</div>
       </div>
       <div className="flex items-center gap-3">
+        <AsOfBadge />
         <UpdateBadge />
         <EventBadge />
         <UserMenu />

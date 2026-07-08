@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import random
 import time
@@ -42,6 +43,7 @@ from .models import (
     ThemeSignal,
 )
 from .output.descriptions import theme_dynamic_description
+from .output.no_regress import should_write_latest
 from .output.writer import atomic_write_json
 from .providers.akshare_em_provider import AkshareEmProvider
 from .providers.akshare_sina_provider import AkshareSinaProvider
@@ -527,6 +529,43 @@ def compute_outputs(
     return themes_json, etfs_json, signals_json, meta_json
 
 
+def _write_latest_guarded(
+    data_root: Path,
+    themes_json: dict[str, Any],
+    etfs_json: dict[str, Any],
+    signals_json: dict[str, Any],
+    meta_json: dict[str, Any],
+) -> bool:
+    """写 data/latest 四文件, 前置 no-regress 护栏。
+
+    若新数据相对现有 latest 回退(见 should_write_latest)则整体跳过写入,
+    保留上一好版本并记 latest_write_skipped_regress 日志(供 C1 哨兵消费),
+    返回 False; 正常写入返回 True。
+    """
+    latest = data_root / 'latest'
+    meta_path = latest / 'meta.json'
+    existing_meta: dict[str, Any] | None = None
+    if meta_path.exists():
+        try:
+            existing_meta = json.loads(meta_path.read_text(encoding='utf-8'))
+        except json.JSONDecodeError:
+            existing_meta = None
+    ok, reason = should_write_latest(meta_json, existing_meta)
+    if not ok:
+        old = existing_meta or {}
+        log.error(
+            'latest_write_skipped_regress: %s new_cn=%s new_us=%s old_cn=%s old_us=%s',
+            reason, meta_json.get('cn_data_date'), meta_json.get('us_data_date'),
+            old.get('cn_data_date'), old.get('us_data_date'),
+        )
+        return False
+    atomic_write_json(latest / 'themes.json', themes_json)
+    atomic_write_json(latest / 'etfs.json', etfs_json)
+    atomic_write_json(latest / 'signals.json', signals_json)
+    atomic_write_json(latest / 'meta.json', meta_json)
+    return True
+
+
 def run_pipeline(
     mode: PipelineMode,
     data_root: Path,
@@ -554,13 +593,15 @@ def run_pipeline(
         asof_bjt=now_bjt, mode=mode, cn_fallback_map=cn_fallback_map,
     )
 
-    atomic_write_json(data_root / 'latest' / 'themes.json', themes_json)
-    atomic_write_json(data_root / 'latest' / 'etfs.json', etfs_json)
-    atomic_write_json(data_root / 'latest' / 'signals.json', signals_json)
-    atomic_write_json(data_root / 'latest' / 'meta.json', meta_json)
+    written = _write_latest_guarded(
+        data_root, themes_json, etfs_json, signals_json, meta_json,
+    )
 
     # stocks_spot.json 由独立的 stocks_spot_pipeline 写入（解耦 spot 失败与主链路）
-    log.info(f'pipeline done, failed={len(us_failed) + len(cn_failed)}')
+    log.info(
+        f'pipeline done, failed={len(us_failed) + len(cn_failed)}, '
+        f'latest_written={written}'
+    )
 
 
 def main() -> None:

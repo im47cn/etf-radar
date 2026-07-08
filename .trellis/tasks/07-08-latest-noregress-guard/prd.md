@@ -18,15 +18,15 @@
 - R2.3 (可选)**前端"数据截至X日"**:Header 用 `cn_data_date` 展示 as-of 日期,补足 StaleBanner 未覆盖的"正常但非今日"提示。前端 banner 主体已存在,无须重做。
 
 ## Acceptance Criteria
-- [ ] 单测:`should_write_latest(new_meta, existing_meta)` —— 回退 False,同日/更新/首次 True;cn 或 us 任一回退即拦。
-- [ ] 单测:回退场景 `run_pipeline`(或抽出的写入函数)不覆盖既有四文件。
-- [ ] 回归 `uv run --all-extras pytest` 全绿。
-- [ ] (若做 R2.3)前端 `npx vitest run` 相关组件通过。
+- [x] 单测:`should_write_latest(new_meta, existing_meta)` —— 回退 False,同日/更新/首次 True;cn 或 us 任一回退即拦。(test_no_regress.py 7 例)
+- [x] 单测:回退场景 `_write_latest_guarded` 不覆盖既有四文件。(test_pipeline_write_latest_guard.py 3 例)
+- [x] 回归 `uv run --all-extras pytest` 全绿。(354 passed)
+- [x] R2.3 前端 `AsOfBadge` + asOfLabel,tsc 无错、Header 19 测试全绿(含与 StaleBanner 去重)。
 
 ## Out of scope
 - 前端 StaleBanner 重做(已存在且工作正常)。
 - 陈旧数据的告警推送(属 C1)。
 - dated 快照护栏(archiver 已有)。
 
-## 设计细化(需 review,见 design.md)
-- D4 原述"回退则写 meta.status=stale + as_of";实现上**更一致的做法是回退时四文件全部跳过**(保持 meta 与数据一致,不写"数据是07-06但meta说stale"的自相矛盾态),陈旧暴露交给 C1 告警 + 前端 UpdateBadge 的"更新X分钟前"自然老化。请确认采纳此细化。
+## 设计细化(已确认采纳,2026-07-08)
+- **回退时四文件全部跳过**(保持 meta 与数据一致,不写"数据是07-06但meta说stale"的自相矛盾态),陈旧暴露交给 C1 告警 + 前端 UpdateBadge 的"更新X分钟前"自然老化。此细化取代 D4 原述"写 stale meta"。用户已确认。

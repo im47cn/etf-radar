@@ -145,3 +145,36 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: C2 latest no-regress 护栏 + 前端数据截至日
+
+**Date**: 2026-07-08
+**Task**: C2 latest no-regress 护栏 + 前端数据截至日
+**Branch**: `feat/data-fetch-resilience`
+
+### Summary
+
+实现 latest no-regress 护栏(should_write_latest + _write_latest_guarded 回退整体跳过 + latest_write_skipped_regress 日志供C1消费)与前端 AsOfBadge(数据截至X日,与StaleBanner去重)。10后端+3前端新测,全量354 passed;trellis-check通过(自修去重);spec 增latest单调不倒退不变量。已提交推送并归档。根治进度 C1/C2/C4 完成,C3待做。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7135bdc` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

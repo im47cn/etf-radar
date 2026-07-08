@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { asOfLabel } from '../AsOfBadge';
+import { asOfLabel } from '../asOfLabel';
 
 describe('asOfLabel', () => {
   it('数据为今日时返回 null(UpdateBadge 已够)', () => {

@@ -14,6 +14,7 @@ etf-radar 后端：Python 数据管线（CLI + GitHub Actions cron），产出 `
 | [质量约定](./quality-guidelines.md) | ruff/mypy strict + pytest + 团队铁律 | ✅ 已填 |
 | [日志约定](./logging-guidelines.md) | stdlib logging + 降级必留痕 | ✅ 已填 |
 | [会员/Supabase](./membership-supabase.md) | 会员订阅（唯一例外）：DB+RLS+Edge Function；afdian query-order 验真 + 门控铁律 | ✅ 已填 |
+| [健康哨兵/告警](./health-monitoring.md) | 数据可用性自愈：health-monitor 每小时巡检→计数内自动补偿→Server酱 告警；漏触发判据 | ✅ 已填 |
 
 ---
 

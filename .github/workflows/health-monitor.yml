@@ -1,0 +1,72 @@
+name: health-monitor
+
+on:
+  schedule:
+    # 每小时 05 分巡检（数据新鲜度 + 关键 workflow 运行状态）。可后续按交易时段加密。
+    - cron: '5 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '仅打印 findings, 不 dispatch/告警 (灰度)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: health-monitor
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+      # 触发补偿 workflow + 查 run 状态需 actions:write 的 PAT。
+      GH_TOKEN: ${{ secrets.DATA_BOT_PAT }}
+      # 灰度开关: 首版默认 dry-run 只打印, 观察 1-2 天后置 '0' 开真自愈。
+      # 手动 dispatch 时以 input 为准; 定时触发走此默认。
+      HEALTH_DRY_RUN: ${{ github.event.inputs.dry_run || '1' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DATA_BOT_PAT }}
+          # 不把 PAT 持久化到 .git/config, 减少后续第三方步骤(uv sync/python)的凭据暴露面。
+          # push 由 Commit 步骤显式设置带 token 的 remote URL 完成。
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install uv
+        run: pip install uv
+      - name: Install deps
+        run: cd backend && uv sync --all-extras
+      - name: Run health monitor
+        run: |
+          cd backend
+          if [ "$HEALTH_DRY_RUN" = "1" ] || [ "$HEALTH_DRY_RUN" = "true" ]; then
+            uv run python -m src.health_monitor --data-root ../data --dry-run
+          else
+            uv run python -m src.health_monitor --data-root ../data
+          fi
+      - name: Commit heal_state
+        if: env.HEALTH_DRY_RUN != '1' && env.HEALTH_DRY_RUN != 'true'
+        env:
+          DATA_BOT_PAT: ${{ secrets.DATA_BOT_PAT }}
+        run: |
+          git config user.name "data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          # checkout 关闭了凭据持久化, 这里显式设置带 token 的 remote URL 供 push。
+          git remote set-url origin "https://x-access-token:${DATA_BOT_PAT}@github.com/${GITHUB_REPOSITORY}.git"
+          git add data/health/
+          if git diff --cached --quiet; then
+            echo "no state change"; exit 0
+          fi
+          git commit -m "chore: health heal_state $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && { echo "pushed"; exit 0; }
+            echo "push rejected, retry $i"; sleep 10
+          done
+          echo "push failed after retries"; exit 1

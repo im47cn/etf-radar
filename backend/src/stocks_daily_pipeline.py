@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import time
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -36,11 +37,29 @@ K_SIGMOID = 2.0
 _SINA_PREFIX_RE = r'^(sh|sz|bj)'
 
 
+class SpotFetchError(Exception):
+    """今日 spot 重试耗尽仍失败。冒泡至进程非 0 → workflow 步骤红（响亮失败）。"""
+
+
 def _fetch_today_spot() -> pd.DataFrame:
     """新浪 spot 接口。代码列剥前缀（sh600519 → 600519），与 universe 对齐。"""
     df = ak.stock_zh_a_spot()
     df['代码'] = df['代码'].astype(str).str.replace(_SINA_PREFIX_RE, '', regex=True)
     return df
+
+
+def _fetch_today_spot_with_retry(attempts: int = 3, base_delay: float = 2.0) -> pd.DataFrame:
+    """带指数退避的 spot 拉取；全部尝试失败则抛 SpotFetchError（不静默）。"""
+    last_exc: Exception | None = None
+    for i in range(attempts):
+        try:
+            return _fetch_today_spot()
+        except Exception as e:  # noqa: BLE001 — 网络/解析各类异常均需重试
+            last_exc = e
+            log.warning(f'spot fetch attempt {i + 1}/{attempts} failed: {e}')
+            if i < attempts - 1:
+                time.sleep(base_delay * (2 ** i))
+    raise SpotFetchError(f'spot fetch failed after {attempts} attempts') from last_exc
 
 
 def _read_holdings_codes(holdings_dir: Path) -> set[str]:
@@ -128,12 +147,8 @@ def run_daily_pipeline(
     close_data = json.loads(close_path.read_text(encoding='utf-8'))
     volume_data = json.loads(volume_path.read_text(encoding='utf-8'))
 
-    # 拉今日 spot；失败则不覆盖现有 indicators
-    try:
-        spot_df = _fetch_today_spot()
-    except Exception as e:
-        log.error(f'spot fetch failed: {e}; keeping existing indicators untouched')
-        return
+    # 拉今日 spot（带重试）；重试耗尽则响亮失败（raise），不静默覆盖现有 indicators
+    spot_df = _fetch_today_spot_with_retry()
 
     today_close = {str(r['代码']): float(r['最新价']) for _, r in spot_df.iterrows()
                    if pd.notna(r['最新价'])}

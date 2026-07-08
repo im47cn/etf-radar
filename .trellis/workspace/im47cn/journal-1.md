@@ -111,3 +111,104 @@
 
 - 部署上线(见 spec/backend/membership-supabase.md Runbook)
 - 二期: 邮件变化摘要推送(Resend+pg_cron)、全量历史回看+导出、微信官方支付迁移、年费独立方案
+
+
+## Session 3: 数据获取故障根治: 止血三连 + C1哨兵/C4韧性落地
+
+**Date**: 2026-07-08
+**Task**: 数据获取故障根治: 止血三连 + C1哨兵/C4韧性落地
+**Branch**: `feat/data-fetch-resilience`
+
+### Summary
+
+生产数据链陈旧排查: eastmoney断连+stocks-daily被CANCELLED+09:15cron漏触发三者叠加, 手动重跑cn-refresh/stocks-daily/backfill止血并补齐07-07空洞。根治规划为parent(data-fetch-resilience)+4子任务; C4(个股日更韧性+自动补缺)已完成, C1(health-monitor哨兵+Server酱告警+自愈编排,含漏触发判据)本会话实现+双审(344 passed)+update-spec(health-monitoring.md)并提交。C2/C3仍待实现。分支feat/data-fetch-resilience未推送。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b656d8f` | (see git log) |
+| `60513fe` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 4: C2 latest no-regress 护栏 + 前端数据截至日
+
+**Date**: 2026-07-08
+**Task**: C2 latest no-regress 护栏 + 前端数据截至日
+**Branch**: `feat/data-fetch-resilience`
+
+### Summary
+
+实现 latest no-regress 护栏(should_write_latest + _write_latest_guarded 回退整体跳过 + latest_write_skipped_regress 日志供C1消费)与前端 AsOfBadge(数据截至X日,与StaleBanner去重)。10后端+3前端新测,全量354 passed;trellis-check通过(自修去重);spec 增latest单调不倒退不变量。已提交推送并归档。根治进度 C1/C2/C4 完成,C3待做。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7135bdc` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 5: 修前端 e2e portfolio.spec 陈旧断言 + 连带修 C2 AsOfBadge lint
+
+**Date**: 2026-07-08
+**Task**: 修前端 e2e portfolio.spec 陈旧断言 + 连带修 C2 AsOfBadge lint
+**Branch**: `feat/data-fetch-resilience`
+
+### Summary
+
+e2e portfolio.spec 两用例长期 red: 根因是导航标签早前缩短(我的持仓→持仓/主题轮动→轮动, 修移动端换行)但 e2e 未跟上, systematic-debugging 本地复现定位后更新断言+exact:true。推送时发现并行会话在同分支提交的 C2 AsOfBadge.tsx 触发 react-refresh/only-export-components 打挂 frontend job, 拆 asOfLabel 到独立文件修复。PR#25 五项 CI 全 SUCCESS(含 C1/C4/C2/e2e)。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `37d89f9` | (see git log) |
+| `5bb353e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

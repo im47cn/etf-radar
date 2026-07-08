@@ -5,8 +5,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pandas as pd
+import pytest
 
-from src.stocks_daily_pipeline import WINDOW_DAYS, _append_series, run_daily_pipeline
+from src.stocks_daily_pipeline import (
+    WINDOW_DAYS,
+    SpotFetchError,
+    _append_series,
+    run_daily_pipeline,
+)
 
 
 def _make_close_series(codes: list[str], n_days: int = 75) -> dict:
@@ -78,8 +84,7 @@ def test_daily_appends_today_and_writes_indicators(tmp_path: Path):
     assert 'leader' in ind
 
 
-def test_daily_handles_spot_fetch_failure_keeps_existing(tmp_path: Path):
-    """spot 拉不到 → 保留昨日 holdings_indicators，不写空文件覆盖"""
+def _seed_minimal_task(tmp_path: Path) -> tuple[Path, Path]:
     holdings_dir = tmp_path / 'holdings'
     holdings_dir.mkdir()
     (holdings_dir / 'a.json').write_text(json.dumps({
@@ -92,7 +97,12 @@ def test_daily_handles_spot_fetch_failure_keeps_existing(tmp_path: Path):
     (out_dir / 'ohlc').mkdir()
     (out_dir / 'close_series.json').write_text(json.dumps(_make_close_series(['002129'])))
     (out_dir / 'volume_series.json').write_text(json.dumps(_make_volume_series(['002129'])))
+    return holdings_dir, out_dir
 
+
+def test_daily_spot_failure_raises_loudly_without_overwrite(tmp_path: Path):
+    """spot 连续失败 → 抛 SpotFetchError（响亮失败），且不覆盖既有 indicators"""
+    holdings_dir, out_dir = _seed_minimal_task(tmp_path)
     existing = {'schema_version': '1.0', 'generated_at': 'old',
                 'stocks': {'002129': {'name': 'x', 'strength_60d': 50,
                                        'strength_20d': 50, 'rsi_14': 50.0,
@@ -100,13 +110,32 @@ def test_daily_handles_spot_fetch_failure_keeps_existing(tmp_path: Path):
     (out_dir / 'holdings_indicators.json').write_text(json.dumps(existing))
 
     with patch('src.stocks_daily_pipeline._fetch_today_spot',
-               side_effect=RuntimeError('akshare down')):
+               side_effect=RuntimeError('akshare down')), \
+            patch('src.stocks_daily_pipeline.time.sleep'), \
+            pytest.raises(SpotFetchError):
         run_daily_pipeline(
             holdings_dir=holdings_dir, out_dir=out_dir, today=date(2026, 6, 25),
         )
 
+    # raise 发生在任何写入前 → 既有文件不被覆盖
     hi = json.loads((out_dir / 'holdings_indicators.json').read_text())
     assert hi['generated_at'] == 'old'
+
+
+def test_daily_spot_retry_recovers_on_second_attempt(tmp_path: Path):
+    """首拉失败、二拉成功 → 重试后正常 append，不抛异常"""
+    holdings_dir, out_dir = _seed_minimal_task(tmp_path)
+
+    with patch('src.stocks_daily_pipeline._fetch_today_spot',
+               side_effect=[RuntimeError('flaky'), _fake_spot_df(['002129'])]), \
+            patch('src.stocks_daily_pipeline.time.sleep'):
+        run_daily_pipeline(
+            holdings_dir=holdings_dir, out_dir=out_dir, today=date(2026, 6, 25),
+        )
+
+    cs = json.loads((out_dir / 'close_series.json').read_text())
+    assert cs['dates'][-1] == '2026-06-25'
+    assert cs['stocks']['002129'][-1] == 11.0
 
 
 def test_append_series_idempotent_when_today_matches_last_date():

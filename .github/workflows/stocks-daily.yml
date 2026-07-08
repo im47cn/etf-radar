@@ -15,7 +15,7 @@ concurrency:
 jobs:
   daily:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -63,3 +63,26 @@ jobs:
             echo "push rejected, retry $i"; sleep 10
           done
           echo "push failed after retries"; exit 1
+      - name: Detect gaps & self-heal
+        if: steps.cal.outputs.is_trading == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.DATA_BOT_PAT }}
+          # 灰度开关: 默认 '0'(仅检测并打印, 不 dispatch), 避免合入即无意自动触发回填。
+          # 灰度观察无误后, 在仓库 Variables 设 SELF_HEAL_DISPATCH=1 开启真自愈, 无需改代码。
+          SELF_HEAL_DISPATCH: ${{ vars.SELF_HEAL_DISPATCH || '0' }}
+        run: |
+          set +e
+          cd backend && uv run python -m src.stocks_continuity --data-root ../data
+          code=$?
+          set -e
+          if [ "$code" = "3" ]; then
+            echo "gap detected → self-heal"
+            if [ "$SELF_HEAL_DISPATCH" = "1" ]; then
+              gh workflow run stocks-history-backfill.yml -f days=150 -f max_workers=8
+              echo "dispatched stocks-history-backfill"
+            else
+              echo "SELF_HEAL_DISPATCH!=1, dry-run only (no dispatch)"
+            fi
+          elif [ "$code" != "0" ]; then
+            exit $code   # 非预期错误, 响亮失败
+          fi

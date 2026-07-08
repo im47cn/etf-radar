@@ -17,11 +17,14 @@ const NO_DATA = '#f1f5f9'; // slate-100
  * 温度 4 档: 单一来源.
  * 图例/tier/纹理/文案全部由此派生, 消除双真源漂移.
  * key 内部键 / label 中文文案 / [min,max) 区间 / mid 取色中点 / hatch 纹理角度.
- * 阈值 30/50/70 与 breadthLabel 完全对齐.
+ * 阈值 25/50/70 与 breadthLabel 完全对齐.
+ * 实证校准: 全量 5526 只 × 2022-2026 多 regime, 冰点 25≈P20 / 过热 70≈P80 (冷热两尾各~20%),
+ * 中枢 50 为理论无趋势中性线; MA20/60/120 三周期分位近乎重合, 故同一阈值通用.
+ * 依据见 backend/research/breadth-calibration/README.md.
  */
 export const TIERS = [
-  { key: 'cold', label: '冰点', min: 0, max: 30, mid: 15, hatch: 45 }, //  '/'
-  { key: 'cool', label: '偏冷', min: 30, max: 50, mid: 40, hatch: 0 }, //  '—'
+  { key: 'cold', label: '冰点', min: 0, max: 25, mid: 12, hatch: 45 }, //  '/'
+  { key: 'cool', label: '偏冷', min: 25, max: 50, mid: 38, hatch: 0 }, //  '—'
   { key: 'warm', label: '偏暖', min: 50, max: 70, mid: 60, hatch: 90 }, // '|'
   { key: 'hot', label: '过热', min: 70, max: 100, mid: 85, hatch: 135 }, // '\'
 ] as const;
@@ -54,12 +57,12 @@ export function breadthColor(rate: number | null | undefined): string {
   return STOPS[STOPS.length - 1].color;
 }
 
-/** 站上率 -> 所属 tier; 无数据 -> null. 阈值 30/50/70. */
+/** 站上率 -> 所属 tier; 无数据 -> null. 阈值 25/50/70. */
 export function breadthTier(rate: number | null | undefined): BreadthTier | null {
   if (rate == null || Number.isNaN(rate)) return null;
   if (rate >= 70) return TIERS[3];
   if (rate >= 50) return TIERS[2];
-  if (rate >= 30) return TIERS[1];
+  if (rate >= 25) return TIERS[1];
   return TIERS[0];
 }
 

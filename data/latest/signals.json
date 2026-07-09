@@ -1,28 +1,28 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-09T07:34:42.687523+08:00",
+  "generated_at": "2026-07-09T15:07:26.780658+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "512480",
       "votes": {
         "short": null,
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股存储芯片中长期走强"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "semiconductor",
-      "signal": "resonance",
+      "signal": "transmission",
       "trigger_cn_etf": "512480",
       "votes": {
         "short": null,
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       },
-      "description": "美股半导体中长期走强"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "cybersecurity",
@@ -158,14 +158,14 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": "transmission",
+      "signal": "divergence",
       "trigger_cn_etf": "512800",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "divergence"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股A股短期方向不一致"
     },
     {
       "theme_id": "cn_insurance",
@@ -339,11 +339,11 @@
       "cn_code": "512480",
       "mapping_score": 32,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
         "short": null,
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       }
     },
     {
@@ -361,13 +361,13 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "512480",
-      "mapping_score": 40,
+      "mapping_score": 41,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
         "short": null,
-        "mid": "resonance",
-        "long": "resonance"
+        "mid": "transmission",
+        "long": "transmission"
       }
     },
     {
@@ -387,11 +387,11 @@
       "cn_code": "159516",
       "mapping_score": 21,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "resonance",
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -543,10 +543,10 @@
       "cn_code": "512800",
       "mapping_score": 4,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": "divergence",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "divergence"
       }
     },

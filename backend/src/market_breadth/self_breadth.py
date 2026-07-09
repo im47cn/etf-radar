@@ -8,18 +8,74 @@
 """
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from ..etl.calendar import is_cn_trading_day
 from ..output.writer import atomic_write_json
 from .pipeline import _series_latest, _sort_by_latest
+
+log = logging.getLogger(__name__)
 
 BJT = ZoneInfo('Asia/Shanghai')
 SCHEMA_VERSION = '2.0'
 DEFAULT_PERIODS = (20, 60, 120)
+
+# A 股 EOD 结算发布时点: 收盘后当日 bar 通常 18:00 BJT 前后才 roll 出.
+# 与 pipeline.CN_SETTLE_HOUR 同源口径, 早于此时点不期望今日数据 (避免盘中误报陈旧).
+CN_SETTLE_HOUR = 18
+# 回溯最近已收盘交易日的最大自然日窗口:
+# 覆盖春节 + 相邻周末最长闭市 (~16 自然日) 再加缓冲, 故取 21.
+_ASOF_LOOKBACK_DAYS = 21
+
+
+def _expected_breadth_asof(now_bjt: datetime) -> date:
+    """期望的"最近已收盘 CN 交易日":判定温度链是否陈旧的基准日.
+
+    - 今日为交易日且已过结算时点 (≥18:00) → 今日;
+    - 否则 (盘中/结算前/非交易日) 回溯最近一个已收盘交易日.
+
+    注意: 与 pipeline._expected_cn_date 语义相反 —— 那个盘中/非交易日返回 None
+    (拿到啥用啥, 不判陈旧); 本函数必须返回一个基准日才能判 stale, 故独立命名.
+
+    兜底: 若回溯 _ASOF_LOOKBACK_DAYS 天仍未命中交易日 (极端/日历数据缺失),
+    返回回溯窗口内**最旧**的候选日 (today - N). 方向保守 —— 使 as_of 更易
+    被判为 "达标/较新", 宁可漏报也不误报把近期数据错判为陈旧.
+    """
+    today = now_bjt.date()
+    if is_cn_trading_day(today) and now_bjt.hour >= CN_SETTLE_HOUR:
+        return today
+    # 从昨日起回溯, 命中第一个交易日即为期望 as_of
+    for delta in range(1, _ASOF_LOOKBACK_DAYS + 1):
+        cand = today - timedelta(days=delta)
+        if is_cn_trading_day(cand):
+            return cand
+    return today - timedelta(days=_ASOF_LOOKBACK_DAYS)
+
+
+def _freshness(dates: list[str], now_bjt: datetime) -> dict[str, Any]:
+    """温度链新鲜度判定 (纯函数, 便于测试).
+
+    → {as_of: str|None, expected_date: str, stale: bool}
+    stale = as_of < expected_date (按 date 解析后比较, 防御字符串序不一致).
+    - dates 为空 → as_of=None, stale=False (不误报).
+    - as_of 格式异常无法解析 → log.error 且 stale=False (保守不报).
+    """
+    expected = _expected_breadth_asof(now_bjt)
+    expected_str = expected.isoformat()
+    as_of = dates[-1] if dates else None
+    if as_of is None:
+        return {'as_of': None, 'expected_date': expected_str, 'stale': False}
+    try:
+        as_of_date = date.fromisoformat(as_of)
+    except ValueError:
+        log.error('malformed as_of date: %s', as_of)
+        return {'as_of': as_of, 'expected_date': expected_str, 'stale': False}
+    return {'as_of': as_of, 'expected_date': expected_str, 'stale': as_of_date < expected}
 
 
 def _rate(above: int, valid: int) -> float | None:
@@ -100,10 +156,13 @@ def compute_self_breadth(
     close_series: dict[str, Any],
     industry_map: dict[str, dict[str, str]],
     periods: tuple[int, ...] = DEFAULT_PERIODS,
+    now_bjt: datetime | None = None,
 ) -> dict[str, Any]:
     dates: list[str] = list(close_series['dates'])
     stocks: dict[str, list[float | None]] = close_series['stocks']
     n_dates = len(dates)
+    now_bjt = now_bjt or datetime.now(BJT)
+    fresh = _freshness(dates, now_bjt)
 
     out_periods: dict[str, Any] = {}
     for period in periods:
@@ -126,11 +185,19 @@ def compute_self_breadth(
         'source': 'self',
         'metric': 'maN_above_ratio',
         'dates': dates,
+        # 新鲜度标记 (C3): 供前端"截至X日"展示与 C1 哨兵消费; 陈旧不阻断出图.
+        'as_of': fresh['as_of'],
+        'expected_date': fresh['expected_date'],
+        'stale': fresh['stale'],
         'periods': out_periods,
     }
 
 
-def run(data_root: Path, periods: tuple[int, ...] = DEFAULT_PERIODS) -> Path:
+def run(
+    data_root: Path,
+    periods: tuple[int, ...] = DEFAULT_PERIODS,
+    now_bjt: datetime | None = None,
+) -> Path:
     import json
 
     stocks_dir = Path(data_root) / 'stocks'
@@ -138,7 +205,11 @@ def run(data_root: Path, periods: tuple[int, ...] = DEFAULT_PERIODS) -> Path:
     map_path = stocks_dir / 'stock_industry_map.json'
     industry_map = json.loads(map_path.read_text(encoding='utf-8'))['map'] if map_path.exists() else {}
 
-    snapshot = compute_self_breadth(close_series, industry_map, periods)
+    snapshot = compute_self_breadth(close_series, industry_map, periods, now_bjt=now_bjt)
+    if snapshot['stale']:
+        # 结构化前缀 (C1 哨兵消费契约, 勿改名)
+        log.warning('temperature_stale: as_of=%s expected=%s',
+                    snapshot['as_of'], snapshot['expected_date'])
     out = Path(data_root) / 'latest' / 'market_temperature.json'
     atomic_write_json(out, snapshot)
     return out

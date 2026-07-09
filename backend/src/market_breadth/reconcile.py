@@ -34,12 +34,18 @@ def reconcile(self_snapshot: dict[str, Any], dapanyuntu_snapshot: dict[str, Any]
     d = _latest_point(dpyt_market)
     abs_diff: float | None = None
     over = False
+    self_stale = False
     if s is not None and d is not None:
         abs_diff = round(abs(s[1] - d[1]), 2)
         over = abs_diff > threshold
         if over:
             log.warning('全市场 MA20 对账偏差 %.2f 超阈 %.1f (self=%s@%s, dapanyuntu=%s@%s)',
                         abs_diff, threshold, s[1], s[0], d[1], d[0])
+        # self as-of 落后于 dpyt → 真陈旧 (区别于方法学微差); 仅两者均有点位时判定.
+        self_stale = s[0] < d[0]
+        if self_stale:
+            # 结构化前缀 (C1 哨兵消费契约, 勿改名)
+            log.warning('reconcile_self_stale: self=%s dpyt=%s', s[0], d[0])
     return {
         'metric': 'ma20_market_reconcile',
         'threshold': threshold,
@@ -47,6 +53,7 @@ def reconcile(self_snapshot: dict[str, Any], dapanyuntu_snapshot: dict[str, Any]
         'dapanyuntu': {'date': d[0], 'rate': d[1]} if d else None,
         'abs_diff': abs_diff,
         'over_threshold': over,
+        'self_stale': self_stale,
     }
 
 

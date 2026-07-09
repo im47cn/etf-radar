@@ -33,3 +33,27 @@ def test_latest_non_null_picked():
 def test_missing_data_no_diff():
     qc = reconcile({'periods': {'ma20': {'market': []}}}, _dpyt(30.0))
     assert qc['self'] is None and qc['abs_diff'] is None and qc['over_threshold'] is False
+
+
+# --- self_stale (C3) ---
+
+def test_self_stale_when_self_date_before_dpyt():
+    # _self 固定 2026-07-01, _dpyt 固定 2026-07-02 → self as-of 落后
+    qc = reconcile(_self(32.0), _dpyt(30.0))
+    assert qc['self_stale'] is True
+
+
+def test_self_stale_false_when_dates_equal():
+    s = {'periods': {'ma20': {'market': [{'date': '2026-07-02', 'rate': 32.0}]}}}
+    qc = reconcile(s, _dpyt(30.0))
+    assert qc['self_stale'] is False
+
+
+def test_self_stale_false_when_dpyt_missing():
+    qc = reconcile(_self(32.0), {'market': []})
+    assert qc['self_stale'] is False
+
+
+def test_self_stale_false_when_self_missing():
+    qc = reconcile({'periods': {'ma20': {'market': []}}}, _dpyt(30.0))
+    assert qc['self_stale'] is False

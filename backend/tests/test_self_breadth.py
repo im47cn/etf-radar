@@ -1,8 +1,16 @@
-"""自建个股宽度计算: SMA/站上/有效样本过滤/多周期聚合."""
+"""自建个股宽度计算: SMA/站上/有效样本过滤/多周期聚合 + 新鲜度护栏."""
 from __future__ import annotations
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-from src.market_breadth.self_breadth import compute_self_breadth
+from src.market_breadth.self_breadth import (
+    _expected_breadth_asof,
+    _freshness,
+    compute_self_breadth,
+)
+
+BJT = ZoneInfo('Asia/Shanghai')
 
 
 def _cs(dates, stocks):
@@ -87,3 +95,70 @@ def test_ma120_insufficient_history_all_null():
     snap = compute_self_breadth(cs, {}, periods=(120,))
     rates = [m['rate'] for m in snap['periods']['ma120']['market']]
     assert all(r is None for r in rates)
+
+
+# --- 新鲜度护栏 (C3) ---
+
+def test_expected_asof_after_settle_is_today():
+    # 07-08(交易日) 20:00 已过结算 → 期望今日
+    now = datetime(2026, 7, 8, 20, 0, tzinfo=BJT)
+    assert _expected_breadth_asof(now).isoformat() == '2026-07-08'
+
+
+def test_expected_asof_intraday_backs_off_to_prev():
+    # 07-08(交易日) 14:00 盘中未到结算 → 放宽为上一交易日 07-07
+    now = datetime(2026, 7, 8, 14, 0, tzinfo=BJT)
+    assert _expected_breadth_asof(now).isoformat() == '2026-07-07'
+
+
+def test_expected_asof_weekend_backs_off():
+    # 07-11(周六) 非交易日 → 回溯最近已收盘交易日 07-10
+    now = datetime(2026, 7, 11, 10, 0, tzinfo=BJT)
+    assert _expected_breadth_asof(now).isoformat() == '2026-07-10'
+
+
+def test_freshness_stale_when_asof_before_expected():
+    # close_series 停在 07-06, 期望 07-08 → stale
+    now = datetime(2026, 7, 8, 20, 0, tzinfo=BJT)
+    f = _freshness(['2026-07-03', '2026-07-06'], now)
+    assert f['as_of'] == '2026-07-06'
+    assert f['expected_date'] == '2026-07-08'
+    assert f['stale'] is True
+
+
+def test_freshness_fresh_when_asof_meets_expected():
+    now = datetime(2026, 7, 8, 20, 0, tzinfo=BJT)
+    f = _freshness(['2026-07-07', '2026-07-08'], now)
+    assert f['as_of'] == '2026-07-08'
+    assert f['stale'] is False
+
+
+def test_freshness_intraday_not_false_positive():
+    # 盘中末日=昨日 07-07, 期望放宽为 07-07 → 不误报
+    now = datetime(2026, 7, 8, 14, 0, tzinfo=BJT)
+    f = _freshness(['2026-07-06', '2026-07-07'], now)
+    assert f['stale'] is False
+
+
+def test_freshness_empty_dates():
+    now = datetime(2026, 7, 8, 20, 0, tzinfo=BJT)
+    f = _freshness([], now)
+    assert f['as_of'] is None
+    assert f['stale'] is False
+
+
+def test_freshness_malformed_asof():
+    # 非 ISO 日期 → 保守 stale=False 不抛
+    now = datetime(2026, 7, 8, 20, 0, tzinfo=BJT)
+    f = _freshness(['2026/07/08'], now)
+    assert f['stale'] is False
+    assert f['as_of'] == '2026/07/08'
+
+
+def test_compute_self_breadth_carries_freshness_fields():
+    now = datetime(2026, 7, 8, 20, 0, tzinfo=BJT)
+    cs = _cs(['2026-07-06', '2026-07-07'], {'A': [10.0, 12.0]})
+    snap = compute_self_breadth(cs, {}, periods=(2,), now_bjt=now)
+    assert snap['as_of'] == '2026-07-07'
+    assert snap['expected_date'] == '2026-07-08'
+    assert snap['stale'] is True

@@ -51,9 +51,11 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
 
-  # Backend Python: 读 pyproject.toml 依赖项; uv.lock 由 CI uv sync 自动同步
+  # Backend (uv): 原生读取 uv.lock + pyproject.toml, dependabot 直接 bump 锁定版本
+  # 旧 pip 生态只放宽 pyproject 的 >= 下界, groups/ignore-major 对下界更新不生效
+  #   → 表现为逐包独立 PR + major 泄漏(如 mypy), 故迁移到 uv 生态
   # ignore major: 数据栈 (pandas/akshare/yfinance) major 升级常含破坏性变更
-  - package-ecosystem: "pip"
+  - package-ecosystem: "uv"
     directory: "/backend"
     schedule:
       interval: "weekly"
@@ -62,7 +64,7 @@ updates:
       timezone: "Asia/Shanghai"
     open-pull-requests-limit: 5
     groups:
-      pip-minor-patch:
+      uv-minor-patch:
         update-types:
           - "minor"
           - "patch"

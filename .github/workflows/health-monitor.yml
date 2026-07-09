@@ -10,6 +10,10 @@ on:
         description: '仅打印 findings, 不 dispatch/告警 (灰度)'
         type: boolean
         default: true
+      test_alert:
+        description: '仅发一条测试告警验证 Server酱 渠道后退出 (不巡检)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -43,7 +47,11 @@ jobs:
         run: pip install uv
       - name: Install deps
         run: cd backend && uv sync --all-extras --frozen
+      - name: Test alert channel (仅 test_alert=true)
+        if: github.event.inputs.test_alert == 'true'
+        run: cd backend && uv run python -m src.notify.alert --test
       - name: Run health monitor
+        if: github.event.inputs.test_alert != 'true'
         run: |
           cd backend
           if [ "$HEALTH_DRY_RUN" = "1" ] || [ "$HEALTH_DRY_RUN" = "true" ]; then

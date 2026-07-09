@@ -54,3 +54,30 @@ def send_alert(title: str, desp: str, cfg: AlertConfig | None = None) -> bool:
         log.error("send_alert HTTP %s", resp.status_code)
         return False
     return True
+
+
+def main() -> None:
+    """渠道自检 CLI:`python -m src.notify.alert --test` 发一条测试告警。
+
+    读同一套 env(SERVERCHAN_SENDKEY / ALERT_DRY_RUN),用于验证 secret 配置
+    与投递链路。exit 0=已发送, 1=未发送(dry-run/无 key/失败)。
+    """
+    import argparse
+    import sys
+
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    p = argparse.ArgumentParser(description="Server酱 告警渠道自检")
+    p.add_argument("--test", action="store_true", help="发送一条测试告警验证渠道")
+    args = p.parse_args()
+    if not args.test:
+        p.error("需指定 --test")
+    ok = send_alert(
+        "[etf-radar] 告警渠道自检",
+        "health-monitor Server酱 通道测试。收到即表示 SENDKEY 配置正确、投递链路正常。",
+    )
+    print("sent" if ok else "not sent (dry-run / no-key / failure)")
+    sys.exit(0 if ok else 1)
+
+
+if __name__ == "__main__":
+    main()

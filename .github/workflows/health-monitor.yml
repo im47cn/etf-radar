@@ -26,9 +26,9 @@ jobs:
       SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
       # 触发补偿 workflow + 查 run 状态需 actions:write 的 PAT。
       GH_TOKEN: ${{ secrets.DATA_BOT_PAT }}
-      # 灰度开关: 首版默认 dry-run 只打印, 观察 1-2 天后置 '0' 开真自愈。
-      # 手动 dispatch 时以 input 为准; 定时触发走此默认。
-      HEALTH_DRY_RUN: ${{ github.event.inputs.dry_run || '1' }}
+      # 灰度期已过(2026-07-09 CI dry-run 0 findings 验证干净), 定时触发开真自愈。
+      # 手动 dispatch 仍以 input 为准(默认 true=dry, 便于安全演练); 定时触发走此默认 '0'。
+      HEALTH_DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
     steps:
       - uses: actions/checkout@v7
         with:

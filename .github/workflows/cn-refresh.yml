@@ -54,7 +54,7 @@ jobs:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - if: steps.cal.outputs.is_trading == 'true'
-        run: cd backend && uv sync --extra dev
+        run: cd backend && uv sync --extra dev --frozen
       - name: Decide mode
         if: steps.cal.outputs.is_trading == 'true'
         id: mode

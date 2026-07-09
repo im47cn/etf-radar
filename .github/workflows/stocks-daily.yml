@@ -42,7 +42,7 @@ jobs:
         run: pip install uv
       - name: Install deps
         if: steps.cal.outputs.is_trading == 'true'
-        run: cd backend && uv sync --all-extras
+        run: cd backend && uv sync --all-extras --frozen
       - name: Run daily pipeline
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.stocks_daily_pipeline --data-root ../data

@@ -55,7 +55,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install backend deps
         if: steps.cal.outputs.is_trading == 'true'
-        run: cd backend && uv sync --extra dev
+        run: cd backend && uv sync --extra dev --frozen
       - name: Run pipeline (full)
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.pipeline --mode=full --data-root=../data --config-dir=../config

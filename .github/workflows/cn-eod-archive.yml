@@ -51,7 +51,7 @@ jobs:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - if: steps.cal.outputs.is_trading == 'true'
-        run: cd backend && uv sync --extra dev
+        run: cd backend && uv sync --extra dev --frozen
       # 收盘后再全量抓一次: 此时 EOD 日线已结算, latest/ 拿到当日真数据.
       # 若仍抓到陈旧数据 (provider 滞后/失败), 下游 archive 的新鲜度护栏会拒绝归档.
       - name: Refresh full (settled EOD data)

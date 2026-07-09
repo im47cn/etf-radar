@@ -32,7 +32,7 @@ jobs:
       - name: Install uv
         run: pip install uv
       - name: Install deps
-        run: cd backend && uv sync --all-extras
+        run: cd backend && uv sync --all-extras --frozen
       - name: Run backfill
         run: |
           cd backend && uv run python -m src.stocks_history_pipeline \

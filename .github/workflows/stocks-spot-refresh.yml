@@ -53,7 +53,7 @@ jobs:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - if: steps.cal.outputs.is_trading == 'true'
-        run: cd backend && uv sync --extra dev
+        run: cd backend && uv sync --extra dev --frozen
       - name: Run stocks_spot pipeline
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.stocks_spot_pipeline --data-root=../data

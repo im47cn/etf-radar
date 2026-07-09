@@ -35,7 +35,7 @@ jobs:
         with:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: cd backend && uv sync --extra dev
+      - run: cd backend && uv sync --extra dev --frozen
       - name: Run holdings pipeline
         run: cd backend && uv run python -m src.holdings_pipeline --data-root=../data --config-dir=../config
       - name: Commit holdings

@@ -30,13 +30,13 @@ jobs:
       # 手动 dispatch 时以 input 为准; 定时触发走此默认。
       HEALTH_DRY_RUN: ${{ github.event.inputs.dry_run || '1' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           token: ${{ secrets.DATA_BOT_PAT }}
           # 不把 PAT 持久化到 .git/config, 减少后续第三方步骤(uv sync/python)的凭据暴露面。
           # push 由 Commit 步骤显式设置带 token 的 remote URL 完成。
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: Install uv

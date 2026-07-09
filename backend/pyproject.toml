@@ -7,22 +7,22 @@ dependencies = [
     "numpy>=1.26.0",
     "pydantic>=2.13.4",
     "PyYAML>=6.0.3",
-    "yfinance>=0.2.40",
+    "yfinance>=1.5.1",
     "akshare>=1.13.0",
     "chinese-calendar>=1.11.0",
     "pandas-market-calendars>=4.4.0",
     "scipy>=1.12.0",
-    "tqdm>=4.68.3",
+    "tqdm>=4.68.4",
     "ta>=0.11.0",
     "requests>=2.31.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
-    "ruff>=0.4.0",
-    "mypy>=1.8",
-    "responses>=0.24.0",
+    "pytest>=9.1.1",
+    "ruff>=0.15.20",
+    "mypy>=2.2.0",
+    "responses>=0.26.2",
     "freezegun>=1.5.5",
     "jsonschema>=4.21.0",
     "types-pyyaml>=6.0.12.20260518",

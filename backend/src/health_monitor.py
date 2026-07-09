@@ -80,14 +80,14 @@ WORKFLOW_SCHEDULES: dict[str, WorkflowSchedule] = {
     "stocks-daily": WorkflowSchedule(
         trading_gate="cn",
         earliest_utc=time(8, 30),  # 16:30 BJT
-        grace_hours=1.0,
+        grace_hours=2.0,  # GitHub cron 常延迟 15-45min, 放宽吸收抖动、减少冗余 dispatch
         mode="daily",
         daily_deadline_utc=time(8, 30),
     ),
     "cn-eod-archive": WorkflowSchedule(
         trading_gate="cn",
         earliest_utc=time(10, 0),  # 18:00 BJT
-        grace_hours=1.0,
+        grace_hours=2.0,  # 同上, 吸收 GitHub cron 抖动
         mode="daily",
         daily_deadline_utc=time(10, 0),
     ),

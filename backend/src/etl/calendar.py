@@ -13,6 +13,10 @@ CN_AFTERNOON_CLOSE = time(15, 0)
 
 
 def is_cn_trading_day(d: date) -> bool:
+    # A 股仅周一~周五交易; 调休补班的周末 chinese_calendar.is_workday=True 但股市休市,
+    # 须用工作日判据显式排除(否则 continuity/stale 判定会把补班周末误当交易日)。
+    if d.isoweekday() > 5:
+        return False
     try:
         return chinese_calendar.is_workday(d) and not chinese_calendar.is_holiday(d)
     except NotImplementedError:

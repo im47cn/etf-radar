@@ -215,10 +215,10 @@ def test_weekend_no_run_not_missed():
 
 
 def test_missed_stocks_daily_last_success_yesterday():
-    """stocks-daily: now=10:00 交易日、最近 success=昨天 → missed。"""
+    """stocks-daily: now=11:00(过 earliest 08:30+grace 2h)、交易日、最近 success=昨天 → missed。"""
     runs = {"stocks-daily": {"status": "completed", "conclusion": "success",
                              "createdAt": "2026-07-07T08:35:00Z"}}
-    findings = hm.evaluate(_healthy_meta(), _healthy_qc(), [], runs=runs, now=_utc(2026, 7, 8, 10))
+    findings = hm.evaluate(_healthy_meta(), _healthy_qc(), [], runs=runs, now=_utc(2026, 7, 8, 11))
     assert any(f["kind"] == "workflow_missed_or_failed" for f in findings)
 
 

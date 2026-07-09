@@ -21,6 +21,13 @@ def test_cn_normal_workday_is_trading() -> None:
     assert is_cn_trading_day(mon)
 
 
+def test_cn_makeup_workday_weekend_is_not_trading() -> None:
+    # 调休补班的周末: chinese_calendar.is_workday=True 但 A 股休市, 必须排除。
+    # 2026-01-04(周日)、2026-02-14/02-28(周六) 均为调休补班日。
+    for d in (date(2026, 1, 4), date(2026, 2, 14), date(2026, 2, 28)):
+        assert not is_cn_trading_day(d), f"{d} 调休补班周末不应判为交易日"
+
+
 def test_cn_session_active_during_morning() -> None:
     dt = datetime(2026, 6, 8, 10, 0, tzinfo=BJT)
     assert is_cn_session_active(dt)

@@ -17,13 +17,13 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           token: ${{ secrets.DATA_BOT_PAT }}
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v8.3.2
         id: setup-uv
         continue-on-error: true
         with:
@@ -31,7 +31,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup uv (retry on transient network failure)
         if: steps.setup-uv.outcome == 'failure'
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
         with:
           version: "0.11.x"
           github-token: ${{ secrets.GITHUB_TOKEN }}

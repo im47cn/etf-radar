@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-09T15:07:26.780658+08:00",
+  "generated_at": "2026-07-09T16:23:07.558745+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -202,14 +202,14 @@
     },
     {
       "theme_id": "aerospace_defense",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "divergence",
+      "trigger_cn_etf": "512660",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "transmission",
+        "mid": "divergence",
+        "long": "divergence"
       },
-      "description": "美股航天军工动量观察中"
+      "description": "美股A股短期方向不一致"
     },
     {
       "theme_id": "rare_earth",
@@ -387,11 +387,11 @@
       "cn_code": "159516",
       "mapping_score": 21,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "resonance",
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -603,10 +603,10 @@
       "cn_code": "512660",
       "mapping_score": 37,
       "confidence": 90,
-      "signal": null,
+      "signal": "divergence",
       "votes": {
-        "short": null,
-        "mid": "transmission",
+        "short": "transmission",
+        "mid": "divergence",
         "long": "divergence"
       }
     },

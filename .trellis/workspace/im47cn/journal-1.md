@@ -245,3 +245,44 @@ e2e portfolio.spec 两用例长期 red: 根因是导航标签早前缩短(我的
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: 会员变化摘要邮件推送(二期) + MVP上线联调
+
+**Date**: 2026-07-07
+**Task**: 07-07-membership-change-digest（+ 07-03-membership-subscription-mvp 联调）
+**Branch**: `main`
+
+### Summary
+
+先完成会员订阅 MVP 上线联调: afdian-webhook 部署踩坑连环(占位函数非本函数→重部署; 域名 afdian.net→afdian.com 边缘DNS; ping须loadEnv前放行; token轮换须同步secret否则ec=400005; 测试推送用文档假单号). 加支付失败告警(Server酱)+富文本+一键重试(HMAC签名GET端点,仍走完整核实)+Supabase跳转; 用Management API清理测试数据. 然后头脑风暴二期定为「自选+每日变化摘要邮件」留存引擎,建Trellis任务全流程(research→6阶段实现→双审)完成。
+
+### 关键技术决策 / 踩坑
+
+- **二期触发集 A+C+D**: B(宽度跨档)经research剔除——theme/ETF无宽度维度、无theme→行业映射(tags与巨潮门类对齐<10%)。
+- **温度4档30/50/70**: 前端breadthColor.ts真源, Python changes.py同值移植+单测钉死边界防漂移。
+- **幂等铁律**: 发信前必须先查digest_log(run_date,user_id), UNIQUE只挡审计重复挡不住重发→会破prd「每天最多1封」。
+- **latest_market_rate按最大date取值**(非series[-1]), 防乱序误报C(全员广播)。
+- **零新依赖**: urllib自封SupabaseRest; 邮箱走Supabase Auth Admin REST(service_role可读,无需profiles)。
+- afdian webhook 无sign→反向调query-order核实(见Session3); 域名必须afdian.com。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c0e56a9` | feat(notify): 数据层+变化计算(阶段2/3) |
+| `423ecc8` | feat(notify): 发信编排+退订Function(阶段4/5) |
+| `ac13176` | feat(notify): EOD workflow编排(阶段6) |
+
+### Testing
+
+- [OK] 后端 304 passed, notify-unsub deno 7 passed, ruff/mypy strict 干净; MVP afdian-webhook 23 passed
+
+### Status
+
+[OK] **二期代码6阶段全完成推送main + 双trellis-check通过**; 联调待人工(Resend域名+迁移004+secrets, 见 docs/membership-digest-deployment.md); MVP已部署,待首笔真实订单验证
+
+### Next Steps
+
+- 二期联调: 见 docs/membership-digest-deployment.md 准备清单
+- MVP: 下第一笔真实¥6订单验证activated

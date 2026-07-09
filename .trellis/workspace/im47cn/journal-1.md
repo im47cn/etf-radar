@@ -212,3 +212,36 @@ e2e portfolio.spec 两用例长期 red: 根因是导航标签早前缩短(我的
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: C3 温度链新鲜度护栏实现+审查修正
+
+**Date**: 2026-07-09
+**Task**: C3 温度链新鲜度护栏实现+审查修正
+**Branch**: `main`
+
+### Summary
+
+实现 C3: self_breadth 输出 as_of/stale/expected_date + reconcile self_stale, 供 health-monitor(C1) 消费; 独立审查修正 M1(run 补 now_bjt)/M2(回溯21天+兜底防长假误报)/M3(date 解析比较); 后端369+前端448 passed; 新增 spec market-breadth.md。附: 排查生产数据获取异常(eastmoney断连+stocks-daily漏07-07), 手动重跑 cn-refresh/stocks-daily/backfill 止血恢复。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0f89d00` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

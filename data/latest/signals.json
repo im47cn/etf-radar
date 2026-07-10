@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-10T13:05:09.925333+08:00",
+  "generated_at": "2026-07-10T13:42:08.217668+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -191,25 +191,25 @@
     },
     {
       "theme_id": "biotech",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "trigger_cn_etf": "512290",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "transmission",
+        "mid": "resonance",
+        "long": "transmission"
       },
-      "description": "美股生物科技/创新药动量观察中"
+      "description": "美股领先, A股尚未完全跟随"
     },
     {
       "theme_id": "aerospace_defense",
-      "signal": "transmission",
+      "signal": "divergence",
       "trigger_cn_etf": "512710",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "divergence"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股A股短期方向不一致"
     },
     {
       "theme_id": "rare_earth",
@@ -365,7 +365,7 @@
       "confidence": 90,
       "signal": "resonance",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       }
@@ -579,9 +579,9 @@
       "cn_code": "512290",
       "mapping_score": 4,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "resonance",
         "long": "transmission"
       }
@@ -615,10 +615,10 @@
       "cn_code": "512710",
       "mapping_score": 27,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": "divergence",
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": "divergence",
         "long": "divergence"
       }
     },
@@ -653,7 +653,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": "divergence"
       }
@@ -665,7 +665,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": "divergence"
       }

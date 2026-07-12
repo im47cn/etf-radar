@@ -319,3 +319,36 @@ e2e portfolio.spec 两用例长期 red: 根因是导航标签早前缩短(我的
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: health-monitor 提交步骤归并 commit-and-push
+
+**Date**: 2026-07-12
+**Task**: health-monitor 提交步骤归并 commit-and-push
+**Branch**: `main`
+
+### Summary
+
+收口最后一个未归并的 data-commit workflow: health-monitor.yml 的 Commit heal_state 删内联 5 次 pull --rebase 重试循环, 改用 commit-and-push action(带 GIT_TERMINAL_PROMPT=0 防hang护栏)。token 注入(persist-credentials:false 需 git remote set-url DATA_BOT_PAT)保留为前置 step, dry-run 门控/timeout:15 不变, user 传 data-bot。全仓已无裸 pull --rebase(除 backfill reset-hard)。YAML+actionlint 通过。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e89ed8e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -41,6 +41,7 @@ jobs:
             --max-workers ${{ inputs.max_workers }}
       - name: Commit & push
         run: |
+          export GIT_TERMINAL_PROMPT=0          # 防认证交互挂起
           git config user.name "data-bot"
           git config user.email "data-bot@users.noreply.github.com"
           if git diff --quiet -- data/stocks/; then

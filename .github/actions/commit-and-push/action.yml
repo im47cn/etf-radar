@@ -1,0 +1,62 @@
+name: Commit and push data
+description: 幂等提交指定路径到 main，防 hang 有界重试推送
+
+inputs:
+  paths:
+    required: true
+    description: "git add 的路径（空格分隔）"
+  message:
+    required: true
+    description: "commit 信息"
+  max-retry:
+    required: false
+    default: "5"
+    description: "push 冲突时的最大重试次数"
+  user-name:
+    required: false
+    default: "github-actions[bot]"
+    description: "git commit author name"
+  user-email:
+    required: false
+    default: "github-actions[bot]@users.noreply.github.com"
+    description: "git commit author email"
+
+outputs:
+  changed:
+    description: "true 表示产生了提交, false 表示无变更跳过"
+    value: ${{ steps.cp.outputs.changed }}
+
+runs:
+  using: composite
+  steps:
+    - id: cp
+      shell: bash
+      env:
+        CP_PATHS: ${{ inputs.paths }}
+        CP_MESSAGE: ${{ inputs.message }}
+        CP_MAX_RETRY: ${{ inputs.max-retry }}
+        CP_USER_NAME: ${{ inputs.user-name }}
+        CP_USER_EMAIL: ${{ inputs.user-email }}
+      run: |
+        set -euo pipefail
+        export GIT_TERMINAL_PROMPT=0          # 防认证交互挂起
+        git config user.name  "$CP_USER_NAME"
+        git config user.email "$CP_USER_EMAIL"
+        git add $CP_PATHS
+        if git diff --staged --quiet; then
+          echo "no changes, skip commit"
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        git commit -m "$CP_MESSAGE"
+        for i in $(seq 1 "$CP_MAX_RETRY"); do
+          if git pull --rebase --autostash origin main && git push; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "push attempt $i failed, retry after backoff"
+          git rebase --abort 2>/dev/null || true   # 清理半成品 rebase 态, 避免下一轮空转
+          sleep $((i * 5))
+        done
+        echo "::error::commit-and-push exhausted $CP_MAX_RETRY retries"
+        exit 1

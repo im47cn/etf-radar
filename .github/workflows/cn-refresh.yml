@@ -19,6 +19,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/setup-python@v6
         with:
@@ -85,19 +86,16 @@ jobs:
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.market_breadth.reconcile --data-root=../data
         continue-on-error: true
+      - name: Compute commit metadata
+        if: steps.cal.outputs.is_trading == 'true'
+        id: meta
+        run: echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
       - name: Commit data
         if: steps.cal.outputs.is_trading == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/latest/
-          if git diff --staged --quiet; then
-            echo "no data changes, skip commit"
-            exit 0
-          fi
-          git commit -m "data: CN ${{ steps.mode.outputs.mode }} $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase
-          git push
+        uses: ./.github/actions/commit-and-push
+        with:
+          paths: data/latest/
+          message: "data: CN ${{ steps.mode.outputs.mode }} ${{ steps.meta.outputs.ts }}"
       - name: Trigger deploy
         if: steps.cal.outputs.is_trading == 'true'
         env:

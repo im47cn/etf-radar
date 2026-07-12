@@ -18,6 +18,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/setup-python@v6
         with:
@@ -57,16 +58,13 @@ jobs:
       - name: Run stocks_spot pipeline
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.stocks_spot_pipeline --data-root=../data
+      - name: Compute commit metadata
+        if: steps.cal.outputs.is_trading == 'true'
+        id: meta
+        run: echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
       - name: Commit stocks_spot
         if: steps.cal.outputs.is_trading == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/latest/stocks_spot.json
-          if git diff --staged --quiet; then
-            echo "no stocks_spot changes, skip commit"
-            exit 0
-          fi
-          git commit -m "data: stocks_spot $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git pull --rebase
-          git push
+        uses: ./.github/actions/commit-and-push
+        with:
+          paths: data/latest/stocks_spot.json
+          message: "data: stocks_spot ${{ steps.meta.outputs.ts }}"

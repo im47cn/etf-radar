@@ -37,14 +37,13 @@ jobs:
       - name: Refresh industry map
         run: cd backend && uv run python -m src.market_breadth.stock_industry_pipeline
              --data-root ../data --max-workers ${{ inputs.max_workers || '8' }}
+      - name: Compute commit metadata
+        id: meta
+        run: echo "ts=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
       - name: Commit & push
-        run: |
-          git config user.name "data-bot"
-          git config user.email "data-bot@users.noreply.github.com"
-          git add data/stocks/stock_industry_map.json
-          if git diff --cached --quiet; then
-            echo "no changes"
-          else
-            git commit -m "data: stock industry map $(date -u +%FT%TZ)"
-            git pull --rebase && git push
-          fi
+        uses: ./.github/actions/commit-and-push
+        with:
+          paths: data/stocks/stock_industry_map.json
+          message: "data: stock industry map ${{ steps.meta.outputs.ts }}"
+          user-name: data-bot
+          user-email: data-bot@users.noreply.github.com

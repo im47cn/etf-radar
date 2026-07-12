@@ -16,6 +16,7 @@ concurrency:
 jobs:
   archive:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/setup-python@v6
         with:
@@ -61,23 +62,18 @@ jobs:
       - name: Archive latest → snapshots/<today-bjt>
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.pipeline --mode=archive --data-root=../data --config-dir=../config
+      - name: Compute commit metadata
+        if: steps.cal.outputs.is_trading == 'true'
+        id: meta
+        run: echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
       - name: Commit archive
         if: steps.cal.outputs.is_trading == 'true'
         id: commit
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # snapshots/ 是归档主体; latest/ 一并提交, 让前端实时视图也拿到收盘结算后的 EOD 数据
-          git add data/snapshots/ data/latest/
-          if git diff --staged --quiet; then
-            echo "no archive changes, skip commit"
-            echo "changed=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          git commit -m "data: EOD archive $(date -u +%Y-%m-%d)"
-          git pull --rebase
-          git push
-          echo "changed=true" >> $GITHUB_OUTPUT
+        # snapshots/ 是归档主体; latest/ 一并提交, 让前端实时视图也拿到收盘结算后的 EOD 数据
+        uses: ./.github/actions/commit-and-push
+        with:
+          paths: data/snapshots/ data/latest/
+          message: "data: EOD archive ${{ steps.meta.outputs.date }}"
       - name: Trigger deploy
         # 仅在确有 commit 时部署, 避免无变化空跑
         if: steps.cal.outputs.is_trading == 'true' && steps.commit.outputs.changed == 'true'

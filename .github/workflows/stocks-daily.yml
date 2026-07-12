@@ -46,23 +46,20 @@ jobs:
       - name: Run daily pipeline
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.stocks_daily_pipeline --data-root ../data
+      - name: Compute commit metadata
+        if: steps.cal.outputs.is_trading == 'true'
+        id: meta
+        run: echo "ts=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
+      # daily 增量 append data/stocks/, 与并发 workflow(spot/industry-map/backfill)
+      # 可能同时 push 冲突. action 内 rebase 到最新 origin 后再 push, 带有界重试.
       - name: Commit & push
         if: steps.cal.outputs.is_trading == 'true'
-        run: |
-          git config user.name "data-bot"
-          git config user.email "data-bot@users.noreply.github.com"
-          git add data/stocks/
-          if git diff --cached --quiet; then
-            echo "no changes"; exit 0
-          fi
-          git commit -m "data: stocks daily $(date -u +%FT%TZ)"
-          # daily 增量 append data/stocks/, 与并发 workflow(spot/industry-map/backfill)
-          # 可能同时 push 冲突. 策略: rebase 到最新 origin 后再 push, 带重试.
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push && { echo "pushed"; exit 0; }
-            echo "push rejected, retry $i"; sleep 10
-          done
-          echo "push failed after retries"; exit 1
+        uses: ./.github/actions/commit-and-push
+        with:
+          paths: data/stocks/
+          message: "data: stocks daily ${{ steps.meta.outputs.ts }}"
+          user-name: data-bot
+          user-email: data-bot@users.noreply.github.com
       - name: Detect gaps & self-heal
         if: steps.cal.outputs.is_trading == 'true'
         env:

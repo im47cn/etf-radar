@@ -59,22 +59,23 @@ jobs:
           else
             uv run python -m src.health_monitor --data-root ../data
           fi
-      - name: Commit heal_state
+      - name: Setup push credentials
         if: env.HEALTH_DRY_RUN != '1' && env.HEALTH_DRY_RUN != 'true'
         env:
           DATA_BOT_PAT: ${{ secrets.DATA_BOT_PAT }}
-        run: |
-          git config user.name "data-bot"
-          git config user.email "data-bot@users.noreply.github.com"
-          # checkout 关闭了凭据持久化, 这里显式设置带 token 的 remote URL 供 push。
-          git remote set-url origin "https://x-access-token:${DATA_BOT_PAT}@github.com/${GITHUB_REPOSITORY}.git"
-          git add data/health/
-          if git diff --cached --quiet; then
-            echo "no state change"; exit 0
-          fi
-          git commit -m "chore: health heal_state $(date -u +%FT%TZ)"
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push && { echo "pushed"; exit 0; }
-            echo "push rejected, retry $i"; sleep 10
-          done
-          echo "push failed after retries"; exit 1
+        # checkout 关闭了凭据持久化(persist-credentials: false, 限制 PAT 暴露),
+        # 这里显式设置带 token 的 remote URL 供 commit-and-push action 的 push 使用。
+        # git remote 配置写盘, 同 job 跨 step 持久, 后续 action step 会复用。
+        run: git remote set-url origin "https://x-access-token:${DATA_BOT_PAT}@github.com/${GITHUB_REPOSITORY}.git"
+      - name: Compute commit metadata
+        if: env.HEALTH_DRY_RUN != '1' && env.HEALTH_DRY_RUN != 'true'
+        id: meta
+        run: echo "ts=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
+      - name: Commit heal_state
+        if: env.HEALTH_DRY_RUN != '1' && env.HEALTH_DRY_RUN != 'true'
+        uses: ./.github/actions/commit-and-push
+        with:
+          paths: data/health/
+          message: "chore: health heal_state ${{ steps.meta.outputs.ts }}"
+          user-name: data-bot
+          user-email: data-bot@users.noreply.github.com

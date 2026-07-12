@@ -286,3 +286,36 @@ e2e portfolio.spec 两用例长期 red: 根因是导航标签早前缩短(我的
 
 - 二期联调: 见 docs/membership-digest-deployment.md 准备清单
 - MVP: 下第一笔真实¥6订单验证activated
+
+
+## Session 7: data workflow 提交步骤防hang护栏
+
+**Date**: 2026-07-12
+**Task**: data workflow 提交步骤防hang护栏
+**Branch**: `main`
+
+### Summary
+
+排查 07-11 cn-eod-archive 提交步骤 pull --rebase 遇冲突静默挂起 22min 被取消的故障。抽 .github/actions/commit-and-push composite action(GIT_TERMINAL_PROMPT=0 + pull --rebase --autostash origin main + 有界重试含 rebase --abort 清理 + changed 输出),7 个 data workflow 归并复用+补 timeout-minutes;backfill 保留 reset-hard 覆盖策略仅加护栏。冲突从'无限 hang'变为'~60s 有界失败'。trellis-check 8/8 + actionlint/shellcheck 通过;holdings-refresh 分支冒烟实证护栏行为。spec 补 commit-and-push 契约。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1284a0c` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -5,6 +5,7 @@ import { BreadthThermometer } from '@/components/temperature/BreadthThermometer'
 import { IndustryBreadthRanking } from '@/components/temperature/IndustryBreadthRanking';
 import { BreadthHeatmap } from '@/components/temperature/BreadthHeatmap';
 import { BreadthLegend } from '@/components/temperature/BreadthLegend';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const periodBtn = (active: boolean, disabled: boolean): string => {
   if (disabled) return 'px-3 py-1 rounded text-gray-300 cursor-not-allowed text-sm';
@@ -24,14 +25,21 @@ export const TemperaturePage = () => {
     return data.available[0];
   }, [data, period]);
 
-  if (isLoading) return <div className="p-8 text-center text-gray-400">加载中…</div>;
+  if (isLoading)
+    return (
+      <div className="flex flex-col gap-4 p-4" aria-busy="true" aria-label="加载中">
+        <Skeleton className="h-32" />
+        <Skeleton className="h-48" />
+        <Skeleton className="h-24" />
+      </div>
+    );
   if (error || !data || !activePeriod)
     return <div className="p-8 text-center text-gray-400">暂无市场温度数据</div>;
 
   const pd = data.periods[activePeriod]!;
 
   return (
-    <main className="flex flex-col gap-4 p-4">
+    <main className="flex flex-col gap-4 p-4 animate-crossfade">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold text-gray-800">个股 MA 站上率</h1>
         <div className="flex gap-1">

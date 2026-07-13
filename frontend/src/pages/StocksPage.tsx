@@ -8,6 +8,7 @@ import { aggregateHoldings } from '@/lib/holdings/aggregator';
 import { StockTable } from '@/components/stocks/StockTable';
 import { ThemeStructureSummary } from '@/components/stocks/ThemeStructureSummary';
 import { EmptyState } from '@/components/stocks/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const StocksPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -64,7 +65,11 @@ export const StocksPage = () => {
         </p>
       </header>
       {loading ? (
-        <div className="py-12 text-center text-sm text-gray-400">加载中...</div>
+        <div className="space-y-2 py-4" aria-busy="true" aria-label="加载中">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-9" />
+          ))}
+        </div>
       ) : aggregated.length === 0 ? (
         <EmptyState message="本主题暂无持仓披露，将在下个季度更新" />
       ) : (

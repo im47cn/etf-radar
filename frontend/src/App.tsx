@@ -1,4 +1,5 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useUIState } from '@/providers/uiStateContext';
 import { DataProvider } from '@/providers/DataProvider';
 import { UIStateProvider } from '@/providers/UIStateProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
@@ -14,6 +15,27 @@ import { TemperaturePage } from '@/pages/TemperaturePage';
 import { MembershipPage } from '@/pages/MembershipPage';
 import { WatchlistPage } from '@/pages/WatchlistPage';
 
+// 路由 Tab 与市场视图切换共用一个 key，容器重挂载时触发 crossfade 淡入
+const AnimatedRoutes = () => {
+  const { pathname } = useLocation();
+  const { state } = useUIState();
+  return (
+    <div key={`${pathname}-${state.marketView}`} className="animate-crossfade">
+      <Routes>
+        <Route path="/"               element={<TemperaturePage />} />
+        <Route path="/rotation"       element={<RotationPage />} />
+        <Route path="/radar"          element={<RadarPage />} />
+        <Route path="/temperature"    element={<TemperaturePage />} />
+        <Route path="/portfolio"      element={<PortfolioPage />} />
+        <Route path="/membership"     element={<MembershipPage />} />
+        <Route path="/watchlist"      element={<WatchlistPage />} />
+        <Route path="/auth/callback"  element={<AuthCallback />} />
+        <Route path="/theme/:id/stocks" element={<StocksPage />} />
+      </Routes>
+    </div>
+  );
+};
+
 export default function App() {
   return (
     <DataProvider>
@@ -24,17 +46,7 @@ export default function App() {
               <UIStateProvider>
                 <div className="min-h-screen bg-gray-50">
                   <Header />
-                  <Routes>
-                    <Route path="/"               element={<TemperaturePage />} />
-                    <Route path="/rotation"       element={<RotationPage />} />
-                    <Route path="/radar"          element={<RadarPage />} />
-                    <Route path="/temperature"    element={<TemperaturePage />} />
-                    <Route path="/portfolio"      element={<PortfolioPage />} />
-                    <Route path="/membership"     element={<MembershipPage />} />
-                    <Route path="/watchlist"      element={<WatchlistPage />} />
-                    <Route path="/auth/callback"  element={<AuthCallback />} />
-                    <Route path="/theme/:id/stocks" element={<StocksPage />} />
-                  </Routes>
+                  <AnimatedRoutes />
                 </div>
               </UIStateProvider>
             </EventsProvider>

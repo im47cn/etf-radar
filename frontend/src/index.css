@@ -78,6 +78,16 @@
   .animate-crossfade {
     animation: crossfade-in 150ms ease-out;
   }
+
+  /* 页面级进入：从下方 8px 淡入且上升 */
+  .animate-fade-rise {
+    animation: fade-rise 280ms ease-out forwards;
+  }
+
+  /* 简单淡入 */
+  .animate-fade-in {
+    animation: fade-in 200ms ease-out forwards;
+  }
 }
 
 @keyframes crossfade-in {
@@ -89,8 +99,30 @@
   }
 }
 
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-crossfade {
+  .animate-crossfade,
+  .animate-fade-rise,
+  .animate-fade-in {
     animation: none;
   }
 }

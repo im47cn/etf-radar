@@ -10,8 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 const periodBtn = (active: boolean, disabled: boolean): string => {
   if (disabled) return 'px-3 py-1 rounded text-gray-300 cursor-not-allowed text-sm';
   return active
-    ? 'px-3 py-1 rounded bg-blue-600 text-white text-sm'
-    : 'px-3 py-1 rounded text-gray-700 hover:bg-gray-100 text-sm';
+    ? 'px-3 py-1 rounded bg-blue-600 text-white text-sm transition-all duration-150'
+    : 'px-3 py-1 rounded text-gray-700 hover:bg-gray-100 text-sm transition-all duration-150 active:scale-95';
 };
 
 export const TemperaturePage = () => {
@@ -40,7 +40,7 @@ export const TemperaturePage = () => {
 
   return (
     <main className="flex flex-col gap-4 p-4 animate-crossfade">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-fade-rise" style={{ animationDelay: '0ms' }}>
         <h1 className="text-lg font-semibold text-gray-800">个股 MA 站上率</h1>
         <div className="flex gap-1">
           {PERIOD_KEYS.map((k) => {
@@ -61,16 +61,20 @@ export const TemperaturePage = () => {
       </div>
 
       {/* 页面级单一共享图例: 三图之上、两栏之前 */}
-      <BreadthLegend />
+      <div className="animate-fade-rise" style={{ animationDelay: '60ms' }}>
+        <BreadthLegend />
+      </div>
 
-      <BreadthThermometer market={pd.market} periodLabel={PERIOD_LABELS[activePeriod]} />
+      <div className="animate-fade-rise" style={{ animationDelay: '120ms' }}>
+        <BreadthThermometer market={pd.market} periodLabel={PERIOD_LABELS[activePeriod]} />
+      </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 animate-fade-rise" style={{ animationDelay: '180ms' }}>
         <IndustryBreadthRanking l1Rows={pd.industries_l1} l2Rows={pd.industries_l2} />
         <BreadthHeatmap dates={data.dates} l1Rows={pd.industries_l1} l2Rows={pd.industries_l2} />
       </div>
 
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-gray-400 animate-fade-rise" style={{ animationDelay: '240ms' }}>
         口径说明：全市场/行业为
         <span className="font-medium">个股</span>
         价格站上 {PERIOD_LABELS[activePeriod]} 的真实占比（站上数 ÷ 有效样本数）。停牌、上市不足周期长度的新股不计入分母；无行业归属个股计入全市场、不计入行业。行业分类采用巨潮体系。

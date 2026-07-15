@@ -54,8 +54,8 @@ export const StocksPage = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-4">
-      <button onClick={() => navigate(-1)} className="text-blue-600 text-sm mb-3">← 返回</button>
-      <header className="mb-4">
+      <button onClick={() => navigate(-1)} className="text-blue-600 text-sm mb-3 animate-fade-in">← 返回</button>
+      <header className="mb-4 animate-fade-rise" style={{ animationDelay: '60ms' }}>
         <h2 className="text-lg font-semibold">{theme.name} · 主题成分股</h2>
         <p className="text-xs text-gray-500">
           关联 ETF: {etfCodes.join(' · ')}
@@ -65,7 +65,7 @@ export const StocksPage = () => {
         </p>
       </header>
       {loading ? (
-        <div className="space-y-2 py-4" aria-busy="true" aria-label="加载中">
+        <div className="space-y-2 py-4 animate-fade-rise" aria-busy="true" aria-label="加载中" style={{ animationDelay: '120ms' }}>
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-9" />
           ))}
@@ -74,8 +74,12 @@ export const StocksPage = () => {
         <EmptyState message="本主题暂无持仓披露，将在下个季度更新" />
       ) : (
         <>
-          <ThemeStructureSummary stocks={aggregated} />
-          <StockTable stocks={aggregated} />
+          <div className="animate-fade-rise" style={{ animationDelay: '120ms' }}>
+            <ThemeStructureSummary stocks={aggregated} />
+          </div>
+          <div className="animate-fade-rise" style={{ animationDelay: '180ms' }}>
+            <StockTable stocks={aggregated} />
+          </div>
         </>
       )}
     </div>

@@ -73,7 +73,7 @@ export const RotationPage = () => {
 
   return (
     <main className="p-4 space-y-4">
-      <div className="bg-white border rounded p-4">
+      <div className="bg-white border rounded p-4 animate-fade-rise" style={{ animationDelay: '0ms' }}>
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-bold">主题轮动象限图</h2>
           <MarketViewSelector />
@@ -94,11 +94,11 @@ export const RotationPage = () => {
       </div>
 
       {/* 会员自选快捷添加：把关注的主题加入自选，去「我的自选」集中查看当前状态 */}
-      <div className="bg-white border rounded p-4">
+      <div className="bg-white border rounded p-4 animate-fade-rise" style={{ animationDelay: '60ms' }}>
         <h3 className="text-sm font-semibold mb-2">加入自选（会员）</h3>
         <div className="flex flex-wrap gap-2">
-          {themes.themes.map((t) => (
-            <span key={t.id} className="inline-flex items-center gap-1 text-xs border rounded px-2 py-1">
+          {themes.themes.map((t, i) => (
+            <span key={t.id} className="inline-flex items-center gap-1 text-xs border rounded px-2 py-1 animate-fade-rise" style={{ animationDelay: `${60 + Math.min(i, 6) * 40}ms` }}>
               {t.name}
               <AddWatchButton itemType="theme" itemKey={t.id} />
             </span>

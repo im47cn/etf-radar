@@ -1,12 +1,21 @@
 import { useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { isSupabaseConfigured, getSupabase } from '@/lib/supabase';
 import { HoldingSchema, type Holding } from '@/lib/portfolio/types';
 import { FREE_HOLDINGS_LIMIT } from '@/lib/portfolio/limits';
 import { useAuth } from '@/hooks/useAuth';
+import type { AuthStatus } from './authContext';
 import { HoldingsContext, type UseHoldingsResult, type UpsertInput, type UpdateInput } from './holdingsContext';
 
-function useHoldingsImpl(): UseHoldingsResult {
-  const { user, status } = useAuth();
+interface HoldingsData {
+  holdings: Holding[];
+  loading:  boolean;
+  error:    string | null;
+  refresh:  () => Promise<void>;
+}
+
+// 数据拉取 + Realtime 订阅. 独立成 hook 便于与下方 mutation 逻辑分离测试.
+function useHoldingsData(user: User | null, status: AuthStatus): HoldingsData {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState<string | null>(null);
@@ -62,6 +71,17 @@ function useHoldingsImpl(): UseHoldingsResult {
     return () => { supabase.removeChannel(channel); };
   }, [status]);
 
+  return { holdings, loading, error, refresh };
+}
+
+interface HoldingsMutations {
+  upsert: UseHoldingsResult['upsert'];
+  update: UseHoldingsResult['update'];
+  remove: UseHoldingsResult['remove'];
+}
+
+// 增/改/删. 依赖 useHoldingsData 产出的 holdings + refresh, 拆开以隔离读写职责.
+function useHoldingsMutations(user: User | null, holdings: Holding[], refresh: () => Promise<void>): HoldingsMutations {
   const upsert = useCallback(async (input: UpsertInput) => {
     if (!user) return { error: '未登录' };
 
@@ -135,6 +155,14 @@ function useHoldingsImpl(): UseHoldingsResult {
     await refresh();
     return { error: null };
   }, [user, refresh]);
+
+  return { upsert, update, remove };
+}
+
+function useHoldingsImpl(): UseHoldingsResult {
+  const { user, status } = useAuth();
+  const { holdings, loading, error, refresh } = useHoldingsData(user, status);
+  const { upsert, update, remove } = useHoldingsMutations(user, holdings, refresh);
 
   const isAuthed = status === 'authenticated';
   return {

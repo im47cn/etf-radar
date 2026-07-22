@@ -15,7 +15,7 @@ import time
 from datetime import date, datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, NamedTuple, cast
 
 import pandas as pd  # type: ignore[import-untyped]
 
@@ -203,34 +203,32 @@ def _strength_for_pool(
     return strength_per_dim(own_dim_ret, pool_dim_rets, k=k, days_in_dim=days)
 
 
-def compute_outputs(
+# ---------------------------------------------------------------------------
+# compute_outputs 拆分：4 个阶段子函数 + 编排层
+# ---------------------------------------------------------------------------
+
+class _ComputeContext(NamedTuple):
+    """compute_outputs 内部阶段间传递的共享状态。"""
+    theme_returns: dict[str, Returns]
+    cn_returns: dict[str, Returns]
+    theme_strengths: dict[str, Strength]
+    cn_strengths: dict[str, Strength]
+    cn_theme_strengths: dict[str, Strength]
+    display_strengths: dict[str, Strength]
+    theme_ranks: dict[str, int]
+    cn_theme_primary: dict[str, str]
+
+
+def _compute_all_strengths(
     themes: list[ThemeConfig],
     us_ohlc: dict[str, pd.DataFrame],
     cn_ohlc: dict[str, pd.DataFrame],
-    us_failed: list[str],
-    cn_failed: list[str],
     algo: AlgoConfig,
-    asof_bjt: datetime,
-    mode: PipelineMode,
-    backfilled: bool = False,
-    cn_fallback_map: dict[str, str] | None = None,
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
-    """从已采集的 OHLC 数据计算并构造 4 个输出 JSON（themes/etfs/signals/meta）。
+) -> _ComputeContext:
+    """阶段 1-6：从 OHLC 数据计算收益 → 池强度 → 排名。
 
-    asof_bjt 是 as-of 锚定时间（BJT, 带时区）。所有 calendar 字段、generated_at
-    均基于此时间。pipeline.run_pipeline 调用时传 datetime.now(tz=BJT)，
-    backfill 脚本调用时传该 D 当晚 16:00 BJT。
-
-    cn_fallback_map: {symbol: provider_name} 走了非首选 provider 的 symbol。
-        当 cn_fallback_map 非空且 cn_failed 为空时，cn provider status = 'fallback'。
-
-    返回顺序: (themes_json, etfs_json, signals_json, meta_json)
+    返回各强度字典和排名, 供后续信号计算和 JSON 构造使用。
     """
-    if cn_fallback_map is None:
-        cn_fallback_map = {}
-    today_bjt = asof_bjt.date()
-    asof_utc = asof_bjt.astimezone(timezone.utc)
-
     # 1) 每个主题的收益
     theme_returns: dict[str, Returns] = {t.id: _theme_returns(t, us_ohlc) for t in themes}
 
@@ -240,7 +238,6 @@ def compute_outputs(
     }
 
     # 3) 池内 dim aggregate (过滤 None)
-    # US 池：只含有 primary_us 的 mapped 主题
     theme_dim_rets: dict[DimName, list[float]] = {
         dim: [
             r for r in (
@@ -248,15 +245,13 @@ def compute_outputs(
                 for t in themes if t.primary_us
             )
             if r is not None
-        ]
-        for dim in DIMS
+        ] for dim in DIMS
     }
     cn_dim_rets_pool: dict[DimName, list[float]] = {
         dim: [
             r for r in (dim_aggregate_return(cn_returns[code], dim) for code in cn_returns)
             if r is not None
-        ]
-        for dim in DIMS
+        ] for dim in DIMS
     }
 
     # 4) US 主题池强度（仅 mapped 主题参与）
@@ -266,7 +261,7 @@ def compute_outputs(
     theme_strengths: dict[str, Strength] = {}
     for t in themes:
         if not t.primary_us:
-            continue  # cn_only 主题不参与 US 池
+            continue
         r = theme_returns[t.id]
         s = _strength_for_pool(dim_aggregate_return(r, 'short'),
                                theme_dim_rets['short'], k, days['short'])
@@ -290,12 +285,10 @@ def compute_outputs(
         c = composite_strength(s, m, long_s, cw['short'], cw['mid'], cw['long'])
         cn_strengths[code] = Strength(short=s, mid=m, long=long_s, composite=c)
 
-    # 5b) CN 主题池强度（全主题双算：用 primary_cn 或首个 cn_etf 作代表）
+    # 5b) CN 主题池强度
     cn_theme_primary: dict[str, str] = {}
     cn_theme_returns: dict[str, Returns] = {}
     for t in themes:
-        # 改名避免与上方 line 230 `for code in cn_returns` 重定义冲突;
-        # 同时需要 Optional 形态走 None 短路.
         primary_code: str | None = t.primary_cn or (t.cn_etfs[0].code if t.cn_etfs else None)
         if primary_code is None:
             continue
@@ -309,8 +302,7 @@ def compute_outputs(
                 for tid in cn_theme_returns
             )
             if r is not None
-        ]
-        for dim in DIMS
+        ] for dim in DIMS
     }
     cn_theme_strengths: dict[str, Strength] = {}
     for tid, r in cn_theme_returns.items():
@@ -323,7 +315,7 @@ def compute_outputs(
         c = composite_strength(s, m, long_s, cw['short'], cw['mid'], cw['long'])
         cn_theme_strengths[tid] = Strength(short=s, mid=m, long=long_s, composite=c)
 
-    # 6) 排名（基于 display_strengths：mapped 优先 US 端，cn_only 用 CN 端）
+    # 6) 排名
     display_strengths: dict[str, Strength] = {
         t.id: (theme_strengths[t.id] if t.id in theme_strengths else cn_theme_strengths[t.id])
         for t in themes
@@ -333,7 +325,29 @@ def compute_outputs(
                         key=lambda i: display_strengths[i].composite, reverse=True)
     theme_ranks: dict[str, int] = {tid: i + 1 for i, tid in enumerate(sorted_ids)}
 
-    # 7) 映射分 + 信号
+    return _ComputeContext(
+        theme_returns=theme_returns,
+        cn_returns=cn_returns,
+        theme_strengths=theme_strengths,
+        cn_strengths=cn_strengths,
+        cn_theme_strengths=cn_theme_strengths,
+        display_strengths=display_strengths,
+        theme_ranks=theme_ranks,
+        cn_theme_primary=cn_theme_primary,
+    )
+
+
+def _compute_signals(
+    themes: list[ThemeConfig],
+    ctx: _ComputeContext,
+    us_ohlc: dict[str, pd.DataFrame],
+    cn_ohlc: dict[str, pd.DataFrame],
+    algo: AlgoConfig,
+) -> tuple[list[ThemeSignal], list[PairSignal]]:
+    """阶段 7：映射分 + 信号计算。
+
+    返回 (theme_signals, pair_signals)。
+    """
     pair_signals: list[PairSignal] = []
     theme_signals: list[ThemeSignal] = []
     for t in themes:
@@ -356,8 +370,8 @@ def compute_outputs(
                                    min_aligned=algo.mapping.min_aligned_days)
             conf = algo.confidence.exact if cn.match_type == 'exact' else algo.confidence.wide
 
-            cn_str_obj = cn_strengths.get(cn.code, Strength(short=0, mid=0, long=0, composite=0))
-            r = cn_returns.get(cn.code, Returns())
+            cn_str_obj = ctx.cn_strengths.get(cn.code, Strength(short=0, mid=0, long=0, composite=0))
+            r = ctx.cn_returns.get(cn.code, Returns())
             cn_dim_returns_dict: dict[str, float | None] = {
                 dim: dim_aggregate_return(r, dim) for dim in DIMS
             }
@@ -367,13 +381,12 @@ def compute_outputs(
                 'cn_strength': cn_str_obj, 'cn_dim_returns': cn_dim_returns_dict,
             })
 
-        us_str_obj = theme_strengths[t.id]
-        us_r = theme_returns[t.id]
+        us_str_obj = ctx.theme_strengths[t.id]
+        us_r = ctx.theme_returns[t.id]
         us_dim_returns_dict: dict[str, float | None] = {
             dim: dim_aggregate_return(us_r, dim) for dim in DIMS
         }
 
-        # 主题级信号
         theme_sig, trigger_code, theme_votes = signal_for_theme(
             us_strength=us_str_obj, us_dim_returns=us_dim_returns_dict,
             cn_candidates=candidates, cfg=algo.signal,
@@ -386,7 +399,6 @@ def compute_outputs(
             description=theme_dynamic_description(t.name, theme_sig, us_str_obj.mid),
         ))
 
-        # 配对级信号
         for cn_data in candidates:
             sig, votes = signal_for_pair(
                 us_strength=us_str_obj, cn_strength=cn_data['cn_strength'],
@@ -399,7 +411,24 @@ def compute_outputs(
                 signal=sig, votes=votes,
             ))
 
-    # 8) 构造 JSON（schema 1.1：加 us_strength / cn_strength / primary_cn）
+    return theme_signals, pair_signals
+
+
+def _build_output_jsons(
+    themes: list[ThemeConfig],
+    ctx: _ComputeContext,
+    us_ohlc: dict[str, pd.DataFrame],
+    cn_ohlc: dict[str, pd.DataFrame],
+    us_failed: list[str],
+    theme_signals: list[ThemeSignal],
+    pair_signals: list[PairSignal],
+    asof_bjt: datetime,
+    mode: PipelineMode,
+    backfilled: bool,
+    cn_failed: list[str],
+    cn_fallback_map: dict[str, str],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """阶段 8：构造 4 个输出 JSON（themes/etfs/signals/meta）。"""
     def _strength_dump(s: Strength | None) -> dict[str, Any] | None:
         return s.model_dump() if s else None
 
@@ -410,26 +439,25 @@ def compute_outputs(
             {
                 'id': t.id, 'name': t.name, 'us_etfs': t.us_etfs,
                 'primary_us': t.primary_us,
-                'primary_cn': t.primary_cn or cn_theme_primary.get(t.id),
+                'primary_cn': t.primary_cn or ctx.cn_theme_primary.get(t.id),
                 'tags': t.tags, 'note': t.note,
-                # returns：mapped 用 US 端，cn_only 用 CN 端
                 'returns': (
-                    theme_returns[t.id].model_dump() if t.primary_us
-                    else cn_theme_returns.get(t.id, Returns()).model_dump()
+                    ctx.theme_returns[t.id].model_dump() if t.primary_us
+                    else ctx.cn_returns.get(
+                        ctx.cn_theme_primary.get(t.id, ''), Returns()
+                    ).model_dump()
                 ),
-                # strength：display（排名依据），us_strength / cn_strength 双端
-                'strength': display_strengths[t.id].model_dump(),
-                'us_strength': _strength_dump(theme_strengths.get(t.id)),
-                'cn_strength': _strength_dump(cn_theme_strengths.get(t.id)),
+                'strength': ctx.display_strengths[t.id].model_dump(),
+                'us_strength': _strength_dump(ctx.theme_strengths.get(t.id)),
+                'cn_strength': _strength_dump(ctx.cn_theme_strengths.get(t.id)),
                 'rank': Rank(
-                    short=theme_ranks[t.id], mid=theme_ranks[t.id],
-                    long=theme_ranks[t.id], composite=theme_ranks[t.id],
+                    short=ctx.theme_ranks[t.id], mid=ctx.theme_ranks[t.id],
+                    long=ctx.theme_ranks[t.id], composite=ctx.theme_ranks[t.id],
                 ).model_dump(),
-            } for t in themes if t.id in display_strengths
+            } for t in themes if t.id in ctx.display_strengths
         ],
     }
 
-    # 1:N 主题归属 — 先扫全 themes 建 cn_code → [theme_id, ...] 映射（按配置顺序）
     cn_code_to_theme_ids: dict[str, list[str]] = {}
     for t in themes:
         for cn in t.cn_etfs:
@@ -442,7 +470,7 @@ def compute_outputs(
             if cn.code in cn_codes_seen:
                 continue
             cn_codes_seen.add(cn.code)
-            r = cn_returns.get(cn.code, Returns())
+            r = ctx.cn_returns.get(cn.code, Returns())
             df = cn_ohlc.get(cn.code)
             price: float | None = None
             amount: float | None = None
@@ -454,11 +482,11 @@ def compute_outputs(
             theme_ids = cn_code_to_theme_ids[cn.code]
             etfs_list.append({
                 'code': cn.code, 'name': cn.name, 'tracking_index': cn.tracking,
-                'theme_id': theme_ids[0],   # 主归属 = 配置首次出现
-                'theme_ids': theme_ids,     # 全部归属（含主归属）
+                'theme_id': theme_ids[0],
+                'theme_ids': theme_ids,
                 'returns': r.model_dump(),
                 'amount_yi': amount, 'price': price,
-                'strength': cn_strengths.get(
+                'strength': ctx.cn_strengths.get(
                     cn.code, Strength(short=0, mid=0, long=0, composite=0),
                 ).model_dump(),
             })
@@ -475,12 +503,12 @@ def compute_outputs(
         'pair_signals': [ps.model_dump() for ps in pair_signals],
     }
 
-    # 数据新鲜度: 每市场最新 bar 日期
+    # meta
+    today_bjt = asof_bjt.date()
+    asof_utc = asof_bjt.astimezone(timezone.utc)
     cn_data_date = _latest_bar_date(cn_ohlc)
     us_data_date = _latest_bar_date(us_ohlc)
 
-    # CN 陈旧判定: 是 CN 交易日、已收盘、但最新 bar 仍停在更早日期.
-    # 盘中 (session active) 当日 bar 未形成属正常, 不算陈旧, 避免误报.
     cn_stale = (
         is_cn_trading_day(today_bjt)
         and not is_cn_session_active(asof_bjt)
@@ -489,7 +517,6 @@ def compute_outputs(
     )
     stale_minutes = (today_bjt - cn_data_date).days * 1440 if cn_stale and cn_data_date else 0
 
-    # 状态优先级: stale > degraded > fallback > ok (陈旧最需暴露).
     if cn_stale:
         cn_status: ProviderStatus = 'stale'
     elif cn_failed:
@@ -520,13 +547,55 @@ def compute_outputs(
         backfilled=backfilled,
     )
     meta_json: dict[str, Any] = meta.model_dump()
-    # schema 1.1 新增：统计 mapped / cn_only 主题数
     meta_json['theme_kinds'] = {
         'mapped': sum(1 for t in themes if t.primary_us),
         'cn_only': sum(1 for t in themes if not t.primary_us),
     }
 
     return themes_json, etfs_json, signals_json, meta_json
+
+
+def compute_outputs(
+    themes: list[ThemeConfig],
+    us_ohlc: dict[str, pd.DataFrame],
+    cn_ohlc: dict[str, pd.DataFrame],
+    us_failed: list[str],
+    cn_failed: list[str],
+    algo: AlgoConfig,
+    asof_bjt: datetime,
+    mode: PipelineMode,
+    backfilled: bool = False,
+    cn_fallback_map: dict[str, str] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """从已采集的 OHLC 数据计算并构造 4 个输出 JSON（themes/etfs/signals/meta）。
+
+    asof_bjt 是 as-of 锚定时间（BJT, 带时区）。所有 calendar 字段、generated_at
+    均基于此时间。pipeline.run_pipeline 调用时传 datetime.now(tz=BJT)，
+    backfill 脚本调用时传该 D 当晚 16:00 BJT。
+
+    cn_fallback_map: {symbol: provider_name} 走了非首选 provider 的 symbol。
+        当 cn_fallback_map 非空且 cn_failed 为空时，cn provider status = 'fallback'。
+
+    返回顺序: (themes_json, etfs_json, signals_json, meta_json)
+    """
+    if cn_fallback_map is None:
+        cn_fallback_map = {}
+
+    # 阶段 1-6：收益 → 池强度 → 排名
+    ctx = _compute_all_strengths(themes, us_ohlc, cn_ohlc, algo)
+
+    # 阶段 7：映射分 + 信号
+    theme_signals, pair_signals = _compute_signals(
+        themes, ctx, us_ohlc, cn_ohlc, algo,
+    )
+
+    # 阶段 8：构造输出 JSON
+    return _build_output_jsons(
+        themes, ctx, us_ohlc, cn_ohlc, us_failed,
+        theme_signals, pair_signals,
+        asof_bjt, mode, backfilled,
+        cn_failed, cn_fallback_map,
+    )
 
 
 def _write_latest_guarded(

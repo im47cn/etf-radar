@@ -27,8 +27,8 @@ export const BreadthThermometer = ({ market, periodLabel = 'MA20' }: Props) => {
   const spark = useMemo(() => buildSparkline(market), [market]);
 
   return (
-    <div className="flex items-start gap-6 rounded-lg border border-gray-200 bg-white p-4">
-      <div className="flex flex-col items-center">
+    <div className="flex items-stretch gap-6 rounded-lg border border-gray-200 bg-white p-4">
+      <div className="flex flex-col items-center justify-center">
         <div
           className="flex h-24 w-24 items-center justify-center rounded-full text-3xl font-bold text-gray-800"
           style={{ backgroundColor: breadthColor(rate), ...breadthTextureCss(rate) }}
@@ -39,8 +39,8 @@ export const BreadthThermometer = ({ market, periodLabel = 'MA20' }: Props) => {
           全市场 · {breadthLabel(rate)}
         </div>
       </div>
-      {/* h-24 与左侧圆形同高, justify-between 让三行内容上下贴齐圆形的上下边缘 */}
-      <div className="flex h-24 flex-1 flex-col justify-between">
+      {/* items-stretch 让本列与左侧(圆形+文案)同高, justify-between 把三行内容撑满整个容器高度 */}
+      <div className="flex flex-1 flex-col justify-between">
         <div className="text-xs text-gray-400">
           近 {market.length} 交易日 · 个股 {periodLabel} 站上率
         </div>

@@ -70,6 +70,11 @@ jobs:
           fi
       - name: Run pipeline
         if: steps.cal.outputs.is_trading == 'true'
+        # 步骤级超时(独立于 job 级 20min): 东财间歇性断连时重试退避会拖很久,
+        # 若不设步骤级上限, job 级超时会连带杀死后面 self_breadth/commit/deploy,
+        # 导致整个 cron tick 颗粒无收. 12min 远高于正常耗时(~2.5min), 且给后面
+        # 步骤留够 job 总预算(20min)内的空间.
+        timeout-minutes: 12
         run: cd backend && uv run python -m src.pipeline --mode=${{ steps.mode.outputs.mode }} --data-root=../data --config-dir=../config
         continue-on-error: true
       - name: Refresh dapanyuntu breadth (QC 对账源)

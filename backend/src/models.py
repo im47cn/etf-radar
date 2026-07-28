@@ -219,7 +219,7 @@ class StockOhlcBar(BaseModel):
     date: _Date
     o: float
     h: float
-    l: float  # noqa: E741  OHLC 标准缩写 (low)
+    l: float
     c: float
     v: int = Field(ge=0)
 

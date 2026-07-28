@@ -1,6 +1,8 @@
 """Pydantic 模型 — 与 JSON Schema 1:1 对应"""
-from datetime import date as _Date, datetime as _Datetime
-from typing import Literal, Optional
+from datetime import date as _Date
+from datetime import datetime as _Datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field, model_validator
 
 MatchType = Literal['exact', 'wide']
@@ -20,8 +22,8 @@ class ThemeConfig(BaseModel):
     id: str
     name: str
     us_etfs: list[str] = Field(default_factory=list)
-    primary_us: Optional[str] = None
-    primary_cn: Optional[str] = None
+    primary_us: str | None = None
+    primary_cn: str | None = None
     tags: list[str] = Field(default_factory=list)
     note: str = ''
     cn_etfs: list[CnEtfConfig]
@@ -66,12 +68,12 @@ class AlgoConfig(BaseModel):
 
 
 class Returns(BaseModel):
-    r_1d: Optional[float] = None
-    r_5d: Optional[float] = None
-    r_20d: Optional[float] = None
-    r_60d: Optional[float] = None
-    r_120d: Optional[float] = None
-    r_ytd: Optional[float] = None
+    r_1d: float | None = None
+    r_5d: float | None = None
+    r_20d: float | None = None
+    r_60d: float | None = None
+    r_120d: float | None = None
+    r_ytd: float | None = None
 
 
 class Strength(BaseModel):
@@ -92,14 +94,14 @@ class ThemeOutput(BaseModel):
     id: str
     name: str
     us_etfs: list[str] = Field(default_factory=list)
-    primary_us: Optional[str] = None   # 纯 A 股主题无美股锚点
-    primary_cn: Optional[str] = None   # 纯 A 股主题的主力 ETF 代码
+    primary_us: str | None = None   # 纯 A 股主题无美股锚点
+    primary_cn: str | None = None   # 纯 A 股主题的主力 ETF 代码
     tags: list[str]
     note: str
     returns: Returns
     strength: Strength
-    us_strength: Optional[Strength] = None  # 仅美股端强度
-    cn_strength: Optional[Strength] = None  # 仅 A 股端强度
+    us_strength: Strength | None = None  # 仅美股端强度
+    cn_strength: Strength | None = None  # 仅 A 股端强度
     rank: Rank
 
 
@@ -110,8 +112,8 @@ class EtfOutput(BaseModel):
     theme_id: str                     # 主归属（首次出现的主题，向后兼容）
     theme_ids: list[str] = Field(min_length=1)  # 全部归属（含主归属），1:N
     returns: Returns
-    amount_yi: Optional[float] = None
-    price: Optional[float] = None
+    amount_yi: float | None = None
+    price: float | None = None
     strength: Strength
 
     @model_validator(mode='after')
@@ -126,17 +128,17 @@ class EtfOutput(BaseModel):
 class PairSignal(BaseModel):
     theme_id: str
     cn_code: str
-    mapping_score: Optional[int]
+    mapping_score: int | None
     confidence: int
-    signal: Optional[SignalType]
-    votes: dict[str, Optional[SignalType]]
+    signal: SignalType | None
+    votes: dict[str, SignalType | None]
 
 
 class ThemeSignal(BaseModel):
     theme_id: str
-    signal: Optional[SignalType]
-    trigger_cn_etf: Optional[str]
-    votes: dict[str, Optional[SignalType]]
+    signal: SignalType | None
+    trigger_cn_etf: str | None
+    votes: dict[str, SignalType | None]
     description: str
 
 
@@ -153,14 +155,14 @@ class CalendarInfo(BaseModel):
 
 
 class FullRefreshTimes(BaseModel):
-    us: Optional[str] = None
-    cn: Optional[str] = None
+    us: str | None = None
+    cn: str | None = None
 
 
 class MetaInfo(BaseModel):
     schema_version: str = '1.1'
     last_full_refresh: FullRefreshTimes
-    last_intraday_refresh: Optional[str] = None
+    last_intraday_refresh: str | None = None
     providers: dict[str, ProviderInfo]
     failed_symbols: list[str] = Field(default_factory=list)
     fallback_symbols: dict[str, str] = Field(default_factory=dict)
@@ -168,8 +170,8 @@ class MetaInfo(BaseModel):
     calendar: CalendarInfo
     backfilled: bool = False
     # 每市场最新 bar 日期 (ISO date). 供新鲜度护栏在归档前校验, None=无数据.
-    cn_data_date: Optional[str] = None
-    us_data_date: Optional[str] = None
+    cn_data_date: str | None = None
+    us_data_date: str | None = None
 
 
 class EtfTopHolding(BaseModel):
@@ -195,7 +197,7 @@ class StockSpot(BaseModel):
     """个股某日盘口快照（用于 stocks_spot.json）。"""
     name: str
     close: float
-    r_1d: Optional[float] = None
+    r_1d: float | None = None
 
 
 class StockIndicators(BaseModel):
@@ -205,10 +207,10 @@ class StockIndicators(BaseModel):
     leader 字段为非空字符串时表示龙头标签。
     """
     name: str
-    strength_60d: Optional[int] = Field(default=None, ge=0, le=99)
-    strength_20d: Optional[int] = Field(default=None, ge=0, le=99)
-    rsi_14: Optional[float] = Field(default=None, ge=0, le=100)
-    vol_ratio: Optional[float] = Field(default=None, ge=0)
+    strength_60d: int | None = Field(default=None, ge=0, le=99)
+    strength_20d: int | None = Field(default=None, ge=0, le=99)
+    rsi_14: float | None = Field(default=None, ge=0, le=100)
+    vol_ratio: float | None = Field(default=None, ge=0)
     leader: str = ''  # "⭐⭐⭐" | "⭐⭐" | "⭐" | ""
 
 
@@ -217,7 +219,7 @@ class StockOhlcBar(BaseModel):
     date: _Date
     o: float
     h: float
-    l: float  # noqa: E741 — OHLCV 行业惯例字段名，对应 low
+    l: float  # noqa: E741  OHLC 标准缩写 (low)
     c: float
     v: int = Field(ge=0)
 

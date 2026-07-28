@@ -47,4 +47,4 @@ def mapping_score(
     corr, _ = pearsonr(aligned['us'], aligned['cn'])
     if math.isnan(corr):
         return None
-    return round(abs(corr) * 100)
+    return int(round(abs(corr) * 100))  # noqa: RUF046  mypy needs int() for numpy float

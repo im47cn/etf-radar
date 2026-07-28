@@ -66,7 +66,7 @@ export const TemperaturePage = () => {
       </div>
 
       <div className="animate-fade-rise" style={{ animationDelay: '120ms' }}>
-        <BreadthThermometer market={pd.market} periodLabel={PERIOD_LABELS[activePeriod]} />
+        <BreadthThermometer market={pd.market} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 animate-fade-rise" style={{ animationDelay: '180ms' }}>

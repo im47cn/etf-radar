@@ -11,11 +11,10 @@ import {
 
 interface Props {
   market: MarketPoint[];
-  periodLabel?: string;
 }
 
 /** 全市场温度计: 当日站上率大数字 + 冷暖标签 + 迷你趋势线. */
-export const BreadthThermometer = ({ market, periodLabel = 'MA20' }: Props) => {
+export const BreadthThermometer = ({ market }: Props) => {
   const latest = useMemo(() => {
     for (let i = market.length - 1; i >= 0; i--) {
       if (market[i].rate != null) return market[i];
@@ -39,11 +38,8 @@ export const BreadthThermometer = ({ market, periodLabel = 'MA20' }: Props) => {
           全市场 · {breadthLabel(rate)}
         </div>
       </div>
-      {/* items-stretch 让本列与左侧(圆形+文案)同高, justify-between 把三行内容撑满整个容器高度 */}
+      {/* items-stretch 让本列与左侧(圆形+文案)同高; 去掉顶部说明文字后把高度让给图表本身 (见 buildSparkline 的 H), 而非靠间距撑满 */}
       <div className="flex flex-1 flex-col justify-between">
-        <div className="text-xs text-gray-400">
-          近 {market.length} 交易日 · 个股 {periodLabel} 站上率
-        </div>
         {spark}
         <div className="flex justify-between text-[10px] text-gray-400">
           <span>{market[0]?.date}</span>
@@ -56,7 +52,7 @@ export const BreadthThermometer = ({ market, periodLabel = 'MA20' }: Props) => {
 
 function buildSparkline(market: MarketPoint[]) {
   const W = 240;
-  const H = 44;
+  const H = 84;
   const n = market.length;
   const xs = (i: number) => (n <= 1 ? 0 : (i / (n - 1)) * W);
   const ys = (v: number) => H - (Math.max(0, Math.min(100, v)) / 100) * H;

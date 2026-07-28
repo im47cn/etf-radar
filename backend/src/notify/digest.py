@@ -20,7 +20,7 @@ import secrets
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -30,9 +30,9 @@ from .changes import (
     TemperatureChange,
     build_watchlist_changes,
     diff_temperature,
+    find_prev_snapshot_dir,
     index_strength_by_key,
     latest_market_rate,
-    find_prev_snapshot_dir,
 )
 
 log = logging.getLogger(__name__)
@@ -204,7 +204,7 @@ class SupabaseRest:
 # Supabase 查询：生效会员 + watchlist + notify_prefs
 # ============================================================
 def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def load_active_members(
@@ -518,7 +518,7 @@ def run(
             continue
         try:
             _process_member(m, run_date, today, prev, temperature, rest, config, sender, result)
-        except Exception as e:  # noqa: BLE001 单用户失败不中断整体
+        except Exception as e:
             log.exception("用户 %s 处理异常", m.user_id)
             if _record_idempotent(rest, run_date, m.user_id, OUTCOME_FAILED, str(e)[:500]):
                 result.failed += 1

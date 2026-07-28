@@ -1,8 +1,15 @@
 import pytest
 from pydantic import ValidationError
+
 from src.models import (
-    ThemeConfig, CnEtfConfig, Returns, Strength, PairSignal,
-    ThemeOutput, Rank, EtfOutput,
+    CnEtfConfig,
+    EtfOutput,
+    PairSignal,
+    Rank,
+    Returns,
+    Strength,
+    ThemeConfig,
+    ThemeOutput,
 )
 
 

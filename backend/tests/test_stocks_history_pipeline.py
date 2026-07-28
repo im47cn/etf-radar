@@ -4,7 +4,6 @@ from datetime import date
 from pathlib import Path
 from unittest.mock import patch
 
-
 from src.models import StockOhlcBar
 from src.stocks_history_pipeline import _guard_no_regress, run_history_backfill
 

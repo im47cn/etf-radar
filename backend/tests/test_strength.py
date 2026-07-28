@@ -1,9 +1,13 @@
 import pytest
-from src.scoring.strength import (
-    sigmoid_momentum, percentile_rank, dim_aggregate_return,
-    strength_per_dim, composite_strength,
-)
+
 from src.models import Returns
+from src.scoring.strength import (
+    composite_strength,
+    dim_aggregate_return,
+    percentile_rank,
+    sigmoid_momentum,
+    strength_per_dim,
+)
 
 
 def test_sigmoid_zero_is_50() -> None:

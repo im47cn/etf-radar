@@ -7,6 +7,7 @@
 - akshare-sina: 调用 fund_etf_hist_sina(), 返回**不复权**数据，列名已为英文。
 """
 from typing import Literal
+
 import pandas as pd  # type: ignore[import-untyped]
 
 STANDARD_COLUMNS: list[str] = ['date', 'open', 'high', 'low', 'close', 'volume', 'amount']

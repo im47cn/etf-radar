@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -181,7 +181,7 @@ def compute_self_breadth(
 
     return {
         'schema_version': SCHEMA_VERSION,
-        'generated_at': datetime.now(timezone.utc).astimezone(BJT).isoformat(),
+        'generated_at': datetime.now(UTC).astimezone(BJT).isoformat(),
         'source': 'self',
         'metric': 'maN_above_ratio',
         'dates': dates,

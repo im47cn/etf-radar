@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import akshare as ak  # type: ignore[import-untyped]
 
@@ -67,6 +67,6 @@ class HoldingsProvider:
             etf_code=etf_code,
             etf_name=etf_name,
             disclosure_date=quarter,
-            fetched_at=datetime.now(timezone.utc),
+            fetched_at=datetime.now(UTC),
             top_holdings=holdings,
         )

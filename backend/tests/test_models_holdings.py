@@ -1,5 +1,5 @@
 """Pydantic 校验 holdings 相关模型"""
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -26,7 +26,7 @@ def test_etf_holdings_snapshot_valid():
         etf_code='512480',
         etf_name='半导体ETF',
         disclosure_date=date(2026, 3, 31),
-        fetched_at=datetime(2026, 6, 23, 3, 0, tzinfo=timezone.utc),
+        fetched_at=datetime(2026, 6, 23, 3, 0, tzinfo=UTC),
         top_holdings=[
             EtfTopHolding(code='002129', name='TCL中环', weight=8.5),
             EtfTopHolding(code='603501', name='韦尔股份', weight=7.2),
@@ -42,7 +42,7 @@ def test_etf_holdings_snapshot_max_10_holdings():
             etf_code='512480',
             etf_name='x',
             disclosure_date=date(2026, 3, 31),
-            fetched_at=datetime.now(timezone.utc),
+            fetched_at=datetime.now(UTC),
             top_holdings=holdings,
         )
 

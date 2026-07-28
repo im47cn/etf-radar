@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -93,7 +93,7 @@ def compute_market_temperature(raw: BreadthRaw) -> dict[str, Any]:
 
     return {
         'schema_version': SCHEMA_VERSION,
-        'generated_at': datetime.now(timezone.utc).astimezone(BJT).isoformat(),
+        'generated_at': datetime.now(UTC).astimezone(BJT).isoformat(),
         'source': 'dapanyuntu',
         'metric': 'ma20_above_ratio',
         'dates': dates,

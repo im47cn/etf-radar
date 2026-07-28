@@ -1,6 +1,7 @@
 import pandas as pd  # type: ignore[import-untyped]
 import pytest
-from src.etl.standardize import standardize_ohlc, STANDARD_COLUMNS
+
+from src.etl.standardize import STANDARD_COLUMNS, standardize_ohlc
 
 
 def test_standardize_adds_missing_amount_as_nan() -> None:

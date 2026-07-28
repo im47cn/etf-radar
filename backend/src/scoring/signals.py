@@ -8,7 +8,8 @@
 """
 from collections import Counter
 from collections.abc import Mapping
-from typing import Any, Optional, Protocol
+from typing import Any, Protocol
+
 from ..models import SignalSubConfig, SignalType
 
 
@@ -28,7 +29,7 @@ def judge_per_period(
     us_str: int, cn_str: int,
     us_ret: float, cn_ret: float,
     cfg: SignalSubConfig,
-) -> Optional[SignalType]:
+) -> SignalType | None:
     """单周期信号判定: 共振 / 传导 / 背离 / 中性 (None)。"""
     res_cfg = cfg.resonance
     trans_cfg = cfg.transmission
@@ -63,9 +64,9 @@ def signal_for_pair(
     us_dim_returns: Mapping[str, float | None],
     cn_dim_returns: Mapping[str, float | None],
     cfg: SignalSubConfig,
-) -> tuple[Optional[SignalType], dict[str, Optional[SignalType]]]:
+) -> tuple[SignalType | None, dict[str, SignalType | None]]:
     """多周期一致性投票: 三周期中同标签 ≥ 2 才生效。"""
-    votes: dict[str, Optional[SignalType]] = {}
+    votes: dict[str, SignalType | None] = {}
     for dim in ['short', 'mid', 'long']:
         votes[dim] = judge_per_period(
             us_str=getattr(us_strength, dim),
@@ -89,7 +90,7 @@ def signal_for_theme(
     us_dim_returns: Mapping[str, float | None],
     cn_candidates: list[dict[str, Any]],
     cfg: SignalSubConfig,
-) -> tuple[Optional[SignalType], Optional[str], dict[str, Optional[SignalType]]]:
+) -> tuple[SignalType | None, str | None, dict[str, SignalType | None]]:
     """主题级信号: 按 (confidence, mapping_score) 降序排候选 ETF, 取首个非中性信号。
 
     Args:

@@ -3,6 +3,7 @@
 如果 data/latest/<name>.json 尚未 bootstrap, 测试自动 SKIP (不阻塞 CI)。
 """
 import json
+from datetime import UTC
 from pathlib import Path
 
 import jsonschema  # type: ignore[import-untyped]
@@ -111,11 +112,12 @@ def test_stock_indicators_null_fields():
 
 
 def test_stock_ohlc_roundtrip():
-    from datetime import date, datetime, timezone
+    from datetime import date, datetime
+
     from src.models import StockOhlc, StockOhlcBar
     obj = StockOhlc(
         code='002129', name='TCL中环',
-        generated_at=datetime(2026, 6, 25, 8, 30, tzinfo=timezone.utc),
+        generated_at=datetime(2026, 6, 25, 8, 30, tzinfo=UTC),
         bars=[StockOhlcBar(date=date(2026, 4, 1), o=12.3, h=12.65, l=12.2, c=12.5, v=5230000)],
     )
     dumped = obj.model_dump(mode='json')

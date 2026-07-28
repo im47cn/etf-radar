@@ -1,5 +1,5 @@
 """信号说明文字与动态描述生成 (REQ-013)."""
-from typing import Optional
+
 from ..models import SignalType
 
 SIGNAL_NOTES: dict[str, str] = {
@@ -9,7 +9,7 @@ SIGNAL_NOTES: dict[str, str] = {
 }
 
 
-def signal_description(signal: Optional[SignalType]) -> str:
+def signal_description(signal: SignalType | None) -> str:
     """信号类型 → 标准说明文字 (REQ-013)。None 返回空串。"""
     if signal is None:
         return ''
@@ -17,7 +17,7 @@ def signal_description(signal: Optional[SignalType]) -> str:
 
 
 def theme_dynamic_description(
-    theme_name: str, signal: Optional[SignalType], us_strength_mid: int,
+    theme_name: str, signal: SignalType | None, us_strength_mid: int,
 ) -> str:
     """根据主题名 + 信号 + 中期强度生成简短动态描述 (UI 主题行副标题用)。"""
     if signal == 'transmission':

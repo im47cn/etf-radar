@@ -1,6 +1,8 @@
 """provider chain 集成测试: _collect_cn_ohlc 的多源 fallback 行为"""
-import pandas as pd  # type: ignore[import-untyped]
 from unittest.mock import MagicMock, patch
+
+import pandas as pd  # type: ignore[import-untyped]
+
 from src.models import CnEtfConfig, ThemeConfig
 from src.pipeline import _collect_cn_ohlc
 from src.providers.base import EmptyDataError, EtfDataProvider, ProviderError

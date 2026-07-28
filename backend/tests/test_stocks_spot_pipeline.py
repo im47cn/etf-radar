@@ -47,7 +47,7 @@ def test_stocks_spot_pipeline_writes_snapshot(fake_holdings: Path, monkeypatch) 
 
 def test_main_pipeline_does_not_write_stocks_spot(tmp_path: Path) -> None:
     """回归保护：主 pipeline 不再写 stocks_spot.json（已解耦）。"""
-    from src.pipeline import run_pipeline, PipelineMode
+    from src.pipeline import PipelineMode, run_pipeline
 
     config_dir = tmp_path / 'config'
     config_dir.mkdir()

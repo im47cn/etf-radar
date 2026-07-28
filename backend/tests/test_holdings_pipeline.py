@@ -1,6 +1,6 @@
 """holdings_pipeline 主流程及辅助函数测试"""
 import json
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from unittest.mock import patch
 
@@ -37,7 +37,7 @@ def _make_snap(code: str, quarter: date) -> EtfHoldingsSnapshot:
         etf_code=code,
         etf_name=f'{code}-name',
         disclosure_date=quarter,
-        fetched_at=datetime(2026, 6, 23, tzinfo=timezone.utc),
+        fetched_at=datetime(2026, 6, 23, tzinfo=UTC),
         top_holdings=[EtfTopHolding(code='002129', name='TCL中环', weight=8.5)],
     )
 

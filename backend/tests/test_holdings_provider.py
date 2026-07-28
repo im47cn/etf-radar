@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from src.providers.holdings_provider import HoldingsProvider, HoldingsFetchError
+from src.providers.holdings_provider import HoldingsFetchError, HoldingsProvider
 
 
 def _row(code: str, name: str, weight: float, quarter_tag: str) -> dict:

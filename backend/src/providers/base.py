@@ -1,5 +1,6 @@
 """Provider 抽象接口与异常"""
 from typing import Protocol
+
 import pandas as pd  # type: ignore[import-untyped]
 
 

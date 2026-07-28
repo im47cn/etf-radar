@@ -1,5 +1,6 @@
 import pandas as pd  # type: ignore[import-untyped]
-from src.scoring.mapping import mapping_score, _align_log_returns
+
+from src.scoring.mapping import _align_log_returns, mapping_score
 
 
 def _df(dates: object, closes: list[float]) -> pd.DataFrame:

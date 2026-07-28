@@ -6,13 +6,12 @@ import json
 import pandas as pd
 import pytest
 
+from src.market_breadth.stock_industry_pipeline import build_map, run
 from src.providers.stock_industry_provider import (
     StockIndustryFetchError,
     fetch_stock_industry,
     parse_industry,
 )
-from src.market_breadth.stock_industry_pipeline import build_map, run
-
 
 # ---------- parse_industry ----------
 

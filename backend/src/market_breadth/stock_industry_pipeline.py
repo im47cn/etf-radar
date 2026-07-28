@@ -10,7 +10,7 @@ import json
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -111,7 +111,7 @@ def run(data_root: Path, *, max_workers: int = 8, fetch: Any = fetch_stock_indus
         log.info('巨潮行业映射 覆盖率 %.1f%% (fetched=%d, cache=%d, unmapped=%d, failed=%d)',
                  coverage * 100, report.fetched, report.from_cache, len(unmapped), len(report.failed))
 
-    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    now = datetime.now(UTC).replace(microsecond=0).isoformat()
     atomic_write_json(out_path, {
         'schema_version': SCHEMA_VERSION,
         'generated_at': now,

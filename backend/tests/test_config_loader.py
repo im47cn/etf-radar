@@ -1,6 +1,8 @@
 from pathlib import Path
+
 import pytest
-from src.config_loader import load_themes, load_algo_config
+
+from src.config_loader import load_algo_config, load_themes
 
 FIXT = Path(__file__).parent / 'fixtures'
 

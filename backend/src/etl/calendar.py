@@ -1,5 +1,6 @@
 """交易日历 — A 股 + 美股"""
-from datetime import date, datetime, time, timezone, timedelta
+from datetime import UTC, date, datetime, time, timedelta, timezone
+
 import chinese_calendar  # type: ignore[import-untyped]
 import pandas_market_calendars as mcal  # type: ignore[import-untyped]
 
@@ -39,7 +40,7 @@ def is_cn_session_active(now_bjt: datetime) -> bool:
 
 def is_us_session_active(now_utc: datetime) -> bool:
     """美股盘中: ET 09:30-16:00 (UTC-5/-4)"""
-    d = now_utc.astimezone(timezone.utc).date()
+    d = now_utc.astimezone(UTC).date()
     sched = NYSE.schedule(start_date=d, end_date=d)
     if sched.empty:
         return False

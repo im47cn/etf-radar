@@ -1,4 +1,4 @@
-from src.providers.base import EtfDataProvider, ProviderError, EmptyDataError
+from src.providers.base import EmptyDataError, EtfDataProvider, ProviderError
 
 
 def test_provider_error_is_exception() -> None:

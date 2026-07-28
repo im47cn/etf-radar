@@ -1,6 +1,8 @@
+from unittest.mock import MagicMock, patch
+
 import pandas as pd  # type: ignore[import-untyped]
 import pytest
-from unittest.mock import patch, MagicMock
+
 from src.providers.akshare_em_provider import AkshareEmProvider
 from src.providers.base import EmptyDataError, ProviderError
 

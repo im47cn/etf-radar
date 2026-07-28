@@ -2,18 +2,17 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
-
+from datetime import UTC, datetime
 
 from src import health_monitor as hm
 
 # 固定"当前时刻"用于漏触发判据(2026-07-08 是周三,CN/US 交易日)。
-TRADING_DAY = datetime(2026, 7, 8, tzinfo=timezone.utc)
-SATURDAY = datetime(2026, 7, 11, tzinfo=timezone.utc)  # 非交易日
+TRADING_DAY = datetime(2026, 7, 8, tzinfo=UTC)
+SATURDAY = datetime(2026, 7, 11, tzinfo=UTC)  # 非交易日
 
 
 def _utc(y, m, d, hh=0, mm=0):
-    return datetime(y, m, d, hh, mm, tzinfo=timezone.utc)
+    return datetime(y, m, d, hh, mm, tzinfo=UTC)
 
 
 def _healthy_meta():
@@ -273,7 +272,7 @@ def test_run_dispatch_then_alert_after_max(tmp_path, monkeypatch):
     root = _write_data_root(tmp_path, degraded=True)
     dispatched = []
     alerted = []
-    monkeypatch.setattr(hm, "_query_runs", lambda: {})
+    monkeypatch.setattr(hm, "_query_runs", dict)
     monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) or True)
     monkeypatch.setattr(hm, "send_alert", lambda title, desp: alerted.append(title) or True)
 
@@ -294,7 +293,7 @@ def test_run_dispatch_then_alert_after_max(tmp_path, monkeypatch):
 def test_run_resets_count_when_finding_gone(tmp_path, monkeypatch):
     root = _write_data_root(tmp_path, degraded=True)
     dispatched = []
-    monkeypatch.setattr(hm, "_query_runs", lambda: {})
+    monkeypatch.setattr(hm, "_query_runs", dict)
     monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) or True)
     monkeypatch.setattr(hm, "send_alert", lambda title, desp: True)
 
@@ -322,7 +321,7 @@ def test_run_dispatch_failure_does_not_count(tmp_path, monkeypatch):
     root = _write_data_root(tmp_path, degraded=True)
     dispatched = []
     alerted = []
-    monkeypatch.setattr(hm, "_query_runs", lambda: {})
+    monkeypatch.setattr(hm, "_query_runs", dict)
     monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) and False)
     monkeypatch.setattr(hm, "send_alert", lambda title, desp: alerted.append(title) or True)
 
@@ -345,7 +344,7 @@ def test_run_same_kind_different_remedy_independent_budget(tmp_path, monkeypatch
     ]
     dispatched = []
     alerted = []
-    monkeypatch.setattr(hm, "_query_runs", lambda: {})
+    monkeypatch.setattr(hm, "_query_runs", dict)
     monkeypatch.setattr(hm, "evaluate", lambda *a, **k: findings)
     monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) or True)
     monkeypatch.setattr(hm, "send_alert", lambda title, desp: alerted.append(title) or True)
@@ -374,7 +373,7 @@ def test_run_tolerates_corrupt_json(tmp_path, monkeypatch):
     health.mkdir()
     (health / "heal_state.json").write_text("}{corrupt", encoding="utf-8")
 
-    monkeypatch.setattr(hm, "_query_runs", lambda: {})
+    monkeypatch.setattr(hm, "_query_runs", dict)
     monkeypatch.setattr(hm, "_dispatch", lambda wf: None)
     monkeypatch.setattr(hm, "send_alert", lambda title, desp: True)
 
@@ -387,7 +386,7 @@ def test_run_dry_run_no_side_effects(tmp_path, monkeypatch):
     root = _write_data_root(tmp_path, degraded=True)
     dispatched = []
     alerted = []
-    monkeypatch.setattr(hm, "_query_runs", lambda: {})
+    monkeypatch.setattr(hm, "_query_runs", dict)
     monkeypatch.setattr(hm, "_dispatch", lambda wf: dispatched.append(wf))
     monkeypatch.setattr(hm, "send_alert", lambda title, desp: alerted.append(title))
 

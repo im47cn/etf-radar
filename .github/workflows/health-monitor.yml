@@ -40,7 +40,7 @@ jobs:
           # 不把 PAT 持久化到 .git/config, 减少后续第三方步骤(uv sync/python)的凭据暴露面。
           # push 由 Commit 步骤显式设置带 token 的 remote URL 完成。
           persist-credentials: false
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
       - name: Install uv

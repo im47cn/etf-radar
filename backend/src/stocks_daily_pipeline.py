@@ -16,7 +16,7 @@ import argparse
 import json
 import logging
 import time
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -139,7 +139,7 @@ def run_daily_pipeline(
     out_dir: Path,
     today: date | None = None,
 ) -> None:
-    today = today or date.today()
+    today = today or date.today()  # noqa: DTZ011  日期标签,时区无关
     close_path = out_dir / 'close_series.json'
     volume_path = out_dir / 'volume_series.json'
     indicators_path = out_dir / 'holdings_indicators.json'
@@ -196,7 +196,7 @@ def run_daily_pipeline(
             'leader': leader,
         }
 
-    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    now = datetime.now(UTC).replace(microsecond=0).isoformat()
     indicators_path.write_text(json.dumps({
         'schema_version': '1.0',
         'generated_at': now,

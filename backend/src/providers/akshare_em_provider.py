@@ -1,13 +1,15 @@
 """akshare 数据源 — A 股场内 ETF"""
-import time
 import logging
+import time
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-import pandas as pd  # type: ignore[import-untyped]
+
 import akshare as ak  # type: ignore[import-untyped]
-from .base import EtfDataProvider, ProviderError, EmptyDataError
-from ._http_retry import install_requests_retry
+import pandas as pd  # type: ignore[import-untyped]
+
 from ..etl.standardize import standardize_ohlc
+from ._http_retry import install_requests_retry
+from .base import EmptyDataError, EtfDataProvider, ProviderError
 
 log = logging.getLogger(__name__)
 BJT = ZoneInfo('Asia/Shanghai')
@@ -45,7 +47,7 @@ class AkshareEmProvider(EtfDataProvider):
                 return standardize_ohlc(df, source='akshare')
             except EmptyDataError:
                 raise
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001  外部数据源兜底
                 last_exc = e
                 log.warning(f'akshare attempt {attempt+1} failed for {symbol}: {e}')
                 if attempt < self.max_retries - 1:

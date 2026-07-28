@@ -9,7 +9,7 @@ import argparse
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import UTC, date
 from pathlib import Path
 
 from .config_loader import load_themes
@@ -53,7 +53,7 @@ def run_holdings_pipeline(
     每个 ETF 独立按候选季度回退；单个失败不影响其他。
     最后写 index.json 列表。
     """
-    today = today or date.today()
+    today = today or date.today()  # noqa: DTZ011  日期标签,时区无关
     provider = provider or HoldingsProvider()
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -101,7 +101,7 @@ def run_holdings_pipeline(
 
 def _write_index(output_dir: Path, etf_codes: list[str]) -> None:
     """写 index.json，列出所有成功抓取的 ETF 及其披露日期。"""
-    from datetime import datetime, timezone
+    from datetime import datetime
     entries = []
     for code in etf_codes:
         snap_path = output_dir / f'{code}.json'
@@ -109,7 +109,7 @@ def _write_index(output_dir: Path, etf_codes: list[str]) -> None:
         entries.append({'code': code, 'disclosure_date': data['disclosure_date']})
     index = {
         'schema_version': '1.0',
-        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'generated_at': datetime.now(UTC).isoformat(),
         'etfs': entries,
     }
     (output_dir / 'index.json').write_text(

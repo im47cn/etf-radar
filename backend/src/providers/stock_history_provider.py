@@ -64,7 +64,7 @@ class StockHistoryProvider:
                 return self._df_to_bars(df, days)
             except StockHistoryFetchError:
                 raise
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001  外部数据源兜底
                 last_err = e
                 if attempt < self.max_retries:
                     backoff = self.base_backoff * (2 ** attempt)

@@ -1,12 +1,12 @@
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from datetime import datetime, timezone, timedelta
 
 from src.config_loader import load_algo_config
-from src.models import Strength, ThemeConfig, CnEtfConfig
-from src.pipeline import compute_outputs, PipelineMode
+from src.models import CnEtfConfig, Strength, ThemeConfig
+from src.pipeline import PipelineMode, compute_outputs
 from src.scoring.signals import (
     judge_per_period,
     signal_for_pair,
@@ -173,7 +173,7 @@ def test_cn_only_theme_has_null_signal():
         themes, {}, cn_ohlc, [], [], algo, asof, PipelineMode.ARCHIVE,
     )
 
-    ts = [s for s in signals_json['theme_signals'] if s['theme_id'] == 'cn_x'][0]
+    ts = next(s for s in signals_json['theme_signals'] if s['theme_id'] == 'cn_x')
     assert ts['signal'] is None
     assert ts['trigger_cn_etf'] is None
     assert "A 股本土赛道" in ts['description']

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -27,7 +27,7 @@ def build_snapshots_index(data_root: Path) -> dict[str, Any]:
             if not _DATE_RE.match(d.name):
                 continue
             try:
-                datetime.strptime(d.name, '%Y-%m-%d')
+                datetime.strptime(d.name, '%Y-%m-%d')  # noqa: DTZ007  仅校验目录名格式
             except ValueError:
                 continue
             if not (d / 'themes.json').exists():
@@ -39,7 +39,7 @@ def build_snapshots_index(data_root: Path) -> dict[str, Any]:
 
     return {
         'schema_version': '1.0',
-        'generated_at': datetime.now(timezone.utc).astimezone(BJT).isoformat(),
+        'generated_at': datetime.now(UTC).astimezone(BJT).isoformat(),
         'snapshots': snapshots,
     }
 

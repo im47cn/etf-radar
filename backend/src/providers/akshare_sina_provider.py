@@ -1,11 +1,13 @@
 """akshare 新浪财经数据源 — A 股 ETF 备用源 (无前复权)"""
-import time
 import logging
-import pandas as pd  # type: ignore[import-untyped]
+import time
+
 import akshare as ak  # type: ignore[import-untyped]
-from .base import EtfDataProvider, ProviderError, EmptyDataError
-from ._http_retry import install_requests_retry
+import pandas as pd  # type: ignore[import-untyped]
+
 from ..etl.standardize import standardize_ohlc
+from ._http_retry import install_requests_retry
+from .base import EmptyDataError, EtfDataProvider, ProviderError
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +42,7 @@ class AkshareSinaProvider(EtfDataProvider):
                 return standardize_ohlc(df_recent, source='akshare-sina')
             except EmptyDataError:
                 raise
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001  外部数据源兜底
                 last_exc = e
                 log.warning(f'akshare-sina attempt {attempt+1} failed for {symbol}: {e}')
                 if attempt < self.max_retries - 1:

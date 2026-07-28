@@ -150,12 +150,12 @@ def test_compute_outputs_ytd_crosses_year_boundary(config):
     """asof 2026-01-15 时, r_ytd 应基于 2026 起点, 不应回退到 2025"""
     themes, algo = config
     # 数据从 2025-10-01 到 2026-01-20, 包含跨年
-    n = (datetime(2026, 1, 20) - datetime(2025, 10, 1)).days + 1
+    n = (datetime(2026, 1, 20) - datetime(2025, 10, 1)).days + 1  # noqa: DTZ001
     us_ohlc = {sym: _make_ohlc('2025-10-01', n) for t in themes for sym in t.us_etfs}
     cn_ohlc = {cn.code: _make_ohlc('2025-10-01', n) for t in themes for cn in t.cn_etfs}
 
     # 切到 2026-01-15 (index = (2026-01-15 - 2025-10-01).days)
-    D_idx = (datetime(2026, 1, 15) - datetime(2025, 10, 1)).days
+    D_idx = (datetime(2026, 1, 15) - datetime(2025, 10, 1)).days  # noqa: DTZ001
     sliced_us = {k: v.iloc[:D_idx + 1].copy() for k, v in us_ohlc.items()}
     sliced_cn = {k: v.iloc[:D_idx + 1].copy() for k, v in cn_ohlc.items()}
     asof = datetime(2026, 1, 15, 16, 0, tzinfo=BJT)
@@ -196,7 +196,7 @@ def test_compute_outputs_handles_empty_cache(config):
     themes, algo = config
     asof = datetime(2026, 4, 15, 16, 0, tzinfo=BJT)
 
-    themes_json, etfs_json, signals_json, meta_json = compute_outputs(
+    themes_json, _etfs_json, _signals_json, meta_json = compute_outputs(
         themes, {}, {},
         list({sym for t in themes for sym in t.us_etfs}),
         list({cn.code for t in themes for cn in t.cn_etfs}),
@@ -263,7 +263,7 @@ def test_compute_outputs_cn_only_theme_no_us_strength():
     cn_ohlc = {'000001': _fake_ohlc(base=10), '000002': _fake_ohlc(base=20)}
     asof = datetime(2025, 6, 19, 16, 0, tzinfo=BJT)
 
-    themes_json, etfs_json, signals_json, meta_json = compute_outputs(
+    themes_json, _etfs_json, _signals_json, _meta_json = compute_outputs(
         themes, us_ohlc, cn_ohlc, [], [], algo,
         asof_bjt=asof, mode=PipelineMode.ARCHIVE,
     )

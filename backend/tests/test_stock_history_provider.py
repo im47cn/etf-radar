@@ -53,9 +53,9 @@ def test_fetch_history_success_passes_sina_symbol():
 
 def test_fetch_history_empty_df_raises():
     p = StockHistoryProvider()
-    with patch('akshare.stock_zh_a_daily', return_value=pd.DataFrame()):
-        with pytest.raises(StockHistoryFetchError):
-            p.fetch_history('002129', days=60)
+    with patch('akshare.stock_zh_a_daily', return_value=pd.DataFrame()), \
+         pytest.raises(StockHistoryFetchError):
+        p.fetch_history('002129', days=60)
 
 
 def test_fetch_history_retries_on_exception_then_succeeds():
@@ -76,9 +76,9 @@ def test_fetch_history_retries_on_exception_then_succeeds():
 
 def test_fetch_history_exhausts_retries():
     p = StockHistoryProvider(max_retries=2, base_backoff=0.001)
-    with patch('akshare.stock_zh_a_daily', side_effect=ConnectionError('down')):
-        with pytest.raises(StockHistoryFetchError):
-            p.fetch_history('002129', days=60)
+    with patch('akshare.stock_zh_a_daily', side_effect=ConnectionError('down')), \
+         pytest.raises(StockHistoryFetchError):
+        p.fetch_history('002129', days=60)
 
 
 def test_truncates_to_requested_days():

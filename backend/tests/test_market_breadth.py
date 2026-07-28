@@ -11,7 +11,6 @@ from src.market_breadth.pipeline import compute_market_temperature
 from src.providers.base import EmptyDataError, ProviderError
 from src.providers.dapanyuntu_provider import BreadthRaw, DapanyuntuProvider, _parse
 
-
 # ---------- 映射表 ----------
 
 def test_mapping_has_86_l2_and_26_l1():
@@ -46,9 +45,9 @@ def test_parse_empty_raises(payload):
 def test_fetch_breadth_403_raises_provider_error():
     prov = DapanyuntuProvider(max_retries=2, base_delay=0)
     with patch('urllib.request.urlopen', side_effect=__import__('urllib.error', fromlist=['HTTPError']).HTTPError(
-            'u', 403, 'Forbidden', {}, None)):
-        with pytest.raises(ProviderError):
-            prov.fetch_breadth()
+            'u', 403, 'Forbidden', {}, None)), \
+         pytest.raises(ProviderError):
+        prov.fetch_breadth()
 
 
 def test_fetch_breadth_ok():

@@ -28,7 +28,7 @@ class AlertConfig:
     dry_run: bool
 
     @classmethod
-    def from_env(cls) -> "AlertConfig":
+    def from_env(cls) -> AlertConfig:
         dry = os.getenv("ALERT_DRY_RUN", "").strip() in ("1", "true", "True")
         return cls(sendkey=os.getenv("SERVERCHAN_SENDKEY") or None, dry_run=dry)
 
@@ -47,7 +47,7 @@ def send_alert(title: str, desp: str, cfg: AlertConfig | None = None) -> bool:
     url = _ENDPOINT_TMPL.format(sendkey=cfg.sendkey)
     try:
         resp = requests.post(url, data={"title": title, "desp": desp}, timeout=_TIMEOUT)
-    except Exception as exc:  # 网络/连接异常——告警失败不致命
+    except Exception as exc:  # noqa: BLE001  网络/连接异常——告警失败不致命
         log.error("send_alert 请求异常: %s", exc)
         return False
     if resp.status_code != 200:

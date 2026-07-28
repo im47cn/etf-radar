@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -70,7 +70,7 @@ def build_stocks_spot_payload(
 def _envelope(stocks: dict[str, Any]) -> dict[str, Any]:
     return {
         'schema_version': '1.0',
-        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'generated_at': datetime.now(UTC).isoformat(),
         'stocks': stocks,
     }
 
@@ -86,7 +86,7 @@ def write_stocks_spot_snapshot(
     codes = collect_holdings_codes(holdings_dir)
     try:
         df = ak.stock_zh_a_spot_em()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001  外部数据源兜底
         log.warning(f'stock_zh_a_spot_em failed: {e}')
         df = None
 

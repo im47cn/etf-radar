@@ -362,7 +362,7 @@ def test_email_text_no_action_verbs(tmp_path: Path) -> None:
         ItemChange("etf", "512480", "半导体ETF", "D", "down", 55, 42),
     ]
     tc = TemperatureChange("偏冷", "偏暖", 40.0, 60.0, "up")
-    subject, text, html = build_email(
+    _subject, text, html = build_email(
         "2026-07-07", changes, tc, unsub_url("ref123", "tok1")
     )
     body_text = text.replace("仅供参考，非投资建议", "")

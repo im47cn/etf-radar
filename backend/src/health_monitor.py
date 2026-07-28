@@ -15,9 +15,9 @@ import json
 import logging
 import subprocess
 from dataclasses import dataclass
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .etl.calendar import is_cn_trading_day, is_us_trading_day
 from .notify.alert import send_alert
@@ -53,9 +53,9 @@ class WorkflowSchedule:
     earliest_utc: time
     grace_hours: float
     mode: str
-    max_age_hours: Optional[float] = None  # intraday
-    daily_deadline_utc: Optional[time] = None  # daily
-    latest_utc: Optional[time] = None  # intraday 末班上界
+    max_age_hours: float | None = None  # intraday
+    daily_deadline_utc: time | None = None  # daily
+    latest_utc: time | None = None  # intraday 末班上界
 
 
 # 真实 cron 节奏(见 design.md「漏触发判据」)。
@@ -109,18 +109,18 @@ def _trading_gate_open(gate: str, d: date) -> bool:
     return True
 
 
-def _parse_created_at(run: dict[str, Any]) -> Optional[datetime]:
+def _parse_created_at(run: dict[str, Any]) -> datetime | None:
     raw = run.get("createdAt")
     if not raw:
         return None
     try:
-        # gh 返回 RFC3339 带 Z;统一为带 tz 的 UTC。
-        dt = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        # gh 返回 RFC3339;Python 3.11+ fromisoformat 原生支持带 Z 后缀。
+        dt = datetime.fromisoformat(str(raw))
     except ValueError:
         return None
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
 
 
 def _is_missed(
@@ -136,14 +136,14 @@ def _is_missed(
     today = now.date()
     if not _trading_gate_open(sched.trading_gate, today):
         return False
-    earliest_dt = datetime.combine(today, sched.earliest_utc, tzinfo=timezone.utc)
+    earliest_dt = datetime.combine(today, sched.earliest_utc, tzinfo=UTC)
     deadline = earliest_dt + timedelta(hours=sched.grace_hours)
     if now < deadline:
         return False  # 尚未到应触发时点,不判 missed
 
     # intraday 活跃窗口上界:超过末班+grace(收盘后)→ 当日工作已完成,不再判 missed。
     if sched.mode == "intraday" and sched.latest_utc is not None:
-        latest_dt = datetime.combine(today, sched.latest_utc, tzinfo=timezone.utc) + timedelta(
+        latest_dt = datetime.combine(today, sched.latest_utc, tzinfo=UTC) + timedelta(
             hours=sched.grace_hours
         )
         if now > latest_dt:
@@ -164,7 +164,7 @@ def _is_missed(
         return (now - created) > timedelta(hours=sched.max_age_hours)
     # daily:最近 success 应 ≥ 当日 deadline
     assert sched.daily_deadline_utc is not None
-    day_deadline = datetime.combine(today, sched.daily_deadline_utc, tzinfo=timezone.utc)
+    day_deadline = datetime.combine(today, sched.daily_deadline_utc, tzinfo=UTC)
     return created < day_deadline
 
 
@@ -172,15 +172,15 @@ def evaluate(
     meta: dict[str, Any],
     qc: dict[str, Any],
     close_series_dates: list[str],
-    runs: dict[str, Optional[dict[str, Any]]],
-    now: Optional[datetime] = None,
+    runs: dict[str, dict[str, Any] | None],
+    now: datetime | None = None,
 ) -> list[Finding]:
     """纯判定:根据只读数据产出结构化 findings(无副作用)。
 
     now(UTC,默认当前时间)注入用于漏触发判据,便于单测固定时间。
     """
     if now is None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
     findings: list[Finding] = []
 
     # 1. CN provider degraded / stale
@@ -273,9 +273,9 @@ def evaluate(
 
 
 # ----------------------------- gh 封装（单测 monkeypatch） -----------------------------
-def _query_runs() -> dict[str, Optional[dict[str, Any]]]:
+def _query_runs() -> dict[str, dict[str, Any] | None]:
     """查关键 workflow 最近一次 run 的状态。gh 不可用/异常 → 该 wf 记 None。"""
-    result: dict[str, Optional[dict[str, Any]]] = {}
+    result: dict[str, dict[str, Any] | None] = {}
     for wf in KEY_WORKFLOWS:
         try:
             out = subprocess.run(
@@ -286,6 +286,7 @@ def _query_runs() -> dict[str, Optional[dict[str, Any]]]:
                 capture_output=True,
                 text=True,
                 timeout=30,
+                check=True,
             )
             if out.returncode != 0:
                 # 区分"确无 run"与"gh/认证/环境故障": 后者打 warning 便于排查,
@@ -298,7 +299,7 @@ def _query_runs() -> dict[str, Optional[dict[str, Any]]]:
                 continue
             data = json.loads(out.stdout or "[]")
             result[wf] = data[0] if isinstance(data, list) and data else None
-        except Exception as exc:  # gh 缺失/超时——记 None，evaluate 会判缺陷
+        except Exception as exc:  # noqa: BLE001  gh 缺失/超时——记 None，evaluate 会判缺陷
             log.warning("_query_runs(%s) 失败: %s", wf, exc)
             result[wf] = None
     return result
@@ -325,7 +326,7 @@ def _dispatch(workflow: str) -> bool:
             )
             return False
         return True
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         log.error("_dispatch(%s) 失败: %s", workflow, exc)
         return False
 
@@ -396,7 +397,7 @@ def run(data_root: Path, dry_run: bool) -> list[Finding]:
         if key not in active_keys:
             del state[key]
 
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
     for f in findings:
         kind = f["kind"]
         state_key = f'{kind}:{f["remedy_workflow"]}'

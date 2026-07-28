@@ -12,7 +12,7 @@ import json
 import logging
 import random
 import time
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, NamedTuple, cast
@@ -274,8 +274,7 @@ def _compute_all_strengths(
 
     # 5) A 股 ETF 强度
     cn_strengths: dict[str, Strength] = {}
-    for code in cn_returns:
-        r = cn_returns[code]
+    for code, r in cn_returns.items():
         s = _strength_for_pool(dim_aggregate_return(r, 'short'),
                                cn_dim_rets_pool['short'], k, days['short'])
         m = _strength_for_pool(dim_aggregate_return(r, 'mid'),
@@ -505,7 +504,7 @@ def _build_output_jsons(
 
     # meta
     today_bjt = asof_bjt.date()
-    asof_utc = asof_bjt.astimezone(timezone.utc)
+    asof_utc = asof_bjt.astimezone(UTC)
     cn_data_date = _latest_bar_date(cn_ohlc)
     us_data_date = _latest_bar_date(us_ohlc)
 
@@ -653,7 +652,7 @@ def run_pipeline(
         AkshareSinaProvider(),
     ]
 
-    now_utc = datetime.now(timezone.utc)
+    now_utc = datetime.now(UTC)
     now_bjt = now_utc.astimezone(BJT)
 
     us_ohlc, us_failed = _collect_us_ohlc(themes, yf_provider)

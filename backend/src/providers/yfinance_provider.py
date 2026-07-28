@@ -1,10 +1,12 @@
 """yfinance 数据源 — 美股 ETF"""
-import time
 import logging
+import time
+
 import pandas as pd  # type: ignore[import-untyped]
 import yfinance as yf  # type: ignore[import-untyped]
-from .base import EtfDataProvider, ProviderError, EmptyDataError
+
 from ..etl.standardize import standardize_ohlc
+from .base import EmptyDataError, EtfDataProvider, ProviderError
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class YfinanceProvider(EtfDataProvider):
                 return standardize_ohlc(df, source='yfinance')
             except EmptyDataError:
                 raise
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001  外部数据源兜底
                 last_exc = e
                 log.warning(f'yfinance attempt {attempt+1} failed for {symbol}: {e}')
                 if attempt < self.max_retries - 1:

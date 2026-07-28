@@ -20,7 +20,7 @@ import json
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TypeVar
 
@@ -143,7 +143,7 @@ def run_history_backfill(
             return code, bars, None
         except StockHistoryFetchError as e:
             return code, None, str(e)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001  兜底:未知异常不阻断其他个股
             return code, None, f'unexpected: {e}'
 
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
@@ -180,7 +180,7 @@ def run_history_backfill(
     volume_dates, volume_matrix = _guard_no_regress(
         out_dir / 'volume_series.json', all_dates, volume_matrix, days)
 
-    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    now = datetime.now(UTC).replace(microsecond=0).isoformat()
     (out_dir / 'close_series.json').write_text(json.dumps({
         'schema_version': '1.0',
         'generated_at': now,

@@ -1,5 +1,6 @@
 """映射分 — 美股 vs A 股 ETF 的对齐 60d 相关性 × 100"""
 import math
+
 import pandas as pd  # type: ignore[import-untyped]
 from scipy.stats import pearsonr  # type: ignore[import-untyped]
 
@@ -46,4 +47,4 @@ def mapping_score(
     corr, _ = pearsonr(aligned['us'], aligned['cn'])
     if math.isnan(corr):
         return None
-    return int(round(abs(corr) * 100))
+    return round(abs(corr) * 100)

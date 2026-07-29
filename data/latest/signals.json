@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-29T07:28:07.211327+08:00",
+  "generated_at": "2026-07-29T12:50:12.943602+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -48,12 +48,12 @@
     },
     {
       "theme_id": "energy_oil",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "162411",
       "votes": {
         "short": null,
-        "mid": null,
-        "long": null
+        "mid": "resonance",
+        "long": "resonance"
       },
       "description": "美股原油/油气动量观察中"
     },
@@ -246,12 +246,12 @@
     },
     {
       "theme_id": "cn_consumer",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "510150",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "divergence"
       },
       "description": "美股大消费动量观察中"
     },
@@ -390,7 +390,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "transmission",
+        "mid": null,
         "long": "resonance"
       }
     },
@@ -435,10 +435,10 @@
       "cn_code": "162411",
       "mapping_score": 32,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": null,
-        "mid": null,
+        "mid": "resonance",
         "long": "resonance"
       }
     },
@@ -449,7 +449,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": "divergence"
       }
@@ -461,7 +461,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -521,8 +521,8 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
-        "mid": "resonance",
+        "short": "resonance",
+        "mid": null,
         "long": null
       }
     },
@@ -533,8 +533,8 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
-        "mid": "resonance",
+        "short": "resonance",
+        "mid": null,
         "long": null
       }
     },
@@ -595,7 +595,7 @@
       "votes": {
         "short": null,
         "mid": "resonance",
-        "long": "divergence"
+        "long": null
       }
     },
     {
@@ -615,9 +615,9 @@
       "cn_code": "512710",
       "mapping_score": 31,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
         "long": "divergence"
       }
@@ -651,10 +651,10 @@
       "cn_code": "510150",
       "mapping_score": 11,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": "transmission",
-        "mid": null,
+        "short": "resonance",
+        "mid": "resonance",
         "long": "divergence"
       }
     },
@@ -665,7 +665,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": "transmission",
         "long": "divergence"
       }

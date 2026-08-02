@@ -87,6 +87,12 @@ jobs:
         # 读 close_series + 巨潮映射, 产出 market_temperature.json (schema 2.0)
         run: cd backend && uv run python -m src.market_breadth.self_breadth --data-root=../data
         continue-on-error: true
+      - name: Fetch index close series (温度页对比图叠加)
+        if: steps.cal.outputs.is_trading == 'true'
+        # 读 market_temperature.json 的 dates, 抓 6 只 A 股主要指数收盘价对齐, 产出 index_series.json
+        # 依赖 self_breadth 先生成 market_temperature.json; 单指数失败不阻断 (内部已兜底)
+        run: cd backend && uv run python -m src.market_breadth.index_series --data-root=../data
+        continue-on-error: true
       - name: Reconcile self vs dapanyuntu (全市场 MA20 QC)
         if: steps.cal.outputs.is_trading == 'true'
         run: cd backend && uv run python -m src.market_breadth.reconcile --data-root=../data

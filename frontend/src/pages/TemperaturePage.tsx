@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useMarketTemperature } from '@/hooks/useMarketTemperature';
+import { useIndexSeries } from '@/hooks/useIndexSeries';
 import { PERIOD_KEYS, PERIOD_LABELS, type PeriodKey } from '@/types/marketTemperature';
 import { BreadthThermometer } from '@/components/temperature/BreadthThermometer';
+import { IndexCompareChart } from '@/components/temperature/IndexCompareChart';
 import { IndustryBreadthRanking } from '@/components/temperature/IndustryBreadthRanking';
 import { BreadthHeatmap } from '@/components/temperature/BreadthHeatmap';
 import { BreadthLegend } from '@/components/temperature/BreadthLegend';
@@ -19,6 +21,7 @@ const periodBtn = (active: boolean, disabled: boolean): string => {
 
 export const TemperaturePage = () => {
   const { data, error, isLoading } = useMarketTemperature();
+  const { data: indexSeries } = useIndexSeries();
   const [period, setPeriod] = useState<PeriodKey>('ma5');
 
   // 选中周期不可用时回退到首个可用周期
@@ -51,6 +54,11 @@ export const TemperaturePage = () => {
     clipStart > 0 ? pd.industries_l1.map((r) => ({ ...r, series: r.series.slice(clipStart) })) : pd.industries_l1;
   const l2Rows =
     clipStart > 0 ? pd.industries_l2.map((r) => ({ ...r, series: r.series.slice(clipStart) })) : pd.industries_l2;
+  // 指数序列同样按 clipStart 裁剪, 保持与 market/dates 等长对齐
+  const indicesRows =
+    clipStart > 0 && indexSeries
+      ? indexSeries.indices.map((r) => ({ ...r, series: r.series.slice(clipStart) }))
+      : indexSeries?.indices ?? [];
 
   return (
     <main className="flex flex-col gap-4 p-4 animate-crossfade">
@@ -81,6 +89,10 @@ export const TemperaturePage = () => {
 
       <div className="animate-fade-rise" style={{ animationDelay: '120ms' }}>
         <BreadthThermometer market={market} />
+      </div>
+
+      <div className="animate-fade-rise" style={{ animationDelay: '150ms' }}>
+        <IndexCompareChart market={market} indices={indicesRows} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 animate-fade-rise" style={{ animationDelay: '180ms' }}>

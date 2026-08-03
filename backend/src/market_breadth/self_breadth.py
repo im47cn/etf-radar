@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 BJT = ZoneInfo('Asia/Shanghai')
 SCHEMA_VERSION = '2.0'
-DEFAULT_PERIODS = (5, 20, 60, 120)
+DEFAULT_PERIODS = (20, 60, 120)
 
 # A 股 EOD 结算发布时点: 收盘后当日 bar 通常 18:00 BJT 前后才 roll 出.
 # 与 pipeline.CN_SETTLE_HOUR 同源口径, 早于此时点不期望今日数据 (避免盘中误报陈旧).

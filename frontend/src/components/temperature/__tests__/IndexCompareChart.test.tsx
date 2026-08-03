@@ -1,24 +1,13 @@
 import { render, fireEvent, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { IndexCompareChart } from '../IndexCompareChart';
 import type { MarketPoint } from '@/types/marketTemperature';
 import type { IndexSeriesEntry } from '@/types/indexSeries';
 
+// 图例已改为自渲染 (不依赖 recharts payload), mock 仅用于规避 jsdom 下 SVG/ResizeObserver.
 vi.mock('recharts', async () => {
   const actual = await vi.importActual<typeof import('recharts')>('recharts');
-  // Legend 会 clone content 注入 payload; 这里模拟该注入以测真实 CustomLegend 交互.
-  const FakeLegend = ({ content }: { content?: ReactElement }) => {
-    const payload = [
-      { dataKey: 'rate', value: '宽度站上率', color: '#1e293b' },
-      { dataKey: '000001', value: '上证指数', color: '#dc2626' },
-      { dataKey: '399001', value: '深证成指', color: '#7c3aed' },
-      { dataKey: '000300', value: '沪深300', color: '#d97706' },
-    ];
-    if (!content) return null;
-    const Comp = content.type as (p: Record<string, unknown>) => ReactElement;
-    return <div data-testid="legend">{Comp({ ...(content.props as Record<string, unknown>), payload })}</div>;
-  };
   return {
     ...actual,
     ResponsiveContainer: ({ children }: { children: ReactNode }) => (
@@ -34,7 +23,6 @@ vi.mock('recharts', async () => {
     YAxis: () => null,
     CartesianGrid: () => null,
     Tooltip: () => null,
-    Legend: FakeLegend,
   };
 });
 
@@ -54,13 +42,14 @@ describe('IndexCompareChart', () => {
     expect(screen.getByText('暂无指数对比数据')).toBeTruthy();
   });
 
-  it('正常渲染图表容器与图例项', () => {
+  it('正常渲染图表容器与自渲染图例项', () => {
     render(<IndexCompareChart market={market} indices={indices} />);
     expect(screen.getByTestId('rc-container')).toBeTruthy();
+    // 宽度项 + 3 指数项均出现在自渲染图例
+    expect(screen.getByText('宽度站上率')).toBeTruthy();
     expect(screen.getByText('上证指数')).toBeTruthy();
-    // 宽度线与 3 条指数线均渲染
+    expect(screen.getByText('沪深300')).toBeTruthy();
     expect(screen.getByTestId('line-rate')).toBeTruthy();
-    expect(screen.getByTestId('line-000001')).toBeTruthy();
   });
 
   it('默认隐藏的指数 chip 点击后切换为显示', () => {
@@ -71,8 +60,7 @@ describe('IndexCompareChart', () => {
     fireEvent.click(chip);
     expect(chip.className).toContain('opacity-100');
     // 对应 Line hide 由 true → false
-    const line = screen.getByTestId('line-000300');
-    expect(line.getAttribute('data-hide')).toBe('false');
+    expect(screen.getByTestId('line-000300').getAttribute('data-hide')).toBe('false');
   });
 
   it('默认显示的上证指数点击后切换为隐藏', () => {

@@ -6,7 +6,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { MarketPoint } from '@/types/marketTemperature';
@@ -28,51 +27,49 @@ const INDEX_COLORS: Record<string, string> = {
 
 const RATE_KEY = 'rate';
 const RATE_LABEL = '宽度站上率';
+const RATE_COLOR = '#1e293b';
 
 // 默认仅显示宽度(始终) + 上证指数 + 创业板指 (大盘代表 + 成长代表, 风格不重叠);
 // 深成/沪深300/科创50/科创100 默认隐藏, 用户点图例按需展开.
 const DEFAULT_HIDDEN = new Set<string>(['399001', '000300', '000688', '000698']);
 
-interface LegendPayloadItem {
-  dataKey?: string | number;
-  value?: string | number;
-  color?: string;
-}
-
 interface CustomLegendProps {
+  indices: IndexSeriesEntry[];
   hidden: Set<string>;
   onToggle: (key: string) => void;
-  payload?: LegendPayloadItem[];
 }
 
-const CustomLegend = ({ hidden, onToggle, payload }: CustomLegendProps) => (
+// 自渲染图例: 不依赖 recharts 注入 payload, 保证 hide 项始终可见可点 (根治 payload 不确定性).
+const CustomLegend = ({ indices, hidden, onToggle }: CustomLegendProps) => (
   <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px]">
-    {(payload ?? []).map((entry, i) => {
-      const key = String(entry.dataKey ?? '');
-      const isRate = key === RATE_KEY;
-      const isHidden = !isRate && hidden.has(key);
+    {/* 宽度项: 始终显示, 不可切换 */}
+    <button type="button" disabled className="flex cursor-default items-center gap-1 opacity-100">
+      <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: RATE_COLOR }} />
+      <span>{RATE_LABEL}</span>
+    </button>
+    {indices.map((idx) => {
+      const isHidden = hidden.has(idx.code);
       return (
         <button
-          key={key || i}
+          key={idx.code}
           type="button"
-          onClick={() => onToggle(key)}
-          disabled={isRate}
-          className={`flex items-center gap-1 transition-opacity ${
+          onClick={() => onToggle(idx.code)}
+          className={`flex cursor-pointer items-center gap-1 transition-opacity ${
             isHidden ? 'opacity-30' : 'opacity-100 hover:text-gray-900'
-          } ${isRate ? 'cursor-default' : 'cursor-pointer'}`}
+          }`}
         >
           <span
             className="inline-block h-2 w-2 rounded-full"
-            style={{ backgroundColor: entry.color }}
+            style={{ backgroundColor: INDEX_COLORS[idx.code] ?? '#64748b' }}
           />
-          <span>{entry.value}</span>
+          <span>{idx.name}</span>
         </button>
       );
     })}
   </div>
 );
 
-/** 温度页对比图: 左轴宽度站上率% + 右轴 A 股主要指数点位, 双 Y 轴看背离. */
+/** 温度页对比图: 左轴宽度站上率% + 右轴 A 股主要指数点位(对数), 双 Y 轴看背离. */
 export const IndexCompareChart = ({ market, indices }: Props) => {
   const [hidden, setHidden] = useState<Set<string>>(DEFAULT_HIDDEN);
 
@@ -134,13 +131,18 @@ export const IndexCompareChart = ({ market, indices }: Props) => {
             tick={{ fontSize: 10 }}
             width={52}
           />
-          <Tooltip />
-          <Legend content={<CustomLegend hidden={hidden} onToggle={toggle} />} />
+          <Tooltip
+            formatter={(value, name) => {
+              const label = typeof name === 'string' ? name : String(name);
+              if (label === RATE_LABEL) return [`${Number(value).toFixed(1)}%`, label];
+              return [Math.round(Number(value)).toLocaleString(), label];
+            }}
+          />
           <Line
             yAxisId="breadth"
             dataKey={RATE_KEY}
             name={RATE_LABEL}
-            stroke="#1e293b"
+            stroke={RATE_COLOR}
             strokeWidth={1.5}
             dot={false}
             type="monotone"
@@ -162,6 +164,7 @@ export const IndexCompareChart = ({ market, indices }: Props) => {
           ))}
         </ComposedChart>
       </ResponsiveContainer>
+      <CustomLegend indices={indices} hidden={hidden} onToggle={toggle} />
     </div>
   );
 };

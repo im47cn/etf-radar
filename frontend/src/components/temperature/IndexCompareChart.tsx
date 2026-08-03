@@ -69,11 +69,22 @@ const CustomLegend = ({ indices, hidden, onToggle }: CustomLegendProps) => (
   </div>
 );
 
-/** 温度页对比图: 左轴宽度站上率% + 右轴 A 股主要指数点位(对数), 双 Y 轴看背离. */
+/** 温度页对比图: 左轴宽度站上率% + 右轴指数涨跌幅%(相对窗口起点), 双 Y 轴看广度-价格背离. */
 export const IndexCompareChart = ({ market, indices }: Props) => {
   const [hidden, setHidden] = useState<Set<string>>(DEFAULT_HIDDEN);
 
   const data = useMemo(() => {
+    // 各指数转"相对窗口起点的涨跌幅%": 消除绝对点位量级差 (上证~3800 vs 深成~14000),
+    // 多线同尺度可比, 也能与左轴宽度站上率同框对照"广度 vs 价格变化".
+    const base: Record<string, number> = {};
+    for (const idx of indices) {
+      for (const v of idx.series) {
+        if (v != null) {
+          base[idx.code] = v;
+          break;
+        }
+      }
+    }
     const rows: Array<Record<string, number | string | null>> = [];
     for (let i = 0; i < market.length; i++) {
       const row: Record<string, number | string | null> = {
@@ -81,7 +92,9 @@ export const IndexCompareChart = ({ market, indices }: Props) => {
         [RATE_KEY]: market[i]?.rate ?? null,
       };
       for (const idx of indices) {
-        row[idx.code] = idx.series[i] ?? null;
+        const v = idx.series[i];
+        const b = base[idx.code];
+        row[idx.code] = v != null && b ? +((v / b - 1) * 100).toFixed(2) : null;
       }
       rows.push(row);
     }
@@ -110,32 +123,20 @@ export const IndexCompareChart = ({ market, indices }: Props) => {
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">宽度 vs A 股主要指数</h2>
-        <span className="text-[10px] text-gray-400">左轴: 站上率% · 右轴: 指数点位(对数) · 点击图例切换</span>
+        <span className="text-[10px] text-gray-400">左轴: 站上率% · 右轴: 指数涨跌幅%(相对起点) · 点击图例切换</span>
       </div>
       <ResponsiveContainer width="100%" height={240}>
         <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 8, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis dataKey="date" minTickGap={40} tick={{ fontSize: 10 }} />
           <YAxis yAxisId="breadth" domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} width={40} />
-          {/* 右轴对数: 6 只指数点位量级跨度大 (科创~1800 → 深成~14000), log 铺开后各线趋势均可辨.
-              domain 取 1000 的整数倍下取/上取整, 保证正域且留余量. */}
-          <YAxis
-            yAxisId="price"
-            orientation="right"
-            scale="log"
-            domain={[
-              (dataMin: number) => Math.floor(dataMin / 1000) * 1000,
-              (dataMax: number) => Math.ceil(dataMax / 1000) * 1000,
-            ]}
-            allowDataOverflow
-            tick={{ fontSize: 10 }}
-            width={52}
-          />
+          {/* 右轴: 指数相对窗口起点的涨跌幅% (线性, 已归一化消除量级差) */}
+          <YAxis yAxisId="price" orientation="right" unit="%" tick={{ fontSize: 10 }} width={48} />
           <Tooltip
             formatter={(value, name) => {
               const label = typeof name === 'string' ? name : String(name);
               if (label === RATE_LABEL) return [`${Number(value).toFixed(1)}%`, label];
-              return [Math.round(Number(value)).toLocaleString(), label];
+              return [`${Number(value).toFixed(2)}%`, label];
             }}
           />
           <Line

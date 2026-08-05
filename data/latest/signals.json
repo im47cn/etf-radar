@@ -1,26 +1,26 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-03T13:30:16.498074+08:00",
+  "generated_at": "2026-08-05T12:25:50.291505+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "512480",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "divergence",
+        "long": "resonance"
       },
       "description": "美股存储芯片动量观察中"
     },
     {
       "theme_id": "semiconductor",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "159995",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "transmission",
+        "long": "resonance"
       },
       "description": "美股半导体动量观察中"
     },
@@ -29,7 +29,7 @@
       "signal": "transmission",
       "trigger_cn_etf": "512720",
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
         "long": "transmission"
       },
@@ -37,21 +37,21 @@
     },
     {
       "theme_id": "ai_compute",
-      "signal": "transmission",
+      "signal": "resonance",
       "trigger_cn_etf": "515980",
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
-        "long": null
+        "long": "resonance"
       },
-      "description": "美股领先, A股尚未完全跟随"
+      "description": "美股AI算力中长期走强"
     },
     {
       "theme_id": "energy_oil",
       "signal": "resonance",
       "trigger_cn_etf": "162411",
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       },
@@ -125,14 +125,14 @@
     },
     {
       "theme_id": "cn_base_metals",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "divergence",
+      "trigger_cn_etf": "512400",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "divergence",
+        "long": "divergence"
       },
-      "description": "美股有色金属动量观察中"
+      "description": "美股A股短期方向不一致"
     },
     {
       "theme_id": "china_internet",
@@ -143,7 +143,7 @@
         "mid": "resonance",
         "long": null
       },
-      "description": "美股中概互联网/港股中长期走强"
+      "description": "美股中概互联网/港股动量观察中"
     },
     {
       "theme_id": "cn_brokerage",
@@ -161,7 +161,7 @@
       "signal": "resonance",
       "trigger_cn_etf": "512800",
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       },
@@ -191,12 +191,12 @@
     },
     {
       "theme_id": "biotech",
-      "signal": null,
-      "trigger_cn_etf": null,
+      "signal": "resonance",
+      "trigger_cn_etf": "512290",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "transmission",
+        "long": "resonance"
       },
       "description": "美股生物科技/创新药动量观察中"
     },
@@ -339,23 +339,23 @@
       "cn_code": "512480",
       "mapping_score": 30,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "resonance",
+        "mid": "divergence",
         "long": "resonance"
       }
     },
     {
       "theme_id": "storage_dram",
       "cn_code": "512760",
-      "mapping_score": 32,
+      "mapping_score": 31,
       "confidence": 60,
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
-        "long": null
+        "mid": "divergence",
+        "long": "resonance"
       }
     },
     {
@@ -363,10 +363,10 @@
       "cn_code": "512480",
       "mapping_score": 39,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "resonance",
+        "mid": "transmission",
         "long": "resonance"
       }
     },
@@ -375,21 +375,21 @@
       "cn_code": "159995",
       "mapping_score": 42,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "transmission",
+        "long": "resonance"
       }
     },
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 24,
+      "mapping_score": 25,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
         "long": "resonance"
       }
@@ -397,11 +397,11 @@
     {
       "theme_id": "cybersecurity",
       "cn_code": "512720",
-      "mapping_score": 1,
+      "mapping_score": 5,
       "confidence": 60,
       "signal": "transmission",
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
         "long": "transmission"
       }
@@ -409,23 +409,23 @@
     {
       "theme_id": "ai_compute",
       "cn_code": "515980",
-      "mapping_score": 34,
+      "mapping_score": 35,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": "resonance",
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
-        "long": null
+        "long": "resonance"
       }
     },
     {
       "theme_id": "ai_compute",
       "cn_code": "588000",
-      "mapping_score": 33,
+      "mapping_score": 30,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": "resonance"
       }
@@ -433,11 +433,11 @@
     {
       "theme_id": "energy_oil",
       "cn_code": "162411",
-      "mapping_score": 30,
+      "mapping_score": 29,
       "confidence": 90,
       "signal": "resonance",
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       }
@@ -445,11 +445,11 @@
     {
       "theme_id": "new_energy_vehicle",
       "cn_code": "515030",
-      "mapping_score": 35,
+      "mapping_score": 33,
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
         "long": "divergence"
       }
@@ -457,23 +457,23 @@
     {
       "theme_id": "cn_battery",
       "cn_code": "159755",
-      "mapping_score": 66,
+      "mapping_score": 65,
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": null,
-        "long": null
+        "long": "divergence"
       }
     },
     {
       "theme_id": "robotics",
       "cn_code": "562500",
-      "mapping_score": 35,
+      "mapping_score": 36,
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": null,
         "long": null
       }
@@ -481,7 +481,7 @@
     {
       "theme_id": "robotics",
       "cn_code": "159559",
-      "mapping_score": 31,
+      "mapping_score": 32,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -493,11 +493,11 @@
     {
       "theme_id": "gold",
       "cn_code": "518880",
-      "mapping_score": 29,
+      "mapping_score": 26,
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
         "long": null
       }
@@ -505,19 +505,19 @@
     {
       "theme_id": "cn_base_metals",
       "cn_code": "512400",
-      "mapping_score": 51,
+      "mapping_score": 50,
       "confidence": 60,
-      "signal": null,
+      "signal": "divergence",
       "votes": {
-        "short": "transmission",
-        "mid": null,
+        "short": "resonance",
+        "mid": "divergence",
         "long": "divergence"
       }
     },
     {
       "theme_id": "china_internet",
       "cn_code": "513050",
-      "mapping_score": 62,
+      "mapping_score": 64,
       "confidence": 90,
       "signal": "resonance",
       "votes": {
@@ -529,7 +529,7 @@
     {
       "theme_id": "china_internet",
       "cn_code": "513330",
-      "mapping_score": 65,
+      "mapping_score": 67,
       "confidence": 90,
       "signal": "resonance",
       "votes": {
@@ -541,11 +541,11 @@
     {
       "theme_id": "cn_banking",
       "cn_code": "512800",
-      "mapping_score": 12,
+      "mapping_score": 15,
       "confidence": 90,
       "signal": "resonance",
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       }
@@ -553,7 +553,7 @@
     {
       "theme_id": "cn_insurance",
       "cn_code": "159851",
-      "mapping_score": 19,
+      "mapping_score": 18,
       "confidence": 90,
       "signal": "transmission",
       "votes": {
@@ -565,11 +565,11 @@
     {
       "theme_id": "solar_clean_energy",
       "cn_code": "515790",
-      "mapping_score": 25,
+      "mapping_score": 29,
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": null,
         "long": null
       }
@@ -577,25 +577,25 @@
     {
       "theme_id": "biotech",
       "cn_code": "512290",
-      "mapping_score": 0,
+      "mapping_score": 3,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": "divergence"
+        "short": "resonance",
+        "mid": "transmission",
+        "long": "resonance"
       }
     },
     {
       "theme_id": "biotech",
       "cn_code": "159992",
-      "mapping_score": 4,
+      "mapping_score": 0,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": "divergence"
+        "short": "resonance",
+        "mid": "transmission",
+        "long": "resonance"
       }
     },
     {
@@ -613,11 +613,11 @@
     {
       "theme_id": "aerospace_defense",
       "cn_code": "512710",
-      "mapping_score": 24,
+      "mapping_score": 23,
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": "transmission",
         "long": "divergence"
       }
@@ -629,7 +629,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": null,
         "long": null
       }
@@ -637,31 +637,31 @@
     {
       "theme_id": "cn_consumer",
       "cn_code": "159928",
-      "mapping_score": 4,
+      "mapping_score": 5,
       "confidence": 60,
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "resonance",
-        "long": "divergence"
-      }
-    },
-    {
-      "theme_id": "cn_consumer",
-      "cn_code": "510150",
-      "mapping_score": 12,
-      "confidence": 60,
-      "signal": null,
-      "votes": {
-        "short": "resonance",
         "mid": null,
         "long": "divergence"
       }
     },
     {
       "theme_id": "cn_consumer",
+      "cn_code": "510150",
+      "mapping_score": 11,
+      "confidence": 60,
+      "signal": null,
+      "votes": {
+        "short": null,
+        "mid": "transmission",
+        "long": "divergence"
+      }
+    },
+    {
+      "theme_id": "cn_consumer",
       "cn_code": "159936",
-      "mapping_score": 19,
+      "mapping_score": 18,
       "confidence": 60,
       "signal": null,
       "votes": {

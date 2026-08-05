@@ -1,34 +1,32 @@
 {
   "schema_version": "1.1",
   "last_full_refresh": {
-    "us": "2026-08-03T13:30:16.498074+08:00",
-    "cn": "2026-08-03T13:30:16.498074+08:00"
+    "us": "2026-08-05T12:25:50.291505+08:00",
+    "cn": "2026-08-05T12:25:50.291505+08:00"
   },
-  "last_intraday_refresh": "2026-08-03T13:30:16.498074+08:00",
+  "last_intraday_refresh": "2026-08-05T12:25:50.291505+08:00",
   "providers": {
     "us": {
       "status": "ok",
       "name": "yfinance"
     },
     "cn": {
-      "status": "fallback",
+      "status": "ok",
       "name": "akshare-em"
     }
   },
   "failed_symbols": [],
-  "fallback_symbols": {
-    "512200": "akshare-sina"
-  },
+  "fallback_symbols": {},
   "stale_minutes": 0,
   "calendar": {
     "us_trading_today": true,
     "cn_trading_today": true,
     "us_session_active": false,
-    "cn_session_active": true
+    "cn_session_active": false
   },
   "backfilled": false,
-  "cn_data_date": "2026-08-03",
-  "us_data_date": "2026-07-31",
+  "cn_data_date": "2026-08-05",
+  "us_data_date": "2026-08-04",
   "theme_kinds": {
     "mapped": 18,
     "cn_only": 12

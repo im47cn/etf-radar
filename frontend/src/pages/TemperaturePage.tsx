@@ -9,6 +9,9 @@ import { BreadthHeatmap } from '@/components/temperature/BreadthHeatmap';
 import { BreadthLegend } from '@/components/temperature/BreadthLegend';
 import { Skeleton } from '@/components/ui/skeleton';
 
+/** MA5 视图仅展示最近 N 个交易日. */
+const MA5_DAYS = 60;
+
 const periodBtn = (active: boolean, disabled: boolean): string => {
   if (disabled) return 'px-3 py-1 rounded text-gray-300 cursor-not-allowed text-sm';
   return active
@@ -19,7 +22,7 @@ const periodBtn = (active: boolean, disabled: boolean): string => {
 export const TemperaturePage = () => {
   const { data, error, isLoading } = useMarketTemperature();
   const { data: indexSeries } = useIndexSeries();
-  const [period, setPeriod] = useState<PeriodKey>('ma20');
+  const [period, setPeriod] = useState<PeriodKey>('ma5');
 
   // 选中周期不可用时回退到首个可用周期
   const activePeriod = useMemo<PeriodKey | undefined>(() => {
@@ -27,6 +30,11 @@ export const TemperaturePage = () => {
     if (data.available.includes(period)) return period;
     return data.available[0];
   }, [data, period]);
+
+  const clipStart = useMemo(() => {
+    if (!data || activePeriod !== 'ma5') return 0;
+    return Math.max(0, data.dates.length - MA5_DAYS);
+  }, [data, activePeriod]);
 
   if (isLoading)
     return (
@@ -40,11 +48,17 @@ export const TemperaturePage = () => {
     return <div className="p-8 text-center text-gray-400">暂无市场温度数据</div>;
 
   const pd = data.periods[activePeriod]!;
-  const dates = data.dates;
-  const market = pd.market;
-  const l1Rows = pd.industries_l1;
-  const l2Rows = pd.industries_l2;
-  const indicesRows = indexSeries?.indices ?? [];
+  const dates = data.dates.slice(clipStart);
+  const market = pd.market.slice(clipStart);
+  const l1Rows =
+    clipStart > 0 ? pd.industries_l1.map((r) => ({ ...r, series: r.series.slice(clipStart) })) : pd.industries_l1;
+  const l2Rows =
+    clipStart > 0 ? pd.industries_l2.map((r) => ({ ...r, series: r.series.slice(clipStart) })) : pd.industries_l2;
+  // 指数序列同样按 clipStart 裁剪, 保持与 market/dates 等长对齐
+  const indicesRows =
+    clipStart > 0 && indexSeries
+      ? indexSeries.indices.map((r) => ({ ...r, series: r.series.slice(clipStart) }))
+      : indexSeries?.indices ?? [];
 
   return (
     <main className="flex flex-col gap-4 p-4 animate-crossfade">
@@ -83,7 +97,12 @@ export const TemperaturePage = () => {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 animate-fade-rise" style={{ animationDelay: '180ms' }}>
         <IndustryBreadthRanking l1Rows={l1Rows} l2Rows={l2Rows} />
-        <BreadthHeatmap dates={dates} l1Rows={l1Rows} l2Rows={l2Rows} maxCols={45} />
+        <BreadthHeatmap
+          dates={dates}
+          l1Rows={l1Rows}
+          l2Rows={l2Rows}
+          maxCols={activePeriod === 'ma5' ? MA5_DAYS : 45}
+        />
       </div>
 
       <p className="text-xs text-gray-400 animate-fade-rise" style={{ animationDelay: '240ms' }}>

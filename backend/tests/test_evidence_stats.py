@@ -1,0 +1,85 @@
+"""stats_utils 纯函数测试: 已知值 + 无前视 + ARCH 检出."""
+from __future__ import annotations
+
+import numpy as np
+
+from src.evidence.stats_utils import (
+    acf,
+    arch_per_theme,
+    forward_cum,
+    ic_by_horizon,
+    ljung_box,
+    rolling_ic,
+)
+
+
+def test_acf_linear_trend_high_autocorrelation():
+    x = np.arange(20, dtype=float)
+    a = acf(x, 3)
+    assert a[0] == 1.0
+    assert a[1] > 0.5
+
+
+def test_ljung_box_white_noise_not_significant():
+    rng = np.random.default_rng(42)
+    _, p = ljung_box(rng.normal(size=200), 10)
+    assert p > 0.05
+
+
+def test_ljung_box_autocorrelated_significant():
+    rng = np.random.default_rng(0)
+    x = np.zeros(200)
+    for i in range(1, 200):
+        x[i] = 0.8 * x[i - 1] + rng.normal()
+    _, p = ljung_box(x, 10)
+    assert p < 0.01
+
+
+def test_forward_cum_no_lookahead_and_tail_nan():
+    r = np.array([[1.0], [2.0], [3.0], [4.0]])
+    f = forward_cum(r, 2)
+    assert f[0, 0] == 5.0  # r[1]+r[2], 不含 t 及之前
+    assert f[1, 0] == 7.0  # r[2]+r[3]
+    assert np.isnan(f[2, 0])  # 末端无前瞻
+    assert np.isnan(f[3, 0])
+
+
+def test_ic_by_horizon_perfect_positive_correlation():
+    # strength 每日同排名, returns 每日同序 → forward 累计同序 → IC≈1
+    T, N = 30, 10
+    rank = np.arange(N, dtype=float)
+    strength = np.tile(rank, (T, 1))
+    returns = np.tile(rank, (T, 1)) * 0.01
+    out = ic_by_horizon(strength, returns, horizons=(1, 5))
+    assert out[0]["horizon"] == 1
+    assert out[0]["ic"] > 0.99
+    assert out[0]["n"] > 0
+
+
+def test_rolling_ic_respects_window_and_no_lookahead():
+    T, N = 80, 10
+    rng = np.random.default_rng(1)
+    strength = rng.normal(size=(T, N))
+    returns = rng.normal(size=(T, N)) * 0.01
+    dates = [f"2021-01-{i + 1:02d}" for i in range(T)]
+    window, horizon = 60, 20
+    out = rolling_ic(strength, returns, dates, window=window, horizon=horizon)
+    assert len(out) > 0
+    assert all(e["n"] <= window for e in out)
+    # 末端 date 不超 T-horizon-1 (forward_cum 末端无值, 防前视)
+    assert all(e["date"] <= dates[T - horizon - 1] for e in out)
+
+
+def test_arch_per_theme_detects_volatility_clustering():
+    rng = np.random.default_rng(0)
+    T = 300
+    arch = np.concatenate([
+        rng.normal(scale=0.01, size=T // 2),   # 低波动块
+        rng.normal(scale=0.5, size=T - T // 2),  # 高波动块 -> r² 强自相关
+    ])
+    white = rng.normal(scale=0.1, size=T)
+    returns = np.column_stack([arch, white])
+    out = arch_per_theme(returns, ["arch_theme", "white_theme"], m=10)
+    by_id = {e["theme_id"]: e for e in out}
+    assert by_id["arch_theme"]["is_arch"] is True
+    assert by_id["white_theme"]["is_arch"] is False

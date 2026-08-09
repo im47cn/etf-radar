@@ -14,6 +14,7 @@ export const LATEST_URLS = {
   stocksSpot: `${BASE}latest/stocks_spot.json`,
   marketTemperature: `${BASE}latest/market_temperature.json`,
   indexSeries: `${BASE}latest/index_series.json`,
+  signalEvidence: `${BASE}latest/signal_evidence.json`,
 } as const;
 
 // themes_path 形如 "snapshots/<date>/themes.json" (已含 snapshots/ 前缀, 由 backend 写入)

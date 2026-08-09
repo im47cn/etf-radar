@@ -12,6 +12,7 @@ import { PortfolioPage } from '@/pages/PortfolioPage';
 import { AuthCallback } from '@/pages/AuthCallback';
 import { StocksPage } from '@/pages/StocksPage';
 import { TemperaturePage } from '@/pages/TemperaturePage';
+import { EvidencePage } from '@/pages/EvidencePage';
 import { MembershipPage } from '@/pages/MembershipPage';
 import { WatchlistPage } from '@/pages/WatchlistPage';
 
@@ -26,6 +27,7 @@ const AnimatedRoutes = () => {
         <Route path="/rotation"       element={<RotationPage />} />
         <Route path="/radar"          element={<RadarPage />} />
         <Route path="/temperature"    element={<TemperaturePage />} />
+        <Route path="/evidence"       element={<EvidencePage />} />
         <Route path="/portfolio"      element={<PortfolioPage />} />
         <Route path="/membership"     element={<MembershipPage />} />
         <Route path="/watchlist"      element={<WatchlistPage />} />

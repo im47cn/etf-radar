@@ -21,14 +21,15 @@ import argparse
 import logging
 import random
 import time
-from datetime import date, datetime, time as dtime
+from datetime import date, datetime
+from datetime import time as dtime
 from pathlib import Path
 
 import pandas as pd  # type: ignore[import-untyped]
 from tqdm import tqdm  # type: ignore[import-not-found]
 
 from src.config_loader import load_algo_config, load_themes
-from src.etl.calendar import BJT, is_cn_trading_day, is_us_trading_day
+from src.etl.calendar import BJT, is_cn_trading_day
 from src.output.snapshots_index import write_snapshots_index
 from src.output.writer import atomic_write_json
 from src.pipeline import PipelineMode, compute_outputs
@@ -77,11 +78,17 @@ def _slice_to_date(cache: dict[str, pd.DataFrame], D: date) -> dict[str, pd.Data
 
 
 def _iter_trading_days(start: date, end: date) -> list[date]:
-    """生成 [start, end] 范围内的 BJT 工作日 (CN 或 US 任一开市)。"""
+    """生成 [start, end] 范围内的 CN 交易日.
+
+    仅取 is_cn_trading_day=True 的日期: themes.json 必含 cn_strength, CN 非交易日
+    (周末/节假日) 的 CN 数据会复刻前日造成冻结污染 (见 acf_stethoscope 诊断),
+    故不生成。US 数据在 CN 交易日由 r_120d/r_ytd 长周期动量承载, 偶遇 US 单日
+    休市 (如感恩节) 对强度评分影响可忽略。
+    """
     out: list[date] = []
     d = start
     while d <= end:
-        if is_cn_trading_day(d) or is_us_trading_day(d):
+        if is_cn_trading_day(d):
             out.append(d)
         d = date.fromordinal(d.toordinal() + 1)
     return out

@@ -18,7 +18,7 @@ export default defineConfig({
     exclude: ['node_modules', 'dist', 'e2e/**'],
     coverage: {
       provider: 'v8',
-      reporter: ['lcov'],
+      reporter: ['lcov', 'text'],
       reportsDirectory: 'coverage',
       reportOnFailure: true,
       exclude: [

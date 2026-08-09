@@ -11,9 +11,14 @@ export const UserMenu = () => {
 
   if (status === 'anonymous') {
     return (
-      <Link to="/portfolio" className="text-sm px-3 py-1 border rounded hover:bg-gray-50">
-        登录
-      </Link>
+      <>
+        <Link to="/membership" className="text-sm px-3 py-1 border rounded hover:bg-gray-50">
+          会员
+        </Link>
+        <Link to="/portfolio" className="text-sm px-3 py-1 border rounded hover:bg-gray-50">
+          登录
+        </Link>
+      </>
     );
   }
 
@@ -32,6 +37,13 @@ export const UserMenu = () => {
       {open && (
         <div className="absolute right-0 mt-1 min-w-[160px] bg-white border rounded shadow-lg z-50">
           <div className="hidden md:block px-3 py-2 text-xs text-gray-500 border-b">{email}</div>
+          <Link
+            to="/membership"
+            onClick={() => setOpen(false)}
+            className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+          >
+            会员
+          </Link>
           <button
             onClick={() => { signOut(); setOpen(false); }}
             className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"

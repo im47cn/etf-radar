@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   open: boolean;
@@ -24,7 +25,9 @@ export const Modal = ({ open, onClose, title, children }: ModalProps) => {
 
   if (!open) return null;
 
-  return (
+  // createPortal 到 body: 脱离 ancestor (如 animate-fade-rise 的 transform) 的 containing block,
+  // 确保 fixed 相对 viewport (根治"弹层困在卡片区域").
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
@@ -46,6 +49,7 @@ export const Modal = ({ open, onClose, title, children }: ModalProps) => {
         </div>
         <div className="space-y-3 text-sm leading-relaxed text-gray-600">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

@@ -6,6 +6,8 @@ import { ArchRankingBar } from '@/components/evidence/ArchRankingBar';
 import { R2AcfChart } from '@/components/evidence/R2AcfChart';
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AuthGate } from '@/components/portfolio/AuthGate';
+import { MemberGate } from '@/components/membership/MemberGate';
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
   <div className="space-y-1">
@@ -14,8 +16,8 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
   </div>
 );
 
-/** 信号证据页: strength 月度 IC + 主题 ARCH 的 5 年样本外统计可视化 (非实时信号). */
-export const EvidencePage = () => {
+/** 信号证据内容: strength 月度 IC + 主题 ARCH 的 5 年样本外统计可视化 (非实时信号). */
+export const EvidenceContent = () => {
   const { data, error, isLoading } = useSignalEvidence();
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -81,29 +83,52 @@ export const EvidencePage = () => {
             （多周期复合动量百分位）。
           </p>
           <p>
+            <strong>IC 量级解读</strong>：|IC| &lt; 0.05 弱、0.05–0.1 中、&gt; 0.1 强（业界经验量级）。
+            本页月度 IC ≈ 0.054 属"弱但显著"——有 alpha 但不大，扣交易成本后更薄。
+          </p>
+          <p>
             <strong>ARCH（波动率聚集）</strong>：对收益率平方 r² 做 Ljung-Box 检验。显著 = r² 自相关 =
-            高波动日后倾向延续高波动（波动率聚集），可用于波动率/风险建模。
+            高波动日后倾向延续高波动。这是 GARCH 类波动率模型的基础（GARCH 显式建模这种聚集）。
           </p>
         </Section>
 
         <Section title="使用方法（4 图怎么读）">
-          <p>① <strong>IC 滚动时序</strong>：看曲线是否持续 &gt; 0（alpha 稳定性）。红虚线 = 全期均值。</p>
-          <p>② <strong>IC vs 持有期</strong>：柱随 horizon（1d→5d→20d）增大 = 慢变量趋势 alpha（月级强于日级）。</p>
-          <p>③ <strong>ARCH 排序条形</strong>：红条 = r² 显著（波动率聚集）；越高越显著。点右上角 ? 看该图详情。</p>
-          <p>④ <strong>r² ACF 衰减</strong>：强 ARCH 主题高位缓降，无 ARCH 主题迅速回 0。</p>
+          <p>① <strong>IC 多窗口时序</strong>：5/20/60 三线。短窗口看拐点、长窗口看趋势；红虚线 = 60 日均值。点图例切换窗口。</p>
+          <p>② <strong>IC vs 持有期</strong>：柱 = 全样本均值，竖线 = 历史 min-max 范围，红色顶标 = 最近 5 日实际。柱随 horizon 增 = 慢变量 alpha。</p>
+          <p>③ <strong>ARCH 排序</strong>：红条 = r² 显著（波动聚集），越高越强。点 ? 看详情。</p>
+          <p>④ <strong>r² ACF 衰减</strong>：全行业，默认显强/弱代表，点图例切换。缓降 = ARCH，速降 = 无记忆。</p>
+          <p>
+            <strong>常见误读</strong>：IC 显著 ≠ 高收益（排名相关，且扣成本后衰减）；ARCH 显著 ≠ 收益可预测
+            （ARCH 是波动率聚集，对收益方向无预测力）。
+          </p>
         </Section>
 
         <Section title="分析案例（5 年样本外实证）">
           <p>
-            <strong>strength 月度 IC = 0.054（t=7.9）</strong>：真实但弱的 alpha。注意：123 日小样本曾高估到 0.144
-            （AI 行情放大），5 年真实值约其 1/3——别用短样本 IC 做收益预期。
+            <strong>strength 月度 IC = 0.054（t=7.9）</strong>：弱但显著。<strong>为什么 123 日高估到 0.144</strong>：
+            2026 H1 含 AI 趋势行情，趋势期 IC 被放大；5 年跨牛熊后回归 0.054。教训：短样本 IC 不可信，须多年验证。
           </p>
           <p>
-            <strong>87% 主题有 ARCH（26/30）</strong>：波动率聚集普遍，集中在高贝塔板块（半导体/医疗/黄金）。
-            但日频收益方向白噪——唯一收益 alpha 在月级 strength 趋势，不在日频择时。
+            <strong>87% 主题有 ARCH（26/30）</strong>：波动聚集普遍，集中高贝塔（半导体/医疗/黄金）。日频收益白噪——
+            收益 alpha 仅在月级 strength 趋势，不在日频择时或波动率方向。
           </p>
         </Section>
       </Modal>
     </main>
   );
 };
+
+/**
+ * 信号证据页（会员功能）：登录 + 付费会员双层门控，通过后渲染 EvidenceContent。
+ * 门控仅 UX 层；数据访问边界由后端强制。
+ */
+export const EvidencePage = () => (
+  <AuthGate copy="evidence">
+    <MemberGate
+      feature="信号证据"
+      description="开通后可查看 strength 主题信号 5 年样本外统计有效性的可视化证据。"
+    >
+      <EvidenceContent />
+    </MemberGate>
+  </AuthGate>
+);

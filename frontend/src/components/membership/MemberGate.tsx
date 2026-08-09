@@ -2,9 +2,17 @@ import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useSubscription } from '@/lib/subscription/useSubscription';
 
+interface MemberGateProps {
+  children: ReactNode;
+  /** 非会员升级卡的功能名，默认"自选盯盘" */
+  feature?: string;
+  /** 非会员升级卡的描述，默认自选盯盘文案 */
+  description?: string;
+}
+
 // 会员门控组件（仿 AuthGate）：非会员显示升级引导，会员渲染 children。
 // 注意：这是 UX 软门控；真正的写权限由 add_watchlist RPC 服务端强制。
-export const MemberGate = ({ children }: { children: ReactNode }) => {
+export const MemberGate = ({ children, feature, description }: MemberGateProps) => {
   const { state } = useSubscription();
 
   if (state === 'loading') {
@@ -13,12 +21,16 @@ export const MemberGate = ({ children }: { children: ReactNode }) => {
 
   if (state === 'member') return <>{children}</>;
 
+  const name = feature ?? '自选盯盘';
+  const desc =
+    description ?? '开通后可把关注的主题 / A股 ETF 加入自选，集中查看它们的当前状态。';
+
   // non-member
   return (
     <div className="max-w-md mx-auto mt-12 p-6 border rounded bg-white shadow-sm text-center">
       <div className="text-lg font-semibold mb-2">会员专属</div>
       <p className="text-sm text-gray-600 mb-4">
-        自选盯盘为会员功能。开通后可把关注的主题 / A股 ETF 加入自选，集中查看它们的当前状态。
+        {name}为会员功能。{desc}
       </p>
       <Link
         to="/membership"

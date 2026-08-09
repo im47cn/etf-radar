@@ -41,6 +41,34 @@ describe('AuthGate', () => {
     renderWithAuth('unconfigured');
     expect(screen.queryByText('protected')).toBeNull();
     expect(screen.getByText(/未配置 Supabase/)).toBeInTheDocument();
+    expect(screen.getByText(/持仓监控功能需要 Supabase/)).toBeInTheDocument();
+  });
+
+  it('unconfigured: renders hint by copy key (evidence)', () => {
+    render(
+      <AuthContext.Provider value={{ status: 'unconfigured', user: null } as never}>
+        <AuthGate copy="evidence">
+          <div>protected</div>
+        </AuthGate>
+      </AuthContext.Provider>,
+    );
+    expect(screen.getByText(/信号证据功能需要 Supabase/)).toBeInTheDocument();
+    expect(screen.queryByText(/持仓监控功能/)).toBeNull();
+  });
+
+  it('anonymous: renders title/subtitle/privacyNote by copy key (membership)', () => {
+    render(
+      <AuthContext.Provider value={{ status: 'anonymous', user: null } as never}>
+        <AuthGate copy="membership">
+          <div>protected</div>
+        </AuthGate>
+      </AuthContext.Provider>,
+    );
+    expect(screen.getByText('💳 会员订阅')).toBeInTheDocument();
+    expect(screen.getByText('登录后查看与管理您的会员订阅')).toBeInTheDocument();
+    expect(screen.getByText(/订阅数据仅用于会员服务/)).toBeInTheDocument();
+    // 默认持仓文案不应出现
+    expect(screen.queryByText(/持仓信号监控/)).toBeNull();
   });
 
   it('magic link: calls signInWithMagicLink with input', async () => {

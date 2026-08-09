@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { EvidencePage } from '@/pages/EvidencePage';
+import { MemoryRouter } from 'react-router-dom';
+import { EvidenceContent } from '@/pages/EvidencePage';
 
 vi.mock('@/hooks/useSignalEvidence', () => ({
   useSignalEvidence: () => ({
@@ -11,8 +12,8 @@ vi.mock('@/hooks/useSignalEvidence', () => ({
       as_of_date: '2026-08-07',
       sample: { start: '2021-08-09', end: '2026-08-07', n_days: 1212 },
       ic: {
-        rolling: [{ date: '2021-11-09', ic: 0.05, n: 60 }],
-        by_horizon: [{ horizon: 20, ic: 0.054, t_stat: 7.9, n: 1192 }],
+        rolling: [{ date: '2021-11-09', ic_5: 0.02, ic_20: 0.03, ic_60: 0.05 }],
+        by_horizon: [{ horizon: 20, ic: 0.054, t_stat: 7.9, n: 1192, ic_min: -0.5, ic_max: 0.7, recent_ic: 0.06 }],
       },
       arch: {
         themes: [{ theme_id: 'semi', name: '半导体', n: 1212, r2_lb_p: 0.0, is_arch: true, ret_lb_p: 0.02 }],
@@ -46,16 +47,16 @@ vi.mock('recharts', async () => {
   };
 });
 
-describe('EvidencePage', () => {
+describe('EvidenceContent', () => {
   it('渲染标题 + 样本范围', () => {
-    render(<EvidencePage />);
+    render(<EvidenceContent />);
     expect(screen.getByText('信号证据')).toBeInTheDocument();
     expect(screen.getByText(/2021-08-09 ~ 2026-08-07/)).toBeInTheDocument();
   });
 
   it('点 "使用说明" 打开综合弹层 (理论/方法/案例 三节)', async () => {
     const user = userEvent.setup();
-    render(<EvidencePage />);
+    render(<EvidenceContent />);
     await user.click(screen.getByText('📖 使用说明'));
     expect(screen.getByText('理论基础')).toBeInTheDocument();
     expect(screen.getByText('使用方法（4 图怎么读）')).toBeInTheDocument();
@@ -64,8 +65,59 @@ describe('EvidencePage', () => {
 
   it('每图 ? 按钮可打开各自弹层', async () => {
     const user = userEvent.setup();
-    render(<EvidencePage />);
-    await user.click(screen.getByLabelText('Strength 月度 IC（滚动 60 日） 说明'));
-    expect(screen.getByText('IC 滚动时序 · 读法')).toBeInTheDocument();
+    render(<EvidenceContent />);
+    await user.click(screen.getByLabelText('Strength 月度 IC（多窗口滚动） 说明'));
+    expect(screen.getByText('IC 多窗口时序 · 读法')).toBeInTheDocument();
+  });
+});
+
+// —— EvidencePage 门控（会员功能）：登录 + 付费会员双层 ——
+vi.mock('@/lib/subscription/useSubscription', () => ({
+  useSubscription: vi.fn(),
+}));
+
+import { useSubscription } from '@/lib/subscription/useSubscription';
+import { AuthContext } from '@/providers/authContext';
+import { EvidencePage } from '@/pages/EvidencePage';
+
+const renderPage = (
+  authStatus: 'anonymous' | 'authenticated',
+  subState: 'loading' | 'member' | 'non-member',
+) => {
+  vi.mocked(useSubscription).mockReturnValue({ state: subState } as never);
+  render(
+    <MemoryRouter>
+      <AuthContext.Provider
+        value={
+          {
+            status: authStatus,
+            user: authStatus === 'authenticated' ? { email: 'a@b.com' } : null,
+          } as never
+        }
+      >
+        <EvidencePage />
+      </AuthContext.Provider>
+    </MemoryRouter>,
+  );
+};
+
+describe('EvidencePage 门控（会员功能）', () => {
+  it('未登录 → AuthGate 登录卡（信号证据文案），不渲染内容', () => {
+    renderPage('anonymous', 'non-member');
+    expect(screen.getByText('📊 信号证据')).toBeInTheDocument();
+    expect(screen.queryByText('2021-08-09 ~ 2026-08-07')).toBeNull();
+  });
+
+  it('已登录非会员 → MemberGate 升级卡（信号证据文案），不渲染内容', () => {
+    renderPage('authenticated', 'non-member');
+    expect(screen.getByText('会员专属')).toBeInTheDocument();
+    expect(screen.getByText(/信号证据为会员功能/)).toBeInTheDocument();
+    expect(screen.queryByText('2021-08-09 ~ 2026-08-07')).toBeNull();
+  });
+
+  it('已登录会员 → 渲染证据内容', () => {
+    renderPage('authenticated', 'member');
+    expect(screen.getByText('信号证据')).toBeInTheDocument();
+    expect(screen.getByText(/2021-08-09 ~ 2026-08-07/)).toBeInTheDocument();
   });
 });

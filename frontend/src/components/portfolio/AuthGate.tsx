@@ -1,7 +1,40 @@
+/* eslint-disable react-refresh/only-export-components -- AUTH_COPY 是 AuthGate 的配套文案常量, 非独立模块 */
 import { useState, type ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
-export const AuthGate = ({ children }: { children: ReactNode }) => {
+/**
+ * 各门控页的登录卡文案预设。新增门控页只需在此加一项，调用处传 `copy` key。
+ */
+export const AUTH_COPY = {
+  portfolio: {
+    title: '📊 持仓信号监控',
+    subtitle: '把您的持仓接入跨市场强弱与轮动信号引擎',
+    unconfiguredHint: '持仓监控功能',
+    privacyNote: '持仓数据仅用于本站信号叠加',
+  },
+  evidence: {
+    title: '📊 信号证据',
+    subtitle: '登录后查看 strength 主题信号的统计证据',
+    unconfiguredHint: '信号证据功能',
+    privacyNote: '数据仅用于本站统计展示',
+  },
+  membership: {
+    title: '💳 会员订阅',
+    subtitle: '登录后查看与管理您的会员订阅',
+    unconfiguredHint: '会员订阅功能',
+    privacyNote: '订阅数据仅用于会员服务',
+  },
+} as const;
+
+export type AuthCopyKey = keyof typeof AUTH_COPY;
+
+interface AuthGateProps {
+  children: ReactNode;
+  /** 文案预设 key，默认 portfolio */
+  copy?: AuthCopyKey;
+}
+
+export const AuthGate = ({ children, copy = 'portfolio' }: AuthGateProps) => {
   const { status, signInWithMagicLink, signInWithGoogle, signInWithGithub } = useAuth();
   const [email, setEmail]   = useState('');
   const [msg, setMsg]       = useState<string | null>(null);
@@ -16,7 +49,7 @@ export const AuthGate = ({ children }: { children: ReactNode }) => {
       <div className="max-w-md mx-auto mt-12 p-6 border rounded bg-yellow-50">
         <div className="text-lg font-semibold mb-2">⚠ 未配置 Supabase</div>
         <div className="text-sm text-gray-700">
-          持仓监控功能需要 Supabase 凭据。请联系管理员或参考
+          {AUTH_COPY[copy].unconfiguredHint}需要 Supabase 凭据。请联系管理员或参考
           <code className="mx-1 px-1 bg-gray-100">frontend/.env.local.example</code>
           自行配置。
         </div>
@@ -38,9 +71,9 @@ export const AuthGate = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="max-w-md mx-auto mt-12 p-6 border rounded bg-white shadow-sm">
-      <h2 className="text-xl font-bold text-center mb-1">📊 持仓信号监控</h2>
+      <h2 className="text-xl font-bold text-center mb-1">{AUTH_COPY[copy].title}</h2>
       <p className="text-sm text-gray-600 text-center mb-6">
-        把您的持仓接入跨市场强弱与轮动信号引擎
+        {AUTH_COPY[copy].subtitle}
       </p>
 
       <label htmlFor="email" className="block text-sm font-medium mb-1">邮箱</label>
@@ -84,7 +117,7 @@ export const AuthGate = ({ children }: { children: ReactNode }) => {
 
       <div className="mt-6 pt-4 border-t text-xs text-gray-500 space-y-1">
         <div>🔒 数据隐私</div>
-        <div>• 持仓数据仅用于本站信号叠加</div>
+        <div>• {AUTH_COPY[copy].privacyNote}</div>
         <div>• 不与任何第三方共享</div>
         <div>• 不构成投资建议</div>
       </div>

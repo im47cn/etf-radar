@@ -9,7 +9,7 @@ from src.evidence.stats_utils import (
     forward_cum,
     ic_by_horizon,
     ljung_box,
-    rolling_ic,
+    rolling_ic_multi,
 )
 
 
@@ -54,19 +54,24 @@ def test_ic_by_horizon_perfect_positive_correlation():
     assert out[0]["horizon"] == 1
     assert out[0]["ic"] > 0.99
     assert out[0]["n"] > 0
+    # 新字段: 全样本范围 + 最近实际
+    assert out[0]["ic_min"] is not None and out[0]["ic_max"] is not None
+    assert out[0]["ic_min"] <= out[0]["ic"] <= out[0]["ic_max"]
+    assert out[0]["recent_ic"] is not None
 
 
-def test_rolling_ic_respects_window_and_no_lookahead():
+def test_rolling_ic_multi_respects_windows_and_no_lookahead():
     T, N = 80, 10
     rng = np.random.default_rng(1)
     strength = rng.normal(size=(T, N))
     returns = rng.normal(size=(T, N)) * 0.01
     dates = [f"2021-01-{i + 1:02d}" for i in range(T)]
-    window, horizon = 60, 20
-    out = rolling_ic(strength, returns, dates, window=window, horizon=horizon)
+    windows, horizon = (5, 20, 60), 20
+    out = rolling_ic_multi(strength, returns, dates, windows=windows, horizon=horizon)
     assert len(out) > 0
-    assert all(e["n"] <= window for e in out)
-    # 末端 date 不超 T-horizon-1 (forward_cum 末端无值, 防前视)
+    # 三档字段齐全
+    assert all({"ic_5", "ic_20", "ic_60"} <= set(e) for e in out)
+    # 末端 date 不超 T-horizon-1 (防前视)
     assert all(e["date"] <= dates[T - horizon - 1] for e in out)
 
 

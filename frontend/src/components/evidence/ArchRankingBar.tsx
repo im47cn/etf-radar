@@ -40,7 +40,7 @@ export const ArchRankingBar = ({ themes }: Props) => {
       <ResponsiveContainer width="100%" height={Math.max(220, data.length * 16)}>
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
           <XAxis type="number" tick={{ fontSize: 10 }} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 9 }} width={64} />
+          <YAxis type="category" dataKey="name" tick={{ fontSize: 9 }} width={80} interval={0} />
           <Tooltip formatter={(value) => [Number(value).toFixed(2), '-log10(p)']} />
           <ReferenceLine x={SIG_LINE} stroke="#dc2626" strokeDasharray="4 4" />
           <Bar dataKey="neglogp" radius={[0, 2, 2, 0]}>

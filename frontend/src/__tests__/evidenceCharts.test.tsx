@@ -31,8 +31,8 @@ vi.mock('recharts', async () => {
 
 describe('evidence 图表渲染', () => {
   it('IcRollingChart 渲染标题 + 图表容器', () => {
-    render(<IcRollingChart rolling={[{ date: '2021-01-01', ic: 0.05, n: 60 }]} />);
-    expect(screen.getByText('Strength 月度 IC（滚动 60 日）')).toBeInTheDocument();
+    render(<IcRollingChart rolling={[{ date: '2021-01-01', ic_5: 0.02, ic_20: 0.03, ic_60: 0.05 }]} />);
+    expect(screen.getByText('Strength 月度 IC（多窗口滚动）')).toBeInTheDocument();
     expect(screen.getAllByTestId('rc').length).toBeGreaterThan(0);
   });
 
@@ -42,7 +42,7 @@ describe('evidence 图表渲染', () => {
   });
 
   it('IcHorizonBar 渲染 3 档 IC', () => {
-    render(<IcHorizonBar byHorizon={[{ horizon: 1, ic: 0.02, t_stat: 3, n: 100 }]} />);
+    render(<IcHorizonBar byHorizon={[{ horizon: 1, ic: 0.02, t_stat: 3, n: 100, ic_min: -0.1, ic_max: 0.2, recent_ic: 0.01 }]} />);
     expect(screen.getByText('IC vs 持有期')).toBeInTheDocument();
   });
 
@@ -62,7 +62,7 @@ describe('evidence 图表渲染', () => {
 
   it('R2AcfChart 渲染多主题 + 图例', () => {
     render(<R2AcfChart acf={{ semi: [1, 0.2], bank: [1, 0.01] }} themeNames={{ semi: '半导体', bank: '银行' }} />);
-    expect(screen.getByText('代表主题 r² ACF 衰减')).toBeInTheDocument();
+    expect(screen.getByText('主题 r² ACF 衰减（全行业）')).toBeInTheDocument();
     expect(screen.getByText('半导体')).toBeInTheDocument();
     expect(screen.getByText('银行')).toBeInTheDocument();
   });

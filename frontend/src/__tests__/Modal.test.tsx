@@ -18,10 +18,9 @@ describe('Modal', () => {
   it('点击背景触发 onClose', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
-    const { container } = render(
-      <Modal open onClose={onClose} title="标题"><p>内容</p></Modal>,
-    );
-    const backdrop = container.querySelector('[class*="bg-black"]');
+    render(<Modal open onClose={onClose} title="标题"><p>内容</p></Modal>);
+    // Modal portal 到 document.body, 背景在 body 查询
+    const backdrop = document.body.querySelector('[class*="bg-black"]');
     expect(backdrop).not.toBeNull();
     await user.click(backdrop!);
     expect(onClose).toHaveBeenCalledTimes(1);

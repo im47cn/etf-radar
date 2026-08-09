@@ -30,7 +30,7 @@ def test_compute_evidence_writes_all_fields(tmp_path):
         with open(snap / d / "themes.json", "w") as f:
             json.dump({"themes": _make_themes(rng)}, f)
 
-    result = compute_evidence(tmp_path, window=60, horizon=20)
+    result = compute_evidence(tmp_path, horizon=20)
 
     # 顶层结构
     assert result["schema_version"] == "1.0"
@@ -42,6 +42,7 @@ def test_compute_evidence_writes_all_fields(tmp_path):
     ic = result["ic"]
     assert {e["horizon"] for e in ic["by_horizon"]} == {1, 5, 20}
     assert len(ic["rolling"]) > 0
+    assert {"ic_5", "ic_20", "ic_60"} <= set(ic["rolling"][0])
 
     # ARCH: 8 主题 + summary + 代表 ACF
     arch = result["arch"]
@@ -50,7 +51,7 @@ def test_compute_evidence_writes_all_fields(tmp_path):
         assert {"theme_id", "name", "n", "r2_lb_p", "is_arch", "ret_lb_p"} <= set(e)
     assert arch["summary"]["tested"] == 8
     assert arch["summary"]["arch_count"] <= 8
-    assert len(arch["representative_acf"]) == 4  # 强 ARCH 2 + 无 ARCH 2
+    assert len(arch["representative_acf"]) == 8  # 全主题 (8 个, 非 4 代表)
     for v in arch["representative_acf"].values():
         assert len(v) == 16  # acf lag 0..15
 

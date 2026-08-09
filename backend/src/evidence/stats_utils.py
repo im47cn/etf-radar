@@ -76,8 +76,9 @@ def _daily_ic(strength_col: NDArray[np.float64], fwd_col: NDArray[np.float64]) -
 def ic_by_horizon(
     strength: NDArray[np.float64], returns: NDArray[np.float64],
     horizons: tuple[int, ...] = (1, 5, 20),
+    recent_n: int = 5,
 ) -> list[dict[str, object]]:
-    """逐 horizon 的全样本横截面 IC (均值) + t_stat + n."""
+    """逐 horizon 全样本横截面 IC: 均值/t_stat/n + ic_min/ic_max (全样本范围) + recent_ic (近 recent_n 日均值)."""
     out: list[dict[str, object]] = []
     for h in horizons:
         fwd = forward_cum(returns, h)
@@ -85,37 +86,44 @@ def ic_by_horizon(
                            for t in range(len(strength) - h)) if v is not None]
         arr = np.array(ics, dtype=float)
         if len(arr) < 2:
-            out.append({"horizon": h, "ic": 0.0, "t_stat": 0.0, "n": len(arr)})
+            out.append({"horizon": h, "ic": 0.0, "t_stat": 0.0, "n": len(arr),
+                        "ic_min": None, "ic_max": None, "recent_ic": None})
             continue
         mean = float(arr.mean())
         std = float(arr.std())
         # std=0 (如完美相关, IC 恒定) 时 mean 仍有效, 仅 t_stat 不可估计
         t_stat = 0.0 if std == 0 else float(mean / (std / np.sqrt(len(arr))))
-        out.append({"horizon": h, "ic": mean, "t_stat": t_stat, "n": len(arr)})
+        recent = arr[-recent_n:] if len(arr) >= recent_n else arr
+        out.append({
+            "horizon": h, "ic": mean, "t_stat": t_stat, "n": len(arr),
+            "ic_min": float(arr.min()), "ic_max": float(arr.max()),
+            "recent_ic": float(recent.mean()),
+        })
     return out
 
 
-def rolling_ic(
+def rolling_ic_multi(
     strength: NDArray[np.float64], returns: NDArray[np.float64], dates: list[str],
-    window: int = 60, horizon: int = 20,
+    windows: tuple[int, ...] = (5, 20, 60), horizon: int = 20,
 ) -> list[dict[str, object]]:
-    """滚动窗口 IC 时序: 每个窗口终点 t 取 [t-window+1, t] 内逐日横截面 IC 均值.
+    """多窗口滚动 IC 时序: 对每日 t 算以 t 为终点的各窗口逐日横截面 IC 均值.
 
-    防前视: 终点 t 满足 t + horizon <= T (forward_cum 末端无值).
-    返回 [{date, ic, n}], 窗口内有效 IC 不足 window//2 则跳过.
+    返回 [{date, ic_<w>...}], 窗口内有效 IC 不足 w//2 时该档 None; 防前视 t+horizon<=T.
+    t 从 max(windows)-1 起 (三档同起点便于对比).
     """
     n = len(strength)
     fwd = forward_cum(returns, horizon)
     daily: list[float | None] = [
         None if t >= n - horizon else _daily_ic(strength[t], fwd[t]) for t in range(n)
     ]
+    max_w = max(windows)
     out: list[dict[str, object]] = []
-    for t in range(window - 1, n - horizon):
-        seg = [v for v in daily[t - window + 1:t + 1] if v is not None]
-        if len(seg) < window // 2:
-            continue
-        arr = np.array(seg, dtype=float)
-        out.append({"date": dates[t], "ic": float(arr.mean()), "n": len(seg)})
+    for t in range(max_w - 1, n - horizon):
+        row: dict[str, object] = {"date": dates[t]}
+        for w in windows:
+            seg = [v for v in daily[t - w + 1:t + 1] if v is not None]
+            row[f"ic_{w}"] = float(np.mean(seg)) if len(seg) >= w // 2 else None
+        out.append(row)
     return out
 
 

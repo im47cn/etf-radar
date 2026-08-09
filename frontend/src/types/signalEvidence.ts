@@ -3,20 +3,24 @@ import { z } from 'zod';
 // 可空数值统一 null (项目规则: .nullish().transform 兼容历史缺省)
 const num = () => z.number().nullish().transform((v) => v ?? null);
 
-/** IC 按 horizon 聚合 (1d/5d/20d). */
+/** IC 按 horizon 聚合 (1d/5d/20d): 均值 + 全样本 min-max + 最近实际. */
 export const IcHorizonSchema = z.object({
   horizon: z.number(),
   ic: num(),
   t_stat: num(),
   n: num(),
+  ic_min: num(),
+  ic_max: num(),
+  recent_ic: num(),
 });
 export type IcHorizon = z.infer<typeof IcHorizonSchema>;
 
-/** 滚动窗口 IC 时序点 (60 日窗口, forward 20d 收益). */
+/** 多窗口滚动 IC 时序点 (5/20/60 日窗口, forward 20d 收益). */
 export const IcRollingSchema = z.object({
   date: z.string(),
-  ic: num(),
-  n: num(),
+  ic_5: num(),
+  ic_20: num(),
+  ic_60: num(),
 });
 export type IcRolling = z.infer<typeof IcRollingSchema>;
 

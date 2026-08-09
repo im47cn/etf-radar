@@ -21,7 +21,7 @@ from src.evidence.stats_utils import (
     acf,
     arch_per_theme,
     ic_by_horizon,
-    rolling_ic,
+    rolling_ic_multi,
 )
 from src.output.writer import atomic_write_json
 
@@ -53,25 +53,22 @@ def load_matrices(
     return dates, names, display, strength, returns
 
 
-def compute_evidence(data_root: Path, window: int = 60, horizon: int = 20) -> dict[str, object]:
+def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
     dates, names, display, strength, returns = load_matrices(data_root)
     ic_horizon = ic_by_horizon(strength, returns)
-    ic_rolling = rolling_ic(strength, returns, dates, window=window, horizon=horizon)
+    ic_rolling = rolling_ic_multi(strength, returns, dates, windows=(5, 20, 60), horizon=horizon)
     arch = arch_per_theme(returns, names)
     for e in arch:
         e["name"] = display.get(str(e["theme_id"]), str(e["theme_id"]))
     arch_sorted = sorted(arch, key=lambda e: float(e["r2_lb_p"]))
-    # 代表主题: r² LB p 最低 (强 ARCH) + 最高 (无 ARCH) 各 2, 预算其 r² ACF 衰减
-    rep_ids = [str(e["theme_id"]) for e in arch_sorted[:2]] + \
-              [str(e["theme_id"]) for e in arch_sorted[-2:]]
+    # 全主题 r² ACF 衰减 (前端默认显示代表 4 个 + toggle 其余)
     idx = {n: i for i, n in enumerate(names)}
     rep_acf: dict[str, list[float]] = {}
-    for tid in rep_ids:
-        if tid in idx:
-            col = returns[:, idx[tid]]
-            valid = col[np.isfinite(col)]
-            if len(valid) > 15:
-                rep_acf[tid] = [float(v) for v in acf(valid ** 2, 15)]
+    for tid, i in idx.items():
+        col = returns[:, i]
+        valid = col[np.isfinite(col)]
+        if len(valid) > 15:
+            rep_acf[tid] = [float(v) for v in acf(valid ** 2, 15)]
     return {
         "schema_version": "1.0",
         "generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -93,10 +90,9 @@ def compute_evidence(data_root: Path, window: int = 60, horizon: int = 20) -> di
 def main() -> None:
     ap = argparse.ArgumentParser(description="预计算 signal_evidence.json (IC + ARCH)")
     ap.add_argument("--data-root", type=Path, default=Path("../data"))
-    ap.add_argument("--window", type=int, default=60, help="IC 滚动窗口 (交易日)")
     ap.add_argument("--horizon", type=int, default=20, help="IC forward 收益 horizon (日)")
     args = ap.parse_args()
-    result = compute_evidence(args.data_root, window=args.window, horizon=args.horizon)
+    result = compute_evidence(args.data_root, horizon=args.horizon)
     out = args.data_root / "latest" / "signal_evidence.json"
     atomic_write_json(out, result)
     ic = result["ic"]
@@ -104,7 +100,8 @@ def main() -> None:
     print(f"写入 {out}")
     print(f"样本: {result['sample']}")
     for e in ic["by_horizon"]:
-        print(f"  IC({e['horizon']}d): {e['ic']:+.4f} t={e['t_stat']:+.2f} n={e['n']}")
+        print(f"  IC({e['horizon']}d): mean={e['ic']:+.4f} t={e['t_stat']:+.2f} "
+              f"range=[{e.get('ic_min')},{e.get('ic_max')}] recent={e.get('recent_ic')}")
     s = arch["summary"]
     print(f"ARCH: {s['arch_count']}/{s['tested']} (期望假阳性 {s['expected_fp']})")
 

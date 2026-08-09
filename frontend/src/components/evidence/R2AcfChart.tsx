@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import {
   CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
+import { ChartCard, EmptyCard } from './ChartCard';
 
 interface Props {
   /** theme_id -> r² ACF(0..15) (lag0 恒为 1.0) */
@@ -26,16 +27,22 @@ export const R2AcfChart = ({ acf, themeNames }: Props) => {
     });
   }, [acf, themeIds]);
 
-  if (!data.length) {
-    return <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-400">暂无 ACF 数据</div>;
-  }
+  if (!data.length) return <EmptyCard text="暂无 ACF 数据" />;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">代表主题 r² ACF 衰减</h2>
-        <span className="text-[10px] text-gray-400">强 ARCH 缓降 vs 无 ARCH 近 0</span>
-      </div>
+    <ChartCard
+      title="代表主题 r² ACF 衰减"
+      subtitle="强 ARCH 缓降 vs 无 ARCH 近 0"
+      helpTitle="r² ACF 衰减 · 读法"
+      help={
+        <>
+          <p>曲线 = 主题收益率平方的自相关（lag 0-15）。lag0 恒为 1.0（自相关）。</p>
+          <p><strong>强 ARCH（半导体/医疗）</strong>：高位缓降 = 波动率聚集明显。</p>
+          <p><strong>无 ARCH（白酒/煤炭）</strong>：迅速回 0 = 波动无记忆。</p>
+          <p>对比看：波动率建模选缓降主题，均值回归策略选速降主题。</p>
+        </>
+      }
+    >
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data} margin={{ top: 8, right: 12, bottom: 8, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -63,6 +70,6 @@ export const R2AcfChart = ({ acf, themeNames }: Props) => {
           </span>
         ))}
       </div>
-    </div>
+    </ChartCard>
   );
 };

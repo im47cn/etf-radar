@@ -3,6 +3,7 @@ import {
   Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
 import type { ArchTheme } from '@/types/signalEvidence';
+import { ChartCard, EmptyCard } from './ChartCard';
 
 interface Props {
   themes: ArchTheme[];
@@ -11,7 +12,7 @@ interface Props {
 const negLog10P = (p: number | null): number => (p != null && p > 0 ? -Math.log10(p) : 0);
 const SIG_LINE = -Math.log10(0.05); // ≈ 1.30
 
-/** 主题 ARCH 显著性排序 (-log10(r² LB p)). 红色=显著(p<0.05); 虚线=显著阈值. */
+/** 主题 ARCH 显著性排序 (-log10(r² LB p)). 红色 = 显著(p<0.05); 虚线 = 显著阈值. */
 export const ArchRankingBar = ({ themes }: Props) => {
   const data = useMemo(
     () =>
@@ -21,16 +22,21 @@ export const ArchRankingBar = ({ themes }: Props) => {
     [themes],
   );
 
-  if (!data.length) {
-    return <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-400">暂无 ARCH 数据</div>;
-  }
+  if (!data.length) return <EmptyCard text="暂无 ARCH 数据" />;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">主题 ARCH 显著性（波动率聚集）</h2>
-        <span className="text-[10px] text-gray-400">-log10(p) · 红色 = 显著 · 虚线 = p=0.05</span>
-      </div>
+    <ChartCard
+      title="主题 ARCH 显著性（波动率聚集）"
+      subtitle="-log10(p) · 红色 = 显著 · 虚线 = p=0.05"
+      helpTitle="主题 ARCH 排序 · 读法"
+      help={
+        <>
+          <p>横条 = 主题收益率平方 r² 的 -log10(Ljung-Box p)。<strong>红 = 显著</strong>（p&lt;0.05，有波动率聚集），灰 = 不显著；越高越显著。</p>
+          <p>显著 = 高波动日后倾向延续高波动，适合波动率/风险建模；不显著 = 波动无记忆。</p>
+          <p>案例：5 年下 <strong>87%（26/30）主题显著</strong>，集中高贝塔（半导体/医疗/黄金）；白酒/煤炭/银行无 ARCH。</p>
+        </>
+      }
+    >
       <ResponsiveContainer width="100%" height={Math.max(220, data.length * 16)}>
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
           <XAxis type="number" tick={{ fontSize: 10 }} />
@@ -44,6 +50,6 @@ export const ArchRankingBar = ({ themes }: Props) => {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   );
 };

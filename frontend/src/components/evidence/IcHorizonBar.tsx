@@ -17,8 +17,13 @@ export const IcHorizonBar = ({ byHorizon }: Props) => {
     ic_min: e.ic_min ?? 0,
     ic_max: e.ic_max ?? 0,
     recent_ic: e.recent_ic ?? 0,
+    // ErrorBar dataKey 是相对 ic 值的 [负误差, 正误差], 需把绝对 min/max 转相对
+    ic_err_low: (e.ic ?? 0) - (e.ic_min ?? 0),
+    ic_err_high: (e.ic_max ?? 0) - (e.ic ?? 0),
   }));
-  if (!data.length) return <EmptyCard text="暂无 IC 数据" />;
+  if (!data.length) {
+    return <EmptyCard text="暂无 IC 数据" />;
+  }
 
   return (
     <ChartCard
@@ -49,7 +54,7 @@ export const IcHorizonBar = ({ byHorizon }: Props) => {
           <ReferenceLine y={0} stroke="#94a3b8" />
           <Bar dataKey="ic" fill="#0891b2" radius={[2, 2, 0, 0]}>
             {/* recharts ErrorBar dataKey 运行时支持 [min,max] 数组, 但类型定义未覆盖 -> cast */}
-            <ErrorBar dataKey={['ic_min', 'ic_max'] as unknown as string} width={8} strokeWidth={1.5} stroke="#475569" />
+            <ErrorBar dataKey={['ic_err_low', 'ic_err_high'] as unknown as string} width={8} strokeWidth={1.5} stroke="#475569" />
             <LabelList
               dataKey="recent_ic"
               position="top"

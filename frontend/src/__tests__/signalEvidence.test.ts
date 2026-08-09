@@ -6,7 +6,7 @@ describe('SignalEvidenceSchema', () => {
     schema_version: '1.0',
     sample: {},
     ic: { rolling: [], by_horizon: [] },
-    arch: { themes: [], summary: {}, representative_acf: {} },
+    arch: { themes: [], summary: {}, representative_acf: {}, time_series: [] },
   };
 
   it('解析完整证据对象并保留数值', () => {
@@ -22,6 +22,7 @@ describe('SignalEvidenceSchema', () => {
         themes: [{ theme_id: 'semiconductor', name: '半导体', n: 1212, r2_lb_p: 0.0, is_arch: true, ret_lb_p: 0.02 }],
         summary: { arch_count: 26, tested: 30, expected_fp: 1.5 },
         representative_acf: { semiconductor: [1.0, 0.18] },
+        time_series: [{ period: '2024', arch_ratio: 0.55, arch_count: 16, tested: 29 }],
       },
     };
     const d = SignalEvidenceSchema.parse(raw);

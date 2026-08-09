@@ -9,21 +9,23 @@ interface Props {
   acf: Record<string, Array<number | null>>;
   /** theme_id -> 中文名 */
   themeNames: Record<string, string>;
+  /** theme_id -> 是否 ARCH 显著 (默认仅显显著的) */
+  isArch: Record<string, boolean>;
 }
 
 const COLORS = ['#dc2626', '#0891b2', '#059669', '#7c3aed', '#d97706', '#db2777', '#65a30d', '#0ea5e9'];
 
-/** 代表主题 r² ACF 衰减: 全主题, 默认显强 ARCH 2 + 无 ARCH 2, toggle 其余. */
-export const R2AcfChart = ({ acf, themeNames }: Props) => {
+/** 代表主题 r² ACF 衰减: 全主题, 默认显 is_arch=true, toggle 其余. */
+export const R2AcfChart = ({ acf, themeNames, isArch }: Props) => {
   const themeIds = useMemo(() => Object.keys(acf), [acf]);
 
-  // 按 lag1 acf 降序 (强 ARCH 在前), 默认显前 2 + 后 2, 其余隐藏
+  // 按 lag1 acf 降序 (强 ARCH 在前, 图例顺序); 默认显 is_arch=true, 隐藏非显著
   const sortedIds = useMemo(
     () => [...themeIds].sort((a, b) => (acf[b][1] ?? 0) - (acf[a][1] ?? 0)),
     [acf, themeIds],
   );
-  const [hidden, setHidden] = useState<Set<string>>(() =>
-    new Set(sortedIds.length > 4 ? sortedIds.slice(2, -2) : []),
+  const [hidden, setHidden] = useState<Set<string>>(
+    () => new Set(themeIds.filter((id) => !isArch[id])),
   );
 
   const data = useMemo(() => {

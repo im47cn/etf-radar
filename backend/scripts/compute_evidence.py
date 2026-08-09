@@ -61,7 +61,7 @@ def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
     for e in arch:
         e["name"] = display.get(str(e["theme_id"]), str(e["theme_id"]))
     arch_sorted = sorted(arch, key=lambda e: float(e["r2_lb_p"]))
-    # 全主题 r² ACF 衰减 (前端默认显示代表 4 个 + toggle 其余)
+    # 全主题 r² ACF 衰减 (前端默认显示 is_arch=true + toggle 其余)
     idx = {n: i for i, n in enumerate(names)}
     rep_acf: dict[str, list[float]] = {}
     for tid, i in idx.items():
@@ -69,6 +69,22 @@ def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
         valid = col[np.isfinite(col)]
         if len(valid) > 15:
             rep_acf[tid] = [float(v) for v in acf(valid ** 2, 15)]
+    # 逐年 ARCH 显著比例 (看波动率聚集随时间的变化)
+    years = sorted({d[:4] for d in dates})
+    arch_ts: list[dict[str, object]] = []
+    for y in years:
+        idxs = [i for i, d in enumerate(dates) if d.startswith(y)]
+        if len(idxs) < 60:
+            continue
+        arch_y = arch_per_theme(returns[idxs], names)
+        tested_y = len(arch_y)
+        if tested_y == 0:
+            continue
+        n_arch_y = sum(1 for e in arch_y if e["is_arch"])
+        arch_ts.append({
+            "period": y, "arch_ratio": round(n_arch_y / tested_y, 3),
+            "arch_count": n_arch_y, "tested": tested_y,
+        })
     return {
         "schema_version": "1.0",
         "generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -83,6 +99,7 @@ def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
                 "expected_fp": round(0.05 * len(arch), 1),
             },
             "representative_acf": rep_acf,
+            "time_series": arch_ts,
         },
     }
 

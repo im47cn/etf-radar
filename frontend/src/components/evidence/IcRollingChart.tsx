@@ -42,13 +42,13 @@ export const IcRollingChart = ({ rolling }: Props) => {
   return (
     <ChartCard
       title="Strength 月度 IC（多窗口滚动）"
-      subtitle="5/20/60 日 · 红虚线 = 60日均值 · 点图例切换"
+      subtitle="5/20/60 日 · 红虚线 = 全期均值"
       helpTitle="IC 多窗口时序 · 读法"
       help={
         <>
           <p>曲线 = 过去 N 日横截面 IC 均值（strength 排名 vs 未来 20 日收益排名）。</p>
           <p><strong>三窗口</strong>：5日（敏感、噪声大，看拐点）/ 20日（平衡）/ 60日（平滑、看趋势，主线加粗）。</p>
-          <p><strong>持续 &gt; 0</strong> = alpha 稳定；红虚线 = 60 日全期均值（长期 alpha 水平，5 年约 0.054）。</p>
+          <p><strong>持续 &gt; 0</strong> = alpha 稳定；红虚线 = 全期均值（ic_60 长期 alpha 水平，5 年约 0.054，跨三线对照）。</p>
           <p><strong>适用</strong>：判断 alpha 持续性与拐点；<strong>局限</strong>：IC 是排名相关不等于绝对收益，末端 20 日无点（forward 收益未实现）。</p>
           <p>案例：5 年 60 日均值 0.054；2021-2023 曾转负（alpha 不持续），2024 起整体转正。</p>
         </>
@@ -66,7 +66,7 @@ export const IcRollingChart = ({ rolling }: Props) => {
               y={mean60}
               stroke="#dc2626"
               strokeDasharray="2 2"
-              label={{ value: `60日均值 ${mean60.toFixed(3)}`, fontSize: 9, fill: '#dc2626', position: 'insideTopRight' }}
+              label={{ value: `全期均值 ${mean60.toFixed(3)}`, fontSize: 9, fill: '#dc2626', position: 'insideTopRight' }}
             />
           )}
           {SERIES.map((s) => (

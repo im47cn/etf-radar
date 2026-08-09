@@ -5,6 +5,7 @@ import { IcRollingChart } from '@/components/evidence/IcRollingChart';
 import { IcHorizonBar } from '@/components/evidence/IcHorizonBar';
 import { ArchRankingBar } from '@/components/evidence/ArchRankingBar';
 import { R2AcfChart } from '@/components/evidence/R2AcfChart';
+import { ArchTimeSeries } from '@/components/evidence/ArchTimeSeries';
 
 vi.mock('recharts', async () => {
   const actual = await vi.importActual<typeof import('recharts')>('recharts');
@@ -61,9 +62,19 @@ describe('evidence 图表渲染', () => {
   });
 
   it('R2AcfChart 渲染多主题 + 图例', () => {
-    render(<R2AcfChart acf={{ semi: [1, 0.2], bank: [1, 0.01] }} themeNames={{ semi: '半导体', bank: '银行' }} />);
+    render(<R2AcfChart acf={{ semi: [1, 0.2], bank: [1, 0.01] }} themeNames={{ semi: '半导体', bank: '银行' }} isArch={{ semi: true, bank: false }} />);
     expect(screen.getByText('主题 r² ACF 衰减（全行业）')).toBeInTheDocument();
     expect(screen.getByText('半导体')).toBeInTheDocument();
     expect(screen.getByText('银行')).toBeInTheDocument();
+  });
+
+  it('IcHorizonBar 空数据显示占位', () => {
+    render(<IcHorizonBar byHorizon={[]} />);
+    expect(screen.getByText('暂无 IC 数据')).toBeInTheDocument();
+  });
+
+  it('ArchTimeSeries 空数据显示占位', () => {
+    render(<ArchTimeSeries timeSeries={[]} />);
+    expect(screen.getByText('暂无 ARCH 时序数据')).toBeInTheDocument();
   });
 });

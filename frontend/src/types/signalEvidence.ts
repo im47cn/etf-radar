@@ -66,6 +66,15 @@ export const SignalEvidenceSchema = z
           .passthrough(),
         // theme_id -> r² ACF(0..15); lag0 恒为 1.0
         representative_acf: z.record(z.string(), z.array(num())),
+        // 逐年 ARCH 显著比例 (波动率聚集随时间变化)
+        time_series: z.array(
+          z.object({
+            period: z.string(),
+            arch_ratio: num(),
+            arch_count: num(),
+            tested: num(),
+          }),
+        ),
       })
       .passthrough(),
   })

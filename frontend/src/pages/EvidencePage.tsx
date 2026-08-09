@@ -4,6 +4,7 @@ import { IcRollingChart } from '@/components/evidence/IcRollingChart';
 import { IcHorizonBar } from '@/components/evidence/IcHorizonBar';
 import { ArchRankingBar } from '@/components/evidence/ArchRankingBar';
 import { R2AcfChart } from '@/components/evidence/R2AcfChart';
+import { ArchTimeSeries } from '@/components/evidence/ArchTimeSeries';
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FeatureGate } from '@/components/gate/FeatureGate';
@@ -23,6 +24,11 @@ const EvidenceContent = () => {
   const themeNames = useMemo(() => {
     const m: Record<string, string> = {};
     for (const t of data?.arch?.themes ?? []) m[t.theme_id] = t.name ?? t.theme_id;
+    return m;
+  }, [data]);
+  const isArch = useMemo(() => {
+    const m: Record<string, boolean> = {};
+    for (const t of data?.arch?.themes ?? []) m[t.theme_id] = t.is_arch === true;
     return m;
   }, [data]);
 
@@ -65,8 +71,12 @@ const EvidenceContent = () => {
         <ArchRankingBar themes={data.arch.themes} />
       </div>
 
+      <div className="animate-fade-rise" style={{ animationDelay: '210ms' }}>
+        <ArchTimeSeries timeSeries={data.arch.time_series} />
+      </div>
+
       <div className="animate-fade-rise" style={{ animationDelay: '240ms' }}>
-        <R2AcfChart acf={data.arch.representative_acf} themeNames={themeNames} />
+        <R2AcfChart acf={data.arch.representative_acf} themeNames={themeNames} isArch={isArch} />
       </div>
 
       <p className="animate-fade-rise text-xs text-gray-400" style={{ animationDelay: '300ms' }}>

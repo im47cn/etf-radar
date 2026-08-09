@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# pre-push 钩子: 变更行单测覆盖率 ≥80% (diff-cover 红线)
+# pre-push 钩子: 类型检查 (frontend tsc -b 与 deploy 一致 / backend mypy strict) + 变更行覆盖 ≥80% (diff-cover)
 #
 # 安装 (团队一次性): git config core.hooksPath scripts/hooks
 # 紧急绕过: git push --no-verify
@@ -24,12 +24,16 @@ fi
 echo "[diff-cover] 变更行覆盖率检查 (≥${FAIL_UNDER}%, 对比 ${COMPARE})"
 
 if [ -n "$PY" ]; then
+  echo "▶ backend: mypy (strict, 与项目规则一致)"
+  (cd backend && uv run --all-extras mypy src)
   echo "▶ backend: pytest --cov + diff-cover"
   (cd backend && uv run --all-extras pytest --cov=src --cov-report=xml:coverage.xml -q)
   (cd backend && uv run --all-extras diff-cover coverage.xml --compare-branch="$COMPARE" --fail-under="$FAIL_UNDER")
 fi
 
 if [ -n "$TS" ]; then
+  echo "▶ frontend: tsc -b (类型, 与 deploy-frontend build 一致)"
+  (cd frontend && npx tsc -b)
   echo "▶ frontend: vitest --coverage + diff-cover"
   (cd frontend && npx vitest run --coverage)
   # lcov SF 是 frontend-relative (src/...), git diff 是 repo-relative (frontend/src/...), 加前缀匹配

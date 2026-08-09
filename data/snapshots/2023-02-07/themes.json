@@ -1,0 +1,1344 @@
+{
+  "schema_version": "1.1",
+  "generated_at": "2023-02-07T16:00:00+08:00",
+  "themes": [
+    {
+      "id": "storage_dram",
+      "name": "存储芯片",
+      "us_etfs": [
+        "DRAM",
+        "SOXX",
+        "SMH"
+      ],
+      "primary_us": "DRAM",
+      "primary_cn": "512480",
+      "tags": [
+        "DRAM",
+        "NAND",
+        "半导体"
+      ],
+      "note": "A股无纯存储基金, 用半导体宽主题替代",
+      "returns": {
+        "r_1d": null,
+        "r_5d": null,
+        "r_20d": null,
+        "r_60d": null,
+        "r_120d": null,
+        "r_ytd": null
+      },
+      "strength": {
+        "short": 0,
+        "mid": 0,
+        "long": 0,
+        "composite": 0
+      },
+      "us_strength": {
+        "short": 0,
+        "mid": 0,
+        "long": 0,
+        "composite": 0
+      },
+      "cn_strength": {
+        "short": 79,
+        "mid": 59,
+        "long": 23,
+        "composite": 49
+      },
+      "rank": {
+        "short": 30,
+        "mid": 30,
+        "long": 30,
+        "composite": 30
+      }
+    },
+    {
+      "id": "semiconductor",
+      "name": "半导体",
+      "us_etfs": [
+        "SOXX",
+        "SMH",
+        "XSD"
+      ],
+      "primary_us": "SOXX",
+      "primary_cn": "512480",
+      "tags": [
+        "半导体",
+        "芯片",
+        "半导体设备"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.0313055384232968,
+        "r_5d": 0.06895979689570886,
+        "r_20d": 0.15507983470870448,
+        "r_60d": 0.2656428260275145,
+        "r_120d": 0.039939226340055374,
+        "r_ytd": 0.22722710323647718
+      },
+      "strength": {
+        "short": 99,
+        "mid": 97,
+        "long": 83,
+        "composite": 92
+      },
+      "us_strength": {
+        "short": 99,
+        "mid": 97,
+        "long": 83,
+        "composite": 92
+      },
+      "cn_strength": {
+        "short": 79,
+        "mid": 59,
+        "long": 23,
+        "composite": 49
+      },
+      "rank": {
+        "short": 2,
+        "mid": 2,
+        "long": 2,
+        "composite": 2
+      }
+    },
+    {
+      "id": "cybersecurity",
+      "name": "网络安全",
+      "us_etfs": [
+        "CIBR",
+        "BUG"
+      ],
+      "primary_us": "CIBR",
+      "primary_cn": "512720",
+      "tags": [
+        "网络安全",
+        "计算机"
+      ],
+      "note": "A股无纯网络安全 ETF, 映射纯度低",
+      "returns": {
+        "r_1d": 0.02059940515309597,
+        "r_5d": 0.031431688430189675,
+        "r_20d": 0.09004726039124168,
+        "r_60d": 0.10042554499861577,
+        "r_120d": -0.10628742659427036,
+        "r_ytd": 0.0798628304081195
+      },
+      "strength": {
+        "short": 91,
+        "mid": 77,
+        "long": 30,
+        "composite": 61
+      },
+      "us_strength": {
+        "short": 91,
+        "mid": 77,
+        "long": 30,
+        "composite": 61
+      },
+      "cn_strength": {
+        "short": 92,
+        "mid": 87,
+        "long": 78,
+        "composite": 84
+      },
+      "rank": {
+        "short": 15,
+        "mid": 15,
+        "long": 15,
+        "composite": 15
+      }
+    },
+    {
+      "id": "ai_compute",
+      "name": "AI算力",
+      "us_etfs": [
+        "THNQ",
+        "AIQ",
+        "QQQ"
+      ],
+      "primary_us": "THNQ",
+      "primary_cn": "515980",
+      "tags": [
+        "AI",
+        "人工智能",
+        "算力"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.02134677743138689,
+        "r_5d": 0.05418035676499479,
+        "r_20d": 0.1699640684812425,
+        "r_60d": 0.2658204035942881,
+        "r_120d": -0.020747273960308624,
+        "r_ytd": 0.19079304070579597
+      },
+      "strength": {
+        "short": 97,
+        "mid": 99,
+        "long": 68,
+        "composite": 86
+      },
+      "us_strength": {
+        "short": 97,
+        "mid": 99,
+        "long": 68,
+        "composite": 86
+      },
+      "cn_strength": {
+        "short": 93,
+        "mid": 91,
+        "long": 68,
+        "composite": 82
+      },
+      "rank": {
+        "short": 4,
+        "mid": 4,
+        "long": 4,
+        "composite": 4
+      }
+    },
+    {
+      "id": "energy_oil",
+      "name": "原油/油气",
+      "us_etfs": [
+        "XLE",
+        "USO"
+      ],
+      "primary_us": "XLE",
+      "primary_cn": "162411",
+      "tags": [
+        "原油",
+        "油气",
+        "能源"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.03197156373932676,
+        "r_5d": -0.017725650241706588,
+        "r_20d": 0.012528532951093489,
+        "r_60d": 0.008211291069763083,
+        "r_120d": 0.16171336435724173,
+        "r_ytd": 0.045738675806470654
+      },
+      "strength": {
+        "short": 74,
+        "mid": 35,
+        "long": 75,
+        "composite": 59
+      },
+      "us_strength": {
+        "short": 74,
+        "mid": 35,
+        "long": 75,
+        "composite": 59
+      },
+      "cn_strength": {
+        "short": 12,
+        "mid": 4,
+        "long": 58,
+        "composite": 27
+      },
+      "rank": {
+        "short": 16,
+        "mid": 16,
+        "long": 16,
+        "composite": 16
+      }
+    },
+    {
+      "id": "cn_coal",
+      "name": "煤炭",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "515220",
+      "tags": [
+        "煤炭",
+        "能源",
+        "红利"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": -0.000893255977215102,
+        "r_5d": -0.004458322141711276,
+        "r_20d": 0.042909366681177834,
+        "r_60d": -0.08230864746272364,
+        "r_120d": -0.022095463627817887,
+        "r_ytd": 0.042909366681177834
+      },
+      "strength": {
+        "short": 36,
+        "mid": 22,
+        "long": 43,
+        "composite": 33
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 36,
+        "mid": 22,
+        "long": 43,
+        "composite": 33
+      },
+      "rank": {
+        "short": 28,
+        "mid": 28,
+        "long": 28,
+        "composite": 28
+      }
+    },
+    {
+      "id": "new_energy_vehicle",
+      "name": "新能源车",
+      "us_etfs": [
+        "DRIV",
+        "HAIL"
+      ],
+      "primary_us": "DRIV",
+      "primary_cn": "515030",
+      "tags": [
+        "新能源车",
+        "智能出行"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.01437693543524846,
+        "r_5d": 0.031485629790190935,
+        "r_20d": 0.14548794929446746,
+        "r_60d": 0.15877798870400486,
+        "r_120d": -0.04800085992040221,
+        "r_ytd": 0.20776493313564642
+      },
+      "strength": {
+        "short": 88,
+        "mid": 88,
+        "long": 61,
+        "composite": 77
+      },
+      "us_strength": {
+        "short": 88,
+        "mid": 88,
+        "long": 61,
+        "composite": 77
+      },
+      "cn_strength": {
+        "short": 18,
+        "mid": 45,
+        "long": 26,
+        "composite": 32
+      },
+      "rank": {
+        "short": 7,
+        "mid": 7,
+        "long": 7,
+        "composite": 7
+      }
+    },
+    {
+      "id": "cn_battery",
+      "name": "锂电池",
+      "us_etfs": [
+        "LIT"
+      ],
+      "primary_us": "LIT",
+      "primary_cn": "159755",
+      "tags": [
+        "锂电池",
+        "储能"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.005050759951636296,
+        "r_5d": -0.01783343864294413,
+        "r_20d": 0.12299666637507009,
+        "r_60d": 0.008340877811474637,
+        "r_120d": -0.14340215611785428,
+        "r_ytd": 0.18148706384423352
+      },
+      "strength": {
+        "short": 15,
+        "mid": 62,
+        "long": 38,
+        "composite": 43
+      },
+      "us_strength": {
+        "short": 15,
+        "mid": 62,
+        "long": 38,
+        "composite": 43
+      },
+      "cn_strength": {
+        "short": 22,
+        "mid": 55,
+        "long": 28,
+        "composite": 38
+      },
+      "rank": {
+        "short": 25,
+        "mid": 25,
+        "long": 25,
+        "composite": 25
+      }
+    },
+    {
+      "id": "cn_chemicals",
+      "name": "化工",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "159870",
+      "tags": [
+        "化工",
+        "新材料",
+        "周期"
+      ],
+      "note": "国内化工细分（无窄口径美股锚点，cn_only）",
+      "returns": {
+        "r_1d": -0.0024479816386400017,
+        "r_5d": -0.00854184571296279,
+        "r_20d": 0.07109592168373026,
+        "r_60d": 0.04000533461369899,
+        "r_120d": -0.0732322386710097,
+        "r_ytd": 0.07109592168373026
+      },
+      "strength": {
+        "short": 25,
+        "mid": 68,
+        "long": 38,
+        "composite": 47
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 25,
+        "mid": 68,
+        "long": 38,
+        "composite": 47
+      },
+      "rank": {
+        "short": 23,
+        "mid": 23,
+        "long": 23,
+        "composite": 23
+      }
+    },
+    {
+      "id": "robotics",
+      "name": "机器人",
+      "us_etfs": [
+        "BOTZ",
+        "ROBO",
+        "ARKQ"
+      ],
+      "primary_us": "BOTZ",
+      "primary_cn": "562500",
+      "tags": [
+        "机器人",
+        "智能制造"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.019656563317565014,
+        "r_5d": 0.035496957131660505,
+        "r_20d": 0.13387899667109554,
+        "r_60d": 0.2388790132158924,
+        "r_120d": 0.04605664958887335,
+        "r_ytd": 0.17746712230059875
+      },
+      "strength": {
+        "short": 94,
+        "mid": 91,
+        "long": 78,
+        "composite": 86
+      },
+      "us_strength": {
+        "short": 94,
+        "mid": 91,
+        "long": 78,
+        "composite": 86
+      },
+      "cn_strength": {
+        "short": 97,
+        "mid": 89,
+        "long": 70,
+        "composite": 83
+      },
+      "rank": {
+        "short": 5,
+        "mid": 5,
+        "long": 5,
+        "composite": 5
+      }
+    },
+    {
+      "id": "gold",
+      "name": "黄金",
+      "us_etfs": [
+        "GLD",
+        "SLV"
+      ],
+      "primary_us": "GLD",
+      "primary_cn": "518880",
+      "tags": [
+        "黄金",
+        "贵金属",
+        "避险"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.0009200023760844002,
+        "r_5d": -0.03073338432105228,
+        "r_20d": -0.0006895563094721917,
+        "r_60d": 0.09223984596457134,
+        "r_120d": 0.050452642327563454,
+        "r_ytd": 0.016925967641784785
+      },
+      "strength": {
+        "short": 3,
+        "mid": 49,
+        "long": 43,
+        "composite": 37
+      },
+      "us_strength": {
+        "short": 3,
+        "mid": 49,
+        "long": 43,
+        "composite": 37
+      },
+      "cn_strength": {
+        "short": 6,
+        "mid": 50,
+        "long": 56,
+        "composite": 44
+      },
+      "rank": {
+        "short": 26,
+        "mid": 26,
+        "long": 26,
+        "composite": 26
+      }
+    },
+    {
+      "id": "cn_base_metals",
+      "name": "有色金属",
+      "us_etfs": [
+        "PICK"
+      ],
+      "primary_us": "PICK",
+      "primary_cn": "512400",
+      "tags": [
+        "有色",
+        "工业金属"
+      ],
+      "note": "A股有色对应美股金属矿业",
+      "returns": {
+        "r_1d": 0.010023594343350968,
+        "r_5d": -0.03291850580729424,
+        "r_20d": 0.029007118667239196,
+        "r_60d": 0.20501007652549974,
+        "r_120d": 0.17418228936687247,
+        "r_ytd": 0.10113390480719106
+      },
+      "strength": {
+        "short": 9,
+        "mid": 81,
+        "long": 86,
+        "composite": 69
+      },
+      "us_strength": {
+        "short": 9,
+        "mid": 81,
+        "long": 86,
+        "composite": 69
+      },
+      "cn_strength": {
+        "short": 47,
+        "mid": 75,
+        "long": 54,
+        "composite": 61
+      },
+      "rank": {
+        "short": 10,
+        "mid": 10,
+        "long": 10,
+        "composite": 10
+      }
+    },
+    {
+      "id": "china_internet",
+      "name": "中概互联网/港股",
+      "us_etfs": [
+        "KWEB",
+        "CQQQ"
+      ],
+      "primary_us": "KWEB",
+      "primary_cn": "513050",
+      "tags": [
+        "中概",
+        "港股",
+        "互联网"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.016126915382226666,
+        "r_5d": -0.022090420596768547,
+        "r_20d": -0.04370344428772253,
+        "r_60d": 0.4602116702941202,
+        "r_120d": 0.1600540278151868,
+        "r_ytd": 0.04097296243617501
+      },
+      "strength": {
+        "short": 32,
+        "mid": 94,
+        "long": 72,
+        "composite": 73
+      },
+      "us_strength": {
+        "short": 32,
+        "mid": 94,
+        "long": 72,
+        "composite": 73
+      },
+      "cn_strength": {
+        "short": 84,
+        "mid": 94,
+        "long": 74,
+        "composite": 84
+      },
+      "rank": {
+        "short": 8,
+        "mid": 8,
+        "long": 8,
+        "composite": 8
+      }
+    },
+    {
+      "id": "cn_brokerage",
+      "name": "券商",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "512000",
+      "tags": [
+        "券商",
+        "金融",
+        "高 beta"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.004454350349380375,
+        "r_5d": -0.019802627296179754,
+        "r_20d": 0.08096906253366729,
+        "r_60d": 0.09798040836020382,
+        "r_120d": 0.04779066383634848,
+        "r_ytd": 0.08096906253366729
+      },
+      "strength": {
+        "short": 10,
+        "mid": 82,
+        "long": 72,
+        "composite": 64
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 10,
+        "mid": 82,
+        "long": 72,
+        "composite": 64
+      },
+      "rank": {
+        "short": 14,
+        "mid": 14,
+        "long": 14,
+        "composite": 14
+      }
+    },
+    {
+      "id": "cn_banking",
+      "name": "银行",
+      "us_etfs": [
+        "KBE",
+        "KRE"
+      ],
+      "primary_us": "KBE",
+      "primary_cn": "512800",
+      "tags": [
+        "银行",
+        "金融",
+        "高股息"
+      ],
+      "note": "A股银行对应美股商业+区域银行",
+      "returns": {
+        "r_1d": 0.011969018828047198,
+        "r_5d": 0.03347110223699769,
+        "r_20d": 0.09281479328075865,
+        "r_60d": 0.06796217979743244,
+        "r_120d": -0.020996913626247646,
+        "r_ytd": 0.1145908562482818
+      },
+      "strength": {
+        "short": 85,
+        "mid": 73,
+        "long": 50,
+        "composite": 66
+      },
+      "us_strength": {
+        "short": 85,
+        "mid": 73,
+        "long": 50,
+        "composite": 66
+      },
+      "cn_strength": {
+        "short": 4,
+        "mid": 65,
+        "long": 44,
+        "composite": 44
+      },
+      "rank": {
+        "short": 13,
+        "mid": 13,
+        "long": 13,
+        "composite": 13
+      }
+    },
+    {
+      "id": "cn_insurance",
+      "name": "保险",
+      "us_etfs": [
+        "KIE",
+        "IAK"
+      ],
+      "primary_us": "KIE",
+      "primary_cn": "159851",
+      "tags": [
+        "保险",
+        "金融",
+        "大金融"
+      ],
+      "note": "A股保险对应美股保险（KIE 与 KBE 同 SPDR 系列）",
+      "returns": {
+        "r_1d": 0.016737562233644903,
+        "r_5d": 0.012124068957873529,
+        "r_20d": 0.05347386127918449,
+        "r_60d": 0.09639613266042202,
+        "r_120d": 0.09452944314079464,
+        "r_ytd": 0.0716272542274895
+      },
+      "strength": {
+        "short": 82,
+        "mid": 69,
+        "long": 64,
+        "composite": 70
+      },
+      "us_strength": {
+        "short": 82,
+        "mid": 69,
+        "long": 64,
+        "composite": 70
+      },
+      "cn_strength": {
+        "short": 95,
+        "mid": 96,
+        "long": 88,
+        "composite": 93
+      },
+      "rank": {
+        "short": 9,
+        "mid": 9,
+        "long": 9,
+        "composite": 9
+      }
+    },
+    {
+      "id": "solar_clean_energy",
+      "name": "光伏/清洁能源",
+      "us_etfs": [
+        "TAN",
+        "ICLN"
+      ],
+      "primary_us": "TAN",
+      "primary_cn": "515790",
+      "tags": [
+        "光伏",
+        "清洁能源"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": -0.0030365844826743104,
+        "r_5d": -0.02354239913578487,
+        "r_20d": 0.05482068747729029,
+        "r_60d": 0.056428214878456506,
+        "r_120d": -0.10491703912450706,
+        "r_ytd": 0.08941019821638535
+      },
+      "strength": {
+        "short": 6,
+        "mid": 57,
+        "long": 33,
+        "composite": 37
+      },
+      "us_strength": {
+        "short": 6,
+        "mid": 57,
+        "long": 33,
+        "composite": 37
+      },
+      "cn_strength": {
+        "short": 2,
+        "mid": 17,
+        "long": 29,
+        "composite": 19
+      },
+      "rank": {
+        "short": 27,
+        "mid": 27,
+        "long": 27,
+        "composite": 27
+      }
+    },
+    {
+      "id": "biotech",
+      "name": "生物科技/创新药",
+      "us_etfs": [
+        "IBB",
+        "XBI"
+      ],
+      "primary_us": "XBI",
+      "primary_cn": "512290",
+      "tags": [
+        "生物科技",
+        "创新药",
+        "医药"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.006888009533724478,
+        "r_5d": 0.015846662652504454,
+        "r_20d": 0.10558191813278762,
+        "r_60d": 0.1569594516231835,
+        "r_120d": -0.022659884702948576,
+        "r_ytd": 0.10238768011314812
+      },
+      "strength": {
+        "short": 79,
+        "mid": 85,
+        "long": 46,
+        "composite": 68
+      },
+      "us_strength": {
+        "short": 79,
+        "mid": 85,
+        "long": 46,
+        "composite": 68
+      },
+      "cn_strength": {
+        "short": 9,
+        "mid": 46,
+        "long": 60,
+        "composite": 44
+      },
+      "rank": {
+        "short": 11,
+        "mid": 11,
+        "long": 11,
+        "composite": 11
+      }
+    },
+    {
+      "id": "aerospace_defense",
+      "name": "航天军工",
+      "us_etfs": [
+        "ITA",
+        "UFO",
+        "ARKX"
+      ],
+      "primary_us": "ITA",
+      "primary_cn": "512660",
+      "tags": [
+        "航天",
+        "军工",
+        "国防"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.008799184825698062,
+        "r_5d": 0.005392369754965176,
+        "r_20d": 0.033246829093990696,
+        "r_60d": 0.05999864727474001,
+        "r_120d": 0.06533533607928374,
+        "r_ytd": 0.03369528811216332
+      },
+      "strength": {
+        "short": 71,
+        "mid": 52,
+        "long": 53,
+        "composite": 56
+      },
+      "us_strength": {
+        "short": 71,
+        "mid": 52,
+        "long": 53,
+        "composite": 56
+      },
+      "cn_strength": {
+        "short": 30,
+        "mid": 32,
+        "long": 36,
+        "composite": 33
+      },
+      "rank": {
+        "short": 18,
+        "mid": 18,
+        "long": 18,
+        "composite": 18
+      }
+    },
+    {
+      "id": "rare_earth",
+      "name": "稀土/新材料",
+      "us_etfs": [
+        "REMX",
+        "PICK"
+      ],
+      "primary_us": "REMX",
+      "primary_cn": "516780",
+      "tags": [
+        "稀土",
+        "新材料"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.017087115479423227,
+        "r_5d": -0.02756521774802282,
+        "r_20d": 0.10467739928258586,
+        "r_60d": 0.027296978800141335,
+        "r_120d": -0.09091108942708738,
+        "r_ytd": 0.21569859749048356
+      },
+      "strength": {
+        "short": 23,
+        "mid": 65,
+        "long": 57,
+        "composite": 53
+      },
+      "us_strength": {
+        "short": 23,
+        "mid": 65,
+        "long": 57,
+        "composite": 53
+      },
+      "cn_strength": {
+        "short": 86,
+        "mid": 73,
+        "long": 50,
+        "composite": 66
+      },
+      "rank": {
+        "short": 20,
+        "mid": 20,
+        "long": 20,
+        "composite": 20
+      }
+    },
+    {
+      "id": "cn_rare_metals",
+      "name": "稀有金属",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "159608",
+      "tags": [
+        "稀有金属",
+        "锂",
+        "钴",
+        "钨钼",
+        "锡",
+        "小金属"
+      ],
+      "note": "跟踪中证稀有金属主题指数(930632)，权重含锂(>13%)、钴、稀土(>15%)、钨、锡等；与 rare_earth(纯稀土产业链)和 cn_base_metals(铜铝铅锌)成份差异显著；cn_only",
+      "returns": {
+        "r_1d": 0.00236406729488047,
+        "r_5d": -0.0035356548323077553,
+        "r_20d": 0.1070673367903685,
+        "r_60d": -0.0472710483401157,
+        "r_120d": -0.14890842549511218,
+        "r_ytd": 0.1070673367903685
+      },
+      "strength": {
+        "short": 52,
+        "mid": 53,
+        "long": 33,
+        "composite": 45
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 52,
+        "mid": 53,
+        "long": 33,
+        "composite": 45
+      },
+      "rank": {
+        "short": 24,
+        "mid": 24,
+        "long": 24,
+        "composite": 24
+      }
+    },
+    {
+      "id": "cn_liquor",
+      "name": "白酒",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "512690",
+      "tags": [
+        "白酒",
+        "主要消费"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": -0.0011242272122809914,
+        "r_5d": -0.011185798957715739,
+        "r_20d": 0.05907913503182152,
+        "r_60d": 0.1834470493156892,
+        "r_120d": 0.051944740917947485,
+        "r_ytd": 0.05907913503182152
+      },
+      "strength": {
+        "short": 20,
+        "mid": 92,
+        "long": 66,
+        "composite": 67
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 20,
+        "mid": 92,
+        "long": 66,
+        "composite": 67
+      },
+      "rank": {
+        "short": 12,
+        "mid": 12,
+        "long": 12,
+        "composite": 12
+      }
+    },
+    {
+      "id": "cn_consumer",
+      "name": "大消费",
+      "us_etfs": [
+        "XLP",
+        "XLY",
+        "VDC"
+      ],
+      "primary_us": "XLP",
+      "primary_cn": "159928",
+      "tags": [
+        "消费",
+        "大消费",
+        "宽口径"
+      ],
+      "note": "大消费宽口径板块：跨必选(主要消费)+可选；A股侧 159928/510150/159936 多锚点；美股侧 XLP(必选,与159928口径最近)+XLY(可选)+VDC(必选替代)，primary_us=XLP 对称 primary_cn=159928",
+      "returns": {
+        "r_1d": -0.004226904180028845,
+        "r_5d": -0.007623053783014896,
+        "r_20d": -0.02509906972712196,
+        "r_60d": 0.024652375799455506,
+        "r_120d": -0.03881109966332549,
+        "r_ytd": -0.014784772553435197
+      },
+      "strength": {
+        "short": 19,
+        "mid": 28,
+        "long": 26,
+        "composite": 25
+      },
+      "us_strength": {
+        "short": 19,
+        "mid": 28,
+        "long": 26,
+        "composite": 25
+      },
+      "cn_strength": {
+        "short": 16,
+        "mid": 79,
+        "long": 47,
+        "composite": 54
+      },
+      "rank": {
+        "short": 29,
+        "mid": 29,
+        "long": 29,
+        "composite": 29
+      }
+    },
+    {
+      "id": "cn_consumer_staples",
+      "name": "主要消费",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "159928",
+      "tags": [
+        "消费",
+        "食品饮料"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.0009367682183868799,
+        "r_5d": -0.01394722748085033,
+        "r_20d": 0.04109512794763184,
+        "r_60d": 0.11918851726511835,
+        "r_120d": -0.01394722748085033,
+        "r_ytd": 0.04109512794763184
+      },
+      "strength": {
+        "short": 16,
+        "mid": 79,
+        "long": 47,
+        "composite": 54
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 16,
+        "mid": 79,
+        "long": 47,
+        "composite": 54
+      },
+      "rank": {
+        "short": 19,
+        "mid": 19,
+        "long": 19,
+        "composite": 19
+      }
+    },
+    {
+      "id": "cn_medical_devices",
+      "name": "医疗器械",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "159883",
+      "tags": [
+        "医疗器械",
+        "医药"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": -0.005891033237237419,
+        "r_5d": 0.0014781968693109652,
+        "r_20d": 0.04687176912967325,
+        "r_60d": -0.008823586658515126,
+        "r_120d": 0.02391743306058872,
+        "r_ytd": 0.04687176912967325
+      },
+      "strength": {
+        "short": 39,
+        "mid": 42,
+        "long": 61,
+        "composite": 49
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 39,
+        "mid": 42,
+        "long": 61,
+        "composite": 49
+      },
+      "rank": {
+        "short": 22,
+        "mid": 22,
+        "long": 22,
+        "composite": 22
+      }
+    },
+    {
+      "id": "cn_home_appliances",
+      "name": "家电",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "159996",
+      "tags": [
+        "家电",
+        "可选消费"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.024783278531772743,
+        "r_5d": 0.0027235604670405207,
+        "r_20d": 0.08808340941819741,
+        "r_60d": 0.11111897982002086,
+        "r_120d": 0.020147201614294202,
+        "r_ytd": 0.08808340941819741
+      },
+      "strength": {
+        "short": 90,
+        "mid": 85,
+        "long": 65,
+        "composite": 78
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 90,
+        "mid": 85,
+        "long": 65,
+        "composite": 78
+      },
+      "rank": {
+        "short": 6,
+        "mid": 6,
+        "long": 6,
+        "composite": 6
+      }
+    },
+    {
+      "id": "cn_real_estate",
+      "name": "房地产",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "512200",
+      "tags": [
+        "地产"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.014785878045087618,
+        "r_5d": -0.01890048993737705,
+        "r_20d": 0.00785858661252131,
+        "r_60d": 0.10623064840796276,
+        "r_120d": 0.026271647259398744,
+        "r_ytd": 0.00785858661252131
+      },
+      "strength": {
+        "short": 41,
+        "mid": 70,
+        "long": 51,
+        "composite": 57
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 41,
+        "mid": 70,
+        "long": 51,
+        "composite": 57
+      },
+      "rank": {
+        "short": 17,
+        "mid": 17,
+        "long": 17,
+        "composite": 17
+      }
+    },
+    {
+      "id": "cn_media",
+      "name": "传媒",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "159805",
+      "tags": [
+        "传媒",
+        "广告",
+        "TMT"
+      ],
+      "note": "传媒宽口径（含出版/广电/广告）；游戏专项见 cn_gaming",
+      "returns": {
+        "r_1d": 0.02148310333007258,
+        "r_5d": 0.06248607694773619,
+        "r_20d": 0.10642377997915625,
+        "r_60d": 0.2044563382181233,
+        "r_120d": 0.14130404472537672,
+        "r_ytd": 0.10642377997915625
+      },
+      "strength": {
+        "short": 98,
+        "mid": 98,
+        "long": 82,
+        "composite": 92
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 98,
+        "mid": 98,
+        "long": 82,
+        "composite": 92
+      },
+      "rank": {
+        "short": 3,
+        "mid": 3,
+        "long": 3,
+        "composite": 3
+      }
+    },
+    {
+      "id": "cn_gaming",
+      "name": "游戏动漫",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "159869",
+      "tags": [
+        "游戏",
+        "动漫",
+        "TMT"
+      ],
+      "note": "国内手游为主，中美游戏成份股差异大，cn_only",
+      "returns": {
+        "r_1d": 0.025457932695511956,
+        "r_5d": 0.09389042310867865,
+        "r_20d": 0.1583489154358354,
+        "r_60d": 0.21633617308618472,
+        "r_120d": 0.1468911198144541,
+        "r_ytd": 0.1583489154358354
+      },
+      "strength": {
+        "short": 99,
+        "mid": 99,
+        "long": 86,
+        "composite": 94
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 99,
+        "mid": 99,
+        "long": 86,
+        "composite": 94
+      },
+      "rank": {
+        "short": 1,
+        "mid": 1,
+        "long": 1,
+        "composite": 1
+      }
+    },
+    {
+      "id": "cn_power",
+      "name": "电力",
+      "us_etfs": [],
+      "primary_us": null,
+      "primary_cn": "561560",
+      "tags": [
+        "电力",
+        "公用事业",
+        "红利"
+      ],
+      "note": "",
+      "returns": {
+        "r_1d": 0.012398823596854656,
+        "r_5d": 0.009523881511255541,
+        "r_20d": 0.0009483168088590382,
+        "r_60d": 0.03373813963184999,
+        "r_120d": 0.009523881511255541,
+        "r_ytd": 0.0009483168088590382
+      },
+      "strength": {
+        "short": 88,
+        "mid": 40,
+        "long": 40,
+        "composite": 50
+      },
+      "us_strength": null,
+      "cn_strength": {
+        "short": 88,
+        "mid": 40,
+        "long": 40,
+        "composite": 50
+      },
+      "rank": {
+        "short": 21,
+        "mid": 21,
+        "long": 21,
+        "composite": 21
+      }
+    }
+  ]
+}

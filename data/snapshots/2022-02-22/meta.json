@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.1",
+  "last_full_refresh": {
+    "us": "2022-02-22T16:00:00+08:00",
+    "cn": "2022-02-22T16:00:00+08:00"
+  },
+  "last_intraday_refresh": null,
+  "providers": {
+    "us": {
+      "status": "degraded",
+      "name": "yfinance"
+    },
+    "cn": {
+      "status": "degraded",
+      "name": "akshare-em"
+    }
+  },
+  "failed_symbols": [
+    "DRAM",
+    "159516",
+    "159559",
+    "159671",
+    "561560"
+  ],
+  "fallback_symbols": {},
+  "stale_minutes": 0,
+  "calendar": {
+    "us_trading_today": true,
+    "cn_trading_today": true,
+    "us_session_active": false,
+    "cn_session_active": false
+  },
+  "backfilled": true,
+  "cn_data_date": "2022-02-22",
+  "us_data_date": "2022-02-22",
+  "theme_kinds": {
+    "mapped": 18,
+    "cn_only": 12
+  }
+}

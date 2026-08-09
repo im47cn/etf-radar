@@ -17,7 +17,6 @@ vi.mock('@/lib/supabase', () => ({
 }));
 
 import { Disclaimer } from '@/components/membership/Disclaimer';
-import { MemberGate, MEMBER_COPY } from '@/components/membership/MemberGate';
 import { MembershipPanel } from '@/components/membership/MembershipPanel';
 
 const wrap = (ui: React.ReactElement) =>
@@ -27,40 +26,6 @@ describe('Disclaimer', () => {
   it('渲染免责声明文本', () => {
     render(<Disclaimer />);
     expect(screen.getByText(/非投资建议/)).toBeInTheDocument();
-  });
-});
-
-describe('MemberGate', () => {
-  it('loading 态显示加载中', () => {
-    mockUseSubscription.mockReturnValue({ state: 'loading' });
-    wrap(<MemberGate>子内容</MemberGate>);
-    expect(screen.getByText('加载中...')).toBeInTheDocument();
-  });
-
-  it('member 态渲染 children', () => {
-    mockUseSubscription.mockReturnValue({ state: 'member' });
-    wrap(<MemberGate>会员内容</MemberGate>);
-    expect(screen.getByText('会员内容')).toBeInTheDocument();
-  });
-
-  it('non-member 态（默认 watchlist 文案）显示升级引导', () => {
-    mockUseSubscription.mockReturnValue({ state: 'non-member' });
-    wrap(<MemberGate>隐藏内容</MemberGate>);
-    expect(screen.queryByText('隐藏内容')).toBeNull();
-    expect(screen.getByText('会员专属')).toBeInTheDocument();
-    expect(screen.getByText(/自选盯盘为会员功能/)).toBeInTheDocument();
-    expect(screen.getByText('前往开通')).toBeInTheDocument();
-  });
-
-  it('non-member 态 evidence 文案', () => {
-    mockUseSubscription.mockReturnValue({ state: 'non-member' });
-    wrap(<MemberGate copy="evidence">隐藏内容</MemberGate>);
-    expect(screen.getByText(/信号证据为会员功能/)).toBeInTheDocument();
-  });
-
-  it('MEMBER_COPY 包含 watchlist 和 evidence 两项', () => {
-    expect(MEMBER_COPY.watchlist.feature).toBe('自选盯盘');
-    expect(MEMBER_COPY.evidence.feature).toBe('信号证据');
   });
 });
 

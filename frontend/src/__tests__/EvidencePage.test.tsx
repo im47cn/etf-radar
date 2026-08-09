@@ -100,16 +100,17 @@ describe('证据内容（member 态渲染）', () => {
 });
 
 describe('EvidencePage 门控（会员功能）', () => {
-  it('未登录 → AuthGate 登录卡（信号证据文案），不渲染内容', () => {
+  it('未登录 → hero 登录表单 + features，不渲染内容', () => {
     renderPage('anonymous', 'non-member');
-    expect(screen.getByText('📊 信号证据')).toBeInTheDocument();
+    expect(screen.getByText(/5 年样本外 IC/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /发送登录链接/ })).toBeInTheDocument();
     expect(screen.queryByText('2021-08-09 ~ 2026-08-07')).toBeNull();
   });
 
-  it('已登录非会员 → MemberGate 升级卡（信号证据文案），不渲染内容', () => {
+  it('已登录非会员 → hero 升级卡（立即开通），不渲染内容', () => {
     renderPage('authenticated', 'non-member');
-    expect(screen.getByText('会员专属')).toBeInTheDocument();
-    expect(screen.getByText(/信号证据为会员功能/)).toBeInTheDocument();
+    expect(screen.getByText('立即开通会员').closest('a')).toHaveAttribute('href', '/membership');
+    expect(screen.getByText(/5 年样本外 IC/)).toBeInTheDocument();
     expect(screen.queryByText('2021-08-09 ~ 2026-08-07')).toBeNull();
   });
 

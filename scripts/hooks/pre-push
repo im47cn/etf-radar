@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# pre-push 钩子: 变更行单测覆盖率 ≥80% (diff-cover 红线)
+#
+# 安装 (团队一次性): git config core.hooksPath scripts/hooks
+# 紧急绕过: git push --no-verify
+# 自定义对比基准: DIFF_COVERAGE_BASE=origin/main git push
+set -euo pipefail
+
+REPO=$(git rev-parse --show-toplevel)
+COMPARE="${DIFF_COVERAGE_BASE:-origin/main}"
+FAIL_UNDER=80
+
+cd "$REPO"
+
+# 仅当本地领先 compare 的 commit 含 .py/.ts 变更时才跑对应 coverage (省时)
+PY=$(git diff --name-only "$COMPARE"...HEAD 2>/dev/null | grep '\.py$' || true)
+TS=$(git diff --name-only "$COMPARE"...HEAD 2>/dev/null | grep -E '\.(ts|tsx)$' || true)
+
+if [ -z "$PY" ] && [ -z "$TS" ]; then
+  echo "[diff-cover] 无 .py/.ts 变更, 跳过"
+  exit 0
+fi
+
+echo "[diff-cover] 变更行覆盖率检查 (≥${FAIL_UNDER}%, 对比 ${COMPARE})"
+
+if [ -n "$PY" ]; then
+  echo "▶ backend: pytest --cov + diff-cover"
+  (cd backend && uv run --all-extras pytest --cov=src --cov-report=xml:coverage.xml -q)
+  (cd backend && uv run --all-extras diff-cover coverage.xml --compare-branch="$COMPARE" --fail-under="$FAIL_UNDER")
+fi
+
+if [ -n "$TS" ]; then
+  echo "▶ frontend: vitest --coverage + diff-cover"
+  (cd frontend && npx vitest run --coverage)
+  # lcov SF 是 frontend-relative (src/...), git diff 是 repo-relative (frontend/src/...), 加前缀匹配
+  sed -i.bak 's|^SF:src/|SF:frontend/src/|' "$REPO/frontend/coverage/lcov.info" 2>/dev/null || true
+  rm -f "$REPO/frontend/coverage/lcov.info.bak"
+  (cd backend && uv run --all-extras diff-cover "$REPO/frontend/coverage/lcov.info" --compare-branch="$COMPARE" --fail-under="$FAIL_UNDER")
+fi
+
+echo "✓ diff-cover 通过 (变更行覆盖 ≥${FAIL_UNDER}%)"

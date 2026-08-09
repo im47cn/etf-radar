@@ -40,3 +40,16 @@ target-version = "py311"
 [tool.mypy]
 python_version = "3.11"
 strict = true
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+skip_empty = true
+
+[dependency-groups]
+dev = [
+    "diff-cover>=10.5.0",
+    "pytest-cov>=7.1.0",
+]

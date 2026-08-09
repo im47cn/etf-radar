@@ -54,5 +54,10 @@ CLAUDE.local.md
 
 # 阈值校准原始收盘缓存 (22M, 本机复用, 勿入库)
 backend/research/breadth-calibration/closes_full.json.gz
+# Coverage 产物 (diff-cover pre-push 钩子生成)
+backend/coverage.xml
+frontend/coverage/
+frontend/lcov.info
+
 # Added by code-review-graph
 .code-review-graph/

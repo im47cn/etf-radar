@@ -16,5 +16,15 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test-setup.ts',
     exclude: ['node_modules', 'dist', 'e2e/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['lcov'],
+      reportsDirectory: 'coverage',
+      reportOnFailure: true,
+      exclude: [
+        'node_modules/**', 'dist/**', '**/*.d.ts', 'coverage/**',
+        'vite.config.ts', 'src/test-setup.ts', 'src/__fixtures__/**', 'src/__tests__/**',
+      ],
+    },
   },
 });

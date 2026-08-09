@@ -82,3 +82,139 @@ describe('ThemeRow market-view-aware primary ETF', () => {
     expect(screen.getByText('510300')).toBeInTheDocument();
   });
 });
+
+describe('ThemeRow — signalVariant 分支', () => {
+  it('signal=divergence → destructive Badge', () => {
+    render(
+      <table><tbody>
+        <ThemeRow
+          index={0}
+          theme={mkTheme()}
+          signal={{ theme_id: 'm', signal: 'divergence', direction: null, eta_days: null, note: null } as never}
+          dimension="composite"
+          marketView="us"
+          selected={false}
+          onClick={() => {}}
+        />
+      </tbody></table>,
+    );
+    expect(screen.getByText('背离')).toBeInTheDocument();
+  });
+
+  it('signal=transmission → secondary Badge', () => {
+    render(
+      <table><tbody>
+        <ThemeRow
+          index={0}
+          theme={mkTheme()}
+          signal={{ theme_id: 'm', signal: 'transmission', direction: null, eta_days: null, note: null } as never}
+          dimension="composite"
+          marketView="us"
+          selected={false}
+          onClick={() => {}}
+        />
+      </tbody></table>,
+    );
+    expect(screen.getByText('传导')).toBeInTheDocument();
+  });
+
+  it('signal=resonance → default Badge', () => {
+    render(
+      <table><tbody>
+        <ThemeRow
+          index={0}
+          theme={mkTheme()}
+          signal={{ theme_id: 'm', signal: 'resonance', direction: null, eta_days: null, note: null } as never}
+          dimension="composite"
+          marketView="us"
+          selected={false}
+          onClick={() => {}}
+        />
+      </tbody></table>,
+    );
+    expect(screen.getByText('共振')).toBeInTheDocument();
+  });
+});
+
+describe('ThemeRow — 排名与持仓标记', () => {
+  it('index >= 3 用灰色圆形（非 top3）', () => {
+    render(
+      <table><tbody>
+        <ThemeRow
+          index={5}
+          theme={mkTheme()}
+          signal={undefined}
+          dimension="composite"
+          marketView="us"
+          selected={false}
+          onClick={() => {}}
+        />
+      </tbody></table>,
+    );
+    // 序号 06
+    expect(screen.getByText('06')).toBeInTheDocument();
+  });
+
+  it('owned=true 显示 ⭐', () => {
+    render(
+      <table><tbody>
+        <ThemeRow
+          index={0}
+          theme={mkTheme()}
+          signal={undefined}
+          dimension="composite"
+          marketView="us"
+          selected={false}
+          onClick={() => {}}
+          owned
+        />
+      </tbody></table>,
+    );
+    expect(screen.getByTitle('持仓中')).toBeInTheDocument();
+  });
+
+  it('selected=true 有选中样式', () => {
+    render(
+      <table><tbody>
+        <ThemeRow
+          index={0}
+          theme={mkTheme()}
+          signal={undefined}
+          dimension="composite"
+          marketView="us"
+          selected
+          onClick={() => {}}
+        />
+      </tbody></table>,
+    );
+    // selected → border-blue-600
+    const row = document.querySelector('tr');
+    expect(row?.className).toContain('border-blue-600');
+  });
+
+  it('strength=null 渲染占位条', () => {
+    render(
+      <table><tbody>
+        <ThemeRow
+          index={0}
+          theme={mkTheme({ us_strength: null })}
+          signal={undefined}
+          dimension="composite"
+          marketView="us"
+          selected={false}
+          onClick={() => {}}
+        />
+      </tbody></table>,
+    );
+    // strength null → aria-hidden 占位
+    expect(document.querySelector('[aria-hidden]')).toBeTruthy();
+  });
+
+  it('primary_cn=null 且 us 视图 → 渲染 —', () => {
+    renderRow({
+      theme: mkTheme({ primary_cn: null }),
+      marketView: 'us',
+    });
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1);
+  });
+});

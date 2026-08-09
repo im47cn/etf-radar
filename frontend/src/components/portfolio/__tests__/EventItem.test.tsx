@@ -98,3 +98,100 @@ describe('EventItem', () => {
     expect(screen.queryByTestId('event-affected')).not.toBeInTheDocument();
   });
 });
+
+describe('EventItem — tone 灰色分支', () => {
+  it('象限切到 weakening（非 leading/weak）→ gray', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_quadrant_change',
+      payload: { version: 1, from: 'leading', to: 'weakening', etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByTestId('event-color')).toHaveAttribute('data-color', 'gray');
+  });
+
+  it('象限切到 following（非 leading/weak）→ gray', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_quadrant_change',
+      payload: { version: 1, from: 'leading', to: 'following', etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByTestId('event-color')).toHaveAttribute('data-color', 'gray');
+  });
+});
+
+describe('EventItem — signal_change 非共振/背离', () => {
+  it('信号切到 transmission（非 resonance/divergence）→ gray', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_signal_change',
+      payload: { version: 1, from: 'resonance', to: 'transmission', etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByTestId('event-color')).toHaveAttribute('data-color', 'gray');
+  });
+
+  it('信号切到 divergence → red', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_signal_change',
+      payload: { version: 1, from: 'resonance', to: 'divergence', etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByTestId('event-color')).toHaveAttribute('data-color', 'red');
+  });
+});
+
+describe('EventItem — strength_cross_down', () => {
+  it('强度下穿 → red', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_strength_cross_down',
+      payload: { version: 1, threshold: 25, from: 30, to: 20, etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByTestId('event-color')).toHaveAttribute('data-color', 'red');
+  });
+});
+
+describe('EventItem — label threshold 分支', () => {
+  it('强度上穿 75 → 强势区文案', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_strength_cross_up',
+      payload: { version: 1, threshold: 75, from: 70, to: 80, etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByText(/强势区/)).toBeInTheDocument();
+  });
+
+  it('强度上穿 50 → 上穿 50 文案', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_strength_cross_up',
+      payload: { version: 1, threshold: 50, from: 40, to: 55, etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByText(/上穿 50/)).toBeInTheDocument();
+    expect(screen.queryByText(/强势区/)).not.toBeInTheDocument();
+  });
+
+  it('强度上穿 25 → 上穿 25 文案', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_strength_cross_up',
+      payload: { version: 1, threshold: 25, from: 20, to: 30, etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByText(/上穿 25/)).toBeInTheDocument();
+  });
+
+  it('强度下穿 25 → 弱势区文案', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_strength_cross_down',
+      payload: { version: 1, threshold: 25, from: 30, to: 20, etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByText(/弱势区/)).toBeInTheDocument();
+  });
+
+  it('强度下穿 50 → 下穿 50 文案', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_strength_cross_down',
+      payload: { version: 1, threshold: 50, from: 55, to: 45, etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByText(/下穿 50/)).toBeInTheDocument();
+  });
+
+  it('强度下穿 75 → 下穿 75 文案', () => {
+    render(<EventItem event={mk({
+      event_type: 'theme_strength_cross_down',
+      payload: { version: 1, threshold: 75, from: 80, to: 70, etf_codes: ['510300'] },
+    })} themeName="科技" />);
+    expect(screen.getByText(/下穿 75/)).toBeInTheDocument();
+  });
+});

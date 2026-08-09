@@ -111,3 +111,13 @@ describe('useHoldings', () => {
     });
   });
 });
+
+describe('useHoldings — throw 分支', () => {
+  it('在 Provider 外抛错', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => renderHook(() => useHoldings())).toThrow(
+      'useHoldings 必须在 <HoldingsProvider> 内 (见 App.tsx)',
+    );
+    spy.mockRestore();
+  });
+});

@@ -17,7 +17,7 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
 );
 
 /** 信号证据内容: strength 月度 IC + 主题 ARCH 的 5 年样本外统计可视化 (非实时信号). */
-export const EvidenceContent = () => {
+const EvidenceContent = () => {
   const { data, error, isLoading } = useSignalEvidence();
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -40,7 +40,7 @@ export const EvidenceContent = () => {
   const s = data.sample;
 
   return (
-    <main className="flex flex-col gap-4 p-4 animate-crossfade">
+    <main className="flex flex-col gap-4 animate-crossfade">
       <div className="flex items-start justify-between gap-2 animate-fade-rise" style={{ animationDelay: '0ms' }}>
         <div>
           <h1 className="text-lg font-semibold text-gray-800">信号证据</h1>
@@ -123,12 +123,11 @@ export const EvidenceContent = () => {
  * 门控仅 UX 层；数据访问边界由后端强制。
  */
 export const EvidencePage = () => (
-  <AuthGate copy="evidence">
-    <MemberGate
-      feature="信号证据"
-      description="开通后可查看 strength 主题信号 5 年样本外统计有效性的可视化证据。"
-    >
-      <EvidenceContent />
-    </MemberGate>
-  </AuthGate>
+  <div className="max-w-6xl mx-auto p-4">
+    <AuthGate copy="evidence">
+      <MemberGate copy="evidence">
+        <EvidenceContent />
+      </MemberGate>
+    </AuthGate>
+  </div>
 );

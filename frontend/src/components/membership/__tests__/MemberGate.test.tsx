@@ -41,17 +41,17 @@ describe('MemberGate', () => {
     expect(screen.getByText('前往开通').closest('a')).toHaveAttribute('href', '/membership');
   });
 
-  it('non-member: 自定义 feature/description 生效', () => {
+  it('non-member: 按 copy key 渲染文案 (evidence)', () => {
     vi.mocked(useSubscription).mockReturnValue({ state: 'non-member' } as never);
     render(
       <MemoryRouter>
-        <MemberGate feature="信号证据" description="查看统计证据可视化。">
+        <MemberGate copy="evidence">
           <div>protected</div>
         </MemberGate>
       </MemoryRouter>,
     );
     expect(screen.getByText(/信号证据为会员功能/)).toBeInTheDocument();
-    expect(screen.getByText(/查看统计证据可视化/)).toBeInTheDocument();
+    expect(screen.getByText(/5 年样本外统计有效性的可视化证据/)).toBeInTheDocument();
     expect(screen.queryByText(/自选盯盘/)).toBeNull();
   });
 });

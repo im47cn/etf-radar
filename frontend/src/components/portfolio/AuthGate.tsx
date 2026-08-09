@@ -1,32 +1,59 @@
 /* eslint-disable react-refresh/only-export-components -- AUTH_COPY 是 AuthGate 的配套文案常量, 非独立模块 */
 import { useState, type ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import type { GatedPage } from '@/lib/gateCopy';
 
 /**
  * 各门控页的登录卡文案预设。新增门控页只需在此加一项，调用处传 `copy` key。
+ * key 覆盖全部门控页（与 {@link GatedPage} 一致）。
  */
-export const AUTH_COPY = {
+export const AUTH_COPY: Record<GatedPage, {
+  title: string;
+  subtitle: string;
+  unconfiguredHint: string;
+  footer: { heading: string; lines: string[] };
+}> = {
   portfolio: {
     title: '📊 持仓信号监控',
     subtitle: '把您的持仓接入跨市场强弱与轮动信号引擎',
     unconfiguredHint: '持仓监控功能',
-    privacyNote: '持仓数据仅用于本站信号叠加',
+    footer: {
+      heading: '🔒 数据隐私',
+      lines: ['持仓数据仅用于本站信号叠加', '不与任何第三方共享', '不构成投资建议'],
+    },
+  },
+  watchlist: {
+    title: '⭐ 自选盯盘',
+    subtitle: '登录后管理您关注的主题与 A股 ETF',
+    unconfiguredHint: '自选盯盘功能',
+    footer: {
+      heading: '🔒 数据隐私',
+      lines: ['自选数据仅用于本站展示', '不与任何第三方共享', '不构成投资建议'],
+    },
   },
   evidence: {
     title: '📊 信号证据',
     subtitle: '登录后查看 strength 主题信号的统计证据',
     unconfiguredHint: '信号证据功能',
-    privacyNote: '数据仅用于本站统计展示',
+    // 证据为公开统计数据，无用户隐私 → 用免责声明语境，而非数据隐私
+    footer: {
+      heading: '⚠ 免责声明',
+      lines: ['本页为 5 年样本外统计，非实时交易信号', '不构成投资建议'],
+    },
   },
   membership: {
     title: '💳 会员订阅',
     subtitle: '登录后查看与管理您的会员订阅',
     unconfiguredHint: '会员订阅功能',
-    privacyNote: '订阅数据仅用于会员服务',
+    footer: {
+      heading: '🔒 数据隐私',
+      lines: ['订阅数据仅用于会员服务', '不与任何第三方共享', '不构成投资建议'],
+    },
   },
-} as const;
+};
 
-export type AuthCopyKey = keyof typeof AUTH_COPY;
+/** AuthGate 可用的文案 key（全部门控页） */
+export type AuthCopyKey = GatedPage;
 
 interface AuthGateProps {
   children: ReactNode;
@@ -116,10 +143,10 @@ export const AuthGate = ({ children, copy = 'portfolio' }: AuthGateProps) => {
       )}
 
       <div className="mt-6 pt-4 border-t text-xs text-gray-500 space-y-1">
-        <div>🔒 数据隐私</div>
-        <div>• {AUTH_COPY[copy].privacyNote}</div>
-        <div>• 不与任何第三方共享</div>
-        <div>• 不构成投资建议</div>
+        <div>{AUTH_COPY[copy].footer.heading}</div>
+        {AUTH_COPY[copy].footer.lines.map(line => (
+          <div key={line}>• {line}</div>
+        ))}
       </div>
     </div>
   );

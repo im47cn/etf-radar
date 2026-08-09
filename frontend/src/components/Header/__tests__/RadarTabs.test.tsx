@@ -17,6 +17,8 @@ describe('RadarTabs', () => {
     expect(screen.getByText('轮动').closest('a')).toHaveAttribute('href', '/rotation');
     expect(screen.getByText('雷达').closest('a')).toHaveAttribute('href', '/radar');
     expect(screen.getByText('持仓').closest('a')).toHaveAttribute('href', '/portfolio');
+    // 会员 tab 已移至 UserMenu，不应出现在主导航
+    expect(screen.queryByText('会员')).toBeNull();
   });
 
   it('marks temperature tab active on /temperature', () => {

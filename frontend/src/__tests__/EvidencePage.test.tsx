@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { EvidenceContent } from '@/pages/EvidencePage';
 
 vi.mock('@/hooks/useSignalEvidence', () => ({
   useSignalEvidence: () => ({
@@ -47,31 +46,6 @@ vi.mock('recharts', async () => {
   };
 });
 
-describe('EvidenceContent', () => {
-  it('渲染标题 + 样本范围', () => {
-    render(<EvidenceContent />);
-    expect(screen.getByText('信号证据')).toBeInTheDocument();
-    expect(screen.getByText(/2021-08-09 ~ 2026-08-07/)).toBeInTheDocument();
-  });
-
-  it('点 "使用说明" 打开综合弹层 (理论/方法/案例 三节)', async () => {
-    const user = userEvent.setup();
-    render(<EvidenceContent />);
-    await user.click(screen.getByText('📖 使用说明'));
-    expect(screen.getByText('理论基础')).toBeInTheDocument();
-    expect(screen.getByText('使用方法（4 图怎么读）')).toBeInTheDocument();
-    expect(screen.getByText('分析案例（5 年样本外实证）')).toBeInTheDocument();
-  });
-
-  it('每图 ? 按钮可打开各自弹层', async () => {
-    const user = userEvent.setup();
-    render(<EvidenceContent />);
-    await user.click(screen.getByLabelText('Strength 月度 IC（多窗口滚动） 说明'));
-    expect(screen.getByText('IC 多窗口时序 · 读法')).toBeInTheDocument();
-  });
-});
-
-// —— EvidencePage 门控（会员功能）：登录 + 付费会员双层 ——
 vi.mock('@/lib/subscription/useSubscription', () => ({
   useSubscription: vi.fn(),
 }));
@@ -100,6 +74,30 @@ const renderPage = (
     </MemoryRouter>,
   );
 };
+
+describe('证据内容（member 态渲染）', () => {
+  it('渲染标题 + 样本范围', () => {
+    renderPage('authenticated', 'member');
+    expect(screen.getByText('信号证据')).toBeInTheDocument();
+    expect(screen.getByText(/2021-08-09 ~ 2026-08-07/)).toBeInTheDocument();
+  });
+
+  it('点 "使用说明" 打开综合弹层 (理论/方法/案例 三节)', async () => {
+    const user = userEvent.setup();
+    renderPage('authenticated', 'member');
+    await user.click(screen.getByText('📖 使用说明'));
+    expect(screen.getByText('理论基础')).toBeInTheDocument();
+    expect(screen.getByText('使用方法（4 图怎么读）')).toBeInTheDocument();
+    expect(screen.getByText('分析案例（5 年样本外实证）')).toBeInTheDocument();
+  });
+
+  it('每图 ? 按钮可打开各自弹层', async () => {
+    const user = userEvent.setup();
+    renderPage('authenticated', 'member');
+    await user.click(screen.getByLabelText('Strength 月度 IC（多窗口滚动） 说明'));
+    expect(screen.getByText('IC 多窗口时序 · 读法')).toBeInTheDocument();
+  });
+});
 
 describe('EvidencePage 门控（会员功能）', () => {
   it('未登录 → AuthGate 登录卡（信号证据文案），不渲染内容', () => {

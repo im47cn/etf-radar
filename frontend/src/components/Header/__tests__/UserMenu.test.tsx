@@ -72,4 +72,35 @@ describe('UserMenu', () => {
     fireEvent.click(screen.getByText('退出登录'));
     expect(signOut).toHaveBeenCalledOnce();
   });
+
+  it('Escape 关闭下拉', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      status: 'authenticated',
+      user: { email: 'a@b.com' },
+      signOut: vi.fn(),
+    } as never);
+    renderMenu();
+    fireEvent.click(screen.getByRole('button'));
+    expect(screen.getByText('退出登录')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByText('退出登录')).toBeNull();
+  });
+
+  it('点击外部关闭下拉', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      status: 'authenticated',
+      user: { email: 'a@b.com' },
+      signOut: vi.fn(),
+    } as never);
+    render(
+      <MemoryRouter>
+        <div data-testid="outside" />
+        <UserMenu />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button'));
+    expect(screen.getByText('退出登录')).toBeInTheDocument();
+    fireEvent.mouseDown(screen.getByTestId('outside'));
+    expect(screen.queryByText('退出登录')).toBeNull();
+  });
 });

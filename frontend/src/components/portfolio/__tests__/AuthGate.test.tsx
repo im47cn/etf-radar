@@ -56,7 +56,7 @@ describe('AuthGate', () => {
     expect(screen.queryByText(/持仓监控功能/)).toBeNull();
   });
 
-  it('anonymous: renders title/subtitle/privacyNote by copy key (membership)', () => {
+  it('anonymous: renders title/subtitle/footer by copy key (membership)', () => {
     render(
       <AuthContext.Provider value={{ status: 'anonymous', user: null } as never}>
         <AuthGate copy="membership">
@@ -69,6 +69,21 @@ describe('AuthGate', () => {
     expect(screen.getByText(/订阅数据仅用于会员服务/)).toBeInTheDocument();
     // 默认持仓文案不应出现
     expect(screen.queryByText(/持仓信号监控/)).toBeNull();
+  });
+
+  it('anonymous: evidence footer 用免责声明语境（非数据隐私）', () => {
+    render(
+      <AuthContext.Provider value={{ status: 'anonymous', user: null } as never}>
+        <AuthGate copy="evidence">
+          <div>protected</div>
+        </AuthGate>
+      </AuthContext.Provider>,
+    );
+    expect(screen.getByText('⚠ 免责声明')).toBeInTheDocument();
+    expect(screen.getByText(/非实时交易信号/)).toBeInTheDocument();
+    // 证据为公开统计，不应出现数据隐私语境
+    expect(screen.queryByText('🔒 数据隐私')).toBeNull();
+    expect(screen.queryByText(/不与任何第三方共享/)).toBeNull();
   });
 
   it('magic link: calls signInWithMagicLink with input', async () => {

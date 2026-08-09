@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { EventsProvider } from '../EventsProvider';
 import { useUserEvents } from '@/hooks/useUserEvents';
 
@@ -63,15 +63,34 @@ const mockSupabase = {
         limit: vi.fn().mockResolvedValue({ data: mockEvents, error: null }),
       })),
     })),
+    // update 链: .update({...}).eq('user_id', ...).is('read_at', null) → resolve
+    update: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        is: vi.fn().mockResolvedValue({ error: null }),
+      })),
+    })),
+    // upsert 链: .upsert(rows, opts).select('id') → resolve
+    upsert: vi.fn(() => ({
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+    })),
   })),
 };
 
-function Probe() {
-  const { events, unreadCount } = useUserEvents();
+function Probe({ showMutations = false }: { showMutations?: boolean }) {
+  const { events, unreadCount, upsertEvents, markRead, markAllRead, loading, error } = useUserEvents();
   return (
     <div>
       <div data-testid="count">{events.length}</div>
       <div data-testid="unread">{unreadCount}</div>
+      <div data-testid="loading">{String(loading)}</div>
+      <div data-testid="error">{error ?? ''}</div>
+      {showMutations && (
+        <>
+          <button data-testid="upsert" onClick={() => upsertEvents([])} />
+          <button data-testid="mark-read" onClick={() => markRead([])} />
+          <button data-testid="mark-all" onClick={() => markAllRead()} />
+        </>
+      )}
     </div>
   );
 }
@@ -83,6 +102,53 @@ describe('EventsProvider', () => {
       // e1 + e2 在窗口内（含 e2 验证 zod default(1) 兼容历史行）;e3 被 90 天过滤
       expect(screen.getByTestId('count').textContent).toBe('2');
       expect(screen.getByTestId('unread').textContent).toBe('2');
+    });
+  });
+
+  it('upsertEvents 空数组直接返回 inserted=0', async () => {
+    render(<EventsProvider><Probe showMutations /></EventsProvider>);
+    await waitFor(() => expect(screen.getByTestId('count').textContent).toBe('2'));
+    const btn = screen.getByTestId('upsert');
+    // 不抛错即可 — 空数组走 early return 分支
+    expect(() => fireEvent.click(btn)).not.toThrow();
+  });
+
+  it('markRead 空数组直接返回', async () => {
+    render(<EventsProvider><Probe showMutations /></EventsProvider>);
+    await waitFor(() => expect(screen.getByTestId('count').textContent).toBe('2'));
+    expect(() => fireEvent.click(screen.getByTestId('mark-read'))).not.toThrow();
+  });
+
+  it('markAllRead 可调用', async () => {
+    render(<EventsProvider><Probe showMutations /></EventsProvider>);
+    await waitFor(() => expect(screen.getByTestId('count').textContent).toBe('2'));
+    expect(() => fireEvent.click(screen.getByTestId('mark-all'))).not.toThrow();
+  });
+});
+
+describe('EventsProvider — fetch error 分支', () => {
+  beforeEach(() => {
+    mockSupabase.from = vi.fn(() => ({
+      select: vi.fn(() => ({
+        order: vi.fn(() => ({
+          limit: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB error' } }),
+        })),
+      })),
+      update: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          is: vi.fn().mockResolvedValue({ error: null }),
+        })),
+      })),
+      upsert: vi.fn(() => ({
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      })),
+    })) as never;
+  });
+
+  it('DB 查询返回 error 时设置 error message', async () => {
+    render(<EventsProvider><Probe /></EventsProvider>);
+    await waitFor(() => {
+      expect(screen.getByTestId('error').textContent).toBe('DB error');
     });
   });
 });

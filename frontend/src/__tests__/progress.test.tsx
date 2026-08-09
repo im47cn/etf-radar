@@ -53,7 +53,7 @@ describe('Progress', () => {
   it('ProgressValue 在 Root 内渲染', () => {
     render(
       <Progress value={50}>
-        <ProgressValue>50%</ProgressValue>
+        <ProgressValue>{() => '50%'}</ProgressValue>
       </Progress>,
     );
     expect(screen.getByText('50%')).toBeInTheDocument();

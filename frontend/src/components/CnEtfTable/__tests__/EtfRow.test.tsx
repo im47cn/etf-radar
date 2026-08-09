@@ -60,7 +60,7 @@ describe('EtfRow', () => {
       cn_etf_code: '159870',
       mapping_score: 85,
       signal: null,
-    } as PairSignal;
+    } as unknown as PairSignal;
     renderRow(mkEtf(), pair);
     expect(screen.getByText('85')).toBeInTheDocument();
   });
@@ -71,7 +71,7 @@ describe('EtfRow', () => {
       cn_etf_code: '159870',
       mapping_score: null,
       signal: null,
-    } as PairSignal;
+    } as unknown as PairSignal;
     renderRow(mkEtf(), pair);
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1);
   });
@@ -87,7 +87,7 @@ describe('EtfRow', () => {
       cn_etf_code: '159870',
       mapping_score: 85,
       signal: 'resonance',
-    } as PairSignal;
+    } as unknown as PairSignal;
     renderRow(mkEtf(), pair);
     expect(screen.getByText('共振')).toBeInTheDocument();
   });
@@ -98,7 +98,7 @@ describe('EtfRow', () => {
       cn_etf_code: '159870',
       mapping_score: 85,
       signal: 'transmission',
-    } as PairSignal;
+    } as unknown as PairSignal;
     renderRow(mkEtf(), pair);
     expect(screen.getByText('传导')).toBeInTheDocument();
   });
@@ -109,7 +109,7 @@ describe('EtfRow', () => {
       cn_etf_code: '159870',
       mapping_score: 85,
       signal: 'divergence',
-    } as PairSignal;
+    } as unknown as PairSignal;
     renderRow(mkEtf(), pair);
     expect(screen.getByText('背离')).toBeInTheDocument();
   });

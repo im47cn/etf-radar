@@ -38,7 +38,7 @@ export const ArchRankingBar = ({ themes }: Props) => {
           <Tooltip formatter={(value) => [Number(value).toFixed(2), '-log10(p)']} />
           <ReferenceLine x={SIG_LINE} stroke="#dc2626" strokeDasharray="4 4" />
           <Bar dataKey="neglogp" radius={[0, 2, 2, 0]}>
-            {data.map((d, i) => (
+            {data.map((d) => (
               <Cell key={d.name} fill={d.is_arch ? '#dc2626' : '#cbd5e1'} />
             ))}
           </Bar>

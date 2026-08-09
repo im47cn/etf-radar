@@ -29,7 +29,15 @@ jobs:
           from datetime import datetime, timezone, timedelta
           import chinese_calendar
           today = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
-          ok = chinese_calendar.is_workday(today) and not chinese_calendar.is_holiday(today)
+          # 须与 src/etl/calendar.py is_cn_trading_day 同步: isoweekday 保护 + 调休误判/未来年兜底
+          def _ok(d):
+              if d.isoweekday() > 5:
+                  return False
+              try:
+                  return chinese_calendar.is_workday(d) and not chinese_calendar.is_holiday(d)
+              except NotImplementedError:
+                  return False
+          ok = _ok(today)
           print('true' if ok else 'false')
           ")
           echo "is_trading=$is_trading" >> $GITHUB_OUTPUT

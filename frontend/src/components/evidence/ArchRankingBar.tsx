@@ -12,6 +12,14 @@ interface Props {
 const negLog10P = (p: number | null): number => (p != null && p > 0 ? -Math.log10(p) : 0);
 const SIG_LINE = -Math.log10(0.05); // ≈ 1.30
 
+// 自定义 YAxis tick: recharts vertical interval=0 默认 tick 渲染有 bug, 自定义确保行业名全显
+interface TickProps { x: number | string; y: number | string; payload: { value?: string } }
+const renderNameTick = ({ x, y, payload }: TickProps) => (
+  <text x={Number(x) - 4} y={Number(y)} dy={3} textAnchor="end" fontSize={9} fill="#6b7280">
+    {payload.value ?? ''}
+  </text>
+);
+
 /** 主题 ARCH 显著性排序 (-log10(r² LB p)). 红色 = 显著(p<0.05); 虚线 = 显著阈值. */
 export const ArchRankingBar = ({ themes }: Props) => {
   const data = useMemo(
@@ -40,7 +48,7 @@ export const ArchRankingBar = ({ themes }: Props) => {
       <ResponsiveContainer width="100%" height={Math.max(220, data.length * 16)}>
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
           <XAxis type="number" tick={{ fontSize: 10 }} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 9 }} width={80} interval={0} />
+          <YAxis type="category" dataKey="name" tick={renderNameTick} width={80} interval={0} />
           <Tooltip formatter={(value) => [Number(value).toFixed(2), '-log10(p)']} />
           <ReferenceLine x={SIG_LINE} stroke="#dc2626" strokeDasharray="4 4" />
           <Bar dataKey="neglogp" radius={[0, 2, 2, 0]}>

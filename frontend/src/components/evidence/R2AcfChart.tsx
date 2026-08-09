@@ -15,18 +15,21 @@ interface Props {
 
 const COLORS = ['#dc2626', '#0891b2', '#059669', '#7c3aed', '#d97706', '#db2777', '#65a30d', '#0ea5e9'];
 
-/** 代表主题 r² ACF 衰减: 全主题, 默认显 is_arch=true, toggle 其余. */
+/** 代表主题 r² ACF 衰减: 全主题, 默认显强ARCH top4 + 无ARCH bottom2, toggle 其余. */
 export const R2AcfChart = ({ acf, themeNames, isArch }: Props) => {
   const themeIds = useMemo(() => Object.keys(acf), [acf]);
 
-  // 按 lag1 acf 降序 (强 ARCH 在前, 图例顺序); 默认显 is_arch=true, 隐藏非显著
+  // 按 lag1 acf 降序 (强 ARCH 在前, 图例顺序); 默认显强ARCH top4 + 无ARCH bottom2 (对比)
   const sortedIds = useMemo(
     () => [...themeIds].sort((a, b) => (acf[b][1] ?? 0) - (acf[a][1] ?? 0)),
     [acf, themeIds],
   );
-  const [hidden, setHidden] = useState<Set<string>>(
-    () => new Set(themeIds.filter((id) => !isArch[id])),
-  );
+  const [hidden, setHidden] = useState<Set<string>>(() => {
+    const archIds = sortedIds.filter((id) => isArch[id]);
+    const nonArchIds = sortedIds.filter((id) => !isArch[id]);
+    const visible = new Set([...archIds.slice(0, 4), ...nonArchIds.slice(-2)]);
+    return new Set(themeIds.filter((id) => !visible.has(id)));
+  });
 
   const data = useMemo(() => {
     if (!themeIds.length) return [];
@@ -52,12 +55,12 @@ export const R2AcfChart = ({ acf, themeNames, isArch }: Props) => {
   return (
     <ChartCard
       title="主题 r² ACF 衰减（全行业）"
-      subtitle="默认显强/弱代表 · 点图例切换全部"
+      subtitle="默认显强ARCH top4+无ARCH弱2 · 点图例切换"
       helpTitle="r² ACF 衰减 · 读法"
       help={
         <>
           <p>曲线 = 主题收益率平方的自相关（lag 0-15）。lag0 恒为 1.0。</p>
-          <p><strong>默认显示</strong>：lag1 最高的 2 个（强 ARCH）+ 最低的 2 个（无 ARCH），其余隐藏可点图例展开。</p>
+          <p><strong>默认显示</strong>：lag1 最高的 4 个（强 ARCH）+ 最低的 2 个（无 ARCH），其余隐藏可点图例展开。</p>
           <p><strong>缓降</strong> = 波动率聚集（ARCH 明显，高波动延续）；<strong>速降回 0</strong> = 波动无记忆。</p>
           <p>适用：波动率建模选缓降主题，均值回归策略选速降主题。</p>
         </>

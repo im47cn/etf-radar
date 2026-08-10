@@ -9,25 +9,31 @@ interface Props {
   acf: Record<string, Array<number | null>>;
   /** theme_id -> 中文名 */
   themeNames: Record<string, string>;
-  /** theme_id -> 是否 ARCH 显著 (默认仅显显著的) */
-  isArch: Record<string, boolean>;
+  /** theme_id -> r² Ljung-Box p 值 (按显著性 -log10(p) 排默认选中) */
+  r2LbP: Record<string, number | null>;
 }
 
 const COLORS = ['#dc2626', '#0891b2', '#059669', '#7c3aed', '#d97706', '#db2777', '#65a30d', '#0ea5e9'];
+/** 默认显示的强 ARCH 主题数 (按 -log10(p) 取 top, 覆盖显著性断崖前的强 ARCH); 另加 bottom2 非显著作对比 */
+const TOP_N = 6;
 
-/** 代表主题 r² ACF 衰减: 全主题, 默认显强ARCH top4 + 无ARCH bottom2, toggle 其余. */
-export const R2AcfChart = ({ acf, themeNames, isArch }: Props) => {
+const negLog10P = (p: number | null | undefined): number =>
+  p != null && p > 0 ? -Math.log10(p) : 0;
+const isArchTheme = (p: number | null | undefined): boolean => p != null && p < 0.05;
+
+/** 代表主题 r² ACF 衰减: 全主题, 默认显强ARCH topN(按显著性) + 无ARCH bottom2, toggle 其余. */
+export const R2AcfChart = ({ acf, themeNames, r2LbP }: Props) => {
   const themeIds = useMemo(() => Object.keys(acf), [acf]);
 
-  // 按 lag1 acf 降序 (强 ARCH 在前, 图例顺序); 默认显强ARCH top4 + 无ARCH bottom2 (对比)
+  // 按显著性 -log10(p) 降序 (与 ArchRankingBar 口径一致); 默认显著 topN + 非显著 bottom2
   const sortedIds = useMemo(
-    () => [...themeIds].sort((a, b) => (acf[b][1] ?? 0) - (acf[a][1] ?? 0)),
-    [acf, themeIds],
+    () => [...themeIds].sort((a, b) => negLog10P(r2LbP[b]) - negLog10P(r2LbP[a])),
+    [themeIds, r2LbP],
   );
   const [hidden, setHidden] = useState<Set<string>>(() => {
-    const archIds = sortedIds.filter((id) => isArch[id]);
-    const nonArchIds = sortedIds.filter((id) => !isArch[id]);
-    const visible = new Set([...archIds.slice(0, 4), ...nonArchIds.slice(-2)]);
+    const archIds = sortedIds.filter((id) => isArchTheme(r2LbP[id]));
+    const nonArchIds = sortedIds.filter((id) => !isArchTheme(r2LbP[id]));
+    const visible = new Set([...archIds.slice(0, TOP_N), ...nonArchIds.slice(-2)]);
     return new Set(themeIds.filter((id) => !visible.has(id)));
   });
 
@@ -55,12 +61,12 @@ export const R2AcfChart = ({ acf, themeNames, isArch }: Props) => {
   return (
     <ChartCard
       title="主题 r² ACF 衰减（全行业）"
-      subtitle="默认显强ARCH top4+无ARCH弱2 · 点图例切换"
+      subtitle="默认显显著 top6+无ARCH弱2 · 点图例切换"
       helpTitle="r² ACF 衰减 · 读法"
       help={
         <>
           <p>曲线 = 主题收益率平方的自相关（lag 0-15）。lag0 恒为 1.0。</p>
-          <p><strong>默认显示</strong>：lag1 最高的 4 个（强 ARCH）+ 最低的 2 个（无 ARCH），其余隐藏可点图例展开。</p>
+          <p><strong>默认显示</strong>：按 ARCH 显著性（-log10(p)）最高的 6 个 + 最低的 2 个（无 ARCH），其余隐藏可点图例展开。</p>
           <p><strong>缓降</strong> = 波动率聚集（ARCH 明显，高波动延续）；<strong>速降回 0</strong> = 波动无记忆。</p>
           <p>适用：波动率建模选缓降主题，均值回归策略选速降主题。</p>
         </>

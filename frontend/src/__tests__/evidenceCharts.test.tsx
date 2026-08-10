@@ -62,10 +62,25 @@ describe('evidence 图表渲染', () => {
   });
 
   it('R2AcfChart 渲染多主题 + 图例', () => {
-    render(<R2AcfChart acf={{ semi: [1, 0.2], bank: [1, 0.01] }} themeNames={{ semi: '半导体', bank: '银行' }} isArch={{ semi: true, bank: false }} />);
+    render(<R2AcfChart acf={{ semi: [1, 0.2], bank: [1, 0.01] }} themeNames={{ semi: '半导体', bank: '银行' }} r2LbP={{ semi: 0.01, bank: 0.9 }} />);
     expect(screen.getByText('主题 r² ACF 衰减（全行业）')).toBeInTheDocument();
     expect(screen.getByText('半导体')).toBeInTheDocument();
     expect(screen.getByText('银行')).toBeInTheDocument();
+  });
+
+  it('R2AcfChart 默认显显著 top6 + 非显著 bottom2, 其余隐藏', () => {
+    // 8 显著 (p<0.05) + 2 非显著; 按 -log10(p) 排: a>...>h >> i>j
+    const acf: Record<string, number[]> = {};
+    const names: Record<string, string> = {};
+    const p: Record<string, number | null> = {};
+    const sig = [['a', 'A', 1e-7], ['b', 'B', 1e-6], ['c', 'C', 1e-5], ['d', 'D', 1e-4], ['e', 'E', 1e-3], ['f', 'F', 1e-2], ['g', 'G', 3e-2], ['h', 'H', 4e-2]] as const;
+    const nonsig = [['i', 'I', 0.5], ['j', 'J', 0.9]] as const;
+    for (const [id, n, pv] of [...sig, ...nonsig]) { acf[id] = [1, 0.3]; names[id] = n; p[id] = pv; }
+    render(<R2AcfChart acf={acf} themeNames={names} r2LbP={p} />);
+    const visible = (name: string) => !screen.getByText(name).closest('button')!.className.includes('opacity-30');
+    // top6 显著 (a-f) + 全部非显著 (i,j) 可见; 尾段显著 (g,h) 隐藏
+    for (const n of ['A', 'B', 'C', 'D', 'E', 'F', 'I', 'J']) expect(visible(n)).toBe(true);
+    for (const n of ['G', 'H']) expect(visible(n)).toBe(false);
   });
 
   it('IcHorizonBar 空数据显示占位', () => {

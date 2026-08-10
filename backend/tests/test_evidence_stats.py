@@ -35,6 +35,17 @@ def test_ljung_box_autocorrelated_significant():
     assert p < 0.01
 
 
+def test_ljung_box_strong_arch_no_underflow():
+    # 强 ARCH (r² 高度自相关) 使 q 落到 cdf 饱和区 (~386, m=15);
+    # 旧实现 1-cdf 会下溢为 0.0, sf 须给有限正值 (此例 ~1e-72)
+    rng = np.random.default_rng(2)
+    x = np.zeros(600)
+    for i in range(1, 600):
+        x[i] = 0.8 * x[i - 1] + rng.normal(scale=0.1)
+    _, p = ljung_box(x ** 2, 15)
+    assert 0.0 < p < 0.01  # 不会下溢成 0.0, 仍判定显著
+
+
 def test_forward_cum_no_lookahead_and_tail_nan():
     r = np.array([[1.0], [2.0], [3.0], [4.0]])
     f = forward_cum(r, 2)

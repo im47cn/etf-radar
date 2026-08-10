@@ -47,7 +47,9 @@ def ljung_box(x: NDArray[np.float64], m: int) -> tuple[float, float]:
     n = len(x)
     r = acf(x, m)
     q = n * (n + 2) * sum(r[k] ** 2 / (n - k) for k in range(1, m + 1))
-    return float(q), float(1.0 - chi2.cdf(q, m))
+    # 用 survival function 算右尾 p, 避免 1 - cdf 在大 q 下下溢为 0.0
+    # (强 ARCH 主题 q 可达数百, 1-cdf 会因浮点精度归零, 使最显著的反而渲染成 0 高度)
+    return float(q), float(chi2.sf(q, m))
 
 
 def forward_cum(r: NDArray[np.float64], k: int) -> NDArray[np.float64]:

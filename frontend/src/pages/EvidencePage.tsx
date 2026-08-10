@@ -26,9 +26,9 @@ const EvidenceContent = () => {
     for (const t of data?.arch?.themes ?? []) m[t.theme_id] = t.name ?? t.theme_id;
     return m;
   }, [data]);
-  const isArch = useMemo(() => {
-    const m: Record<string, boolean> = {};
-    for (const t of data?.arch?.themes ?? []) m[t.theme_id] = t.is_arch === true;
+  const r2LbP = useMemo(() => {
+    const m: Record<string, number | null> = {};
+    for (const t of data?.arch?.themes ?? []) m[t.theme_id] = t.r2_lb_p ?? null;
     return m;
   }, [data]);
 
@@ -76,7 +76,7 @@ const EvidenceContent = () => {
       </div>
 
       <div className="animate-fade-rise" style={{ animationDelay: '240ms' }}>
-        <R2AcfChart acf={data.arch.representative_acf} themeNames={themeNames} isArch={isArch} />
+        <R2AcfChart acf={data.arch.representative_acf} themeNames={themeNames} r2LbP={r2LbP} />
       </div>
 
       <p className="animate-fade-rise text-xs text-gray-400" style={{ animationDelay: '300ms' }}>

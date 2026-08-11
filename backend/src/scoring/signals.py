@@ -8,7 +8,7 @@
 """
 from collections import Counter
 from collections.abc import Mapping
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 from ..models import SignalSubConfig, SignalType
 
@@ -23,6 +23,16 @@ class _StrengthLike(Protocol):
 def _sign(x: float) -> int:
     """返回 -1/0/+1 (避免对 0 误判方向)。"""
     return (x > 0) - (x < 0)
+
+
+def direction_from_return(ret: float | None) -> Literal['up', 'down'] | None:
+    """收益率 → 方向标签 (up/down/None)。
+
+    resonance 方向化用: 取美股 short 收益符号, 5年回测次日A股同向≈56% (基线48.6%)。
+    """
+    if ret is None or ret == 0:
+        return None
+    return 'up' if ret > 0 else 'down'
 
 
 def judge_per_period(

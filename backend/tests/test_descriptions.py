@@ -37,3 +37,27 @@ def test_dynamic_fallback() -> None:
     """无信号 / 共振但 mid < 80 → fallback 模板"""
     txt = theme_dynamic_description(theme_name='半导体', signal=None, us_strength_mid=50)
     assert '半导体' in txt
+
+
+def test_dynamic_resonance_direction_up() -> None:
+    txt = theme_dynamic_description(
+        theme_name='半导体', signal='resonance', us_strength_mid=99, direction='up',
+    )
+    assert '走强' in txt
+    assert '偏多' in txt
+
+
+def test_dynamic_resonance_direction_down() -> None:
+    txt = theme_dynamic_description(
+        theme_name='半导体', signal='resonance', us_strength_mid=70, direction='down',
+    )
+    assert '偏空' in txt
+
+
+def test_dynamic_resonance_no_direction() -> None:
+    """direction=None 时不应出现方向词"""
+    txt = theme_dynamic_description(
+        theme_name='半导体', signal='resonance', us_strength_mid=70,
+    )
+    assert '偏多' not in txt
+    assert '偏空' not in txt

@@ -5,6 +5,7 @@
   "required": ["schema_version", "generated_at", "theme_signals", "pair_signals"],
   "definitions": {
     "signalType": { "enum": ["resonance", "transmission", "divergence", null] },
+    "directionType": { "enum": ["up", "down", null] },
     "votes": {
       "type": "object",
       "required": ["short", "mid", "long"],
@@ -26,6 +27,7 @@
         "properties": {
           "theme_id":       { "type": "string" },
           "signal":         { "$ref": "#/definitions/signalType" },
+          "direction":      { "$ref": "#/definitions/directionType" },
           "trigger_cn_etf": { "type": ["string", "null"] },
           "votes":          { "$ref": "#/definitions/votes" },
           "description":    { "type": "string" }

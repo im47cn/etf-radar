@@ -104,6 +104,22 @@ describe('SignalNote', () => {
     render(<SignalNote signal="divergence" />);
     expect(screen.getByText('背离说明')).toBeInTheDocument();
   });
+
+  it('resonance + direction up 显示偏多与胜率提示', () => {
+    render(<SignalNote signal="resonance" direction="up" />);
+    expect(screen.getByText('偏多 ▲')).toBeInTheDocument();
+    expect(screen.getByText(/次日 A 股同向概率约 56%/)).toBeInTheDocument();
+  });
+
+  it('resonance + direction down 显示偏空', () => {
+    render(<SignalNote signal="resonance" direction="down" />);
+    expect(screen.getByText('偏空 ▼')).toBeInTheDocument();
+  });
+
+  it('transmission 即使有 direction 也不显示方向标签 (仅 resonance 方向有意义)', () => {
+    const { container } = render(<SignalNote signal="transmission" direction="up" />);
+    expect(container.textContent).not.toContain('偏多');
+  });
 });
 
 describe('StrengthBars', () => {

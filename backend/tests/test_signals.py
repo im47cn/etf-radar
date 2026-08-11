@@ -8,6 +8,7 @@ from src.config_loader import load_algo_config
 from src.models import CnEtfConfig, Strength, ThemeConfig
 from src.pipeline import PipelineMode, compute_outputs
 from src.scoring.signals import (
+    direction_from_return,
     judge_per_period,
     signal_for_pair,
     signal_for_theme,
@@ -176,4 +177,18 @@ def test_cn_only_theme_has_null_signal():
     ts = next(s for s in signals_json['theme_signals'] if s['theme_id'] == 'cn_x')
     assert ts['signal'] is None
     assert ts['trigger_cn_etf'] is None
+    assert ts['direction'] is None
     assert "A 股本土赛道" in ts['description']
+
+
+def test_direction_from_return_up() -> None:
+    assert direction_from_return(0.01) == 'up'
+
+
+def test_direction_from_return_down() -> None:
+    assert direction_from_return(-0.01) == 'down'
+
+
+def test_direction_from_return_zero_or_none() -> None:
+    assert direction_from_return(0.0) is None
+    assert direction_from_return(None) is None

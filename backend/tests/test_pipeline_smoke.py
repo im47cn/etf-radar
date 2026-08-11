@@ -56,6 +56,10 @@ def test_pipeline_full_mode_creates_files(
 
         signals = json.loads((latest / 'signals.json').read_text(encoding='utf-8'))
         assert len(signals['theme_signals']) == expected_theme_count
+        # direction 字段: 每项必有, 值合法 (resonance 方向化)
+        for ts in signals['theme_signals']:
+            assert 'direction' in ts
+            assert ts['direction'] in (None, 'up', 'down')
 
         meta = json.loads((latest / 'meta.json').read_text(encoding='utf-8'))
         assert meta['providers']['us']['status'] == 'ok'

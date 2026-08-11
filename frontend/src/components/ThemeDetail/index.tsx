@@ -75,7 +75,7 @@ export const ThemeDetail = () => {
         </div>
       </div>
 
-      <SignalNote signal={ts?.signal ?? null} />
+      <SignalNote signal={ts?.signal ?? null} direction={ts?.direction ?? null} />
       <TagPills tags={theme.tags} />
       {theme.note && (
         <div className="bg-gray-50 text-xs text-gray-600 p-2 rounded">

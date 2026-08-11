@@ -10,9 +10,14 @@ export const VotesSchema = z.object({
 });
 export type Votes = z.infer<typeof VotesSchema>;
 
+export const DirectionSchema = z.enum(['up', 'down']);
+export type Direction = z.infer<typeof DirectionSchema>;
+
 export const ThemeSignalSchema = z.object({
   theme_id: z.string(),
   signal: SignalTypeSchema.nullable(),
+  // 方向取美股 short 收益符号; 历史快照缺省→null (仅 resonance 有统计意义)
+  direction: DirectionSchema.nullish().transform((v) => v ?? null),
   trigger_cn_etf: z.string().nullable(),
   votes: VotesSchema,
   description: z.string(),

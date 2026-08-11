@@ -22,6 +22,7 @@ const mkTheme = (id: string, name: string, extra: Partial<Theme> = {}): Theme =>
 const mkSignal = (themeId: string, signal: 'resonance' | 'transmission' | 'divergence' | null): ThemeSignal => ({
   theme_id: themeId,
   signal,
+  direction: null,
   trigger_cn_etf: null,
   votes: { short: null, mid: null, long: null },
   description: '',

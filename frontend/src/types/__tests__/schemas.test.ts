@@ -102,6 +102,43 @@ describe('SignalsFileSchema', () => {
     };
     expect(() => SignalsFileSchema.parse(bad)).toThrow();
   });
+
+  it('parses direction (up/down) on theme_signal', () => {
+    const valid = {
+      schema_version: '1.0',
+      generated_at: '2026-06-10T01:00:00+08:00',
+      theme_signals: [
+        {
+          theme_id: 'x', signal: 'resonance', direction: 'up',
+          trigger_cn_etf: '159995',
+          votes: { short: 'resonance', mid: null, long: 'resonance' },
+          description: '',
+        },
+      ],
+      pair_signals: [],
+    };
+    const parsed = SignalsFileSchema.parse(valid);
+    expect(parsed.theme_signals[0].direction).toBe('up');
+  });
+
+  it('accepts legacy theme_signal missing direction key (snapshot back-compat)', () => {
+    // 历史 snapshots 无 direction 字段 → null (resonance 方向化为新字段)
+    const legacy = {
+      schema_version: '1.0',
+      generated_at: '2026-06-10T01:00:00+08:00',
+      theme_signals: [
+        {
+          theme_id: 'x', signal: 'resonance',
+          trigger_cn_etf: '159995',
+          votes: { short: null, mid: null, long: null },
+          description: '',
+        },
+      ],
+      pair_signals: [],
+    };
+    const parsed = SignalsFileSchema.parse(legacy);
+    expect(parsed.theme_signals[0].direction).toBeNull();
+  });
 });
 
 describe('MetaFileSchema', () => {

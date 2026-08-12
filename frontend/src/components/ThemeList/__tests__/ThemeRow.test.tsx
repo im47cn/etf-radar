@@ -136,6 +136,25 @@ describe('ThemeRow — signalVariant 分支', () => {
   });
 });
 
+describe('ThemeRow — 副标题 (P2 量化)', () => {
+  it('signal 有 description 时副标题展示量化描述', () => {
+    render(
+      <table><tbody>
+        <ThemeRow
+          index={0}
+          theme={mkTheme()}
+          signal={{ theme_id: 'm', signal: 'resonance', direction: 'up', description: '美股半导体 composite 88 中长期走强, 共振偏多' } as never}
+          dimension="composite"
+          marketView="us"
+          selected={false}
+          onClick={() => {}}
+        />
+      </tbody></table>,
+    );
+    expect(screen.getByText(/composite 88 中长期走强/)).toBeInTheDocument();
+  });
+});
+
 describe('ThemeRow — 排名与持仓标记', () => {
   it('index >= 3 用灰色圆形（非 top3）', () => {
     render(

@@ -66,7 +66,9 @@ export const ThemeRow = ({ index, theme, signal, dimension, marketView, selected
             <span className="ml-1">🇨🇳</span>
           )}
         </div>
-        <div className="text-xs text-gray-500">{theme.us_etfs.join(' / ')}</div>
+        <div className="text-xs text-gray-500 truncate" title={theme.us_etfs.join(' / ')}>
+          {signal?.description ?? theme.us_etfs.join(' / ')}
+        </div>
       </td>
       <td className="px-2 py-2 text-xs">{primaryEtf ?? '—'}</td>
       <td className="px-2 py-2 w-32">

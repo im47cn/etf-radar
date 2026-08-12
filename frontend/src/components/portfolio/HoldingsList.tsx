@@ -64,23 +64,24 @@ export const HoldingsList = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-baseline gap-2">
-          <h2 className="text-lg font-semibold">我的持仓（{scores.length} 只）</h2>
           {!isMember && (
             <span className="text-xs text-gray-500">免费版 {holdings.length}/{FREE_HOLDINGS_LIMIT}</span>
           )}
         </div>
-        {atLimit ? (
-          <Link
-            to="/membership"
-            className="px-3 py-1.5 bg-amber-500 text-white rounded text-sm hover:bg-amber-600"
-            title={`免费版最多 ${FREE_HOLDINGS_LIMIT} 支，升级会员解锁不限`}
-          >升级解锁更多</Link>
-        ) : (
-          <button
-            onClick={() => setEditingCode('')}
-            className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm"
-          >+ 添加持仓</button>
-        )}
+        <div className="flex items-center gap-2">
+          {atLimit ? (
+            <Link
+              to="/membership"
+              className="px-3 py-1.5 bg-amber-500 text-white rounded text-sm hover:bg-amber-600"
+              title={`免费版最多 ${FREE_HOLDINGS_LIMIT} 支，升级会员解锁不限`}
+            >升级解锁更多</Link>
+          ) : (
+            <button
+              onClick={() => setEditingCode('')}
+              className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm"
+            >+ 添加持仓</button>
+          )}
+        </div>
       </div>
 
       {scores.length === 0 ? (

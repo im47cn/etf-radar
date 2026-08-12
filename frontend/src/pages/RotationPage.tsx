@@ -13,6 +13,42 @@ import { MarketViewSelector } from '@/components/FilterBar/MarketViewSelector';
 import { useUIState } from '@/providers/uiStateContext';
 import { marketViewToRotationMode } from '@/lib/marketView';
 import { AddWatchButton } from '@/components/membership/AddWatchButton';
+import { PageHelp, type HelpSection } from '@/components/help/PageHelp';
+
+/** 主题轮动帮助文案: RRG 象限理论 + 读法 + 常见误读. */
+const ROTATION_HELP: HelpSection[] = [
+  {
+    title: '理论基础',
+    children: [
+      <p key="rrg">
+        <strong>RRG 相对图（轮动象限）</strong>：X 轴 = 长期强度（60d），Y 轴 = 短期强度（1d），中线 50
+        切出四象限——右上<strong>领先</strong>（长短期都强）、左上<strong>改善</strong>（短期转强）、
+        左下<strong>滞后</strong>（长短期都弱）、右下<strong>恶化</strong>（短期转弱）。气泡大小 = 综合排名，
+        拖尾 = 近期历史路径。
+      </p>,
+      <p key="breadth">
+        <strong>市场温度计</strong>：与象限图正交，补全"普涨/普跌"盲区——象限图看主题相对强弱，
+        温度计看全市场涨跌家数比。CN 模式用 41 只主题 ETF 的 r_1d；US 模式用有 us_strength 的主题美股锚点 r_1d。
+      </p>,
+    ],
+  },
+  {
+    title: '使用方法',
+    children: [
+      <p key="read1">① 右上角切 <strong>美股 / A 股</strong>视角，排序与温度计样本池随之改变。</p>,
+      <p key="read2">② 点气泡定位主题；气泡向右上移动 = 强化，向左下 = 衰减。</p>,
+      <p key="read3">③ <strong>健康度条</strong>汇总四象限分布：领先 + 改善占比高 = 多头氛围，滞后 + 恶化占比高 = 弱势。</p>,
+      <p key="read4">④ 底部"加入自选"（会员）把关注主题加入自选页集中跟踪。</p>,
+    ],
+  },
+  {
+    title: '常见误读',
+    children: [
+      <p key="m1"><strong>象限是"当前状态"而非"预测"</strong>：领先象限不保证继续强，需结合轨迹方向。</p>,
+      <p key="m2"><strong>短轴（1d）噪声大</strong>：Y 轴短期强度单日波动剧烈，看趋势而非单点位置。</p>,
+    ],
+  },
+];
 
 export const RotationPage = () => {
   const { themes, etfs, isLoading, error } = useDataContext();
@@ -76,7 +112,10 @@ export const RotationPage = () => {
       <div className="bg-white border rounded p-4 animate-fade-rise" style={{ animationDelay: '0ms' }}>
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-bold">主题轮动象限图</h2>
-          <MarketViewSelector />
+          <div className="flex items-center gap-2">
+            <MarketViewSelector />
+            <PageHelp title="主题轮动" sections={ROTATION_HELP} />
+          </div>
         </div>
         <p className="text-xs text-gray-600 mb-4">
           X 轴为长期强度 (60d), Y 轴为短期强度 (1d), 中线 50 切四象限。气泡大小反映综合排名。

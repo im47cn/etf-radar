@@ -57,10 +57,7 @@ export const WatchlistView = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white border rounded-lg shadow-sm">
-      <h1 className="text-2xl font-bold mb-1">我的自选</h1>
-      <p className="text-sm text-gray-600 mb-4">
-        以下为您自选的主题 / ETF 及其当前客观强度状态。
-      </p>
+      {/* 标题与"使用说明"由 WatchlistPage 在 gate 外渲染，未登录亦可见 */}
 
       {loading && <div className="text-gray-500">加载中...</div>}
 

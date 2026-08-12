@@ -135,7 +135,7 @@ export const MembershipPanel = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white border rounded-lg shadow-sm">
-      <h1 className="text-2xl font-bold mb-4">会员中心</h1>
+      {/* 标题与"使用说明"由 MembershipPage 在 gate 外渲染，未登录亦可见 */}
 
       {/* 当前订阅状态 */}
       <div className="mb-6 p-4 bg-gray-50 rounded">

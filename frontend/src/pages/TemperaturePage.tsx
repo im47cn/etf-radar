@@ -8,6 +8,40 @@ import { IndustryBreadthRanking } from '@/components/temperature/IndustryBreadth
 import { BreadthHeatmap } from '@/components/temperature/BreadthHeatmap';
 import { BreadthLegend } from '@/components/temperature/BreadthLegend';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHelp, type HelpSection } from '@/components/help/PageHelp';
+
+/** 个股 MA 站上率帮助文案: 宽度口径 + 读法 + 常见误读. */
+const TEMPERATURE_HELP: HelpSection[] = [
+  {
+    title: '理论基础',
+    children: [
+      <p key="def">
+        <strong>个股 MA 站上率</strong> = 价格站上均线的个股数 ÷ 有效样本数。停牌、上市不足该周期长度的新股
+        <strong>不计入分母</strong>。这是市场<strong>宽度</strong>指标（参与面），不是指数点位。
+      </p>,
+      <p key="periods">
+        四个周期：MA5（短期情绪）/ MA20（月线）/ MA60（季线）/ MA120（半年线）。周期越长，站上率变化越缓慢、
+        趋势性越强。
+      </p>,
+    ],
+  },
+  {
+    title: '使用方法',
+    children: [
+      <p key="r1">① 顶部切周期；MA5 视图仅展示最近 60 个交易日（短周期看长无意义）。</p>,
+      <p key="r2">② <strong>温度计</strong>：全市场站上率的当前值与历史分位。</p>,
+      <p key="r3">③ <strong>指数对比</strong>：站上率 vs 主要指数走势，看宽度与点位的背离。</p>,
+      <p key="r4">④ <strong>行业宽度排名 + 热力图</strong>：一/二级行业站上率横向对比与时间序列。</p>,
+    ],
+  },
+  {
+    title: '常见误读',
+    children: [
+      <p key="m1"><strong>站上率是宽度、不是点位预测</strong>：站上率 80% 不代表指数见顶，只代表参与面广。</p>,
+      <p key="m2"><strong>行业分类采用巨潮体系</strong>；无行业归属的个股计入全市场、不计入行业。</p>,
+    ],
+  },
+];
 
 /** MA5 视图仅展示最近 N 个交易日. */
 const MA5_DAYS = 60;
@@ -64,21 +98,24 @@ export const TemperaturePage = () => {
     <main className="flex flex-col gap-4 p-4 animate-crossfade">
       <div className="flex items-center justify-between animate-fade-rise" style={{ animationDelay: '0ms' }}>
         <h1 className="text-lg font-semibold text-gray-800">个股 MA 站上率</h1>
-        <div className="flex gap-1">
-          {PERIOD_KEYS.map((k) => {
-            const disabled = !data.available.includes(k);
-            return (
-              <button
-                key={k}
-                className={periodBtn(activePeriod === k, disabled)}
-                disabled={disabled}
-                title={disabled ? '历史数据不足，暂无该周期' : undefined}
-                onClick={() => setPeriod(k)}
-              >
-                {PERIOD_LABELS[k]}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1">
+            {PERIOD_KEYS.map((k) => {
+              const disabled = !data.available.includes(k);
+              return (
+                <button
+                  key={k}
+                  className={periodBtn(activePeriod === k, disabled)}
+                  disabled={disabled}
+                  title={disabled ? '历史数据不足，暂无该周期' : undefined}
+                  onClick={() => setPeriod(k)}
+                >
+                  {PERIOD_LABELS[k]}
+                </button>
+              );
+            })}
+          </div>
+          <PageHelp title="个股 MA 站上率" sections={TEMPERATURE_HELP} />
         </div>
       </div>
 

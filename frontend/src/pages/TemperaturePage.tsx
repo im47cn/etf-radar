@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useMarketTemperature } from '@/hooks/useMarketTemperature';
 import { useIndexSeries } from '@/hooks/useIndexSeries';
-import { PERIOD_KEYS, PERIOD_LABELS, type PeriodKey } from '@/types/marketTemperature';
+import { PERIOD_KEYS, PERIOD_LABELS, PERIOD_LABELS_SHORT, type PeriodKey } from '@/types/marketTemperature';
 import { BreadthThermometer } from '@/components/temperature/BreadthThermometer';
 import { IndexCompareChart } from '@/components/temperature/IndexCompareChart';
 import { IndustryBreadthRanking } from '@/components/temperature/IndustryBreadthRanking';
@@ -97,7 +97,7 @@ export const TemperaturePage = () => {
   return (
     <main className="flex flex-col gap-4 p-4 animate-crossfade">
       <div className="flex items-center justify-between animate-fade-rise" style={{ animationDelay: '0ms' }}>
-        <h1 className="text-lg font-semibold text-gray-800">个股 MA 站上率</h1>
+        <h1 className="text-lg font-semibold text-gray-800">个股站上率</h1>
         <div className="flex items-center gap-2">
           <div className="flex gap-1">
             {PERIOD_KEYS.map((k) => {
@@ -107,10 +107,10 @@ export const TemperaturePage = () => {
                   key={k}
                   className={periodBtn(activePeriod === k, disabled)}
                   disabled={disabled}
-                  title={disabled ? '历史数据不足，暂无该周期' : undefined}
+                  title={disabled ? '历史数据不足，暂无该周期' : PERIOD_LABELS[k]}
                   onClick={() => setPeriod(k)}
                 >
-                  {PERIOD_LABELS[k]}
+                  {PERIOD_LABELS_SHORT[k]}
                 </button>
               );
             })}

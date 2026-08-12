@@ -26,6 +26,8 @@ export type PeriodData = z.infer<typeof PeriodDataSchema>;
 export type PeriodKey = 'ma5' | 'ma20' | 'ma60' | 'ma120';
 export const PERIOD_KEYS: PeriodKey[] = ['ma5', 'ma20', 'ma60', 'ma120'];
 export const PERIOD_LABELS: Record<PeriodKey, string> = { ma5: 'MA5', ma20: 'MA20', ma60: 'MA60', ma120: 'MA120' };
+// 按钮专用短标签（纯数字，省窄屏宽度）；口径/图例/帮助仍用 PERIOD_LABELS 保留 MA 语义。
+export const PERIOD_LABELS_SHORT: Record<PeriodKey, string> = { ma5: '5', ma20: '20', ma60: '60', ma120: '120' };
 
 // schema 2.0: 自建多周期
 const V2Schema = z.object({

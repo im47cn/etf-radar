@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# pre-commit 钩子 (轻量, 秒级): 用已有 coverage 产物对 staged 变更做 diff-cover
+# 不跑 pytest/vitest (那是 pre-push 的职责), 仅复用 coverage.xml / lcov.info
+# 产物不存在则跳过 (不阻断 commit), 仅提示如何生成
+#
+# 安装: 已由 core.hooksPath=scripts/hooks 覆盖, 无需额外操作
+# 紧急绕过: git commit --no-verify
+set -euo pipefail
+
+REPO=$(git rev-parse --show-toplevel)
+FAIL_UNDER=90
+
+cd "$REPO"
+
+# 仅当 staged 含 .py/.ts/.tsx 变更时才检查 (排除 Deleted)
+PY=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.py$' || true)
+TS=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$' || true)
+
+# 无代码变更: 沉默放行 (最常见的非代码 commit 不该有噪音)
+if [ -z "$PY" ] && [ -z "$TS" ]; then
+  exit 0
+fi
+
+# backend: staged .py 变更 (复用 coverage.xml, 不跑测试)
+if [ -n "$PY" ]; then
+  if [ -f "$REPO/backend/coverage.xml" ]; then
+    echo "[diff-cover:pre-commit] backend staged 变更覆盖检查 (≥${FAIL_UNDER}%)"
+    (cd backend && uv run --all-extras diff-cover coverage.xml \
+      --compare-branch=HEAD --ignore-unstaged --fail-under="$FAIL_UNDER") || exit 1
+  else
+    echo "[diff-cover:pre-commit] 跳过 backend: 缺 coverage.xml (先跑 \`uv run --all-extras pytest --cov=src --cov-report=xml:coverage.xml\` 启用)" >&2
+  fi
+fi
+
+# frontend: staged .ts/.tsx 变更 (复用 lcov.info, 不跑测试)
+if [ -n "$TS" ]; then
+  if [ -f "$REPO/frontend/coverage/lcov.info" ]; then
+    echo "[diff-cover:pre-commit] frontend staged 变更覆盖检查 (≥${FAIL_UNDER}%)"
+    TMP=$(mktemp)
+    # lcov SF 是 frontend-relative (src/...), git diff 是 repo-relative (frontend/src/...), 加前缀匹配
+    sed 's|^SF:src/|SF:frontend/src/|' "$REPO/frontend/coverage/lcov.info" > "$TMP"
+    (cd backend && uv run --all-extras diff-cover "$TMP" \
+      --compare-branch=HEAD --ignore-unstaged --fail-under="$FAIL_UNDER") || { rm -f "$TMP"; exit 1; }
+    rm -f "$TMP"
+  else
+    echo "[diff-cover:pre-commit] 跳过 frontend: 缺 lcov.info (先跑 \`npx vitest run --coverage\` 启用)" >&2
+  fi
+fi

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# pre-push 钩子: 类型检查 (frontend tsc -b 与 deploy 一致 / backend mypy strict) + 变更行覆盖 ≥80% (diff-cover)
+# pre-push 钩子: 类型检查 (frontend tsc -b 与 deploy 一致 / backend mypy strict) + 变更行覆盖 ≥90% (diff-cover)
 #
 # 安装 (团队一次性): git config core.hooksPath scripts/hooks
 # 紧急绕过: git push --no-verify
@@ -8,7 +8,7 @@ set -euo pipefail
 
 REPO=$(git rev-parse --show-toplevel)
 COMPARE="${DIFF_COVERAGE_BASE:-origin/main}"
-FAIL_UNDER=80
+FAIL_UNDER=90
 
 cd "$REPO"
 

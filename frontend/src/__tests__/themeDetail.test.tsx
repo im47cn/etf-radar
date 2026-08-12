@@ -100,6 +100,11 @@ describe('SignalNote', () => {
     expect(screen.getByText('传导说明')).toBeInTheDocument();
   });
 
+  it('transmission 显示无方向预测力提示 (回测 49%≈随机)', () => {
+    render(<SignalNote signal="transmission" />);
+    expect(screen.getByText(/无方向预测力/)).toBeInTheDocument();
+  });
+
   it('divergence 渲染背离说明', () => {
     render(<SignalNote signal="divergence" />);
     expect(screen.getByText('背离说明')).toBeInTheDocument();

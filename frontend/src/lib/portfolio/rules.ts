@@ -44,7 +44,7 @@ export function buildNarrative(score: HoldingScore): string {
   else if (mid <= 25) parts.push('中周期走弱');
 
   if (score.themeSignal === 'resonance')    parts.push('美股 A 股共振');
-  if (score.themeSignal === 'transmission') parts.push('美股领先 A 股待跟随');
+  if (score.themeSignal === 'transmission') parts.push('美股领先 A 股尚未同步');
   if (score.themeSignal === 'divergence')   parts.push('美股 A 股背离');
 
   return parts.join('，');

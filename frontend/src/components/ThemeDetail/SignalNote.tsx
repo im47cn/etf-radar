@@ -35,6 +35,11 @@ export const SignalNote = ({ signal, direction }: SignalNoteProps) => {
           方向取美股动量; 5年回测次日 A 股同向概率约 56%（基线 49%），扣交易成本后期望有限，仅作方向倾向参考。
         </div>
       ) : null}
+      {signal === 'transmission' ? (
+        <div className="mt-1 text-xs text-gray-500">
+          5年回测传导状态次日 A 股跟随率约 49%（≈随机），无方向预测力，仅作状态观察。
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -398,7 +398,7 @@ def _compute_signals(
             direction=direction,
             trigger_cn_etf=trigger_code,
             votes=theme_votes if theme_votes else {'short': None, 'mid': None, 'long': None},
-            description=theme_dynamic_description(t.name, theme_sig, us_str_obj.mid, direction),
+            description=theme_dynamic_description(t.name, theme_sig, us_str_obj, direction),
         ))
 
         for cn_data in candidates:

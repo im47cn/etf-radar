@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
-import { ChartCard, EmptyCard } from './ChartCard';
+import { ChartCard, EmptyCard } from '@/components/ChartCard';
 
 interface Props {
   /** theme_id -> r² ACF(0..15) (全主题, lag0 恒为 1.0) */

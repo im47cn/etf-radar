@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChartCard } from '@/components/ChartCard';
 import type { AggregatedStock } from '@/types/holdings';
 import { cn } from '@/lib/utils';
 import { compareLeader } from '@/lib/stocks/leaderRank';
@@ -44,6 +45,18 @@ export const StockTable = ({ stocks }: Props) => {
   const [hoverCode, setHoverCode] = useState<string | null>(null);
 
   return (
+    <ChartCard
+      title="成分股明细"
+      subtitle="按龙头 → 60日强度 → 权重排序 · 悬停看 K 线"
+      helpTitle="成分股明细 · 读法"
+      help={
+        <>
+          <p>列：权重 / 现价 / 涨跌 / L2 行业 / 龙头标签 / 60日·20日强度 / RSI / 量比。</p>
+          <p>排序：龙头(⭐⭐⭐优先) → 60日强度 → 累计权重；悬停行右侧浮 mini K 线。</p>
+          <p><strong>误读</strong>：持仓按季度披露有延迟；权重是 ETF 持仓占比，非个股市值。</p>
+        </>
+      }
+    >
     <div className="relative">
       <table className="w-full text-sm border-collapse">
         <thead className="bg-gray-100 text-xs text-gray-600">
@@ -119,5 +132,6 @@ export const StockTable = ({ stocks }: Props) => {
         </div>
       )}
     </div>
+    </ChartCard>
   );
 };

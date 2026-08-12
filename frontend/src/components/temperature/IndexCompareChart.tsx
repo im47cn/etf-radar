@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ChartCard } from '@/components/ChartCard';
 import {
   ComposedChart,
   Line,
@@ -120,11 +121,18 @@ export const IndexCompareChart = ({ market, indices }: Props) => {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">宽度 vs A 股主要指数</h2>
-        <span className="text-[10px] text-gray-400">左轴: 站上率% · 右轴: 指数涨跌幅%(相对起点) · 点击图例切换</span>
-      </div>
+    <ChartCard
+      title="宽度 vs A 股主要指数"
+      subtitle="左轴站上率% · 右轴指数涨跌幅% · 点图例切换"
+      helpTitle="宽度 vs 指数 · 读法"
+      help={
+        <>
+          <p><strong>左轴</strong>：宽度站上率%（全市场站上 MA 占比）；<strong>右轴</strong>：指数相对窗口起点的涨跌幅%（归一化消除绝对点位量级差）。</p>
+          <p><strong>看背离</strong>：宽度升 + 指数跌 = 底部扩张（涨面先于点位）；宽度降 + 指数涨 = 顶部收缩（涨面萎缩）。</p>
+          <p>点图例切换指数显示；<strong>误读</strong>：指数已归一化（相对起点），非绝对点位。</p>
+        </>
+      }
+    >
       <ResponsiveContainer width="100%" height={240}>
         <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 8, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -166,6 +174,6 @@ export const IndexCompareChart = ({ market, indices }: Props) => {
         </ComposedChart>
       </ResponsiveContainer>
       <CustomLegend indices={indices} hidden={hidden} onToggle={toggle} />
-    </div>
+    </ChartCard>
   );
 };

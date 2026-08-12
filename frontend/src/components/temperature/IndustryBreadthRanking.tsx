@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ChartCard } from '@/components/ChartCard';
 import type { BreadthRow } from '@/types/marketTemperature';
 import { breadthColor, breadthTextureCss } from '@/lib/breadthColor';
 
@@ -96,9 +97,19 @@ export const IndustryBreadthRanking = ({ l1Rows, l2Rows }: Props) => {
     setExpanded(allExpanded ? new Set() : new Set(sortedL1.map((r) => r.name)));
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">行业排行 · 当日站上率</span>
+    <ChartCard
+      title="行业排行 · 当日站上率"
+      subtitle="降序排列 · 点一级展开二级"
+      helpTitle="行业宽度排行 · 读法"
+      help={
+        <>
+          <p>一级行业按当日站上率降序；条形长度 = 站上率，颜色 = 冷暖。</p>
+          <p>一级条上的"须"标记 = 其下二级行业站上率的 min/max 区间，直观展示子行业分布。</p>
+          <p>点行业名展开/折叠二级；下方"展开全部"一键展开。<strong>误读</strong>：当日快照，非趋势。</p>
+        </>
+      }
+    >
+      <div className="mb-2 flex justify-end">
         <button
           className="rounded px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100"
           onClick={toggleAll}
@@ -123,6 +134,6 @@ export const IndustryBreadthRanking = ({ l1Rows, l2Rows }: Props) => {
           );
         })}
       </div>
-    </div>
+    </ChartCard>
   );
 };

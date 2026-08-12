@@ -92,7 +92,7 @@ describe('RotationPage', () => {
       error: null,
     });
     renderPage();
-    expect(screen.getByText(/主题轮动象限图/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /主题轮动/ })).toBeInTheDocument();
     expect(screen.getByTestId('trails-overlay')).toBeInTheDocument();
     expect(screen.getByTestId('trails-overlay').getAttribute('data-theme-count')).toBe('1');
     expect(screen.getByText(/轨迹长度/)).toBeInTheDocument();

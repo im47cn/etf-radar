@@ -3,7 +3,7 @@ import {
   Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
 import type { ArchTheme } from '@/types/signalEvidence';
-import { ChartCard, EmptyCard } from './ChartCard';
+import { ChartCard, EmptyCard } from '@/components/ChartCard';
 
 interface Props {
   themes: ArchTheme[];

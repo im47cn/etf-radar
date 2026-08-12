@@ -1,7 +1,7 @@
 import {
   Bar, BarChart, CartesianGrid, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
-import { ChartCard, EmptyCard } from './ChartCard';
+import { ChartCard, EmptyCard } from '@/components/ChartCard';
 
 interface TimePoint {
   period: string;

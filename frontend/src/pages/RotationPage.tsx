@@ -109,19 +109,23 @@ export const RotationPage = () => {
 
   return (
     <main className="p-4 space-y-4">
-      <div className="bg-white border rounded p-4 animate-fade-rise" style={{ animationDelay: '0ms' }}>
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-bold">主题轮动象限图</h2>
-          <div className="flex items-center gap-2">
-            <MarketViewSelector />
-            <PageHelp title="主题轮动" sections={ROTATION_HELP} />
-          </div>
+      <div className="flex items-center justify-between animate-fade-rise" style={{ animationDelay: '0ms' }}>
+        <h1 className="text-lg font-bold">主题轮动</h1>
+        <div className="flex items-center gap-2">
+          <MarketViewSelector />
+          <PageHelp title="主题轮动" sections={ROTATION_HELP} />
         </div>
-        <p className="text-xs text-gray-600 mb-4">
-          X 轴为长期强度 (60d), Y 轴为短期强度 (1d), 中线 50 切四象限。气泡大小反映综合排名。
-        </p>
+      </div>
+
+      <div className="animate-fade-rise" style={{ animationDelay: '60ms' }}>
         <MarketThermometer breadth={breadth} />
-        {health && <RotationHealthBar health={health} />}
+      </div>
+      {health && (
+        <div className="animate-fade-rise" style={{ animationDelay: '90ms' }}>
+          <RotationHealthBar health={health} />
+        </div>
+      )}
+      <div className="animate-fade-rise" style={{ animationDelay: '120ms' }}>
         <RotationTrailsOverlay
           themes={themes.themes}
           snapshots={snapshotsFrames}
@@ -129,15 +133,17 @@ export const RotationPage = () => {
           onPrefetch={prefetch}
           ownedThemeIds={ownedThemeIds}
         />
+      </div>
+      <div className="animate-fade-rise" style={{ animationDelay: '150ms' }}>
         <QuadrantLegend />
       </div>
 
       {/* 会员自选快捷添加：把关注的主题加入自选，去「我的自选」集中查看当前状态 */}
-      <div className="bg-white border rounded p-4 animate-fade-rise" style={{ animationDelay: '60ms' }}>
+      <div className="bg-white border rounded p-4 animate-fade-rise" style={{ animationDelay: '180ms' }}>
         <h3 className="text-sm font-semibold mb-2">加入自选（会员）</h3>
         <div className="flex flex-wrap gap-2">
           {themes.themes.map((t, i) => (
-            <span key={t.id} className="inline-flex items-center gap-1 text-xs border rounded px-2 py-1 animate-fade-rise" style={{ animationDelay: `${60 + Math.min(i, 6) * 40}ms` }}>
+            <span key={t.id} className="inline-flex items-center gap-1 text-xs border rounded px-2 py-1 animate-fade-rise" style={{ animationDelay: `${180 + Math.min(i, 6) * 40}ms` }}>
               {t.name}
               <AddWatchButton itemType="theme" itemKey={t.id} />
             </span>

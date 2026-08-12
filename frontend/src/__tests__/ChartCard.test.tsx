@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ChartCard } from '@/components/evidence/ChartCard';
+import { ChartCard } from '@/components/ChartCard';
 
 describe('ChartCard', () => {
   it('渲染标题/副标题/内容, 初始弹层关闭', () => {
@@ -29,7 +29,7 @@ describe('ChartCard', () => {
   });
 
   it('EmptyCard 渲染占位文本', async () => {
-    const { EmptyCard } = await import('@/components/evidence/ChartCard');
+    const { EmptyCard } = await import('@/components/ChartCard');
     render(<EmptyCard text="暂无数据" />);
     expect(screen.getByText('暂无数据')).toBeInTheDocument();
   });

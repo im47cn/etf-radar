@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { ChartCard } from '@/components/ChartCard';
 import type { MarketPoint } from '@/types/marketTemperature';
 import {
   breadthColor,
@@ -26,7 +27,19 @@ export const BreadthThermometer = ({ market }: Props) => {
   const spark = useMemo(() => buildSparkline(market), [market]);
 
   return (
-    <div className="flex items-stretch gap-6 rounded-lg border border-gray-200 bg-white p-4">
+    <ChartCard
+      title="市场宽度温度计"
+      subtitle="全市场个股站上率 · 冷暖 + 趋势"
+      helpTitle="市场宽度温度计 · 读法"
+      help={
+        <>
+          <p><strong>左圆</strong>：全市场个股站上当前周期 MA 的占比（宽度/参与面），圆色 4 档冷暖（红热→蓝冷）。</p>
+          <p><strong>右趋势</strong>：近期站上率走势，逐日背景色带复用冷暖编码。</p>
+          <p><strong>常见误读</strong>：站上率是宽度（参与面），不是指数点位预测——80% 不代表见顶，只代表参与面广。</p>
+        </>
+      }
+    >
+    <div className="flex items-stretch gap-6">
       <div className="flex flex-col items-center justify-center">
         <div
           className="flex h-24 w-24 items-center justify-center rounded-full text-3xl font-bold text-gray-800"
@@ -47,6 +60,7 @@ export const BreadthThermometer = ({ market }: Props) => {
         </div>
       </div>
     </div>
+    </ChartCard>
   );
 };
 

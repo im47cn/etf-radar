@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from 'react';
+import { ChartCard } from '@/components/ChartCard';
 import type { BreadthRow } from '@/types/marketTemperature';
 import { breadthColor, breadthTextureCss } from '@/lib/breadthColor';
 
@@ -56,12 +57,18 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
   const nameCol = 'sticky left-0 z-10 w-28 min-w-[7rem] max-w-[7rem] border-r border-gray-200';
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      {/* 标题在滚动容器外, 横向滚动时不跟随 */}
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">历史热力图 · 行业 × 交易日</span>
-        <span className="text-[11px] text-gray-400">点一级行业展开二级</span>
-      </div>
+    <ChartCard
+      title="历史热力图 · 行业 × 交易日"
+      subtitle="点一级行业展开二级"
+      helpTitle="历史热力图 · 读法"
+      help={
+        <>
+          <p>行 = 行业，列 = 近期交易日，单元格色 = 当日站上率冷暖（红高蓝低）。</p>
+          <p>点一级行业名展开其二级行业；横向滚动看更多交易日。</p>
+          <p><strong>误读</strong>：颜色编码的是站上率（宽度），不是涨跌幅。</p>
+        </>
+      }
+    >
       <div className="overflow-x-auto">
       <table className="border-separate" style={{ borderSpacing: 0 }}>
         <thead>
@@ -110,6 +117,6 @@ export const BreadthHeatmap = ({ dates, l1Rows, l2Rows, maxCols = 45 }: Props) =
         </tbody>
       </table>
       </div>
-    </div>
+    </ChartCard>
   );
 };

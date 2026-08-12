@@ -2,7 +2,7 @@ import {
   Bar, BarChart, CartesianGrid, ErrorBar, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
 import type { IcHorizon } from '@/types/signalEvidence';
-import { ChartCard, EmptyCard } from './ChartCard';
+import { ChartCard, EmptyCard } from '@/components/ChartCard';
 
 interface Props {
   byHorizon: IcHorizon[];

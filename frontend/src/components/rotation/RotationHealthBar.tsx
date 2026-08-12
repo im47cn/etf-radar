@@ -1,3 +1,4 @@
+import { ChartCard } from '@/components/ChartCard';
 import type { HealthGrade, HealthScore } from '@/types/rotation';
 
 const GRADE_LABEL: Record<HealthGrade, string> = {
@@ -53,24 +54,31 @@ export interface RotationHealthBarProps {
 }
 
 export const RotationHealthBar = ({ health }: RotationHealthBarProps) => (
-  // 始终两列: 移动端窄屏下也并排展示, 避免吃掉一整行高度.
-  // 窄屏空间够用: 每 cell 约 160px (=320/2), 容纳 label+score+badge 无溢出.
-  <div
-    className="grid grid-cols-2 gap-px bg-gray-200 border rounded overflow-hidden mb-4"
-    role="region"
-    aria-label="分布健康度"
+  <ChartCard
+    title="分布健康度"
+    subtitle="覆盖度(象限分布熵) · 鲁棒度(远离边界占比)"
+    helpTitle="分布健康度 · 读法"
+    help={
+      <>
+        <p><strong>覆盖度</strong>：四象限主题数的香农熵。100=四象限均匀，0=全挤一象限。低分=分类信号集中。</p>
+        <p><strong>鲁棒度</strong>：远离边界线(x50/y50)超 10 单位的主题占比。低分=多数贴近边界，小幅波动即跨象限，分类脆弱。</p>
+      </>
+    }
   >
-    <HealthCell
-      label="覆盖度"
-      score={health.coverage.score}
-      grade={health.coverage.grade}
-      tooltip={TOOLTIP.coverage}
-    />
-    <HealthCell
-      label="鲁棒度"
-      score={health.robustness.score}
-      grade={health.robustness.grade}
-      tooltip={TOOLTIP.robustness}
-    />
-  </div>
+    {/* 始终两列: 移动端窄屏也并排展示 */}
+    <div className="grid grid-cols-2 gap-px bg-gray-200 overflow-hidden rounded">
+      <HealthCell
+        label="覆盖度"
+        score={health.coverage.score}
+        grade={health.coverage.grade}
+        tooltip={TOOLTIP.coverage}
+      />
+      <HealthCell
+        label="鲁棒度"
+        score={health.robustness.score}
+        grade={health.robustness.grade}
+        tooltip={TOOLTIP.robustness}
+      />
+    </div>
+  </ChartCard>
 );

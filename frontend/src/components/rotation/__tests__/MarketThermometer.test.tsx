@@ -36,14 +36,13 @@ describe('MarketThermometer', () => {
     expect(screen.getByText(/50%/)).toBeInTheDocument();
   });
 
-  it('提供无障碍 region 标签', () => {
+  it('渲染卡片标题(无障碍可读)', () => {
     render(<MarketThermometer breadth={mk()} />);
-    expect(screen.getByRole('region', { name: '市场温度' })).toBeInTheDocument();
+    expect(screen.getByText('市场温度计')).toBeInTheDocument();
   });
 
-  it('空样本显示数据不足、中位占位符', () => {
+  it('空样本显示数据不足占位', () => {
     render(<MarketThermometer breadth={mk({ total: 0, up: 0, down: 0, flat: 0, breadthPct: 0, medianR1d: null })} />);
-    expect(screen.getByText('数据不足')).toBeInTheDocument();
-    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.getByText(/数据不足/)).toBeInTheDocument();
   });
 });

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { ChartCard } from '@/components/ChartCard';
 import { useTrailRange } from '@/hooks/useTrailRange';
 import { useFocusedTheme } from '@/hooks/useFocusedTheme';
 import { useUIState } from '@/providers/uiStateContext';
@@ -95,21 +96,30 @@ export const RotationTrailsOverlay = ({
   }, [range.startOffset, range.endOffset, availableDates, cachedDates, onPrefetch]);
 
   return (
-    <div ref={containerRef}>
-      <TrailRangeSlider
-        range={range}
-        onChange={setRange}
-        maxDays={sliderMaxDays}
-      />
-      <RotationScatterWithTrails
-        themes={viewThemes}
-        trailFrames={trailFrames}
-        focusedId={focusedId}
-        onFocus={toggle}
-        mode={mode}
-        ownedThemeIds={ownedThemeIds}
-      />
-      <FocusedThemePanel theme={focusedTheme} onClose={() => setFocused(null)} />
-    </div>
+    <ChartCard
+      title="主题轮动象限图"
+      subtitle="X 轴长期强度(60d) · Y 轴短期(1d) · 中线 50 切四象限"
+      helpTitle="主题轮动象限图 · 读法"
+      help={
+        <>
+          <p><strong>四象限</strong>（中线 50）：右上领先（长短期都强）/ 左上改善（短期转强）/ 左下滞后（都弱）/ 右下恶化（短期转弱）。气泡大小=综合排名。</p>
+          <p><strong>拖尾</strong>：点气泡聚焦后显近期路径，蓝→红渐变（红=最新方向），线宽递增强化方向感。</p>
+          <p>顶部滑杆调轨迹天数；点气泡定位主题。<strong>误读</strong>：象限是当前状态非预测；短轴(1d)噪声大，看趋势非单点。</p>
+        </>
+      }
+    >
+      <div ref={containerRef}>
+        <TrailRangeSlider range={range} onChange={setRange} maxDays={sliderMaxDays} />
+        <RotationScatterWithTrails
+          themes={viewThemes}
+          trailFrames={trailFrames}
+          focusedId={focusedId}
+          onFocus={toggle}
+          mode={mode}
+          ownedThemeIds={ownedThemeIds}
+        />
+        <FocusedThemePanel theme={focusedTheme} onClose={() => setFocused(null)} />
+      </div>
+    </ChartCard>
   );
 };

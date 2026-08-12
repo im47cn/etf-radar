@@ -1,3 +1,4 @@
+import { ChartCard, EmptyCard } from '@/components/ChartCard';
 import type { MarketBreadth } from '@/lib/marketBreadth';
 
 /** 小数收益 → 带符号百分比, null 显示占位符。A 股语境: 正为涨。 */
@@ -20,19 +21,7 @@ export const MarketThermometer = ({ breadth }: MarketThermometerProps) => {
   const { total, up, down, flat, breadthPct, medianR1d } = breadth;
 
   if (total === 0) {
-    return (
-      <div
-        className="border rounded px-3 py-2 mb-4 flex items-center justify-between"
-        role="region"
-        aria-label="市场温度"
-      >
-        <span className="text-xs text-gray-600">市场温度</span>
-        <div className="flex items-center gap-2">
-          <span className="text-sm tabular-nums text-gray-400">—</span>
-          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">数据不足</span>
-        </div>
-      </div>
-    );
+    return <EmptyCard text="市场温度数据不足" />;
   }
 
   const upPct = (up / total) * 100;
@@ -46,10 +35,17 @@ export const MarketThermometer = ({ breadth }: MarketThermometerProps) => {
         : 'text-green-600';
 
   return (
-    <div
-      className="border rounded px-3 py-2 mb-4"
-      role="region"
-      aria-label="市场温度"
+    <ChartCard
+      title="市场温度计"
+      subtitle="全市场涨跌家数广度 · 红涨绿跌"
+      helpTitle="市场温度计 · 读法"
+      help={
+        <>
+          <p>涨/跌/平家数 + 上涨占比 + 中位收益；底部三色广度条按家数占比（红涨绿跌灰平）。</p>
+          <p>与象限图正交：象限图看主题相对强弱，温度计看全市场普涨/普跌。</p>
+          <p>CN 模式用 41 只主题 ETF r_1d；US 模式用主题美股锚点 r_1d。</p>
+        </>
+      }
     >
       <div className="flex items-center justify-between mb-1.5 text-xs">
         <div className="flex items-center gap-2 sm:gap-3 tabular-nums">
@@ -70,6 +66,6 @@ export const MarketThermometer = ({ breadth }: MarketThermometerProps) => {
         <div className="bg-green-500" style={{ width: `${downPct}%` }} />
         <div className="bg-gray-300" style={{ width: `${flatPct}%` }} />
       </div>
-    </div>
+    </ChartCard>
   );
 };

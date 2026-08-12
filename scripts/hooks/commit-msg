@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# commit-msg 钩子: commitlint 校验提交信息格式
+#
+# 安装: 已由 core.hooksPath=scripts/hooks 覆盖, 无需额外操作
+# 紧急绕过: git commit --no-verify
+set -euo pipefail
+
+REPO=$(git rev-parse --show-toplevel)
+
+# --no-install: 仅用本地已安装的 commitlint, 禁止隐式联网安装
+npx --no-install commitlint --edit "$1" --cwd "$REPO"

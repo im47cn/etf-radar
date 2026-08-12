@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import type { HealthScore } from '@/types/rotation';
 import { RotationHealthBar } from '../RotationHealthBar';
 
@@ -66,5 +66,11 @@ describe('RotationHealthBar', () => {
     expect(cells[0].getAttribute('aria-label')).toContain('覆盖度');
     expect(cells[0].getAttribute('aria-label')).toContain('72');
     expect(cells[0].getAttribute('aria-label')).toContain('警示');
+  });
+
+  it('? 按钮显示帮助说明', () => {
+    render(<RotationHealthBar health={mkHealth(72, 'caution', 85, 'healthy')} />);
+    fireEvent.click(screen.getByLabelText(/分布健康度.*说明/));
+    expect(screen.getByText(/香农熵/)).toBeInTheDocument();
   });
 });

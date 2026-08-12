@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { StockTable } from '../StockTable';
 import type { AggregatedStock } from '@/types/holdings';
@@ -44,5 +44,11 @@ describe('StockTable', () => {
     expect(container.querySelector('.text-red-600')).toBeInTheDocument();
     rerender(<StockTable stocks={[row({ spot: { name: 'x', close: 1, r_1d: -0.01 } })]} />);
     expect(container.querySelector('.text-green-600')).toBeInTheDocument();
+  });
+
+  it('? 按钮显示帮助说明', () => {
+    render(<StockTable stocks={[row()]} />);
+    fireEvent.click(screen.getByLabelText(/成分股明细.*说明/));
+    expect(screen.getByText(/季度披露/)).toBeInTheDocument();
   });
 });

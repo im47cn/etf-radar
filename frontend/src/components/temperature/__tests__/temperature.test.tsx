@@ -10,6 +10,7 @@ import {
 } from '@/lib/breadthColor';
 import { normalizeMarketTemperature } from '@/types/marketTemperature';
 import { IndustryBreadthRanking } from '../IndustryBreadthRanking';
+import { BreadthThermometer } from '../BreadthThermometer';
 import { BreadthHeatmap } from '../BreadthHeatmap';
 import { BreadthLegend } from '../BreadthLegend';
 
@@ -192,5 +193,36 @@ describe('BreadthHeatmap (collapsible)', () => {
     fireEvent.click(screen.getByText('电子'));
     expect(screen.getByTitle('半导体 2026-07-01: 40.0%')).toBeInTheDocument();
     expect(screen.getByTitle('消费电子 2026-07-02: 44.0%')).toBeInTheDocument();
+  });
+});
+
+describe('图表帮助按钮 (?)', () => {
+  it('BreadthThermometer ? 显示帮助', () => {
+    render(<BreadthThermometer market={[{ date: '2026-01-01', rate: 50 }]} />);
+    fireEvent.click(screen.getByLabelText(/市场宽度温度计.*说明/));
+    expect(screen.getByText(/不代表见顶/)).toBeInTheDocument();
+  });
+
+  it('IndustryBreadthRanking ? 显示帮助', () => {
+    render(
+      <IndustryBreadthRanking
+        l1Rows={[{ name: '电子', series: [50], latest: 50 }]}
+        l2Rows={[]}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText(/行业排行.*说明/));
+    expect(screen.getByText(/直观展示/)).toBeInTheDocument();
+  });
+
+  it('BreadthHeatmap ? 显示帮助', () => {
+    render(
+      <BreadthHeatmap
+        dates={['d0']}
+        l1Rows={[{ name: '电子', series: [50], latest: 50 }]}
+        l2Rows={[]}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText(/历史热力图.*说明/));
+    expect(screen.getByText(/横向滚动/)).toBeInTheDocument();
   });
 });

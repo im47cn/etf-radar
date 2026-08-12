@@ -79,4 +79,10 @@ describe('IndexCompareChart', () => {
     expect(chip.disabled).toBe(true);
     expect(chip.className).toContain('opacity-100');
   });
+
+  it('? 按钮显示帮助说明', () => {
+    render(<IndexCompareChart market={market} indices={indices} />);
+    fireEvent.click(screen.getByLabelText(/宽度 vs.*说明/));
+    expect(screen.getByText(/背离/)).toBeInTheDocument();
+  });
 });

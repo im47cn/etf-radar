@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import type { MarketBreadth } from '@/lib/marketBreadth';
 import { MarketThermometer } from '../MarketThermometer';
 
@@ -44,5 +44,11 @@ describe('MarketThermometer', () => {
   it('空样本显示数据不足占位', () => {
     render(<MarketThermometer breadth={mk({ total: 0, up: 0, down: 0, flat: 0, breadthPct: 0, medianR1d: null })} />);
     expect(screen.getByText(/数据不足/)).toBeInTheDocument();
+  });
+
+  it('? 按钮显示帮助说明', () => {
+    render(<MarketThermometer breadth={mk()} />);
+    fireEvent.click(screen.getByLabelText(/市场温度计.*说明/));
+    expect(screen.getByText(/与象限图正交/)).toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
@@ -212,6 +212,20 @@ describe('RotationTrailsOverlay', () => {
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
+    expect(screen.queryByRole('region', { name: /主题详情面板/ })).not.toBeInTheDocument();
+  });
+
+  it('? 按钮显示帮助说明', () => {
+    wrap(<RotationTrailsOverlay themes={themes} snapshots={snapshots} />);
+    fireEvent.click(screen.getByLabelText(/主题轮动象限图.*说明/));
+    expect(screen.getByText(/气泡大小/)).toBeInTheDocument();
+  });
+
+  it('点 FocusedThemePanel 关闭按钮触发 onClose', async () => {
+    const user = userEvent.setup();
+    wrap(<RotationTrailsOverlay themes={themes} snapshots={snapshots} />);
+    await user.click(screen.getByTestId('bubble-ai'));
+    await user.click(screen.getByRole('button', { name: /关闭/ }));
     expect(screen.queryByRole('region', { name: /主题详情面板/ })).not.toBeInTheDocument();
   });
 });

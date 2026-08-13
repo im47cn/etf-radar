@@ -17,13 +17,14 @@ interface Props {
 
 /** ARCH 显著比例逐季时序: 波动率聚集随时间变化. 最新未完整季(is_partial)样本不足仍保留. */
 export const ArchTimeSeries = ({ timeSeries }: Props) => {
-  const data = timeSeries.map((e) => ({
-    period: e.period,
-    ratio: (e.arch_ratio ?? 0) * 100,
-    label: `${e.arch_count ?? 0}/${e.tested ?? 0}${e.is_partial ? '*' : ''}`,
-    partial: e.is_partial ?? false,
-  }));
-  if (!data.length) {
+  // for 循环 + 独立 const (非 map 返回多行对象字面量), 避免 v8 coverage 对象体盲区
+  const data: { period: string; ratio: number; label: string; partial: boolean }[] = [];
+  for (const e of timeSeries) {
+    const partial = e.is_partial ?? false;
+    const label = `${e.arch_count ?? 0}/${e.tested ?? 0}${partial ? '*' : ''}`;
+    data.push({ period: e.period, ratio: (e.arch_ratio ?? 0) * 100, label, partial });
+  }
+  if (data.length === 0) {
     return <EmptyCard text="暂无 ARCH 时序数据" />;
   }
 

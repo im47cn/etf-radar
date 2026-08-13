@@ -70,3 +70,11 @@
   sed -i.bak 's|^SF:src/|SF:frontend/src/|' coverage/lcov.info && rm -f coverage/lcov.info.bak
   cd ../backend && uv run --all-extras diff-cover ../frontend/coverage/lcov.info --compare-branch=origin/main --fail-under=90
   ```
+
+## 类型检查：本地验证用 tsc -b（非 --noEmit）
+
+- pre-push 钩子与 deploy-frontend 都用 `tsc -b`（build 模式，走 tsconfig 项目引用），比 `tsc --noEmit` 更严格。
+- **`tsc --noEmit` 会漏检**：必填 prop 缺失等错误，`--noEmit` 不报但 `tsc -b` 报（如 TS2741 Property missing）。
+- 本地改完前端类型相关代码，验证用 `cd frontend && npx tsc -b`（与 CI 一致）；`--noEmit` 仅快速粗检，不能替代最终验证。
+- 触发条件：新增/修改带必填 prop 的组件、改 tsconfig 项目引用、改 path alias、跨项目引用。
+- 教训：2026-08-13 网格页 `<FeatureGate required="member">` 漏 `copy: GatedPage` 必填 prop，`--noEmit` 通过、push 时 `tsc -b` 红（commit `8fdcadaa` 修复）。

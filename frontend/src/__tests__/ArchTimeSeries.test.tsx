@@ -3,12 +3,12 @@ import { render, screen } from '@testing-library/react';
 import { ArchTimeSeries } from '@/components/evidence/ArchTimeSeries';
 
 describe('ArchTimeSeries', () => {
-  it('渲染逐季标题 (含 is_partial true/false 两类点)', () => {
+  it('渲染逐月滚动标题', () => {
     render(<ArchTimeSeries timeSeries={[
-      { period: '2024-Q3', arch_ratio: 0.55, arch_count: 16, tested: 29 },
-      { period: '2026-Q3', arch_ratio: 0.07, arch_count: 2, tested: 30, is_partial: true },
+      { period: '2024-09', arch_ratio: 0.55, arch_count: 16, tested: 29 },
+      { period: '2024-10', arch_ratio: 0.66, arch_count: 19, tested: 29 },
     ]} />);
-    expect(screen.getByText(/ARCH 显著比例（逐季）/)).toBeInTheDocument();
+    expect(screen.getByText(/逐月·120日滚动/)).toBeInTheDocument();
   });
 
   it('空数据显示占位', () => {

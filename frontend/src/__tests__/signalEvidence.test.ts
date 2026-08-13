@@ -23,8 +23,8 @@ describe('SignalEvidenceSchema', () => {
         summary: { arch_count: 26, tested: 30, expected_fp: 1.5 },
         representative_acf: { semiconductor: [1.0, 0.18] },
         time_series: [
-          { period: '2024-Q3', arch_ratio: 0.55, arch_count: 16, tested: 29 },
-          { period: '2026-Q3', arch_ratio: 0.07, arch_count: 2, tested: 30, is_partial: true },
+          { period: '2024-09', arch_ratio: 0.55, arch_count: 16, tested: 29 },
+          { period: '2024-10', arch_ratio: 0.66, arch_count: 19, tested: 29 },
         ],
       },
     };
@@ -33,9 +33,6 @@ describe('SignalEvidenceSchema', () => {
     expect(d.ic.by_horizon[0].ic).toBeCloseTo(0.054);
     expect(d.arch.themes[0].is_arch).toBe(true);
     expect(d.arch.representative_acf.semiconductor[0]).toBe(1.0);
-    // is_partial: 显式 true 透传; 缺省补 false (历史 snapshot 兼容)
-    expect(d.arch.time_series[0].is_partial).toBe(false);
-    expect(d.arch.time_series[1].is_partial).toBe(true);
   });
 
   it('缺省数值统一为 null (项目 .nullish().transform 规则)', () => {

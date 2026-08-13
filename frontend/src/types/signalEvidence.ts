@@ -66,14 +66,13 @@ export const SignalEvidenceSchema = z
           .passthrough(),
         // theme_id -> r² ACF(0..15); lag0 恒为 1.0
         representative_acf: z.record(z.string(), z.array(num())),
-        // 逐季 ARCH 显著比例 (波动率聚集随时间变化); is_partial=最新未完整季样本不足(<40日)
+        // ARCH 显著比例滚动时序 (120 日窗口按月步进, n≈120 功效充足)
         time_series: z.array(
           z.object({
             period: z.string(),
             arch_ratio: num(),
             arch_count: num(),
             tested: num(),
-            is_partial: z.boolean().nullish().transform((v) => v ?? false),
           }),
         ),
       })

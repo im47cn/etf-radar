@@ -19,8 +19,8 @@ vi.mock('@/hooks/useSignalEvidence', () => ({
         summary: { arch_count: 26, tested: 30, expected_fp: 1.5 },
         representative_acf: { semi: [1.0, 0.18] },
         time_series: [
-          { period: '2024-Q3', arch_ratio: 0.55, arch_count: 16, tested: 29 },
-          { period: '2026-Q3', arch_ratio: 0.07, arch_count: 2, tested: 30, is_partial: true },
+          { period: '2024-09', arch_ratio: 0.55, arch_count: 16, tested: 29 },
+          { period: '2024-10', arch_ratio: 0.66, arch_count: 19, tested: 29 },
         ],
       },
     },

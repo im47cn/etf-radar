@@ -49,7 +49,8 @@ export const IcRollingChart = ({ rolling }: Props) => {
           <p>曲线 = 过去 N 日横截面 IC 均值（strength 排名 vs 未来 20 日收益排名）。</p>
           <p><strong>三窗口</strong>：5日（敏感、噪声大，看拐点）/ 20日（平衡）/ 60日（平滑、看趋势，主线加粗）。</p>
           <p><strong>持续 &gt; 0</strong> = alpha 稳定；红虚线 = 全期均值（ic_60 长期 alpha 水平，5 年约 0.054，跨三线对照）。</p>
-          <p><strong>适用</strong>：判断 alpha 持续性与拐点；<strong>局限</strong>：IC 是排名相关不等于绝对收益，末端 20 日无点（forward 收益未实现）。</p>
+          <p><strong>用途</strong>：IC 带<strong>方向</strong>信息（正 IC = 强度高的主题未来收益排名靠前），是方向预测力工具，判断 alpha 持续性与拐点。与 ARCH 时序互补——ARCH 描述波动环境（无方向），IC 描述方向 alpha。</p>
+          <p><strong>局限</strong>：IC 是排名相关（相对），不等于绝对收益；末端 20 日无点（forward 收益未实现）；弱 alpha（|IC|&lt;0.05）噪声大，看趋势而非单点。</p>
           <p>案例：5 年 60 日均值 0.054；2021-2023 曾转负（alpha 不持续），2024 起整体转正。</p>
         </>
       }

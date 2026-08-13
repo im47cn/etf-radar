@@ -69,31 +69,23 @@ def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
         valid = col[np.isfinite(col)]
         if len(valid) > 15:
             rep_acf[tid] = [float(v) for v in acf(valid ** 2, 15)]
-    # 逐季 ARCH 显著比例 (看波动率聚集随时间的变化). 每季 ~60 交易日, 下限放宽到 40 日
-    # 以救回 56-59 日的"差一点"季; 最新未完整季 (如当前季) 例外——样本不足也保留, 因它代表
-    # "当下", 缺失反而误导. 最新季内层下限降到 m+1=11 (技术下限), 输出 is_partial 标记.
-    def quarter_of(date: str) -> str:
-        return f"{date[:4]}-Q{(int(date[5:7]) - 1) // 3 + 1}"
-
-    quarters = sorted({quarter_of(d) for d in dates})
-    latest_q = quarter_of(dates[-1])
+    # ARCH 显著比例滚动时序 (120 日窗口, 按月步进): 每点 n≈120 功效充足, 给出可比的
+    # 强度时序, 而非被功率压扁的日历季绝对值 (日历季 n≈40-66 严重欠功率, 见 CONVENTIONS).
+    # 窗口右端 = 该月最后交易日, 向前 120 日; 早期不足 120 日的月跳过.
+    months = sorted({d[:7] for d in dates})
     arch_ts: list[dict[str, object]] = []
-    for q in quarters:
-        idxs = [i for i, d in enumerate(dates) if quarter_of(d) == q]
-        is_latest = q == latest_q
-        if not is_latest and len(idxs) < 40:
+    for m_str in months:
+        end_idx = max(i for i, d in enumerate(dates) if d[:7] == m_str)
+        if end_idx < 119:  # 向前凑不满 120 日, 跳过早期月
             continue
-        # 最新季样本不足时降内层下限到 m+1; 其余季维持 40
-        min_n = 11 if (is_latest and len(idxs) < 40) else 40
-        arch_q = arch_per_theme(returns[idxs], names, min_samples=min_n)
-        tested_q = len(arch_q)
-        if tested_q == 0:
+        arch_m = arch_per_theme(returns[end_idx - 119:end_idx + 1], names)
+        tested_m = len(arch_m)
+        if tested_m == 0:
             continue
-        n_arch_q = sum(1 for e in arch_q if e["is_arch"])
+        n_arch_m = sum(1 for e in arch_m if e["is_arch"])
         arch_ts.append({
-            "period": q, "arch_ratio": round(n_arch_q / tested_q, 3),
-            "arch_count": n_arch_q, "tested": tested_q,
-            "is_partial": bool(is_latest and len(idxs) < 40),
+            "period": m_str, "arch_ratio": round(n_arch_m / tested_m, 3),
+            "arch_count": n_arch_m, "tested": tested_m,
         })
     return {
         "schema_version": "1.0",

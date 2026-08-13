@@ -113,9 +113,9 @@ describe('FeatureGate 登录交互', () => {
 });
 
 describe('GATE_COPY', () => {
-  it('4 个门控页均有 ≥3 条 features', () => {
+  it('5 个门控页均有 ≥3 条 features', () => {
     const keys = Object.keys(GATE_COPY);
-    expect(keys).toEqual(['portfolio', 'watchlist', 'evidence', 'membership']);
+    expect(keys).toEqual(['portfolio', 'watchlist', 'evidence', 'grid', 'membership']);
     for (const k of keys) {
       expect(GATE_COPY[k as keyof typeof GATE_COPY].features.length).toBeGreaterThanOrEqual(3);
     }

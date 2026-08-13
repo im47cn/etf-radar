@@ -5,7 +5,6 @@ import { IcHorizonBar } from '@/components/evidence/IcHorizonBar';
 import { ArchRankingBar } from '@/components/evidence/ArchRankingBar';
 import { R2AcfChart } from '@/components/evidence/R2AcfChart';
 import { ArchTimeSeries } from '@/components/evidence/ArchTimeSeries';
-import { GridFitnessRanking } from '@/components/evidence/GridFitnessRanking';
 import { PageHelp, type HelpSection } from '@/components/help/PageHelp';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FeatureGate } from '@/components/gate/FeatureGate';
@@ -108,10 +107,6 @@ const EvidenceContent = () => {
 
       <div className="animate-fade-rise" style={{ animationDelay: '210ms' }}>
         <ArchTimeSeries timeSeries={data.arch.time_series} />
-      </div>
-
-      <div className="animate-fade-rise" style={{ animationDelay: '225ms' }}>
-        <GridFitnessRanking themes={data.grid_fitness?.themes ?? []} />
       </div>
 
       <div className="animate-fade-rise" style={{ animationDelay: '240ms' }}>

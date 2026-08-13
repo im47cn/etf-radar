@@ -63,6 +63,21 @@ export const GATE_COPY: Record<GatedPage, {
       lines: ['本页为 5 年样本外统计，非实时交易信号', '不构成投资建议'],
     },
   },
+  grid: {
+    icon: '📐',
+    title: '网格选标',
+    subtitle: '按波动率 + 均值回归 + ARCH 持续性优选适合网格的主题 ETF',
+    features: [
+      '复合分跨主题排序，绿色主题适合网格',
+      'Hurst 均值回归检验，避开趋势陷阱',
+      '波动率 + ARCH 双维度，兼顾利润空间与持续性',
+    ],
+    unconfiguredHint: '网格选标功能',
+    footer: {
+      heading: '⚠ 免责声明',
+      lines: ['统计信号非保证盈利，需结合价位/流动性/趋势实判', '不构成投资建议'],
+    },
+  },
   membership: {
     icon: '💳',
     title: '会员订阅',

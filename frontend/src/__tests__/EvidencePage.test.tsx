@@ -18,7 +18,10 @@ vi.mock('@/hooks/useSignalEvidence', () => ({
         themes: [{ theme_id: 'semi', name: '半导体', n: 1212, r2_lb_p: 0.0, is_arch: true, ret_lb_p: 0.02 }],
         summary: { arch_count: 26, tested: 30, expected_fp: 1.5 },
         representative_acf: { semi: [1.0, 0.18] },
-        time_series: [{ period: '2024', arch_ratio: 0.55, arch_count: 16, tested: 29 }],
+        time_series: [
+          { period: '2024-Q3', arch_ratio: 0.55, arch_count: 16, tested: 29 },
+          { period: '2026-Q3', arch_ratio: 0.07, arch_count: 2, tested: 30, is_partial: true },
+        ],
       },
     },
     error: undefined,

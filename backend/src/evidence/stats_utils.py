@@ -130,17 +130,19 @@ def rolling_ic_multi(
 
 
 def arch_per_theme(
-    returns: NDArray[np.float64], names: list[str], m: int = 15,
+    returns: NDArray[np.float64], names: list[str], m: int = 10,
+    min_samples: int = 40,
 ) -> list[dict[str, object]]:
     """每主题 ARCH 检验: r² 的 Ljung-Box (McLeod-Li) + 收益白噪检验.
 
-    返回 [{theme_id, n, r2_lb_p, is_arch, ret_lb_p}], 有效样本 <60 跳过.
+    返回 [{theme_id, n, r2_lb_p, is_arch, ret_lb_p}], 有效样本 <min_samples 跳过.
+    min_samples 默认 40; 最新未完整季可降到 m+1 (技术下限, 保证 n>m 能算 Ljung-Box).
     """
     out: list[dict[str, object]] = []
     for j in range(returns.shape[1]):
         col = returns[:, j]
         valid = col[np.isfinite(col)]
-        if len(valid) < 60:
+        if len(valid) < min_samples:
             continue
         _, p_arch = ljung_box(valid ** 2, m)
         _, p_ret = ljung_box(valid, m)

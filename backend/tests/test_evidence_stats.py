@@ -99,3 +99,10 @@ def test_arch_per_theme_detects_volatility_clustering():
     by_id = {e["theme_id"]: e for e in out}
     assert by_id["arch_theme"]["is_arch"] is True
     assert by_id["white_theme"]["is_arch"] is False
+
+
+def test_arch_per_theme_skips_short_series():
+    """有效样本 <40 的主题整列跳过 (不进 Ljung-Box)."""
+    rng = np.random.default_rng(1)
+    short = rng.normal(scale=0.1, size=(30, 2))  # 30 < 40
+    assert arch_per_theme(short, ["a", "b"]) == []

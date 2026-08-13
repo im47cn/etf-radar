@@ -69,21 +69,31 @@ def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
         valid = col[np.isfinite(col)]
         if len(valid) > 15:
             rep_acf[tid] = [float(v) for v in acf(valid ** 2, 15)]
-    # 逐年 ARCH 显著比例 (看波动率聚集随时间的变化)
-    years = sorted({d[:4] for d in dates})
+    # 逐季 ARCH 显著比例 (看波动率聚集随时间的变化). 每季 ~60 交易日, 下限放宽到 40 日
+    # 以救回 56-59 日的"差一点"季; 最新未完整季 (如当前季) 例外——样本不足也保留, 因它代表
+    # "当下", 缺失反而误导. 最新季内层下限降到 m+1=11 (技术下限), 输出 is_partial 标记.
+    def quarter_of(date: str) -> str:
+        return f"{date[:4]}-Q{(int(date[5:7]) - 1) // 3 + 1}"
+
+    quarters = sorted({quarter_of(d) for d in dates})
+    latest_q = quarter_of(dates[-1])
     arch_ts: list[dict[str, object]] = []
-    for y in years:
-        idxs = [i for i, d in enumerate(dates) if d.startswith(y)]
-        if len(idxs) < 60:
+    for q in quarters:
+        idxs = [i for i, d in enumerate(dates) if quarter_of(d) == q]
+        is_latest = q == latest_q
+        if not is_latest and len(idxs) < 40:
             continue
-        arch_y = arch_per_theme(returns[idxs], names)
-        tested_y = len(arch_y)
-        if tested_y == 0:
+        # 最新季样本不足时降内层下限到 m+1; 其余季维持 40
+        min_n = 11 if (is_latest and len(idxs) < 40) else 40
+        arch_q = arch_per_theme(returns[idxs], names, min_samples=min_n)
+        tested_q = len(arch_q)
+        if tested_q == 0:
             continue
-        n_arch_y = sum(1 for e in arch_y if e["is_arch"])
+        n_arch_q = sum(1 for e in arch_q if e["is_arch"])
         arch_ts.append({
-            "period": y, "arch_ratio": round(n_arch_y / tested_y, 3),
-            "arch_count": n_arch_y, "tested": tested_y,
+            "period": q, "arch_ratio": round(n_arch_q / tested_q, 3),
+            "arch_count": n_arch_q, "tested": tested_q,
+            "is_partial": bool(is_latest and len(idxs) < 40),
         })
     return {
         "schema_version": "1.0",

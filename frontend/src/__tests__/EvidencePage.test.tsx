@@ -23,6 +23,13 @@ vi.mock('@/hooks/useSignalEvidence', () => ({
           { period: '2024-10', arch_ratio: 0.66, arch_count: 19, tested: 29 },
         ],
       },
+      grid_fitness: {
+        themes: [{ theme_id: 'semi', name: '半导体', n: 1212, ann_vol: 0.32, hurst: 0.42,
+                  arch_neg_log10p: 5, pct_vol: 0.9, pct_mean_reversion: 0.7, pct_arch: 0.9,
+                  grid_score: 0.82, verdict: 'suitable' }],
+        summary: { tested: 29, skipped: 1, suitable_count: 12, median_score: 0.52 },
+        weights: { vol: 0.4, mean_reversion: 0.35, arch: 0.25 },
+      },
     },
     error: undefined,
     isLoading: false,

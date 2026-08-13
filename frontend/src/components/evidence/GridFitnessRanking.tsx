@@ -1,0 +1,79 @@
+import {
+  Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from 'recharts';
+import type { GridFitnessTheme } from '@/types/signalEvidence';
+import { ChartCard, EmptyCard } from '@/components/ChartCard';
+
+interface Props {
+  themes: GridFitnessTheme[];
+}
+
+const VERDICT_COLOR: Record<string, string> = {
+  suitable: '#059669',   // 绿: 适合网格
+  marginal: '#d97706',   // 琥珀: 中性/谨慎
+  unsuitable: '#9ca3af', // 灰: 不适合
+};
+
+export interface GridRow {
+  name: string; score: number; vol: number; hurst: number; verdict: string;
+}
+
+/** 主题 → 网格排名行 (grid_score 降序 + verdict 缺省兜底). 模块级纯函数便于直接测试. */
+export function buildGridData(themes: GridFitnessTheme[]): GridRow[] {
+  const data: GridRow[] = [];
+  for (const t of themes) {
+    const verdict = t.verdict ?? 'marginal';
+    const name = t.name ?? t.theme_id;
+    const score = t.grid_score ?? 0;
+    const vol = t.ann_vol ?? 0;
+    const hurst = t.hurst ?? 0.5;
+    data.push({ name, score, vol, hurst, verdict });
+  }
+  data.sort((a, b) => b.score - a.score);
+  return data;
+}
+
+export interface TickProps { x: number | string; y: number | string; payload: { value?: string } }
+// recharts vertical interval=0 默认 tick 渲染有 bug, 自定义确保行业名全显
+export const renderNameTick = ({ x, y, payload }: TickProps) => (
+  <text x={Number(x) - 4} y={Number(y)} dy={3} textAnchor="end" fontSize={9} fill="#6b7280">
+    {payload.value ?? ''}
+  </text>
+);
+
+/** 主题网格适配度排名: 高波动 + 均值回归 + ARCH 持续 → 适合网格交易的程度. */
+export const GridFitnessRanking = ({ themes }: Props) => {
+  const data = buildGridData(themes);
+  if (!data.length) return <EmptyCard text="暂无网格适配度数据" />;
+
+  return (
+    <ChartCard
+      title="主题网格适配度排名"
+      subtitle="复合分 = 波动率(0.40) + 均值回归(0.35) + ARCH(0.25) · hover 看子分"
+      helpTitle="网格适配度 · 读法"
+      help={
+        <>
+          <p>横条 = 主题网格适配度复合分（0–1，越高越适合网格）。<strong>绿 = 适合</strong>（≥0.65），琥珀 = 中性（0.40–0.65），灰 = 不适合（&lt;0.40）。</p>
+          <p><strong>三维度</strong>（跨主题百分位加权）：① <strong>波动率</strong>（年化 σ，利润空间，0.40）② <strong>均值回归</strong>（Hurst H&lt;0.5 震荡/网格友好，H&gt;0.5 趋势/危险，0.35）③ <strong>ARCH 持续</strong>（波动不衰减，0.25）。</p>
+          <p><strong>⚠ 边界</strong>：Hurst&gt;0.55（强趋势）无论分数强制降为中性——趋势主题网格必亏。这是统计信号<strong>非保证盈利</strong>，需结合当前价位区间、ETF 流动性与趋势实判。</p>
+          <p>用法：优选绿色主题做网格标的；避免灰/趋势主题。适合网格 ≠ 必赚，需配合网格参数（间距/层数）与风控。</p>
+        </>
+      }
+    >
+      <ResponsiveContainer width="100%" height={Math.max(220, data.length * 16)}>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
+          <XAxis type="number" domain={[0, 1]} tick={{ fontSize: 10 }} />
+          <YAxis type="category" dataKey="name" tick={renderNameTick} width={80} interval={0} />
+          <Tooltip />
+          <ReferenceLine x={0.65} stroke="#059669" strokeDasharray="4 4" />
+          <ReferenceLine x={0.4} stroke="#d97706" strokeDasharray="4 4" />
+          <Bar dataKey="score" radius={[0, 2, 2, 0]}>
+            {data.map((d) => (
+              <Cell key={d.name} fill={VERDICT_COLOR[d.verdict] ?? '#9ca3af'} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartCard>
+  );
+};

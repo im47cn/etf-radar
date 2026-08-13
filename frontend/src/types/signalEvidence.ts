@@ -35,6 +35,22 @@ export const ArchThemeSchema = z.object({
 });
 export type ArchTheme = z.infer<typeof ArchThemeSchema>;
 
+/** 主题网格适配度复合分 (波动率 + Hurst 均值回归 + ARCH 持续, percentile rank 加权). */
+export const GridFitnessThemeSchema = z.object({
+  theme_id: z.string(),
+  name: z.string().optional(),
+  n: num(),
+  ann_vol: num(),
+  hurst: num(),
+  arch_neg_log10p: num(),
+  pct_vol: num(),
+  pct_mean_reversion: num(),
+  pct_arch: num(),
+  grid_score: num(),
+  verdict: z.string().nullish().transform((v) => v ?? null),
+});
+export type GridFitnessTheme = z.infer<typeof GridFitnessThemeSchema>;
+
 /** data/latest/signal_evidence.json 契约 (schema 1.0): 5 年样本外统计证据. */
 export const SignalEvidenceSchema = z
   .object({
@@ -77,6 +93,28 @@ export const SignalEvidenceSchema = z
         ),
       })
       .passthrough(),
+    // 网格适配度复合分 (波动率0.40 + 均值回归0.35 + ARCH0.25); verdict: suitable/marginal/unsuitable
+    grid_fitness: z
+      .object({
+        themes: z.array(GridFitnessThemeSchema).default([]),
+        summary: z
+          .object({
+            tested: num(),
+            skipped: num(),
+            suitable_count: num(),
+            median_score: num(),
+          })
+          .passthrough(),
+        weights: z
+          .object({
+            vol: num(),
+            mean_reversion: num(),
+            arch: num(),
+          })
+          .passthrough(),
+      })
+      .nullish()
+      .transform((v) => v ?? null),
   })
   .passthrough();
 export type SignalEvidence = z.infer<typeof SignalEvidenceSchema>;

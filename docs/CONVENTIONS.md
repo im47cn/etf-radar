@@ -41,3 +41,32 @@
 - 删/改其一时，grep 全仓库后**必须按语义分类**：哪些是 MarketView 值（删），哪些是 Theme 属性（保留）。
 - 触发条件：删除/重命名任何 UI 状态枚举值时。
 - 教训:2026-06-20 删除 `cn-only` MarketView 选项时,fixture/trail 计算/MappingPanel 中的 `cn-only` 是 Theme 标签语义,误删会破 trail 渲染逻辑(commit `16ccff4` 已隔离两者)。
+
+## 变更行覆盖率：避开 v8 coverage 盲区
+
+- 变更行覆盖率 ≥90% 是 pre-commit/pre-push 红线（见 CLAUDE.md），由 `diff-cover` 对 staged 变更行判定。前端用 `@vitest/coverage-v8`，backend 用 `pytest-cov`。
+- **盲区**：`arr.map(() => ({ ...多行对象... }))` / `arr.filter(() => ({ ... }))` 等**箭头函数返回多行对象字面量**的整个对象体，v8 coverage **完全不 instrument**——`coverage/lcov.info` 里这段 `DA` 记录整段缺失。diff-cover 会把对象体内的变更行判为 missing。
+- 这不是"测试没覆盖"（组件确实渲染了），而是工具盲区。当某次 commit 只改这类对象体里的 1-2 行时，分母小、一行 missing 就砸到 ~80%，直接阻断 push。
+- **规避写法**：需 diff-cover 保障的代码，把多字段对象构造改成 `for` 循环 + 独立 `const` + 单行 `push`，让每个计算都是 coverage 能捕获的独立语句：
+  ```ts
+  // ❌ 对象体整段无 DA 记录
+  const data = arr.map((e) => ({
+    a: e.a,
+    b: e.b ?? 0,
+    flag: e.flag ?? false,
+  }));
+  // ✅ 每行独立语句, coverage 必捕获
+  const data: Row[] = [];
+  for (const e of arr) {
+    const flag = e.flag ?? false;
+    data.push({ a: e.a, b: e.b ?? 0, flag });
+  }
+  ```
+- 触发条件：前端 `.ts/.tsx` 变更涉及 `map`/`filter`/`reduce` 返回多行对象字面量，且 pre-push 报 diff-cover <90% 但肉眼明知测试已渲染。
+- 教训：2026-08-13 `ArchTimeSeries.tsx` 的 `timeSeries.map((e) => ({...}))` 对象体内 label 行（line 23）lcov 整段无 DA，diff-cover 判 80% 阻断 push（commit `874f6bd` 改 for 循环后 100%）。
+- 验证命令（本地复现 pre-push 流程）：
+  ```bash
+  cd frontend && ./node_modules/.bin/vitest run --coverage
+  sed -i.bak 's|^SF:src/|SF:frontend/src/|' coverage/lcov.info && rm -f coverage/lcov.info.bak
+  cd ../backend && uv run --all-extras diff-cover ../frontend/coverage/lcov.info --compare-branch=origin/main --fail-under=90
+  ```

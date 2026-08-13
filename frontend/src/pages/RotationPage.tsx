@@ -12,7 +12,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MarketViewSelector } from '@/components/FilterBar/MarketViewSelector';
 import { useUIState } from '@/providers/uiStateContext';
 import { marketViewToRotationMode } from '@/lib/marketView';
-import { AddWatchButton } from '@/components/membership/AddWatchButton';
 import { PageHelp, type HelpSection } from '@/components/help/PageHelp';
 
 /** 主题轮动帮助文案: RRG 象限理论 + 读法 + 常见误读. */
@@ -136,19 +135,6 @@ export const RotationPage = () => {
       </div>
       <div className="animate-fade-rise" style={{ animationDelay: '150ms' }}>
         <QuadrantLegend />
-      </div>
-
-      {/* 会员自选快捷添加：把关注的主题加入自选，去「我的自选」集中查看当前状态 */}
-      <div className="bg-white border rounded p-4 animate-fade-rise" style={{ animationDelay: '180ms' }}>
-        <h3 className="text-sm font-semibold mb-2">加入自选（会员）</h3>
-        <div className="flex flex-wrap gap-2">
-          {themes.themes.map((t, i) => (
-            <span key={t.id} className="inline-flex items-center gap-1 text-xs border rounded px-2 py-1 animate-fade-rise" style={{ animationDelay: `${180 + Math.min(i, 6) * 40}ms` }}>
-              {t.name}
-              <AddWatchButton itemType="theme" itemKey={t.id} />
-            </span>
-          ))}
-        </div>
       </div>
     </main>
   );

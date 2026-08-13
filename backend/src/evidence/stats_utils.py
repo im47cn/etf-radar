@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.stats import chi2, spearmanr  # type: ignore[import-untyped]
+from scipy.stats import chi2, percentileofscore, spearmanr  # type: ignore[import-untyped]
 
 
 def acf(x: NDArray[np.float64], nlags: int) -> NDArray[np.float64]:
@@ -151,3 +151,57 @@ def arch_per_theme(
             "r2_lb_p": p_arch, "is_arch": bool(p_arch < 0.05), "ret_lb_p": p_ret,
         })
     return out
+
+
+def hurst_exponent(
+    x: NDArray[np.float64], min_samples: int = 100,
+) -> float | None:
+    """R/S (重标极差) Hurst 指数: log-log 回归 E[R/S] vs 块大小 k 的斜率.
+
+    H<0.5 均值回归 (网格友好), H=0.5 随机游走, H>0.5 趋势延续 (网格危险).
+    有效样本 <min_samples 返回 None (子区间不足, H 估计不稳). 钳制到 [0,1].
+    """
+    valid = x[np.isfinite(x)]
+    n = len(valid)
+    if n < min_samples:
+        return None
+    log_k: list[float] = []
+    log_rs: list[float] = []
+    for k in range(4, n // 2 + 1):
+        n_blocks = n // k
+        if n_blocks < 2:
+            continue
+        rs_vals: list[float] = []
+        for b in range(n_blocks):
+            block = valid[b * k:(b + 1) * k]
+            dev = block - block.mean()
+            cumdev = np.cumsum(dev)
+            r = float(cumdev.max() - cumdev.min())
+            s = float(block.std(ddof=1))
+            if s > 0:
+                rs_vals.append(r / s)
+        if rs_vals:
+            log_k.append(float(np.log(k)))
+            log_rs.append(float(np.log(np.mean(rs_vals))))
+    if len(log_k) < 3:
+        return None
+    coeffs = np.polyfit(np.array(log_k), np.array(log_rs), 1)
+    h = float(coeffs[0])
+    return min(1.0, max(0.0, h))
+
+
+def annualized_volatility(
+    x: NDArray[np.float64], periods: int = 252,
+) -> float | None:
+    """年化波动率 = std(valid, ddof=1) × sqrt(periods). <2 有效值返回 None."""
+    valid = x[np.isfinite(x)]
+    if len(valid) < 2:
+        return None
+    return float(np.std(valid, ddof=1) * np.sqrt(periods))
+
+
+def percentile_rank(values: list[float], target: float) -> float:
+    """target 在 values 中的百分位 [0,1] (percentileofscore mean 法, 处理 ties)."""
+    if not values:
+        return 0.0
+    return float(percentileofscore(values, target, kind="mean") / 100.0)

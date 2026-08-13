@@ -58,6 +58,13 @@ def test_compute_evidence_writes_all_fields(tmp_path):
     # 滚动时序需 ≥120 日; 80 日样本不足 -> time_series 为空
     assert arch["time_series"] == []
 
+    # 网格适配度: 80 日 < Hurst min_samples=100 -> 全跳过
+    grid = result["grid_fitness"]
+    assert grid["themes"] == []
+    assert grid["summary"]["skipped"] == 8
+    assert grid["summary"]["tested"] == 0
+    assert {"vol", "mean_reversion", "arch"} <= set(grid["weights"])
+
 
 def test_compute_evidence_arch_time_series_rolling_120d(tmp_path):
     """120 日滚动窗口按月步进: 5 月×30 日=150 日, 前 3 月凑不满 120 跳过, 04/05 产出."""
@@ -87,3 +94,28 @@ def test_compute_evidence_arch_sorted_by_significance(tmp_path):
     arch = compute_evidence(tmp_path)["arch"]
     ps = [float(e["r2_lb_p"]) for e in arch["themes"]]
     assert ps == sorted(ps)  # 按 r2_lb_p 升序 (最显著在前)
+
+
+def test_grid_fitness_sorted_and_verdicts(tmp_path):
+    """150日×8主题 (≥Hurst 下限 100): themes 非空, grid_score 降序, verdict 合法."""
+    rng = np.random.default_rng(3)
+    snap = tmp_path / "snapshots"
+    for month in range(1, 6):           # 2021-01..05 各 30 日 = 150 日 (合法日期, ≥Hurst 下限 100)
+        for day in range(1, 31):
+            d = f"2021-{month:02d}-{day:02d}"
+            (snap / d).mkdir(parents=True, exist_ok=True)
+            with open(snap / d / "themes.json", "w") as f:
+                json.dump({"themes": _make_themes(rng)}, f)
+    grid = compute_evidence(tmp_path)["grid_fitness"]
+    themes = grid["themes"]
+    assert len(themes) == 8
+    scores = [float(t["grid_score"]) for t in themes]
+    assert scores == sorted(scores, reverse=True)  # 降序
+    expected_fields = {"theme_id", "name", "n", "ann_vol", "hurst", "arch_neg_log10p",
+                       "pct_vol", "pct_mean_reversion", "pct_arch", "grid_score", "verdict"}
+    for t in themes:
+        assert expected_fields <= set(t)
+        assert t["verdict"] in {"suitable", "marginal", "unsuitable"}
+    assert grid["summary"]["tested"] == 8
+    assert grid["summary"]["suitable_count"] == sum(
+        1 for t in themes if t["verdict"] == "suitable")

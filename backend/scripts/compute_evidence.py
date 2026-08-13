@@ -19,8 +19,11 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # backend/ 入 sys.path
 from src.evidence.stats_utils import (
     acf,
+    annualized_volatility,
     arch_per_theme,
+    hurst_exponent,
     ic_by_horizon,
+    percentile_rank,
     rolling_ic_multi,
 )
 from src.output.writer import atomic_write_json
@@ -53,6 +56,79 @@ def load_matrices(
     return dates, names, display, strength, returns
 
 
+def grid_fitness_per_theme(
+    returns: np.ndarray, names: list[str], display: dict[str, str],
+    arch_results: list[dict[str, object]], min_samples: int = 100,
+) -> dict[str, object]:
+    """每主题网格适配度复合分: 波动率(0.40) + 均值回归Hurst(0.35) + ARCH持续(0.25).
+
+    三维度跨主题 percentile rank 归一化后加权. Hurst/min_samples 不足的主题计入 skipped.
+    verdict: suitable(≥0.65)/marginal(0.40-0.65)/unsuitable(<0.40); Hurst>0.55 强制降 marginal.
+    """
+    arch_p = {str(e["theme_id"]): float(e["r2_lb_p"]) for e in arch_results}
+    weights = {"vol": 0.40, "mean_reversion": 0.35, "arch": 0.25}
+    raw: list[dict[str, object]] = []
+    for j in range(returns.shape[1]):
+        col = returns[:, j]
+        valid = col[np.isfinite(col)]
+        n = int(len(valid))
+        tid = names[j]
+        if n < min_samples:
+            continue
+        vol = annualized_volatility(col)
+        h = hurst_exponent(col)
+        p = arch_p.get(tid)
+        if vol is None or h is None or p is None:
+            continue
+        nlp = float(-np.log10(p)) if 0.0 < p < 1.0 else 0.0
+        raw.append({
+            "theme_id": tid, "name": display.get(tid, tid), "n": n,
+            "ann_vol": float(vol), "hurst": float(h),
+            "arch_neg_log10p": nlp, "mr_signal": max(0.0, 0.5 - float(h)),
+        })
+    skipped = int(returns.shape[1]) - len(raw)
+    if not raw:
+        return {"themes": [], "summary": {"tested": 0, "skipped": skipped,
+                "suitable_count": 0, "median_score": 0.0}, "weights": weights}
+    vols = [float(r["ann_vol"]) for r in raw]
+    mrs = [float(r["mr_signal"]) for r in raw]
+    archs = [float(r["arch_neg_log10p"]) for r in raw]
+    themed: list[dict[str, object]] = []
+    for r in raw:
+        pct_vol = percentile_rank(vols, float(r["ann_vol"]))
+        pct_mr = percentile_rank(mrs, float(r["mr_signal"]))
+        pct_arch = percentile_rank(archs, float(r["arch_neg_log10p"]))
+        score = 0.40 * pct_vol + 0.35 * pct_mr + 0.25 * pct_arch
+        h = float(r["hurst"])
+        if h > 0.55:
+            verdict = "marginal"
+        elif score >= 0.65:
+            verdict = "suitable"
+        elif score >= 0.40:
+            verdict = "marginal"
+        else:
+            verdict = "unsuitable"
+        themed.append({
+            "theme_id": r["theme_id"], "name": r["name"], "n": r["n"],
+            "ann_vol": round(float(r["ann_vol"]), 4), "hurst": round(h, 3),
+            "arch_neg_log10p": round(float(r["arch_neg_log10p"]), 2),
+            "pct_vol": round(pct_vol, 3), "pct_mean_reversion": round(pct_mr, 3),
+            "pct_arch": round(pct_arch, 3), "grid_score": round(score, 3),
+            "verdict": verdict,
+        })
+    themed.sort(key=lambda e: float(e["grid_score"]), reverse=True)
+    scores = [float(e["grid_score"]) for e in themed]
+    return {
+        "themes": themed,
+        "summary": {
+            "tested": len(themed), "skipped": skipped,
+            "suitable_count": sum(1 for e in themed if e["verdict"] == "suitable"),
+            "median_score": round(float(np.median(scores)), 3),
+        },
+        "weights": weights,
+    }
+
+
 def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
     dates, names, display, strength, returns = load_matrices(data_root)
     ic_horizon = ic_by_horizon(strength, returns)
@@ -61,6 +137,8 @@ def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
     for e in arch:
         e["name"] = display.get(str(e["theme_id"]), str(e["theme_id"]))
     arch_sorted = sorted(arch, key=lambda e: float(e["r2_lb_p"]))
+    # 网格适配度复合分 (波动率 + Hurst 均值回归 + ARCH 持续), 跨主题 percentile rank 加权
+    grid = grid_fitness_per_theme(returns, names, display, arch)
     # 全主题 r² ACF 衰减 (前端默认显示 is_arch=true + toggle 其余)
     idx = {n: i for i, n in enumerate(names)}
     rep_acf: dict[str, list[float]] = {}
@@ -103,6 +181,7 @@ def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
             "representative_acf": rep_acf,
             "time_series": arch_ts,
         },
+        "grid_fitness": grid,
     }
 
 

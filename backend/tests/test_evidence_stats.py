@@ -5,10 +5,13 @@ import numpy as np
 
 from src.evidence.stats_utils import (
     acf,
+    annualized_volatility,
     arch_per_theme,
     forward_cum,
+    hurst_exponent,
     ic_by_horizon,
     ljung_box,
+    percentile_rank,
     rolling_ic_multi,
 )
 
@@ -106,3 +109,62 @@ def test_arch_per_theme_skips_short_series():
     rng = np.random.default_rng(1)
     short = rng.normal(scale=0.1, size=(30, 2))  # 30 < 40
     assert arch_per_theme(short, ["a", "b"]) == []
+
+
+def test_hurst_mean_reverting_below_05():
+    """AR(1) phi=-0.5 强均值回归 -> H<0.5 (网格友好)."""
+    rng = np.random.default_rng(42)
+    n = 600
+    e = rng.normal(scale=0.01, size=n)
+    x = np.zeros(n)
+    for t in range(1, n):
+        x[t] = -0.5 * x[t - 1] + e[t]
+    h = hurst_exponent(x)
+    assert h is not None
+    assert h < 0.5
+
+
+def test_hurst_trending_above_05():
+    """带漂移累积随机游走 -> 趋势 -> H>0.5 (网格危险)."""
+    rng = np.random.default_rng(7)
+    x = np.cumsum(rng.normal(loc=0.05, scale=0.1, size=600))
+    h = hurst_exponent(x)
+    assert h is not None
+    assert h > 0.5
+
+
+def test_hurst_white_noise_near_05():
+    """纯白噪 -> H≈0.5."""
+    rng = np.random.default_rng(0)
+    h = hurst_exponent(rng.normal(size=500))
+    assert h is not None
+    assert 0.4 < h < 0.6
+
+
+def test_hurst_short_series_returns_none():
+    assert hurst_exponent(np.random.default_rng(0).normal(size=50)) is None
+
+
+def test_annualized_volatility_known_range():
+    """scale=0.01 日收益 -> 年化 ≈ 0.01×sqrt(252) ≈ 0.159."""
+    rng = np.random.default_rng(0)
+    vol = annualized_volatility(rng.normal(scale=0.01, size=1000))
+    assert vol is not None
+    assert 0.14 < vol < 0.18
+
+
+def test_annualized_volatility_skips_nan():
+    x = np.array([0.01, np.nan, -0.01, 0.02, np.nan, -0.02])
+    vol = annualized_volatility(x)
+    assert vol is not None
+    valid = np.array([0.01, -0.01, 0.02, -0.02])
+    assert abs(vol - float(np.std(valid, ddof=1) * np.sqrt(252))) < 1e-9
+
+
+def test_percentile_rank_basic():
+    """percentileofscore mean 法: 最小0.1 / 中位0.5 / 最大0.9."""
+    vals = [1.0, 2.0, 3.0, 4.0, 5.0]
+    assert abs(percentile_rank(vals, 1.0) - 0.1) < 1e-9
+    assert abs(percentile_rank(vals, 3.0) - 0.5) < 1e-9
+    assert abs(percentile_rank(vals, 5.0) - 0.9) < 1e-9
+    assert percentile_rank([], 1.0) == 0.0

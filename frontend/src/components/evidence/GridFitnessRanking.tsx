@@ -16,6 +16,7 @@ const VERDICT_COLOR: Record<string, string> = {
 
 export interface GridRow {
   name: string; score: number; vol: number; hurst: number; verdict: string;
+  ret60: number | null; ret120: number | null; trendRegime: string | null;
 }
 
 /** 主题 → 网格排名行 (grid_score 降序 + verdict 缺省兜底). 模块级纯函数便于直接测试. */
@@ -23,15 +24,49 @@ export function buildGridData(themes: GridFitnessTheme[]): GridRow[] {
   const data: GridRow[] = [];
   for (const t of themes) {
     const verdict = t.verdict ?? 'marginal';
-    const name = t.name ?? t.theme_id;
+    const base = t.name ?? t.theme_id;
+    // 趋势护栏降级主题加 ⚠ 前缀, 一眼可见 (tooltip 展示近期涨跌详情)
+    const name = t.trend_regime ? `⚠ ${base}` : base;
     const score = t.grid_score ?? 0;
     const vol = t.ann_vol ?? 0;
     const hurst = t.hurst ?? 0.5;
-    data.push({ name, score, vol, hurst, verdict });
+    data.push({
+      name, score, vol, hurst, verdict,
+      ret60: t.ret_60d ?? null, ret120: t.ret_120d ?? null,
+      trendRegime: t.trend_regime ?? null,
+    });
   }
   data.sort((a, b) => b.score - a.score);
   return data;
 }
+
+const TREND_WARN: Record<string, string> = {
+  down: '近期单边下跌：网格接飞刀有套牢风险，已强制降级',
+  up: '近期单边上涨：网格会踏空，已强制降级',
+};
+
+const fmtPct = (v: number | null) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
+
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: GridRow }>;
+}
+
+/** 排名条 hover 详情: 复合分 + 子维度 + 近期涨跌与趋势护栏警示. */
+export const GridTooltip = ({ active, payload }: TooltipProps) => {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="rounded-md border border-gray-200 bg-white/95 px-3 py-2 text-xs shadow-md">
+      <p className="font-medium text-gray-800">{d.name}</p>
+      <p className="text-gray-600">复合分 {d.score.toFixed(3)} · 年化波动 {(d.vol * 100).toFixed(1)}% · Hurst {d.hurst.toFixed(3)}</p>
+      <p className="text-gray-500">近60日 {fmtPct(d.ret60)} · 近120日 {fmtPct(d.ret120)}</p>
+      {d.trendRegime && (
+        <p className="mt-1 text-red-600">⚠ {TREND_WARN[d.trendRegime] ?? '近期强趋势，已强制降级'}</p>
+      )}
+    </div>
+  );
+};
 
 export interface TickProps { x: number | string; y: number | string; payload: { value?: string } }
 // recharts vertical interval=0 默认 tick 渲染有 bug, 自定义确保行业名全显
@@ -55,7 +90,7 @@ export const GridFitnessRanking = ({ themes }: Props) => {
         <>
           <p>横条 = 主题网格适配度复合分（0–1，越高越适合网格）。<strong>绿 = 适合</strong>（≥0.65），琥珀 = 中性（0.40–0.65），灰 = 不适合（&lt;0.40）。</p>
           <p><strong>三维度</strong>（跨主题百分位加权）：① <strong>波动率</strong>（年化 σ，利润空间，0.40）② <strong>均值回归</strong>（Hurst H&lt;0.5 震荡/网格友好，H&gt;0.5 趋势/危险，0.35）③ <strong>ARCH 持续</strong>（波动不衰减，0.25）。</p>
-          <p><strong>⚠ 边界</strong>：Hurst&gt;0.55（强趋势）无论分数强制降为中性——趋势主题网格必亏。这是统计信号<strong>非保证盈利</strong>，需结合当前价位区间、ETF 流动性与趋势实判。</p>
+          <p><strong>⚠ 边界</strong>：Hurst&gt;0.55（强趋势）或近 60/120 日累计涨跌超 ±10%/±15%（单边 regime）无论分数强制降为中性——单边下跌套牢、单边上涨踏空。名字带 ⚠ 即触发趋势护栏，hover 看详情。这是统计信号<strong>非保证盈利</strong>，需结合当前价位区间、ETF 流动性与趋势实判。</p>
           <p>用法：优选绿色主题做网格标的；避免灰/趋势主题。适合网格 ≠ 必赚，需配合网格参数（间距/层数）与风控。</p>
         </>
       }
@@ -64,7 +99,7 @@ export const GridFitnessRanking = ({ themes }: Props) => {
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
           <XAxis type="number" domain={[0, 1]} tick={{ fontSize: 10 }} />
           <YAxis type="category" dataKey="name" tick={renderNameTick} width={80} interval={0} />
-          <Tooltip />
+          <Tooltip content={<GridTooltip />} />
           <ReferenceLine x={0.65} stroke="#059669" strokeDasharray="4 4" />
           <ReferenceLine x={0.4} stroke="#d97706" strokeDasharray="4 4" />
           <Bar dataKey="score" radius={[0, 2, 2, 0]}>

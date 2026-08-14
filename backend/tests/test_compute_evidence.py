@@ -5,7 +5,8 @@ import json
 
 import numpy as np
 
-from scripts.compute_evidence import compute_evidence
+from scripts.compute_evidence import TREND_LIMIT_120, compute_evidence, grid_fitness_per_theme
+from src.evidence.stats_utils import arch_per_theme
 
 
 def _make_themes(rng: np.random.Generator, n_themes: int = 8) -> list[dict[str, object]]:
@@ -112,6 +113,7 @@ def test_grid_fitness_sorted_and_verdicts(tmp_path):
     scores = [float(t["grid_score"]) for t in themes]
     assert scores == sorted(scores, reverse=True)  # 降序
     expected_fields = {"theme_id", "name", "n", "ann_vol", "hurst", "arch_neg_log10p",
+                       "ret_60d", "ret_120d", "trend_regime",
                        "pct_vol", "pct_mean_reversion", "pct_arch", "grid_score", "verdict"}
     for t in themes:
         assert expected_fields <= set(t)
@@ -119,3 +121,47 @@ def test_grid_fitness_sorted_and_verdicts(tmp_path):
     assert grid["summary"]["tested"] == 8
     assert grid["summary"]["suitable_count"] == sum(
         1 for t in themes if t["verdict"] == "suitable")
+
+
+def test_trend_regime_detection():
+    """趋势护栏阈值判定: 对称阈值, 60/120 双窗口, None 透传."""
+    from scripts.compute_evidence import trend_regime
+    assert trend_regime(None, None) is None            # 数据不足 -> 震荡
+    assert trend_regime(0.05, -0.08) is None           # 双窗口均未超限
+    assert trend_regime(-0.11, None) == "down"         # 60日超限
+    assert trend_regime(0.10, None) == "up"            # 恰好达阈值 (>=)
+    assert trend_regime(0.03, -0.15) == "down"         # 120日超限
+    assert trend_regime(0.02, 0.20) == "up"
+
+
+def test_recent_cum_return_windows():
+    from scripts.compute_evidence import recent_cum_return
+    col = np.full(150, 0.01)
+    assert abs(recent_cum_return(col, 60) - (1.01 ** 60 - 1)) < 1e-9
+    assert abs(recent_cum_return(col, 120) - (1.01 ** 120 - 1)) < 1e-9
+    assert recent_cum_return(np.full(59, 0.01)) is None       # 有效值 <60 -> None
+    assert recent_cum_return(np.array([np.nan] * 50)) is None  # 全 nan -> None
+
+
+def test_grid_fitness_trend_guard_forces_marginal():
+    """单边下跌主题: 即使复合分高 (高波动), 趋势护栏强制降 marginal (中概互联实证场景)."""
+    rng = np.random.default_rng(7)
+    n_days = 150
+    # 7 个小波动震荡主题 (σ=0.5%, 120日随机漂移 std≈5.5%, 不触 15% 阈值)
+    # + 1 个尾部单边下跌主题 (-0.25%/日, 120日累计约 -26%)
+    cols = [rng.normal(scale=0.005, size=n_days) for _ in range(7)]
+    decliner = rng.normal(scale=0.015, size=n_days)
+    decliner[-120:] -= 0.0025
+    cols.append(decliner)
+    returns = np.column_stack(cols)
+    names = [f"t{i}" for i in range(8)]
+    display = {n: f"主题{i}" for i, n in enumerate(names)}
+    arch = arch_per_theme(returns, names)
+    grid = grid_fitness_per_theme(returns, names, display, arch)
+    themed = {t["theme_id"]: t for t in grid["themes"]}
+    d = themed["t7"]
+    assert d["trend_regime"] == "down"
+    assert d["ret_120d"] <= -TREND_LIMIT_120
+    assert d["verdict"] == "marginal"  # 无论分数, 强制降级
+    for i in range(7):  # 随机震荡主题不触发
+        assert themed[f"t{i}"]["trend_regime"] is None

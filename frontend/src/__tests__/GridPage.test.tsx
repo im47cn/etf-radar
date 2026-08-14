@@ -47,6 +47,23 @@ describe('GridPage', () => {
   it('渲染标题与 summary (data 分支)', () => {
     renderPage();
     expect(screen.getByText(/网格选标/)).toBeInTheDocument();
+    expect(screen.queryByText(/单边趋势/)).toBeNull(); // 非趋势市无提示
+  });
+
+  it('过半主题触发趋势护栏时显示市场级趋势提示', () => {
+    renderPage({ data: {
+      grid_fitness: {
+        themes: [
+          { theme_id: 'a', name: '中概', grid_score: 0.8, verdict: 'marginal', trend_regime: 'down' },
+          { theme_id: 'b', name: '煤炭', grid_score: 0.7, verdict: 'suitable', trend_regime: null },
+          { theme_id: 'c', name: '券商', grid_score: 0.5, verdict: 'marginal', trend_regime: 'up' },
+        ],
+        summary: { tested: 3, skipped: 0, suitable_count: 1, median_score: 0.7 },
+        weights: { vol: 0.4, mean_reversion: 0.35, arch: 0.25 },
+      },
+    } });
+    expect(screen.getByText(/2\/3 个主题处于单边趋势/)).toBeInTheDocument();
+    expect(screen.getByText(/网格机会稀缺/)).toBeInTheDocument();
   });
 
   it('加载中显示骨架 (loading 分支)', () => {

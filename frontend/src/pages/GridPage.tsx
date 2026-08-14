@@ -15,6 +15,7 @@ const GRID_HELP: HelpSection[] = [
       <p key="score">
         <strong>网格适配度复合分</strong> = 波动率(0.40) + 均值回归Hurst(0.35) + ARCH持续(0.25)，
         跨主题百分位加权。绿=suitable(≥0.65)，琥珀=marginal(0.40–0.65)，灰=unsuitable。
+        名字带 <strong>⚠</strong> = 近期单边趋势（近60日涨跌超 ±10% 或近120日超 ±15%），hover 看近期涨跌详情。
       </p>,
     ],
   },
@@ -22,7 +23,8 @@ const GRID_HELP: HelpSection[] = [
     title: '⚠ 风险与边界',
     children: [
       <p key="risk">
-        <strong>趋势是网格天敌</strong>：Hurst&gt;0.55 无论分数强制降为中性——单边上涨踏空、单边下跌套牢。
+        <strong>趋势是网格天敌</strong>：Hurst&gt;0.55 或近 60/120 日累计涨跌超 ±10%/±15%（单边 regime）
+        无论分数强制降为中性——单边上涨踏空、单边下跌套牢。高波动分可能来自暴跌本身，护栏兜底。
         统计信号<strong>非保证盈利</strong>，需结合当前价位区间、ETF 流动性、趋势实判。
       </p>,
       <p key="notdir">
@@ -45,6 +47,10 @@ const GridContent = () => {
   if (error || !data) return <div className="p-8 text-center text-gray-400">暂无网格适配度数据</div>;
 
   const g = data.grid_fitness;
+  const themes = g?.themes ?? [];
+  // 市场级趋势 regime 提示: 过半主题触发趋势护栏时, 网格机会稀缺是市场状态而非数据异常
+  const trendCount = themes.filter((t) => t.trend_regime).length;
+  const isTrendRegime = themes.length > 0 && trendCount / themes.length >= 0.5;
   const summary = g
     ? ` · tested ${g.summary.tested} / suitable ${g.summary.suitable_count} / median ${g.summary.median_score}`
     : '';
@@ -59,6 +65,17 @@ const GridContent = () => {
         </div>
         <PageHelp title="网格选标" sections={GRID_HELP} />
       </div>
+
+      {isTrendRegime && (
+        <p
+          className="animate-fade-rise rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700"
+          style={{ animationDelay: '60ms' }}
+          role="status"
+        >
+          ⚠ 当前 {trendCount}/{themes.length} 个主题处于单边趋势（近60日涨跌超 ±10% 或近120日超 ±15%），
+          已强制降级为中性——趋势市网格机会稀缺，谨慎开新网格。
+        </p>
+      )}
 
       <div className="animate-fade-rise" style={{ animationDelay: '120ms' }}>
         <GridFitnessRanking themes={g?.themes ?? []} />

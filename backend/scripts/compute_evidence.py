@@ -13,6 +13,7 @@ import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 
@@ -56,6 +57,34 @@ def load_matrices(
     return dates, names, display, strength, returns
 
 
+# 趋势护栏阈值: 近 60/120 交易日累计涨跌幅 (对称) 任一超限即判定强趋势 regime.
+# 全样本 Hurst 是 5 年均值, 对近期单边钝感 (实证: 中概互联 ytd -28% 但 H=0.498 未触发护栏).
+TREND_LIMIT_60 = 0.10
+TREND_LIMIT_120 = 0.15
+
+
+def _round_opt(v: float | None, nd: int = 4) -> float | None:
+    """可选浮点四舍五入, None 透传."""
+    return None if v is None else round(v, nd)
+
+
+def recent_cum_return(col: np.ndarray, window: int = 120, min_tail: int = 60) -> float | None:
+    """尾部 window 日累计收益 (几何累乘). 有效值 <min_tail 返回 None."""
+    valid = col[np.isfinite(col)]
+    if len(valid) < min_tail:
+        return None
+    tail = valid[-window:]
+    return float(np.prod(1.0 + tail) - 1.0)
+
+
+def trend_regime(ret_60: float | None, ret_120: float | None) -> str | None:
+    """近期强趋势判定: |r_60d|≥10% 或 |r_120d|≥15% -> 'down'/'up', 否则 None (震荡)."""
+    for r, lim in ((ret_60, TREND_LIMIT_60), (ret_120, TREND_LIMIT_120)):
+        if r is not None and abs(r) >= lim:
+            return "down" if r < 0 else "up"
+    return None
+
+
 def grid_fitness_per_theme(
     returns: np.ndarray, names: list[str], display: dict[str, str],
     arch_results: list[dict[str, object]], min_samples: int = 100,
@@ -63,7 +92,8 @@ def grid_fitness_per_theme(
     """每主题网格适配度复合分: 波动率(0.40) + 均值回归Hurst(0.35) + ARCH持续(0.25).
 
     三维度跨主题 percentile rank 归一化后加权. Hurst/min_samples 不足的主题计入 skipped.
-    verdict: suitable(≥0.65)/marginal(0.40-0.65)/unsuitable(<0.40); Hurst>0.55 强制降 marginal.
+    verdict: suitable(≥0.65)/marginal(0.40-0.65)/unsuitable(<0.40);
+    Hurst>0.55 或近期强趋势 (trend_regime) 强制降 marginal.
     """
     arch_p = {str(e["theme_id"]): float(e["r2_lb_p"]) for e in arch_results}
     weights = {"vol": 0.40, "mean_reversion": 0.35, "arch": 0.25}
@@ -80,11 +110,14 @@ def grid_fitness_per_theme(
         p = arch_p.get(tid)
         if vol is None or h is None or p is None:
             continue
+        r60 = recent_cum_return(col, window=60)
+        r120 = recent_cum_return(col, window=120)
         nlp = float(-np.log10(p)) if 0.0 < p < 1.0 else 0.0
         raw.append({
             "theme_id": tid, "name": display.get(tid, tid), "n": n,
             "ann_vol": float(vol), "hurst": float(h),
             "arch_neg_log10p": nlp, "mr_signal": max(0.0, 0.5 - float(h)),
+            "ret_60d": r60, "ret_120d": r120, "trend": trend_regime(r60, r120),
         })
     skipped = int(returns.shape[1]) - len(raw)
     if not raw:
@@ -100,7 +133,8 @@ def grid_fitness_per_theme(
         pct_arch = percentile_rank(archs, float(r["arch_neg_log10p"]))
         score = 0.40 * pct_vol + 0.35 * pct_mr + 0.25 * pct_arch
         h = float(r["hurst"])
-        if h > 0.55:
+        trend = r["trend"]
+        if h > 0.55 or trend is not None:
             verdict = "marginal"
         elif score >= 0.65:
             verdict = "suitable"
@@ -112,6 +146,9 @@ def grid_fitness_per_theme(
             "theme_id": r["theme_id"], "name": r["name"], "n": r["n"],
             "ann_vol": round(float(r["ann_vol"]), 4), "hurst": round(h, 3),
             "arch_neg_log10p": round(float(r["arch_neg_log10p"]), 2),
+            "ret_60d": _round_opt(cast("float | None", r["ret_60d"])),
+            "ret_120d": _round_opt(cast("float | None", r["ret_120d"])),
+            "trend_regime": trend,
             "pct_vol": round(pct_vol, 3), "pct_mean_reversion": round(pct_mr, 3),
             "pct_arch": round(pct_arch, 3), "grid_score": round(score, 3),
             "verdict": verdict,

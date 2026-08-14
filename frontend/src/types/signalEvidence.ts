@@ -43,6 +43,10 @@ export const GridFitnessThemeSchema = z.object({
   ann_vol: num(),
   hurst: num(),
   arch_neg_log10p: num(),
+  // 趋势护栏: 近 60/120 日累计收益 + regime 判定 ('down'/'up'/null=震荡)
+  ret_60d: num(),
+  ret_120d: num(),
+  trend_regime: z.string().nullish().transform((v) => v ?? null),
   pct_vol: num(),
   pct_mean_reversion: num(),
   pct_arch: num(),

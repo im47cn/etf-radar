@@ -46,6 +46,10 @@ jobs:
           VITE_AFDIAN_MONTHLY_URL: ${{ vars.AFDIAN_MONTHLY_URL }}
           VITE_AFDIAN_YEARLY_URL: ${{ vars.AFDIAN_YEARLY_URL }}
         run: |
+          # backend-only 大文件不进构建产物 (publicDir 平铺 ../data 全量):
+          # stocks/history 297MB 归档 + close/volume series 13MB 前端均不消费
+          rm -rf ../data/stocks/history
+          rm -f ../data/stocks/close_series.json ../data/stocks/volume_series.json
           cd frontend
           npm run build
       - name: Upload artifact

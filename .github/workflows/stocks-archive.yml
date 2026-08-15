@@ -4,9 +4,12 @@ name: stocks-archive
 # - 月度 cron: --years-only-current 只刷新当年分片, 往年文件写定后不再改写 (零 churn)
 # - 手动 dispatch 全量模式: 首次 5 年灌数据 / 重建往年分片时用
 # 新浪接口固定返回全历史, 请求量与 150 日 backfill 相同 (8 并发 ~11-25min).
+# 不设 schedule: CI runner 是海外 IP, 新浪吞吐限速下全量拉取 >60min 反复超时/被杀
+# (2026-08-15 实测两次失败); 本地单线程 (国内 IP + 规避 macOS arm64 PyMiniRacer
+# 多线程崩溃) 57min 0 失败跑完 1990-2026 全量. 归档维护走本地:
+#   cd backend && uv run python -m src.stocks_history_pipeline --data-root ../data \
+#     --archive [--years-only-current] --max-workers 1
 on:
-  schedule:
-    - cron: '23 18 8 * *'   # 每月 8 日 UTC 18:23 (BJT 次日 02:23, 避开整点)
   workflow_dispatch:
     inputs:
       max_workers:

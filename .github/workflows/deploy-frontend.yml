@@ -12,6 +12,8 @@ on:
       - 'data/stocks/**'
       - '!data/stocks/close_series.json'
       - '!data/stocks/volume_series.json'
+      # history/ 是 5 年研究归档（按年分片 ~9MB/年），backend-only，同样排除
+      - '!data/stocks/history/**'
   workflow_dispatch:
 
 permissions:

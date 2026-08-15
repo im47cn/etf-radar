@@ -1,0 +1,58 @@
+name: stocks-archive
+
+# 个股 5 年收盘价按年分片归档 (data/stocks/history/close_YYYY.json, 研究用).
+# - 月度 cron: --years-only-current 只刷新当年分片, 往年文件写定后不再改写 (零 churn)
+# - 手动 dispatch 全量模式: 首次 5 年灌数据 / 重建往年分片时用
+# 新浪接口固定返回全历史, 请求量与 150 日 backfill 相同 (8 并发 ~11-25min).
+on:
+  schedule:
+    - cron: '23 18 8 * *'   # 每月 8 日 UTC 18:23 (BJT 次日 02:23, 避开整点)
+  workflow_dispatch:
+    inputs:
+      max_workers:
+        description: 'akshare 并发数（默认 8，与 stocks-history-backfill 同口径）'
+        default: '8'
+        required: true
+      full:
+        description: '全量模式：重写所有年份分片（首次灌数/重建用；月度 cron 不带）'
+        default: 'false'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stocks-archive
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60   # 8 并发 ~11-25min; 60min 作限流退化兜底
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.DATA_BOT_PAT }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Install uv
+        run: pip install uv
+      - name: Install deps
+        run: cd backend && uv sync --all-extras --frozen
+      - name: Run archive
+        run: |
+          cd backend && uv run python -m src.stocks_history_pipeline \
+            --data-root ../data \
+            --archive \
+            --max-workers ${{ inputs.max_workers || '8' }} \
+            ${{ (inputs.full == 'true') && '' || '--years-only-current' }}
+      - name: Compute commit metadata
+        id: meta
+        run: echo "ts=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
+      - name: Commit & push
+        uses: ./.github/actions/commit-and-push
+        with:
+          paths: data/stocks/history/
+          message: "data: stocks archive ${{ steps.meta.outputs.ts }}"
+          user-name: data-bot
+          user-email: data-bot@users.noreply.github.com

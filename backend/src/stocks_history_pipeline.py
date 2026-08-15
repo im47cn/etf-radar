@@ -2,12 +2,15 @@
 
 入口:
   python -m src.stocks_history_pipeline [--days 150] [--max-workers 4]
+  python -m src.stocks_history_pipeline --archive [--years-only-current]  5 年按年分片归档
 
 写入:
-  data/stocks/close_series.json        全市场收盘价矩阵
+  data/stocks/close_series.json        全市场收盘价矩阵 (150 日滚动, 生产消费)
   data/stocks/volume_series.json       全市场成交量矩阵
   data/stocks/ohlc/{code}.json         holdings 涉及个股 60 日 OHLC
   data/stocks/index.json               索引（含 ohlc_codes / last_trade_date）
+  data/stocks/history/close_YYYY.json  5 年收盘价按年分片 (--archive; 研究用,
+                                       前端 Pages 部署排除; volume 无长历史需求不归档)
 
 注意：
 - close_series / volume_series 包含全市场（~5000 只）用于 daily pipeline 算强度
@@ -47,6 +50,13 @@ class BackfillReport:
     def success_count(self) -> int: return len(self.success)
     @property
     def failed_count(self) -> int: return len(self.failed)
+
+
+@dataclass
+class YearShard:
+    """单年分片: 该年交易日 + 每股收盘价 (与 dates 等长对齐, 缺失日 None)."""
+    dates: list[date]
+    closes: dict[str, list[float | None]]
 
 
 _SINA_PREFIX_RE = r'^(sh|sz|bj)'
@@ -119,21 +129,13 @@ def _guard_no_regress(
     return (new_date_strs + tail)[-days:], merged
 
 
-def run_history_backfill(
-    holdings_dir: Path,
-    out_dir: Path,
-    days: int = 75,
-    max_workers: int = 4,
-) -> BackfillReport:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    ohlc_dir = out_dir / 'ohlc'
-    ohlc_dir.mkdir(exist_ok=True)
-
-    holdings_codes = _read_holdings_codes(holdings_dir)
-    universe = _fetch_universe()
-    log.info(f'universe={len(universe)} holdings_codes={len(holdings_codes)}')
-
-    provider = StockHistoryProvider()
+def _fetch_history_matrix(
+    universe: list[str],
+    provider: StockHistoryProvider,
+    days: int,
+    max_workers: int,
+) -> tuple[dict[str, list[StockOhlcBar]], BackfillReport]:
+    """并发拉 universe 全量历史 K 线, 单只失败隔离不阻断."""
     report = BackfillReport()
     results: dict[str, list[StockOhlcBar]] = {}
 
@@ -156,6 +158,89 @@ def run_history_backfill(
                 continue
             results[code] = bars
             report.success.append(code)
+    return results, report
+
+
+def slice_bars_by_year(results: dict[str, list[StockOhlcBar]]) -> dict[int, YearShard]:
+    """按 bar 日的日历年切分收盘价矩阵; 缺失日 None 对齐 (与主流程同法)."""
+    shards: dict[int, YearShard] = {}
+    for code, bars in results.items():
+        for b in bars:
+            shards.setdefault(b.date.year, YearShard(dates=[], closes={}))
+    for year, shard in shards.items():
+        shard_dates = sorted({b.date for bars in results.values() for b in bars
+                              if b.date.year == year})
+        shard.dates = shard_dates
+        date_idx = {d: i for i, d in enumerate(shard_dates)}
+        for code, bars in results.items():
+            closes: list[float | None] = [None] * len(shard_dates)
+            for b in bars:
+                if b.date.year == year and b.date in date_idx:
+                    closes[date_idx[b.date]] = b.c
+            shard.closes[code] = closes
+    return shards
+
+
+def run_archive_backfill(
+    out_dir: Path,
+    max_workers: int = 4,
+    years_only_current: bool = False,
+    today: date | None = None,
+) -> BackfillReport:
+    """5 年收盘价按年分片归档到 history/close_YYYY.json (研究用, 生产零接触).
+
+    - years_only_current=True (月度 cron): 只写当年分片, 往年文件不 touch
+      (git blob 不变, 零 churn).
+    - 当年分片写前过 _guard_no_regress 防 daily 已 append 的最新格回退.
+    """
+    hist_dir = out_dir / 'history'
+    hist_dir.mkdir(parents=True, exist_ok=True)
+    current_year = (today or datetime.now(UTC).date()).year
+
+    universe = _fetch_universe()
+    log.info(f'archive universe={len(universe)}')
+    # 新浪接口固定返回全历史; days 给超大值即不截尾
+    results, report = _fetch_history_matrix(
+        universe, StockHistoryProvider(), days=100_000, max_workers=max_workers)
+    if not results:
+        return report
+
+    now = datetime.now(UTC).replace(microsecond=0).isoformat()
+    for year, shard in sorted(slice_bars_by_year(results).items()):
+        if years_only_current and year != current_year:
+            continue
+        if not shard.dates:
+            continue
+        path = hist_dir / f'close_{year}.json'
+        date_strs, closes = _guard_no_regress(
+            path, shard.dates, shard.closes, days=len(shard.dates))
+        path.write_text(json.dumps({
+            'schema_version': '1.0',
+            'generated_at': now,
+            'year': str(year),
+            'dates': date_strs,
+            'stocks': closes,
+        }, ensure_ascii=False))
+        log.info(f'archive close_{year}.json: dates={len(date_strs)} codes={len(closes)}')
+    return report
+
+
+def run_history_backfill(
+    holdings_dir: Path,
+    out_dir: Path,
+    days: int = 75,
+    max_workers: int = 4,
+) -> BackfillReport:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    ohlc_dir = out_dir / 'ohlc'
+    ohlc_dir.mkdir(exist_ok=True)
+
+    holdings_codes = _read_holdings_codes(holdings_dir)
+    universe = _fetch_universe()
+    log.info(f'universe={len(universe)} holdings_codes={len(holdings_codes)}')
+
+    results, report = _fetch_history_matrix(
+        universe, StockHistoryProvider(), days=days, max_workers=max_workers)
 
     # 收集所有出现过的日期（按出现顺序集中）
     all_dates = sorted({b.date for bars in results.values() for b in bars})
@@ -225,9 +310,20 @@ def main() -> None:
     parser.add_argument('--data-root', type=Path, default=Path('data'))
     parser.add_argument('--days', type=int, default=150)  # 150 交易日: 给 MA120 宽度留 ~30 日序列 buffer
     parser.add_argument('--max-workers', type=int, default=4)
+    parser.add_argument('--archive', action='store_true',
+                        help='5 年收盘价按年分片归档到 history/ (研究用)')
+    parser.add_argument('--years-only-current', action='store_true',
+                        help='配合 --archive: 只刷新当年分片 (月度 cron 模式)')
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s %(levelname)s %(name)s: %(message)s')
+    if args.archive:
+        run_archive_backfill(
+            out_dir=args.data_root / 'stocks',
+            max_workers=args.max_workers,
+            years_only_current=args.years_only_current,
+        )
+        return
     run_history_backfill(
         holdings_dir=args.data_root / 'holdings',
         out_dir=args.data_root / 'stocks',

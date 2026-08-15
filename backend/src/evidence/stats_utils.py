@@ -1,4 +1,4 @@
-"""信号证据统计工具: ACF/PACF/Ljung-Box/IC/ARCH 纯计算.
+"""信号证据统计工具: ACF/PACF/Ljung-Box/IC/ARCH/GARCH 纯计算.
 
 从 scripts/research/ 抽出的生产级实现, mypy strict. 纯函数无 IO.
 IC = 横截面 spearman(strength[t], forward_return[t]); ARCH = r² 的 Ljung-Box.
@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.optimize import minimize  # type: ignore[import-untyped]
 from scipy.stats import chi2, percentileofscore, spearmanr  # type: ignore[import-untyped]
 
 
@@ -205,3 +206,64 @@ def percentile_rank(values: list[float], target: float) -> float:
     if not values:
         return 0.0
     return float(percentileofscore(values, target, kind="mean") / 100.0)
+
+
+# ---- GARCH(1,1) 前瞻波动率 ----
+# 可行性已验证 (scripts/research/garch_grid_feasibility.py, 预注册):
+# 60日前瞻 QLIKE 显著优于无条件基线 (p=0.0038); EWMA 不显著, 不可替代。
+_GARCH_MIN_SAMPLES = 100
+
+
+def fit_garch11(r: NDArray[np.float64]) -> tuple[float, float, float, float] | None:
+    """零均值正态 GARCH(1,1) MLE。返回 (ω, α, β, σ²_T); 拟合失败返回 None。"""
+    valid = r[np.isfinite(r)]
+    n = len(valid)
+    if n < _GARCH_MIN_SAMPLES:
+        return None
+    r2 = valid ** 2
+    var0 = float(r2.mean())
+
+    def nll(theta: NDArray[np.float64]) -> float:
+        om, al, be = (float(theta[0]), float(theta[1]), float(theta[2]))
+        if om <= 0 or al < 0 or be < 0 or al + be >= 0.999:
+            return 1e12
+        s2 = var0
+        ll = -0.5 * (np.log(2 * np.pi) + np.log(s2) + r2[0] / s2)
+        for t in range(1, n):
+            s2 = om + al * r2[t - 1] + be * s2
+            if s2 <= 0:
+                return 1e12
+            ll += -0.5 * (np.log(2 * np.pi) + np.log(s2) + r2[t] / s2)
+        return -float(ll)
+
+    # 初值: 常见 GARCH 校准 (α=0.1, β=0.85, ω=var·(1−α−β))
+    res = minimize(nll, np.array([var0 * 0.05, 0.10, 0.85]), method="L-BFGS-B",
+                   bounds=[(1e-12, None), (0.0, 0.999), (0.0, 0.999)])
+    if not res.success or float(res.fun) >= 1e11:
+        return None
+    om, al, be = (float(res.x[0]), float(res.x[1]), float(res.x[2]))
+    # 用收敛参数重算 σ²_T
+    s2 = var0
+    for t in range(1, n):
+        s2 = om + al * r2[t - 1] + be * s2
+    return om, al, be, s2
+
+
+def garch_forecast_sigma(params: tuple[float, float, float, float], horizon: int) -> float:
+    """未来 1..horizon 日 σ² 路径平均的 sqrt (σ²_{T+k}=ω+(α+β)σ²_{T+k-1})."""
+    om, al, be, s2 = params
+    total, s = 0.0, s2
+    for _ in range(horizon):
+        s = om + (al + be) * s
+        total += s
+    return float(np.sqrt(total / horizon))
+
+
+def forecast_vol_annualized(
+    r: NDArray[np.float64], horizon: int = 60, periods: int = 252,
+) -> float | None:
+    """GARCH(1,1) 前瞻 horizon 日平均日波动 × sqrt(periods) → 年化波动率。"""
+    params = fit_garch11(r)
+    if params is None:
+        return None
+    return float(garch_forecast_sigma(params, horizon) * np.sqrt(periods))

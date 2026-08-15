@@ -113,7 +113,19 @@ describe('SignalNote', () => {
   it('resonance + direction up 显示偏多与胜率提示', () => {
     render(<SignalNote signal="resonance" direction="up" />);
     expect(screen.getByText('偏多 ▲')).toBeInTheDocument();
-    expect(screen.getByText(/次日 A 股同向概率约 56%/)).toBeInTheDocument();
+    expect(screen.getByText(/数日内 A 股同向概率约 55%/)).toBeInTheDocument();
+  });
+
+  it('resonance 高置信档显示幅度分层标签', () => {
+    render(<SignalNote signal="resonance" direction="up" directionTier="high" />);
+    expect(screen.getByText('偏多 ▲（高置信）')).toBeInTheDocument();
+    expect(screen.getByText(/\|动量\|≥1% 时数日内 A 股同向概率约 57%/)).toBeInTheDocument();
+  });
+
+  it('resonance 弱信号档灰显并提示随机性', () => {
+    render(<SignalNote signal="resonance" direction="up" directionTier="low" />);
+    expect(screen.getByText('偏多 ▲（弱信号）')).toBeInTheDocument();
+    expect(screen.getByText(/同向概率≈48%（≈随机）/)).toBeInTheDocument();
   });
 
   it('resonance + direction down 显示偏空', () => {
@@ -139,5 +151,58 @@ describe('StrengthBars', () => {
     expect(screen.getByText('60')).toBeInTheDocument();
     expect(screen.getByText('80')).toBeInTheDocument();
     expect(screen.getByText('50')).toBeInTheDocument();
+  });
+});
+
+// ---- ThemeDetail 整组件: direction_tier 透传 (变更行覆盖) ----
+vi.mock('@/providers/dataContext', () => ({
+  useDataContext: () => ({
+    themes: {
+      schema_version: '1.0', generated_at: '',
+      themes: [{
+        id: 't1', name: 'T1', us_etfs: ['X'], primary_us: 'X', primary_cn: '512480',
+        tags: [], note: '',
+        returns: { r_1d: 0.01, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
+        strength: { short: 70, mid: 50, long: 50, composite: 55 },
+        rank: { short: 1, mid: 1, long: 1, composite: 1 },
+      }],
+    },
+    etfs: {
+      schema_version: '1.0', generated_at: '',
+      etfs: [{ code: '512480', market: 'CN', name: '半导体ETF',
+        returns: { r_1d: 0.02, r_5d: null, r_20d: null, r_60d: null, r_120d: null, r_ytd: null },
+        strength: { short: 60, mid: 50, long: 50, composite: 55 } }],
+    },
+    signals: {
+      schema_version: '1.0', generated_at: '',
+      theme_signals: [{
+        theme_id: 't1', signal: 'resonance', direction: 'up', direction_tier: 'high',
+        trigger_cn_etf: '512480', votes: { short: 'resonance', mid: null, long: null },
+        description: 'd',
+      }],
+      pair_signals: [],
+    },
+    meta: { schema_version: '1.0', generated_at: '', as_of: '', stale_minutes: 0 },
+    isLoading: false, error: null,
+  }),
+}));
+vi.mock('@/providers/uiStateContext', async () => {
+  const actual = await vi.importActual<typeof import('@/providers/uiStateContext')>(
+    '@/providers/uiStateContext',
+  );
+  return {
+    ...actual,
+    useUIState: () => ({
+      state: { selectedThemeId: 't1', dimension: 'composite', signalFilter: 'all', searchQuery: '' },
+      dispatch: vi.fn(),
+    }),
+  };
+});
+
+describe('ThemeDetail (整组件)', () => {
+  it('选中主题时把 direction_tier 透传给 SignalNote (高置信标注)', async () => {
+    const { ThemeDetail } = await import('@/components/ThemeDetail');
+    render(<ThemeDetail />);
+    expect(screen.getByText('偏多 ▲（高置信）')).toBeInTheDocument();
   });
 });

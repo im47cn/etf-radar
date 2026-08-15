@@ -60,7 +60,7 @@ const GridContent = () => {
         <div>
           <h1 className="text-lg font-semibold text-gray-800">网格选标</h1>
           <p className="mt-0.5 text-xs text-gray-500">
-            主题网格适配度 · 优选高波动+均值回归主题做网格 ETF{summary}
+            主题网格适配度 · 高波动+均值回归主题排序（特征适配参考，非收益预测）{summary}
           </p>
         </div>
         <PageHelp title="网格选标" sections={GRID_HELP} />

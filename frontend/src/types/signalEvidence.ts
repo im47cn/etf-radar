@@ -43,6 +43,8 @@ export const GridFitnessThemeSchema = z.object({
   ann_vol: num(),
   hurst: num(),
   arch_neg_log10p: num(),
+  // GARCH(1,1) 前瞻 60 日年化波动 (QLIKE 验证优于无条件基线); 历史缺省→null
+  vol_forecast_ann: num(),
   // 趋势护栏: 近 60/120 日累计收益 + regime 判定 ('down'/'up'/null=震荡)
   ret_60d: num(),
   ret_120d: num(),

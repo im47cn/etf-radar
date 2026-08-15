@@ -47,6 +47,9 @@ export const ThemeDetail = () => {
   );
 
   const dimLabel = DIM_LABELS[state.dimension];
+  const noteSignal = ts?.signal ?? null;
+  const noteDirection = ts?.direction ?? null;
+  const noteTier = ts?.direction_tier ?? null;
 
   return (
     <div className="bg-white border rounded p-4 space-y-4">
@@ -75,7 +78,7 @@ export const ThemeDetail = () => {
         </div>
       </div>
 
-      <SignalNote signal={ts?.signal ?? null} direction={ts?.direction ?? null} />
+      <SignalNote signal={noteSignal} direction={noteDirection} directionTier={noteTier} />
       <TagPills tags={theme.tags} />
       {theme.note && (
         <div className="bg-gray-50 text-xs text-gray-600 p-2 rounded">

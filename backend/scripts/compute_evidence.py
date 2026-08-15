@@ -22,6 +22,7 @@ from src.evidence.stats_utils import (
     acf,
     annualized_volatility,
     arch_per_theme,
+    forecast_vol_annualized,
     hurst_exponent,
     ic_by_horizon,
     percentile_rank,
@@ -113,11 +114,14 @@ def grid_fitness_per_theme(
         r60 = recent_cum_return(col, window=60)
         r120 = recent_cum_return(col, window=120)
         nlp = float(-np.log10(p)) if 0.0 < p < 1.0 else 0.0
+        # GARCH(1,1) 前瞻 60 日年化波动 (QLIKE 验证优于无条件基线, 见 stats_utils 注释)
+        fv = forecast_vol_annualized(col, horizon=60)
         raw.append({
             "theme_id": tid, "name": display.get(tid, tid), "n": n,
             "ann_vol": float(vol), "hurst": float(h),
             "arch_neg_log10p": nlp, "mr_signal": max(0.0, 0.5 - float(h)),
             "ret_60d": r60, "ret_120d": r120, "trend": trend_regime(r60, r120),
+            "vol_forecast": fv,
         })
     skipped = int(returns.shape[1]) - len(raw)
     if not raw:
@@ -145,6 +149,7 @@ def grid_fitness_per_theme(
         themed.append({
             "theme_id": r["theme_id"], "name": r["name"], "n": r["n"],
             "ann_vol": round(float(r["ann_vol"]), 4), "hurst": round(h, 3),
+            "vol_forecast_ann": _round_opt(cast("float | None", r["vol_forecast"])),
             "arch_neg_log10p": round(float(r["arch_neg_log10p"]), 2),
             "ret_60d": _round_opt(cast("float | None", r["ret_60d"])),
             "ret_120d": _round_opt(cast("float | None", r["ret_120d"])),

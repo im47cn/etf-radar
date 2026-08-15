@@ -51,7 +51,10 @@ from .providers.base import EmptyDataError, EtfDataProvider, ProviderError
 from .providers.yfinance_provider import YfinanceProvider
 from .scoring.mapping import mapping_score
 from .scoring.returns import compute_returns
-from .scoring.signals import direction_from_return, signal_for_pair, signal_for_theme
+from .scoring.signals import (
+    direction_from_return, direction_tier_from_return,
+    signal_for_pair, signal_for_theme,
+)
 from .scoring.strength import (
     composite_strength,
     dim_aggregate_return,
@@ -391,11 +394,15 @@ def _compute_signals(
             cn_candidates=candidates, cfg=algo.signal,
         )
         # 方向取美股 short 收益符号 (5年回测次日A股同向≈56%, 基线48.6%)
-        direction = direction_from_return(us_dim_returns_dict.get('short'))
+        us_short_ret = us_dim_returns_dict.get('short')
+        direction = direction_from_return(us_short_ret)
+        # 幅度置信档 (样本外验证: ≥1% 同向57% / <0.3% ≈随机)
+        direction_tier = direction_tier_from_return(us_short_ret)
         theme_signals.append(ThemeSignal(
             theme_id=t.id,
             signal=theme_sig,
             direction=direction,
+            direction_tier=direction_tier,
             trigger_cn_etf=trigger_code,
             votes=theme_votes if theme_votes else {'short': None, 'mid': None, 'long': None},
             description=theme_dynamic_description(t.name, theme_sig, us_str_obj, direction),

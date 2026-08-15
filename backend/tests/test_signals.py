@@ -9,6 +9,7 @@ from src.models import CnEtfConfig, Strength, ThemeConfig
 from src.pipeline import PipelineMode, compute_outputs
 from src.scoring.signals import (
     direction_from_return,
+    direction_tier_from_return,
     judge_per_period,
     signal_for_pair,
     signal_for_theme,
@@ -192,3 +193,18 @@ def test_direction_from_return_down() -> None:
 def test_direction_from_return_zero_or_none() -> None:
     assert direction_from_return(0.0) is None
     assert direction_from_return(None) is None
+
+
+def test_direction_tier_high() -> None:
+    assert direction_tier_from_return(0.015) == 'high'
+    assert direction_tier_from_return(-0.01) == 'high'   # 恰达阈值 (>=)
+
+
+def test_direction_tier_low() -> None:
+    assert direction_tier_from_return(0.002) == 'low'
+    assert direction_tier_from_return(-0.0029) == 'low'
+
+
+def test_direction_tier_mid_and_none() -> None:
+    assert direction_tier_from_return(0.005) is None     # 0.3%~1% 中间档
+    assert direction_tier_from_return(None) is None

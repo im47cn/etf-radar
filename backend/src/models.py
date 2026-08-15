@@ -140,6 +140,8 @@ class ThemeSignal(BaseModel):
     # 方向取美股 short 收益符号; 仅 resonance 方向有统计意义
     # (5年回测: 美股动量→次日A股同向≈56%, 基线48.6%, +8pp)
     direction: Literal['up', 'down'] | None = None
+    # 方向置信档 (样本外验证): high=|动量|≥1% 同向57% / low=<0.3% ≈随机 / None=中间档
+    direction_tier: Literal['high', 'low'] | None = None
     trigger_cn_etf: str | None
     votes: dict[str, SignalType | None]
     description: str

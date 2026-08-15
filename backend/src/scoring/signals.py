@@ -35,6 +35,24 @@ def direction_from_return(ret: float | None) -> Literal['up', 'down'] | None:
     return 'up' if ret > 0 else 'down'
 
 
+# 幅度分层阈值 (预注册+样本外验证 scripts/research/resonance_conditions.py):
+# 验证段(2024-26) |us_mom|≥1% 同向 56.7%, <0.3% 仅 47.9%(≈基线) → 弱信号降权展示。
+TIER_HIGH = 0.01
+TIER_LOW = 0.003
+
+
+def direction_tier_from_return(ret: float | None) -> Literal['high', 'low'] | None:
+    """美股动量幅度 → 置信档: high(≥1%) / low(<0.3%) / None(中间档, 不分层)。"""
+    if ret is None:
+        return None
+    a = abs(ret)
+    if a >= TIER_HIGH:
+        return 'high'
+    if a < TIER_LOW:
+        return 'low'
+    return None
+
+
 def judge_per_period(
     us_str: int, cn_str: int,
     us_ret: float, cn_ret: float,

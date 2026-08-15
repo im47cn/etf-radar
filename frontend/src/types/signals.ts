@@ -18,6 +18,8 @@ export const ThemeSignalSchema = z.object({
   signal: SignalTypeSchema.nullable(),
   // 方向取美股 short 收益符号; 历史快照缺省→null (仅 resonance 有统计意义)
   direction: DirectionSchema.nullish().transform((v) => v ?? null),
+  // 方向置信档 (样本外验证): high=|动量|≥1% 同向57% / low=<0.3%≈随机 / null=中间档
+  direction_tier: z.enum(['high', 'low']).nullish().transform((v) => v ?? null),
   trigger_cn_etf: z.string().nullable(),
   votes: VotesSchema,
   description: z.string(),

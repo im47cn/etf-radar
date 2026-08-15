@@ -165,3 +165,25 @@ def test_grid_fitness_trend_guard_forces_marginal():
     assert d["verdict"] == "marginal"  # 无论分数, 强制降级
     for i in range(7):  # 随机震荡主题不触发
         assert themed[f"t{i}"]["trend_regime"] is None
+
+
+def test_grid_fitness_includes_garch_forecast():
+    """grid_fitness 主题条目带 GARCH 前瞻年化波动 (正数; 合成正态波动下与历史 vol 同量级)."""
+    rng = np.random.default_rng(11)
+    n_days = 150
+    returns = rng.normal(scale=0.02, size=(n_days, 3))
+    names = ["t0", "t1", "t2"]
+    arch = arch_per_theme(returns, names)
+    grid = grid_fitness_per_theme(returns, names, {"t0": "甲", "t1": "乙", "t2": "丙"}, arch)
+    for t in grid["themes"]:
+        fv = t["vol_forecast_ann"]
+        assert fv is not None and 0.1 < fv < 1.5  # σ=2%日 → 年化≈32%, 量级合理
+
+
+def test_forecast_vol_annualized_short_sample_none():
+    """样本 <100 -> GARCH 拟合返回 None (与 Hurst 同下限)."""
+    from src.evidence.stats_utils import forecast_vol_annualized
+    rng = np.random.default_rng(12)
+    assert forecast_vol_annualized(rng.normal(scale=0.01, size=99)) is None
+    v = forecast_vol_annualized(rng.normal(scale=0.01, size=150))
+    assert v is not None and 0.05 < v < 0.5

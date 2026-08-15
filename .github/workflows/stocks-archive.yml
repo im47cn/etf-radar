@@ -27,7 +27,7 @@ concurrency:
 jobs:
   archive:
     runs-on: ubuntu-latest
-    timeout-minutes: 60   # 8 并发 ~11-25min; 60min 作限流退化兜底
+    timeout-minutes: 120  # 8 并发正常 ~11-25min; 新浪限流退化的兜底 (首跑实测 60min 不够)
     steps:
       - uses: actions/checkout@v7
         with:

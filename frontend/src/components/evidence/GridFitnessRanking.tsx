@@ -21,6 +21,7 @@ export interface GridRow {
 }
 
 /** 主题 → 网格排名行 (grid_score 降序 + verdict 缺省兜底). 模块级纯函数便于直接测试. */
+// eslint-disable-next-line react-refresh/only-export-components -- 纯函数导出仅为测试直调, 不影响 fast refresh
 export function buildGridData(themes: GridFitnessTheme[]): GridRow[] {
   const data: GridRow[] = [];
   for (const t of themes) {
@@ -73,6 +74,7 @@ export const GridTooltip = ({ active, payload }: TooltipProps) => {
 
 export interface TickProps { x: number | string; y: number | string; payload: { value?: string } }
 // recharts vertical interval=0 默认 tick 渲染有 bug, 自定义确保行业名全显
+// eslint-disable-next-line react-refresh/only-export-components -- recharts tick 渲染函数 (非组件), 导出供测试
 export const renderNameTick = ({ x, y, payload }: TickProps) => (
   <text x={Number(x) - 4} y={Number(y)} dy={3} textAnchor="end" fontSize={9} fill="#6b7280">
     {payload.value ?? ''}

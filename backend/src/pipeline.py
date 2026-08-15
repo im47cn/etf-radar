@@ -52,8 +52,10 @@ from .providers.yfinance_provider import YfinanceProvider
 from .scoring.mapping import mapping_score
 from .scoring.returns import compute_returns
 from .scoring.signals import (
-    direction_from_return, direction_tier_from_return,
-    signal_for_pair, signal_for_theme,
+    direction_from_return,
+    direction_tier_from_return,
+    signal_for_pair,
+    signal_for_theme,
 )
 from .scoring.strength import (
     composite_strength,

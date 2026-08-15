@@ -23,6 +23,7 @@ const mkSignal = (themeId: string, signal: 'resonance' | 'transmission' | 'diver
   theme_id: themeId,
   signal,
   direction: null,
+  direction_tier: null,
   trigger_cn_etf: null,
   votes: { short: null, mid: null, long: null },
   description: '',

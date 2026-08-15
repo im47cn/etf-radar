@@ -6,17 +6,19 @@ import {
 
 const TREND_ROW = {
   name: '⚠ 中概互联网/港股', score: 0.716, vol: 0.45, hurst: 0.498, verdict: 'marginal',
-  ret60: -0.044, ret120: -0.197, trendRegime: 'down',
+  ret60: -0.044, ret120: -0.197, trendRegime: 'down', volForecast: 0.37,
 };
 
 describe('GridFitnessRanking', () => {
   it('渲染标题与主题排名 (含 suitable/unsuitable 两类)', () => {
     render(<GridFitnessRanking themes={[
       { theme_id: 'a', name: '半导体', n: 1200, ann_vol: 0.32, hurst: 0.42, arch_neg_log10p: 5,
-        pct_vol: 0.9, pct_mean_reversion: 0.7, pct_arch: 0.9, grid_score: 0.82, verdict: 'suitable',
+        vol_forecast_ann: 0.34, pct_vol: 0.9, pct_mean_reversion: 0.7, pct_arch: 0.9,
+        grid_score: 0.82, verdict: 'suitable',
         ret_60d: 0.02, ret_120d: 0.05, trend_regime: null },
       { theme_id: 'b', name: '电力', n: 1200, ann_vol: 0.18, hurst: 0.5, arch_neg_log10p: 3,
-        pct_vol: 0.2, pct_mean_reversion: 0.5, pct_arch: 0.5, grid_score: 0.29, verdict: 'unsuitable',
+        vol_forecast_ann: null, pct_vol: 0.2, pct_mean_reversion: 0.5, pct_arch: 0.5,
+        grid_score: 0.29, verdict: 'unsuitable',
         ret_60d: null, ret_120d: null, trend_regime: null },
     ]} />);
     expect(screen.getByText(/主题网格适配度排名/)).toBeInTheDocument();

@@ -102,7 +102,7 @@ def grid_fitness_per_theme(
     for j in range(returns.shape[1]):
         col = returns[:, j]
         valid = col[np.isfinite(col)]
-        n = int(len(valid))
+        n = len(valid)
         tid = names[j]
         if n < min_samples:
             continue

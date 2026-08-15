@@ -1,8 +1,23 @@
-"""个股技术指标计算（RSI / 量比）"""
+"""个股技术指标计算（RSI / 量比 / 护栏版日收益）"""
 from __future__ import annotations
 
 import pandas as pd  # type: ignore[import-untyped]
 from ta.momentum import RSIIndicator  # type: ignore[import-untyped]
+
+
+def simple_returns(closes: list[float | None]) -> list[float]:
+    """收盘序列 → 简单日收益. 质量护栏: 新浪 qfq 前复权会把老股
+    (多次分红)早期价格压到 ~0, 跳过 prev=0 与 |r|>50% (数据伪影,
+    A股有涨跌停) 的相邻对. GARCH 波动率拟合的数据入口."""
+    out: list[float] = []
+    for i in range(1, len(closes)):
+        cur, prev = closes[i], closes[i - 1]
+        if cur is None or not prev:
+            continue
+        r = cur / prev - 1
+        if abs(r) <= 0.5:
+            out.append(r)
+    return out
 
 
 def compute_rsi(closes: list[float | None], period: int = 14) -> float | None:

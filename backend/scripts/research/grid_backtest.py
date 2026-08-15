@@ -45,8 +45,9 @@ from scipy.stats import spearmanr, ttest_1samp  # type: ignore[import-untyped]
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # backend/ 入 path
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/ 入 path (复用生产函数)
-from compute_evidence import grid_fitness_per_theme, load_matrices  # noqa: E402
-from src.evidence.stats_utils import arch_per_theme  # noqa: E402
+from compute_evidence import grid_fitness_per_theme, load_matrices
+
+from src.evidence.stats_utils import arch_per_theme
 
 WINDOW = 252        # 点时判定 trailing 窗口
 HORIZON = 60        # 前向模拟天数

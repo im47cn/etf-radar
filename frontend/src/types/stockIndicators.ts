@@ -13,6 +13,8 @@ export interface StockIndicators {
   rsi_14: number | null;
   vol_ratio: number | null;
   leader: LeaderStar;
+  /** GARCH(1,1) 前瞻 60 日年化波动 (会员风控维度); 旧数据/拟合失败缺省 */
+  vol_forecast_ann?: number | null;
 }
 
 export interface HoldingsIndicatorsFile {

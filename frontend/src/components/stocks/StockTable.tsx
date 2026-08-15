@@ -7,6 +7,7 @@ import { StrengthBadge } from './StrengthBadge';
 import { RSIBadge } from './RSIBadge';
 import { VolumeRatioBadge } from './VolumeRatioBadge';
 import { MiniKlineChart } from './MiniKlineChart';
+import { useSubscription } from '@/lib/subscription/useSubscription';
 
 interface Props {
   stocks: AggregatedStock[];
@@ -20,6 +21,9 @@ const formatPct = (n: number | null): string => {
 };
 
 const formatWeight = (w: number): string => `${w.toFixed(1)}%`;
+
+const formatVolAnn = (n: number | null): string =>
+  n === null || Number.isNaN(n) ? '—' : `${(n * 100).toFixed(0)}%`;
 
 const formatPrice = (n: number | null): string => {
   if (n === null || Number.isNaN(n)) return '—';
@@ -43,6 +47,9 @@ function sortByLeaderThenStrength(stocks: AggregatedStock[]): AggregatedStock[] 
 export const StockTable = ({ stocks }: Props) => {
   const sorted = sortByLeaderThenStrength(stocks);
   const [hoverCode, setHoverCode] = useState<string | null>(null);
+  // 前瞻波动是会员风控维度: 非会员列内锁定引导升级 (同 HoldingsList 免费 5 支先例)
+  const { state: subState } = useSubscription();
+  const isMember = subState === 'member';
 
   return (
     <ChartCard
@@ -51,7 +58,8 @@ export const StockTable = ({ stocks }: Props) => {
       helpTitle="成分股明细 · 读法"
       help={
         <>
-          <p>列：权重 / 现价 / 涨跌 / L2 行业 / 龙头标签 / 60日·20日强度 / RSI / 量比。</p>
+          <p>列：权重 / 现价 / 涨跌 / L2 行业 / 龙头标签 / 60日·20日强度 / RSI / 量比 / 前瞻波动。</p>
+          <p><strong>前瞻波动</strong>（🔒 会员）：GARCH(1,1) 预测的未来 60 日年化波动。个股 ARCH 普适（5 年 99.9%）使其有统计基础；用于仓位/风控参考（&gt;60% 标红），<strong>不预测方向</strong>。</p>
           <p>排序：龙头(⭐⭐⭐优先) → 60日强度 → 累计权重；悬停行右侧浮 mini K 线。</p>
           <p><strong>误读</strong>：持仓按季度披露有延迟；权重是 ETF 持仓占比，非个股市值。</p>
         </>
@@ -73,6 +81,7 @@ export const StockTable = ({ stocks }: Props) => {
             <th className="px-2 py-2 text-center">20d</th>
             <th className="px-2 py-2 text-center">RSI</th>
             <th className="px-2 py-2 text-center">量比</th>
+            <th className="px-2 py-2 text-center">前瞻波动</th>
           </tr>
         </thead>
         <tbody>
@@ -116,6 +125,12 @@ export const StockTable = ({ stocks }: Props) => {
                 </td>
                 <td className="px-2 py-2 text-center">
                   <VolumeRatioBadge value={ind?.vol_ratio ?? null} />
+                </td>
+                <td className={cn(
+                  'px-2 py-2 text-center tabular-nums text-xs',
+                  !isMember ? 'text-gray-400' : (ind?.vol_forecast_ann ?? 0) > 0.6 ? 'text-red-600' : 'text-gray-700',
+                )} title={isMember ? 'GARCH(1,1) 预测未来 60 日年化波动（风控参考，不预测方向）' : '会员可见：GARCH 前瞻波动率'}>
+                  {!isMember ? '🔒' : formatVolAnn(ind?.vol_forecast_ann ?? null)}
                 </td>
               </tr>
             );

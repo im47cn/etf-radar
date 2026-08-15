@@ -1,7 +1,21 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { StockTable } from '../StockTable';
 import type { AggregatedStock } from '@/types/holdings';
+import { useSubscription } from '@/lib/subscription/useSubscription';
+
+vi.mock('@/lib/subscription/useSubscription', () => ({ useSubscription: vi.fn() }));
+
+const withIndicators = (vol: number | null) => row({
+  indicators: {
+    name: 'TCL中环', strength_60d: 50, strength_20d: 50, rsi_14: 50,
+    vol_ratio: 1, leader: '⭐', vol_forecast_ann: vol,
+  },
+});
+
+beforeEach(() => {
+  vi.mocked(useSubscription).mockReturnValue({ state: 'member' } as never);
+});
 
 const row = (overrides: Partial<AggregatedStock> = {}): AggregatedStock => ({
   code: '002129',
@@ -50,5 +64,26 @@ describe('StockTable', () => {
     render(<StockTable stocks={[row()]} />);
     fireEvent.click(screen.getByLabelText(/成分股明细.*说明/));
     expect(screen.getByText(/季度披露/)).toBeInTheDocument();
+  });
+
+  it('会员显示前瞻波动数值 (年化百分比)', () => {
+    render(<StockTable stocks={[withIndicators(0.406)]} />);
+    expect(screen.getByText('41%')).toBeInTheDocument();
+  });
+
+  it('前瞻波动 >60% 标红', () => {
+    const { container } = render(<StockTable stocks={[withIndicators(0.9)]} />);
+    expect(container.querySelector('.text-red-600')).toBeInTheDocument();
+  });
+
+  it('非会员前瞻波动列锁定为 🔒', () => {
+    vi.mocked(useSubscription).mockReturnValue({ state: 'active' } as never);
+    render(<StockTable stocks={[withIndicators(0.406)]} />);
+    expect(screen.getAllByText('🔒').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('前瞻波动 null 显示 —', () => {
+    render(<StockTable stocks={[withIndicators(null)]} />);
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1);
   });
 });

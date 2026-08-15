@@ -24,8 +24,9 @@ import akshare as ak  # type: ignore[import-untyped]
 import numpy as np
 import pandas as pd  # type: ignore[import-untyped]
 
+from .evidence.stats_utils import forecast_vol_annualized
 from .scoring.leader_rule import classify_leader
-from .scoring.stock_indicators import compute_rsi, compute_volume_ratio
+from .scoring.stock_indicators import compute_rsi, compute_volume_ratio, simple_returns
 from .scoring.strength import batch_strength_per_dim
 
 log = logging.getLogger(__name__)
@@ -134,6 +135,32 @@ def _compute_n_day_return(closes: list[float | None], n: int) -> float | None:
     return (today - past) / past
 
 
+def _load_history_returns(history_dir: Path, today: date) -> dict[str, list[float]]:
+    """读上年+当年归档分片 -> 每股护栏版日收益 (GARCH 波动率拟合输入).
+
+    只读两个分片 (~250-490 日): 150 日 close_series 对 GARCH(1,1) 参数估计太薄,
+    主题层口径也是 ~252 日. 分片缺失/损坏 -> 空 dict, 指标降级为 None 不阻断管道.
+    """
+    per_code: dict[str, dict[str, float]] = {}
+    for year in (today.year - 1, today.year):
+        fp = history_dir / f'close_{year}.json'
+        if not fp.exists():
+            continue
+        try:
+            data = json.loads(fp.read_text(encoding='utf-8'))
+        except (OSError, ValueError) as e:
+            log.warning(f'history 分片读取失败, 波动率降级 None: {fp} {e}')
+            continue
+        for code, row in data['stocks'].items():
+            per = per_code.setdefault(code, {})
+            for d, c in zip(data['dates'], row):
+                if c is not None:
+                    per[d] = float(c)
+    dates = sorted({d for per in per_code.values() for d in per})
+    return {code: simple_returns([per.get(d) for d in dates])
+            for code, per in per_code.items()}
+
+
 def run_daily_pipeline(
     holdings_dir: Path,
     out_dir: Path,
@@ -174,6 +201,7 @@ def run_daily_pipeline(
     # 遍历 holdings 算 indicators
     holdings_codes = _read_holdings_codes(holdings_dir)
     holdings_names = _read_holdings_names(holdings_dir)
+    hist_returns = _load_history_returns(out_dir / 'history', today)
     indicators: dict[str, dict[str, Any]] = {}
     for code in holdings_codes:
         if code not in close_data['stocks']:
@@ -187,6 +215,10 @@ def run_daily_pipeline(
         rsi = compute_rsi(closes)
         vr = compute_volume_ratio(volumes)
         leader = classify_leader(s60_int, rsi)
+        # GARCH(1,1) 前瞻 60 日年化波动 (个股 ARCH 普适 99.9%, 会员风控维度);
+        # 拟合失败/样本不足 (<100) -> None
+        rets = hist_returns.get(code, [])
+        vol_f = forecast_vol_annualized(np.array(rets, dtype=float)) if len(rets) >= 100 else None
         indicators[code] = {
             'name': holdings_names.get(code, code),
             'strength_60d': s60_int,
@@ -194,6 +226,7 @@ def run_daily_pipeline(
             'rsi_14': rsi,
             'vol_ratio': vr,
             'leader': leader,
+            'vol_forecast_ann': None if vol_f is None else round(vol_f, 4),
         }
 
     now = datetime.now(UTC).replace(microsecond=0).isoformat()

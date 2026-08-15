@@ -5,6 +5,10 @@ import { StocksPage } from '../StocksPage';
 import type { Theme } from '@/types/themes';
 
 // useDataContext lives in dataContext.ts (not DataProvider.tsx)
+vi.mock('@/lib/subscription/useSubscription', () => ({
+  useSubscription: vi.fn().mockReturnValue({ state: 'member' }),
+}));
+
 vi.mock('@/providers/dataContext', () => ({
   useDataContext: () => ({
     themes: { themes: mockThemes, schema_version: '1.0', generated_at: '' },

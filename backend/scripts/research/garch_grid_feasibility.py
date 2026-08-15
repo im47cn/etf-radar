@@ -47,8 +47,15 @@ from scipy.stats import ttest_1samp  # type: ignore[import-untyped]
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # backend/
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/
-from compute_evidence import load_matrices  # noqa: E402
-from grid_backtest import COST, GRID, HORIZON, MIN_FWD_DAYS, STEP, WINDOW, simulate_grid  # noqa: E402
+from compute_evidence import load_matrices
+from grid_backtest import (
+    GRID,
+    HORIZON,
+    MIN_FWD_DAYS,
+    STEP,
+    WINDOW,
+    simulate_grid,
+)
 
 FORECAST_H = HORIZON  # 前向预测天数 = 检验窗口
 SPACING_DAYS = 20     # 间距映射: g ≈ sqrt(20) 日波动

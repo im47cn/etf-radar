@@ -1,9 +1,10 @@
 """daily pipeline: 追加今日 spot → 算 indicators → 写文件"""
 import json
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -185,3 +186,99 @@ def test_daily_includes_leader_field(tmp_path: Path):
     hi = json.loads((out_dir / 'holdings_indicators.json').read_text())
     leader = hi['stocks']['002129']['leader']
     assert leader in ('⭐⭐⭐', '⭐⭐', '⭐', '')
+
+
+# ---- GARCH 前瞻波动率 (读 history 分片) ----
+
+def _seed_history_shards(out_dir: Path, code: str, today: date) -> None:
+    """播种上年+当年分片: ~140+150 根价格, 前半 σ=2% 后半 σ=4% (ARCH 结构保证拟合可收敛)."""
+    rng = np.random.default_rng(42)
+    hist = out_dir / 'history'
+    hist.mkdir(parents=True, exist_ok=True)
+    d25 = [(date(2025, 1, 1) + timedelta(days=i)).isoformat() for i in range(200)]
+    d26 = [(date(2026, 1, 1) + timedelta(days=i)).isoformat() for i in range(220)]
+    all_dates = d25 + d26
+    price, prices = 10.0, []
+    for i in range(len(all_dates)):
+        sigma = 0.02 if i < len(all_dates) // 2 else 0.04
+        price *= 1.0 + float(rng.normal(0, sigma))
+        prices.append(round(price, 4))
+    (hist / 'close_2025.json').write_text(json.dumps({
+        'schema_version': '1.0', 'generated_at': 'x', 'year': '2025',
+        'dates': d25, 'stocks': {code: prices[:len(d25)]}}))
+    (hist / 'close_2026.json').write_text(json.dumps({
+        'schema_version': '1.0', 'generated_at': 'x', 'year': '2026',
+        'dates': d26, 'stocks': {code: prices[len(d25):]}}))
+
+
+def test_daily_computes_vol_forecast_from_history_shards(tmp_path: Path):
+    today = date(2026, 8, 14)
+    holdings_dir = tmp_path / 'holdings'
+    holdings_dir.mkdir()
+    (holdings_dir / 'a.json').write_text(json.dumps({
+        'etf_code': '512480', 'etf_name': 'x', 'disclosure_date': '2026-03-31',
+        'fetched_at': '2026-06-23T00:00:00+00:00',
+        'top_holdings': [{'code': '002129', 'name': 'TCL中环', 'weight': 8.5}],
+    }))
+    out_dir = tmp_path / 'stocks'
+    out_dir.mkdir()
+    (out_dir / 'close_series.json').write_text(json.dumps(_make_close_series(['002129'])))
+    (out_dir / 'volume_series.json').write_text(json.dumps(_make_volume_series(['002129'])))
+    _seed_history_shards(out_dir, '002129', today)
+
+    with patch('src.stocks_daily_pipeline._fetch_today_spot_with_retry',
+               return_value=_fake_spot_df(['002129'])):
+        run_daily_pipeline(holdings_dir, out_dir, today=today)
+
+    ind = json.loads((out_dir / 'holdings_indicators.json').read_text())['stocks']['002129']
+    vf = ind['vol_forecast_ann']
+    assert vf is not None and 0.05 < vf < 2.0  # σ 2%~4% 日 → 年化 ~32%-63%, 留宽界
+
+
+def test_daily_history_missing_degrades_to_none(tmp_path: Path):
+    """history 分片缺失 -> vol_forecast_ann=None, 管道不阻断."""
+    today = date(2026, 8, 14)
+    holdings_dir = tmp_path / 'holdings'
+    holdings_dir.mkdir()
+    (holdings_dir / 'a.json').write_text(json.dumps({
+        'etf_code': '512480', 'etf_name': 'x', 'disclosure_date': '2026-03-31',
+        'fetched_at': '2026-06-23T00:00:00+00:00',
+        'top_holdings': [{'code': '002129', 'name': 'TCL中环', 'weight': 8.5}],
+    }))
+    out_dir = tmp_path / 'stocks'
+    out_dir.mkdir()
+    (out_dir / 'close_series.json').write_text(json.dumps(_make_close_series(['002129'])))
+    (out_dir / 'volume_series.json').write_text(json.dumps(_make_volume_series(['002129'])))
+
+    with patch('src.stocks_daily_pipeline._fetch_today_spot_with_retry',
+               return_value=_fake_spot_df(['002129'])):
+        run_daily_pipeline(holdings_dir, out_dir, today=today)
+
+    ind = json.loads((out_dir / 'holdings_indicators.json').read_text())['stocks']['002129']
+    assert ind['vol_forecast_ann'] is None
+
+
+def test_daily_history_corrupted_shard_degrades(tmp_path: Path):
+    """分片 JSON 损坏 -> 警告降级 None, 管道不阻断."""
+    today = date(2026, 8, 14)
+    holdings_dir = tmp_path / 'holdings'
+    holdings_dir.mkdir()
+    (holdings_dir / 'a.json').write_text(json.dumps({
+        'etf_code': '512480', 'etf_name': 'x', 'disclosure_date': '2026-03-31',
+        'fetched_at': '2026-06-23T00:00:00+00:00',
+        'top_holdings': [{'code': '002129', 'name': 'TCL中环', 'weight': 8.5}],
+    }))
+    out_dir = tmp_path / 'stocks'
+    out_dir.mkdir()
+    (out_dir / 'close_series.json').write_text(json.dumps(_make_close_series(['002129'])))
+    (out_dir / 'volume_series.json').write_text(json.dumps(_make_volume_series(['002129'])))
+    hist = out_dir / 'history'
+    hist.mkdir()
+    (hist / 'close_2026.json').write_text('{not valid json')
+
+    with patch('src.stocks_daily_pipeline._fetch_today_spot_with_retry',
+               return_value=_fake_spot_df(['002129'])):
+        run_daily_pipeline(holdings_dir, out_dir, today=today)
+
+    ind = json.loads((out_dir / 'holdings_indicators.json').read_text())['stocks']['002129']
+    assert ind['vol_forecast_ann'] is None

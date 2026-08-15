@@ -36,7 +36,6 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -96,7 +95,6 @@ def main() -> None:
     di_map = {d: i for i, d in enumerate(dates)}
     # trailing 30 日已实现波动 (点时): 随时间轴累积每 code 的 r_1d 历史
     hist: dict[str, list[tuple[str, str, float]]] = {}  # code -> [(date, r)]
-    vol_at: dict[tuple[str, str], float] = {}  # (date, code) -> 年化 vol
 
     events: list[dict[str, object]] = []
     for d in dates:

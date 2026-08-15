@@ -20,7 +20,8 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # backend/
-from src.evidence.stats_utils import ljung_box  # noqa: E402
+from src.evidence.stats_utils import ljung_box
+from src.scoring.stock_indicators import simple_returns
 
 HIST = Path(__file__).resolve().parents[3] / 'data' / 'stocks' / 'history'
 M_LAGS = 10
@@ -49,14 +50,6 @@ def load_returns() -> dict[str, list[float]]:
     for code, per in stocks_close.items():
         out[code] = simple_returns([per.get(d) for d in dates])
     return out
-
-
-def simple_returns(closes: list[float | None]) -> list[float]:
-    """收盘序列 → 简单日收益. 质量护栏: 前复权因子会把老股早期价格压到 ~0
-    (除零/巨幅伪收益), 跳过 prev=0 与 |r|>50% (数据伪影, A股有涨跌停) 的相邻对."""
-    return [r for i in range(1, len(closes))
-            if closes[i] is not None and closes[i - 1]
-            and abs(r := closes[i] / closes[i - 1] - 1) <= 0.5]
 
 
 def arch_test(r: list[float]) -> tuple[float, float] | None:
@@ -107,7 +100,7 @@ def main() -> None:
     for fp in shards:
         data = json.loads(fp.read_text(encoding='utf-8'))
         flags = []
-        for code, row in data['stocks'].items():
+        for row in data['stocks'].values():
             rets = simple_returns(row)
             if len(rets) < MIN_DAYS_YEARLY:
                 continue

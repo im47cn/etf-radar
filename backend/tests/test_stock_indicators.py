@@ -1,7 +1,9 @@
+import pytest
+
 """RSI(14) 与 量比 计算"""
 
 
-from src.scoring.stock_indicators import compute_rsi, compute_volume_ratio
+from src.scoring.stock_indicators import compute_rsi, compute_volume_ratio, simple_returns
 
 
 def test_rsi_insufficient_data_returns_none():
@@ -64,3 +66,10 @@ def test_volume_ratio_zero_mean_returns_none():
 
 def test_volume_ratio_length_lt_6_returns_none():
     assert compute_volume_ratio([100, 200, 300]) is None
+
+
+def test_simple_returns_guards():
+    """qfq 护栏: |r|>50% 跳过, prev=0 跳过 (除零), None 跳过; 正常收益保留."""
+    rets = simple_returns([10.0, 10.5, 0.0, 9.0, 13.6, 13.0])
+    assert rets == pytest.approx([0.05, 13.0 / 13.6 - 1])  # +5% 与 -4.4%; -100%/除零/+51% 均剔除
+    assert simple_returns([None, None]) == []

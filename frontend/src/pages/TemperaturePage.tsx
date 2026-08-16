@@ -38,6 +38,7 @@ const TEMPERATURE_HELP: HelpSection[] = [
     title: '常见误读',
     children: [
       <p key="m1"><strong>站上率是宽度、不是点位预测</strong>：站上率 80% 不代表指数见顶，只代表参与面广。</p>,
+      <p key="m1b"><strong>温度档位（冰点/过热等）无择时预测力</strong>：5 年回测显示宽度状态与指数此后的涨跌基本无关（相关系数 ≈ −0.02）；「过热/冰点」只是对当前参与面的描述，<strong>不是买卖信号</strong>。</p>,
       <p key="m2"><strong>行业分类采用巨潮体系</strong>；无行业归属的个股计入全市场、不计入行业。</p>,
     ],
   },

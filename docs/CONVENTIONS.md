@@ -44,7 +44,7 @@
 
 ## 变更行覆盖率：避开 v8 coverage 盲区
 
-- 变更行覆盖率 ≥90% 是 pre-commit/pre-push 红线（见 CLAUDE.md），由 `diff-cover` 对 staged 变更行判定。前端用 `@vitest/coverage-v8`，backend 用 `pytest-cov`。
+- 变更行覆盖率 ≥95% 是 pre-commit/pre-push 红线（见 CLAUDE.md），由 `diff-cover` 对 staged 变更行判定。前端用 `@vitest/coverage-v8`，backend 用 `pytest-cov`。
 - **盲区**：`arr.map(() => ({ ...多行对象... }))` / `arr.filter(() => ({ ... }))` 等**箭头函数返回多行对象字面量**的整个对象体，v8 coverage **完全不 instrument**——`coverage/lcov.info` 里这段 `DA` 记录整段缺失。diff-cover 会把对象体内的变更行判为 missing。
 - 这不是"测试没覆盖"（组件确实渲染了），而是工具盲区。当某次 commit 只改这类对象体里的 1-2 行时，分母小、一行 missing 就砸到 ~80%，直接阻断 push。
 - **规避写法**：需 diff-cover 保障的代码，把多字段对象构造改成 `for` 循环 + 独立 `const` + 单行 `push`，让每个计算都是 coverage 能捕获的独立语句：
@@ -62,7 +62,7 @@
     data.push({ a: e.a, b: e.b ?? 0, flag });
   }
   ```
-- 触发条件：前端 `.ts/.tsx` 变更涉及 `map`/`filter`/`reduce` 返回多行对象字面量，且 pre-push 报 diff-cover <90% 但肉眼明知测试已渲染。
+- 触发条件：前端 `.ts/.tsx` 变更涉及 `map`/`filter`/`reduce` 返回多行对象字面量，且 pre-push 报 diff-cover <95% 但肉眼明知测试已渲染。
 - 教训：2026-08-13 `ArchTimeSeries.tsx` 的 `timeSeries.map((e) => ({...}))` 对象体内 label 行（line 23）lcov 整段无 DA，diff-cover 判 80% 阻断 push（commit `874f6bd` 改 for 循环后 100%）。
 
 ### 同族盲区速查（2026-08-15/16 三次实证，含 subagent 各踩一次）
@@ -88,7 +88,7 @@
   ```bash
   cd frontend && ./node_modules/.bin/vitest run --coverage
   sed -i.bak 's|^SF:src/|SF:frontend/src/|' coverage/lcov.info && rm -f coverage/lcov.info.bak
-  cd ../backend && uv run --all-extras diff-cover ../frontend/coverage/lcov.info --compare-branch=origin/main --fail-under=90
+  cd ../backend && uv run --all-extras diff-cover ../frontend/coverage/lcov.info --compare-branch=origin/main --fail-under=95
   ```
 
 ## 类型检查：本地验证用 tsc -b（非 --noEmit）

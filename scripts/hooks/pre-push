@@ -10,7 +10,7 @@ set -euo pipefail
 
 REPO=$(git rev-parse --show-toplevel)
 COMPARE="${DIFF_COVERAGE_BASE:-origin/main}"
-FAIL_UNDER=90
+FAIL_UNDER=95
 
 cd "$REPO"
 

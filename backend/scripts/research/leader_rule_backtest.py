@@ -135,14 +135,14 @@ def main() -> None:
         print(line)
 
     print('\n[预注册判定]')
-    mt, mv = means['⭐⭐⭐'], means['']
+    star3, nostar = means['⭐⭐⭐'], means['']
     mono = means['⭐⭐⭐']['valid'] >= means['⭐⭐']['valid'] >= means['⭐']['valid']
-    ok = (mt['train'] > 0 and mv['valid'] > 0 and mt['train'] > means['']['train']
-          and mv['valid'] > means['']['valid'] + MIN_EDGE and mono)
+    ok = (star3['train'] > 0 and star3['valid'] > 0 and star3['train'] > nostar['train']
+          and star3['valid'] > nostar['valid'] + MIN_EDGE and mono)
     if ok:
         print('  通过 → 龙头标签有验证的强势筛选力 (⭐⭐⭐ 20日超额 > 无星档 ≥0.5pp 且层级单调)')
     else:
-        print(f'  未通过 → 无预测力, 维持纯展示定位 (主检验差距 {mv["valid"] - means[""]["valid"]:+.3%},'
+        print(f'  未通过 → 无预测力, 维持纯展示定位 (主检验差距 {star3["valid"] - nostar["valid"]:+.3%},'
               f' 单调性 {"成立" if mono else "不成立"})')
 
 

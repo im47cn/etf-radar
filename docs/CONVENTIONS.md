@@ -64,6 +64,26 @@
   ```
 - 触发条件：前端 `.ts/.tsx` 变更涉及 `map`/`filter`/`reduce` 返回多行对象字面量，且 pre-push 报 diff-cover <90% 但肉眼明知测试已渲染。
 - 教训：2026-08-13 `ArchTimeSeries.tsx` 的 `timeSeries.map((e) => ({...}))` 对象体内 label 行（line 23）lcov 整段无 DA，diff-cover 判 80% 阻断 push（commit `874f6bd` 改 for 循环后 100%）。
+
+### 同族盲区速查（2026-08-15/16 三次实证，含 subagent 各踩一次）
+
+判定机制：**变更行有 BRDA（分支记录）无 DA（行记录）→ diff-cover 判 0%；无任何记录 → diff-cover 排除**。因此含 `??`/`?.`/三元 的表达式行最危险，纯标识符行反而安全。
+
+1. **JSX 多行 props**：语句归属在 `return (` 行，属性行无 DA。若 props 里带 `??`/`?.`（产生 BRDA）→ 变更必被拦。
+   ```tsx
+   // ❌ 变更行含 ?? → BRDA-only → 拦
+   <SignalNote signal={ts?.signal ?? null} direction={ts?.direction ?? null}
+               directionTier={ts?.direction_tier ?? null} />
+   // ✅ 表达式提升为 const 语句 (有 DA, 测试可覆盖), JSX 行留纯标识符 (无记录, diff-cover 排除)
+   const noteSignal = ts?.signal ?? null;  // ...
+   <SignalNote signal={noteSignal} direction={noteDirection} directionTier={noteTier} />
+   ```
+2. **纯函数导出的对象字面量**：同对象体盲区（速查首条），改 const 局部变量逐行构造（`ScorecardPanel.buildScorecardRows` 08-16 实证：重构后 70%→100%）。
+3. **zod schema 声明行**：`.nullish().transform((v) => v ?? null)` 行只有被 **parse 测试实际执行**才有 DA——types 文件新增 schema 字段必须配解析用例（含"缺省字段转 null"分支），否则声明行判 0%。
+4. **纯函数测试 ≠ 渲染覆盖**：只测 `buildXxxRows` 类导出函数时，组件体内的 `fmtPct` 等辅助函数与 JSX 全部无 DA。改到组件文件必须至少一个 `render(<Comp .../>)` 用例。
+
+**给 subagent/teammate 的提示词必须直接附上本节四条**（两次实证：implementer 未读本文档各踩一次，lead 兜底成本约为开发本身的一半）。
+
 - 验证命令（本地复现 pre-push 流程）：
   ```bash
   cd frontend && ./node_modules/.bin/vitest run --coverage

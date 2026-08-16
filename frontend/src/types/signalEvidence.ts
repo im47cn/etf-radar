@@ -57,6 +57,20 @@ export const GridFitnessThemeSchema = z.object({
 });
 export type GridFitnessTheme = z.infer<typeof GridFitnessThemeSchema>;
 
+/** 信号计分卡行: 近 60/120 交易日胜率 vs 长期基线 (5 年样本外点估计). */
+export const ScorecardEntrySchema = z.object({
+  signal: z.string(),                                  // 'resonance' | 'transmission'
+  tier: z.string().nullish().transform((v) => v ?? null), // 'high'(高置信档) | null=整体
+  window_days: num(),                                  // 60 | 120
+  n: num(),
+  hit_rate: num(),
+  ci_low: num(),
+  ci_high: num(),
+  baseline: num(),                                     // resonance 0.55/0.57, transmission 0.49
+  status: z.string().nullish().transform((v) => v ?? null), // consistent|degraded|insufficient
+});
+export type ScorecardEntry = z.infer<typeof ScorecardEntrySchema>;
+
 /** data/latest/signal_evidence.json 契约 (schema 1.0): 5 年样本外统计证据. */
 export const SignalEvidenceSchema = z
   .object({
@@ -121,6 +135,8 @@ export const SignalEvidenceSchema = z
       })
       .nullish()
       .transform((v) => v ?? null),
+    // 信号计分卡 (schema 演进新增): 旧 snapshot 的 signal_evidence.json 无此字段 -> null, 页面隐藏卡片
+    scorecard: z.array(ScorecardEntrySchema).nullish().transform((v) => v ?? null),
   })
   .passthrough();
 export type SignalEvidence = z.infer<typeof SignalEvidenceSchema>;

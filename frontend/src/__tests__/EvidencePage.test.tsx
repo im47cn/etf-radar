@@ -30,6 +30,12 @@ vi.mock('@/hooks/useSignalEvidence', () => ({
         summary: { tested: 29, skipped: 1, suitable_count: 12, median_score: 0.52 },
         weights: { vol: 0.4, mean_reversion: 0.35, arch: 0.25 },
       },
+      scorecard: [
+        { signal: 'resonance', tier: null, window_days: 60, n: 211, hit_rate: 0.4645,
+          ci_low: 0.397, ci_high: 0.532, baseline: 0.55, status: 'degraded' },
+        { signal: 'resonance', tier: 'high', window_days: 120, n: 351, hit_rate: 0.5299,
+          ci_low: 0.478, ci_high: 0.582, baseline: 0.57, status: 'consistent' },
+      ],
     },
     error: undefined,
     isLoading: false,

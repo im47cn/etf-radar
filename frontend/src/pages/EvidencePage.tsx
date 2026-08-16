@@ -5,6 +5,7 @@ import { IcHorizonBar } from '@/components/evidence/IcHorizonBar';
 import { ArchRankingBar } from '@/components/evidence/ArchRankingBar';
 import { R2AcfChart } from '@/components/evidence/R2AcfChart';
 import { ArchTimeSeries } from '@/components/evidence/ArchTimeSeries';
+import { ScorecardPanel } from '@/components/evidence/ScorecardPanel';
 import { PageHelp, type HelpSection } from '@/components/help/PageHelp';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FeatureGate } from '@/components/gate/FeatureGate';
@@ -112,6 +113,13 @@ const EvidenceContent = () => {
       <div className="animate-fade-rise" style={{ animationDelay: '240ms' }}>
         <R2AcfChart acf={data.arch.representative_acf} themeNames={themeNames} r2LbP={r2LbP} />
       </div>
+
+      {/* 信号计分卡 (schema 演进新增): 旧 signal_evidence.json 无 scorecard 字段 -> 隐藏 */}
+      {data.scorecard && data.scorecard.length > 0 && (
+        <div className="animate-fade-rise" style={{ animationDelay: '270ms' }}>
+          <ScorecardPanel entries={data.scorecard} />
+        </div>
+      )}
 
       <p className="animate-fade-rise text-xs text-gray-400" style={{ animationDelay: '300ms' }}>
         口径说明：IC = 横截面 spearman（cn_strength.composite 排名，未来 k 日收益排名）；ARCH = r² 的

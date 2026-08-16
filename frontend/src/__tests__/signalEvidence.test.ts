@@ -72,4 +72,20 @@ describe('SignalEvidenceSchema', () => {
     const d = SignalEvidenceSchema.parse({ ...minimal, extra: 'x', sample: { unk: 1 } });
     expect((d as Record<string, unknown>).extra).toBe('x');
   });
+  it('scorecard 解析: tier/status 缺省转 null', () => {
+    const d = SignalEvidenceSchema.parse({
+      ...minimal,
+      scorecard: [{ signal: 'resonance', window_days: 60, n: 10,
+                    hit_rate: 0.5, ci_low: 0.2, ci_high: 0.8, baseline: 0.55 }],
+    });
+    expect(d.scorecard).not.toBeNull();
+    expect(d.scorecard?.[0].tier).toBeNull();
+    expect(d.scorecard?.[0].status).toBeNull();
+  });
+
+  it('旧数据无 scorecard 字段 → null (页面隐藏卡片)', () => {
+    const d = SignalEvidenceSchema.parse(minimal);
+    expect(d.scorecard).toBeNull();
+  });
+
 });

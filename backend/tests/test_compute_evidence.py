@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 
@@ -187,3 +188,59 @@ def test_forecast_vol_annualized_short_sample_none():
     assert forecast_vol_annualized(rng.normal(scale=0.01, size=99)) is None
     v = forecast_vol_annualized(rng.normal(scale=0.01, size=150))
     assert v is not None and 0.05 < v < 0.5
+
+
+def _write_signal_snapshot(snap: Path, d: str, themes: list[dict[str, object]],
+                           etfs: list[dict[str, object]],
+                           signals: list[dict[str, object]] | None = None) -> None:
+    p = snap / d
+    p.mkdir(parents=True, exist_ok=True)
+    with open(p / "themes.json", "w") as f:
+        json.dump({"themes": themes}, f)
+    with open(p / "etfs.json", "w") as f:
+        json.dump({"etfs": etfs}, f)
+    if signals is not None:
+        with open(p / "signals.json", "w") as f:
+            json.dump({"theme_signals": signals}, f)
+
+
+def test_scorecard_end_to_end_from_snapshots(tmp_path):
+    """信号事件 loader + scorecard: 同向/反向事件 -> hit_rate/档位过滤/缺数据丢弃."""
+    snap = tmp_path / "snapshots"
+    n_days = 65
+    for i in range(n_days):
+        d = f"2021-03-{i + 1:02d}"
+        # 主题 r_1d (方向): 偶日 +高动量 (≥1% 高置信档), 奇日 -弱动量
+        mom = 0.02 if i % 2 == 0 else -0.002
+        themes = [{"id": "t0", "name": "主题0", "cn_strength": {"composite": 50},
+                   "returns": {"r_1d": mom}}]
+        # 事件结果取下一日 etf r_1d: 恒为 +0.01 -> 偶日事件(动量+)同向, 奇日(动量-)反向
+        etfs = [{"code": "159995", "returns": {"r_1d": 0.01}}]
+        sigs = [{"theme_id": "t0", "signal": "resonance", "trigger_cn_etf": "159995"},
+                {"theme_id": "t0", "signal": "divergence", "trigger_cn_etf": "159995"}]  # 非目标信号
+        _write_signal_snapshot(snap, d, themes, etfs, sigs)
+    # 最后一天: 无 signals.json (老 snapshot 兼容) + 下一日缺失不影响 (事件只到 n-2)
+    _write_signal_snapshot(snap, "2021-05-06", [{"id": "t0", "returns": {"r_1d": 0.01}}],
+                           [{"code": "159995", "returns": {"r_1d": 0.01}}])
+
+    from scripts.compute_evidence import load_signal_events
+    dates, events = load_signal_events(tmp_path)
+    assert len(dates) == n_days + 1
+    # 每日 1 条 resonance 事件 (divergence 丢弃); 信号日 idx0..64 全部有次日数据
+    assert len(events) == n_days
+    assert all(e.signal == "resonance" and e.theme_id == "t0" for e in events)
+    # 高动量事件 = 偶数日 0..64
+    high = [e for e in events if abs(e.us_mom) >= 0.01]
+    assert len(high) == 33
+
+    from src.evidence.scorecard import scorecard_rows
+    rows = scorecard_rows(events, len(dates))
+    by_key = {(r["signal"], r["tier"], r["window_days"]): r for r in rows}
+    all60 = by_key[("resonance", None, 60)]
+    # 最近 60 日窗口 (total 66 日, 事件日 idx 6..64): 偶日(同向)30 奇日(反向)29
+    assert all60["n"] == 59
+    assert all60["hit_rate"] == round(30 / 59, 4)
+    high120 = by_key[("resonance", "high", 120)]
+    assert high120["n"] == 33  # 仅高动量事件
+    trans = by_key[("transmission", None, 60)]
+    assert trans["n"] == 0 and trans["status"] == "insufficient"

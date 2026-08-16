@@ -18,6 +18,7 @@ from typing import cast
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # backend/ 入 sys.path
+from src.evidence.scorecard import SignalEvent, scorecard_rows
 from src.evidence.stats_utils import (
     acf,
     annualized_volatility,
@@ -171,8 +172,49 @@ def grid_fitness_per_theme(
     }
 
 
+def load_signal_events(data_root: Path) -> tuple[list[str], list[SignalEvent]]:
+    """读 snapshots 拼逐日信号事件序列 (口径同 scripts/research/resonance_conditions).
+
+    方向 = 信号日 theme.returns.r_1d 符号 (美股动量代理), 结果 = 下一 snapshot 的
+    trigger_cn_etf 的 r_1d 符号是否同向; 任一缺失/为 0 (方向无定义) 的事件丢弃.
+    """
+    snap = data_root / "snapshots"
+    dates = sorted(d for d in os.listdir(snap) if len(d) == 10 and d[4] == "-")
+    theme_r1: list[dict[str, float | None]] = []
+    etf_r1: list[dict[str, float | None]] = []
+    raw: list[tuple[int, str, str, str]] = []  # (day_index, signal, theme_id, code)
+    for i, d in enumerate(dates):
+        with open(snap / d / "themes.json") as f:
+            theme_r1.append({t["id"]: t.get("returns", {}).get("r_1d") for t in json.load(f)["themes"]})
+        etf_path = snap / d / "etfs.json"
+        if etf_path.exists():  # 个别历史 snapshot 可能缺 etfs/signals
+            with open(etf_path) as f:
+                etf_r1.append({e["code"]: (e.get("returns") or {}).get("r_1d")
+                               for e in json.load(f)["etfs"]})
+        else:
+            etf_r1.append({})
+        sig_path = snap / d / "signals.json"
+        if not sig_path.exists():
+            continue
+        with open(sig_path) as f:
+            ts = json.load(f).get("theme_signals", [])
+        for s in ts:
+            code = s.get("trigger_cn_etf")
+            if s.get("signal") in ("resonance", "transmission") and code:
+                raw.append((i, str(s["signal"]), str(s["theme_id"]), str(code)))
+    events: list[SignalEvent] = []
+    for i, signal, theme_id, code in raw:
+        m = theme_r1[i].get(theme_id)
+        nxt = etf_r1[i + 1].get(code) if i + 1 < len(dates) else None
+        if m is None or m == 0.0 or nxt is None:
+            continue
+        events.append(SignalEvent(i, signal, theme_id, float(m), float(nxt)))
+    return dates, events
+
+
 def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
     dates, names, display, strength, returns = load_matrices(data_root)
+    _, events = load_signal_events(data_root)
     ic_horizon = ic_by_horizon(strength, returns)
     ic_rolling = rolling_ic_multi(strength, returns, dates, windows=(5, 20, 60), horizon=horizon)
     arch = arch_per_theme(returns, names)
@@ -224,6 +266,8 @@ def compute_evidence(data_root: Path, horizon: int = 20) -> dict[str, object]:
             "time_series": arch_ts,
         },
         "grid_fitness": grid,
+        # 信号计分卡: resonance/transmission 近 60/120 交易日胜率 vs 长期基线
+        "scorecard": scorecard_rows(events, len(dates)),
     }
 
 

@@ -75,3 +75,18 @@ def test_dynamic_description_includes_composite_value() -> None:
     txt = theme_dynamic_description(theme_name='半导体', signal=None, us_strength=_str(42))
     assert 'composite' in txt
     assert '42' in txt
+
+
+def test_theme_description_direction_tier_markers() -> None:
+    """共振方向 + 幅度置信档: high/low 加标注, 中间档不加 (主列表一眼可辨)."""
+    up = theme_dynamic_description(theme_name='半导体', signal='resonance',
+                                   us_strength=_str(85), direction='up')
+    assert up.endswith('共振偏多') and '高置信' not in up and '弱信号' not in up
+    hi = theme_dynamic_description(theme_name='半导体', signal='resonance',
+                                   us_strength=_str(85), direction='up',
+                                   direction_tier='high')
+    assert hi.endswith('共振偏多（高置信）')
+    lo = theme_dynamic_description(theme_name='半导体', signal='resonance',
+                                   us_strength=_str(85), direction='down',
+                                   direction_tier='low')
+    assert lo.endswith('共振偏空（弱信号）')

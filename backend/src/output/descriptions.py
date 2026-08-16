@@ -21,11 +21,13 @@ def signal_description(signal: SignalType | None) -> str:
 def theme_dynamic_description(
     theme_name: str, signal: SignalType | None, us_strength: Strength,
     direction: Literal['up', 'down'] | None = None,
+    direction_tier: Literal['high', 'low'] | None = None,
 ) -> str:
     """根据主题名 + 信号 + 美股强度 + 方向生成简短动态描述 (UI 主题行副标题用)。
 
     量化: 带 composite 强度具体值; direction 仅对 resonance 有统计意义
-    (5年回测美股动量→次日A股同向≈56%)。
+    (5年回测美股动量→次日A股同向≈56%)。direction_tier 幅度置信档
+    (样本外验证: |动量|≥1% 同向57% / <0.3% ≈随机), 主列表一眼可辨。
     """
     c = us_strength.composite
     if signal == 'transmission':
@@ -36,10 +38,11 @@ def theme_dynamic_description(
             if us_strength.mid >= 80
             else f'美股{theme_name} composite {c} 动量观察中'
         )
+        tier = '（高置信）' if direction_tier == 'high' else ('（弱信号）' if direction_tier == 'low' else '')
         if direction == 'up':
-            return f'{base}, 共振偏多'
+            return f'{base}, 共振偏多{tier}'
         if direction == 'down':
-            return f'{base}, 共振偏空'
+            return f'{base}, 共振偏空{tier}'
         return base
     if signal == 'divergence':
         return '美股A股短期方向不一致'

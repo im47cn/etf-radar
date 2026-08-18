@@ -153,3 +153,58 @@ def test_all_stale_keeps_freshest_bar(mock_sleep: MagicMock) -> None:
     assert ohlc['512000']['date'].dt.date.max() == date(2026, 6, 25)
     assert fallback_map == {'512000': 'akshare-sina'}
     assert failed == []
+
+
+def _make_conn_fail_provider(name: str) -> EtfDataProvider:
+    """Mock provider: 所有 symbol 都抛连接层异常 (东财拒连 CI IP 场景)。"""
+    mock = MagicMock(spec=EtfDataProvider)
+    mock.name = name
+    mock.fetch_ohlc.side_effect = ProviderError(
+        'akshare failed after 3 retries: Max retries exceeded with url '
+        '/api/qt/stock/kline/get (Caused by ProtocolError(\'Connection '
+        'aborted.\', RemoteDisconnected(\'Remote end closed connection '
+        'without response\')))'
+    )
+    return mock
+
+
+@patch('src.pipeline.time.sleep')
+def test_conn_failure_circuits_provider(mock_sleep: MagicMock) -> None:
+    """主源连接层失败 → 全局熔断: 只烧一次重试预算, 其余 symbol 直走备用源。"""
+    themes = _themes_with(['512000', '159755', '588000'])
+    primary = _make_conn_fail_provider('akshare-em')
+    secondary = _make_provider('akshare-sina', {'512000', '159755', '588000'})
+    ohlc, fallback_map, failed = _collect_cn_ohlc(themes, [primary, secondary])
+    # 熔断生效: 主源只被调用 1 次 (第一个 symbol), 不再逐 symbol 烧 ~100s 重试
+    assert primary.fetch_ohlc.call_count == 1
+    assert set(ohlc.keys()) == {'512000', '159755', '588000'}
+    assert fallback_map == {
+        '512000': 'akshare-sina', '159755': 'akshare-sina', '588000': 'akshare-sina',
+    }
+    assert failed == []
+
+
+@patch('src.pipeline.time.sleep')
+def test_non_conn_error_no_circuit(mock_sleep: MagicMock) -> None:
+    """非连接层失败 (如 symbol 不存在) 不熔断: 每个 symbol 仍逐个尝试主源。"""
+    themes = _themes_with(['512000', '159755'])
+    primary = _make_provider('akshare-em', set())   # 普通 ProviderError
+    secondary = _make_provider('akshare-sina', {'512000', '159755'})
+    _collect_cn_ohlc(themes, [primary, secondary])
+    # 未熔断: 两个 symbol 各尝试主源一次
+    assert primary.fetch_ohlc.call_count == 2
+
+
+@patch('src.pipeline.time.sleep')
+def test_all_providers_circuit_fail_fast(mock_sleep: MagicMock) -> None:
+    """双源皆连接层失败 → 相继熔断, 后续 symbol 不再发请求, 快速进 failed。"""
+    themes = _themes_with(['512000', '159755'])
+    primary = _make_conn_fail_provider('akshare-em')
+    secondary = _make_conn_fail_provider('akshare-sina')
+    ohlc, fallback_map, failed = _collect_cn_ohlc(themes, [primary, secondary])
+    # 每源只被第一个 symbol 触发一次即熔断
+    assert primary.fetch_ohlc.call_count == 1
+    assert secondary.fetch_ohlc.call_count == 1
+    assert ohlc == {}
+    assert fallback_map == {}
+    assert failed == ['159755', '512000']  # sorted() 字符串序

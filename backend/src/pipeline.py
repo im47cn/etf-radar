@@ -93,6 +93,16 @@ def _collect_us_ohlc(
     return out, failed
 
 
+# 连接层异常特征: 东财拒连 CI 海外 IP 时, urllib 3 次尝试 x 5 次内部退避
+# 会烧掉 ~100s/symbol, 110+ symbol 必然撞 12min 步骤超时 (2026-08-18 断更事故).
+# 识别到即全局熔断该 provider, 后续 symbol 直接走下一源.
+_CONN_ERROR_MARKERS: tuple[str, ...] = (
+    'RemoteDisconnected', 'Connection aborted', 'Max retries exceeded',
+    'NewConnectionError', 'ConnectionError', 'Connection refused',
+    'Connection reset', 'timed out',
+)
+
+
 def _collect_cn_ohlc(
     themes: list[ThemeConfig],
     providers: list[EtfDataProvider],
@@ -105,6 +115,8 @@ def _collect_cn_ohlc(
     视同失败, 继续试下一个源 (根治 em 静默旧 bar 不触发 sina 回退的残根)。
     所有源都只有旧 bar 时, 保留其中**最新**的一份兜底返回 (不丢数据,
     交由下游 cn_stale/archiver 护栏拦截)。所有源都抛异常才进 failed。
+    连接层异常 (见 _CONN_ERROR_MARKERS) 触发全局熔断: 该 provider 对后续
+    symbol 不再尝试, 避免 per-symbol 重试预算烧穿步骤超时。
 
     返回:
       out: 成功获取的 OHLC 数据
@@ -119,16 +131,23 @@ def _collect_cn_ohlc(
         for cn in t.cn_etfs:
             codes.add(cn.code)
 
+    active_providers = list(providers)
     for code in sorted(codes):
         # 全源皆旧时保留最新的一份兜底
         best_df: pd.DataFrame | None = None
         best_provider: EtfDataProvider | None = None
         best_date: date | None = None
-        for provider in providers:
+        for provider in list(active_providers):
             try:
                 df = provider.fetch_ohlc(code, lookback_days=400)
             except (ProviderError, EmptyDataError) as e:
                 log.warning(f'CN fetch failed [{provider.name}] {code}: {e}')
+                if any(m in str(e) for m in _CONN_ERROR_MARKERS):
+                    active_providers.remove(provider)
+                    log.error(
+                        f'CN provider 熔断 [{provider.name}]: 连接层失败, '
+                        f'后续 symbol 直接走下一源'
+                    )
                 continue
 
             bar_date = _df_latest_date(df)

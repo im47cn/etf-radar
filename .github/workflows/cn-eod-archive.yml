@@ -5,6 +5,11 @@ on:
     - cron: '0 10 * * 1-5'   # 工作日 BJT 18:00 (UTC 10:00) — 收盘后 EOD 日线结算完成再归档
   workflow_dispatch:
 
+env:
+  # uv 冻结模式: pyproject/uv.lock 漂移(dependabot 改约束未同步 lock)时不改写 uv.lock,
+  # 防脏工作树 -> Commit 步骤 git pull --rebase exit 128 停更 (2026-07-09 事故加固)
+  UV_FROZEN: "1"
+
 permissions:
   contents: write
   actions: write   # 用于触发 deploy-frontend workflow
@@ -16,7 +21,10 @@ concurrency:
 jobs:
   archive:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 实测 EOD 全量刷新 65-71min (东财断连重试风暴); 20min 是 2026-07-12 防hang加固时的误配,
+    # 导致 07-13 起 26 个 run 全被 cancel、快照停更 5 周 (后靠 backfill 补 07-11~08-07).
+    # 根治(降低刷新耗时)在 provider 韧性, 见 docs data-fetch-resilience; 此处 90min = 最差实测 +27% 余量.
+    timeout-minutes: 90
     steps:
       - uses: actions/setup-python@v7
         with:

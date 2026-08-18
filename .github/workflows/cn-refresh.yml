@@ -8,6 +8,11 @@ on:
     - cron: '*/15 5-7 * * 1-5'          # 13:00-15:45 BJT 每 15min (盘中刷价)
   workflow_dispatch:
 
+env:
+  # uv 冻结模式: pyproject/uv.lock 漂移(dependabot 改约束未同步 lock)时不改写 uv.lock,
+  # 防脏工作树 -> Commit 步骤 git pull --rebase exit 128 停更 (2026-07-09 事故加固)
+  UV_FROZEN: "1"
+
 permissions:
   contents: write
   actions: write
@@ -88,21 +93,26 @@ jobs:
       - name: Refresh dapanyuntu breadth (QC 对账源)
         if: steps.cal.outputs.is_trading == 'true'
         # dapanyuntu 第三方接口, 失败不阻断; 现降级为 QC 对账源, 写 qc_dapanyuntu.json
+        # 步骤级超时: 正常 ~2s, 挂起时止步于此, 不吞掉 job 预算 (同 Run pipeline 防护逻辑)
+        timeout-minutes: 5
         run: cd backend && uv run python -m src.market_breadth.pipeline --data-root=../data
         continue-on-error: true
       - name: Compute self breadth (个股 MA20/60/120, 主展示)
         if: steps.cal.outputs.is_trading == 'true'
         # 读 close_series + 巨潮映射, 产出 market_temperature.json (schema 2.0)
+        timeout-minutes: 5
         run: cd backend && uv run python -m src.market_breadth.self_breadth --data-root=../data
         continue-on-error: true
       - name: Fetch index close series (温度页对比图叠加)
         if: steps.cal.outputs.is_trading == 'true'
         # 读 market_temperature.json 的 dates, 抓 6 只 A 股主要指数收盘价对齐, 产出 index_series.json
         # 依赖 self_breadth 先生成 market_temperature.json; 单指数失败不阻断 (内部已兜底)
+        timeout-minutes: 5
         run: cd backend && uv run python -m src.market_breadth.index_series --data-root=../data
         continue-on-error: true
       - name: Reconcile self vs dapanyuntu (全市场 MA20 QC)
         if: steps.cal.outputs.is_trading == 'true'
+        timeout-minutes: 5
         run: cd backend && uv run python -m src.market_breadth.reconcile --data-root=../data
         continue-on-error: true
       - name: Compute commit metadata

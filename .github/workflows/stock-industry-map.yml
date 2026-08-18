@@ -13,6 +13,11 @@ on:
   schedule:
     - cron: '0 20 1 * *'   # 每月 1 号 UTC 20:00 (BJT 次日 04:00)
 
+env:
+  # uv 冻结模式: pyproject/uv.lock 漂移(dependabot 改约束未同步 lock)时不改写 uv.lock,
+  # 防脏工作树 -> Commit 步骤 git pull --rebase exit 128 停更 (2026-07-09 事故加固)
+  UV_FROZEN: "1"
+
 permissions:
   contents: write
 

@@ -5,6 +5,11 @@ on:
     - cron: '30 22 * * 1-5'  # 工作日 BJT 06:30 (UTC 22:30 前一天)
   workflow_dispatch:
 
+env:
+  # uv 冻结模式: pyproject/uv.lock 漂移(dependabot 改约束未同步 lock)时不改写 uv.lock,
+  # 防脏工作树 -> Commit 步骤 git pull --rebase exit 128 停更 (2026-07-09 事故加固)
+  UV_FROZEN: "1"
+
 permissions:
   contents: write
   actions: write
@@ -59,6 +64,9 @@ jobs:
         run: cd backend && uv sync --extra dev --frozen
       - name: Run pipeline (full)
         if: steps.cal.outputs.is_trading == 'true'
+        # 步骤级超时: 挂起时止步于此(continue-on-error), 保住 Commit/Deploy.
+        # 与 cn-refresh Run pipeline 同构 (full 模式正常 ~12min, 上限 12).
+        timeout-minutes: 12
         run: cd backend && uv run python -m src.pipeline --mode=full --data-root=../data --config-dir=../config
         continue-on-error: true
       - name: Compute commit metadata

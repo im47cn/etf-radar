@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-18T10:39:13.228524+08:00",
+  "generated_at": "2026-08-18T10:46:11.161324+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -26,7 +26,7 @@
         "mid": "transmission",
         "long": "resonance"
       },
-      "description": "美股半导体 composite 89 动量观察中, 共振偏多（高置信）"
+      "description": "美股半导体 composite 88 动量观察中, 共振偏多（高置信）"
     },
     {
       "theme_id": "cybersecurity",
@@ -82,16 +82,16 @@
     },
     {
       "theme_id": "new_energy_vehicle",
-      "signal": null,
+      "signal": "transmission",
       "direction": "up",
       "direction_tier": null,
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "515030",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "transmission"
       },
-      "description": "美股新能源车 composite 58 动量观察中"
+      "description": "美股 composite 58 领先, A股尚未同步"
     },
     {
       "theme_id": "cn_battery",
@@ -148,15 +148,15 @@
     {
       "theme_id": "cn_base_metals",
       "signal": null,
-      "direction": "down",
-      "direction_tier": "low",
+      "direction": "up",
+      "direction_tier": null,
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
         "mid": null,
         "long": null
       },
-      "description": "美股有色金属 composite 63 动量观察中"
+      "description": "美股有色金属 composite 70 动量观察中"
     },
     {
       "theme_id": "china_internet",
@@ -195,7 +195,7 @@
         "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股银行 composite 73 中长期走强, 共振偏多"
+      "description": "美股银行 composite 72 动量观察中, 共振偏多"
     },
     {
       "theme_id": "cn_insurance",
@@ -507,9 +507,9 @@
       "cn_code": "515030",
       "mapping_score": 35,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": "transmission"
       }
@@ -565,7 +565,7 @@
     {
       "theme_id": "cn_base_metals",
       "cn_code": "512400",
-      "mapping_score": 51,
+      "mapping_score": 50,
       "confidence": 60,
       "signal": null,
       "votes": {
@@ -689,7 +689,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": "transmission",
         "long": null
       }

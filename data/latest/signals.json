@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-18T10:20:14.763448+08:00",
+  "generated_at": "2026-08-18T10:39:13.228524+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -13,7 +13,7 @@
         "mid": "transmission",
         "long": "resonance"
       },
-      "description": "美股存储芯片 composite 98 中长期走强, 共振偏多（高置信）"
+      "description": "美股存储芯片 composite 99 中长期走强, 共振偏多（高置信）"
     },
     {
       "theme_id": "semiconductor",
@@ -26,7 +26,7 @@
         "mid": "transmission",
         "long": "resonance"
       },
-      "description": "美股半导体 composite 88 动量观察中, 共振偏多（高置信）"
+      "description": "美股半导体 composite 89 动量观察中, 共振偏多（高置信）"
     },
     {
       "theme_id": "cybersecurity",
@@ -39,7 +39,7 @@
         "mid": "transmission",
         "long": "transmission"
       },
-      "description": "美股 composite 73 领先, A股尚未同步"
+      "description": "美股 composite 74 领先, A股尚未同步"
     },
     {
       "theme_id": "ai_compute",
@@ -52,7 +52,7 @@
         "mid": "transmission",
         "long": "resonance"
       },
-      "description": "美股AI算力 composite 94 中长期走强, 共振偏多（高置信）"
+      "description": "美股AI算力 composite 91 中长期走强, 共振偏多（高置信）"
     },
     {
       "theme_id": "energy_oil",
@@ -91,7 +91,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股新能源车 composite 57 动量观察中"
+      "description": "美股新能源车 composite 58 动量观察中"
     },
     {
       "theme_id": "cn_battery",
@@ -100,7 +100,7 @@
       "direction_tier": "high",
       "trigger_cn_etf": "159755",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "divergence",
         "long": "divergence"
       },
@@ -148,15 +148,15 @@
     {
       "theme_id": "cn_base_metals",
       "signal": null,
-      "direction": "up",
-      "direction_tier": null,
+      "direction": "down",
+      "direction_tier": "low",
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
         "mid": null,
         "long": null
       },
-      "description": "美股有色金属 composite 70 动量观察中"
+      "description": "美股有色金属 composite 63 动量观察中"
     },
     {
       "theme_id": "china_internet",
@@ -195,7 +195,7 @@
         "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股银行 composite 72 动量观察中, 共振偏多"
+      "description": "美股银行 composite 73 中长期走强, 共振偏多"
     },
     {
       "theme_id": "cn_insurance",
@@ -260,7 +260,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股稀土/新材料 composite 33 动量观察中"
+      "description": "美股稀土/新材料 composite 32 动量观察中"
     },
     {
       "theme_id": "cn_rare_metals",
@@ -481,7 +481,7 @@
     {
       "theme_id": "ai_compute",
       "cn_code": "588000",
-      "mapping_score": 28,
+      "mapping_score": 27,
       "confidence": 60,
       "signal": "resonance",
       "votes": {
@@ -505,11 +505,11 @@
     {
       "theme_id": "new_energy_vehicle",
       "cn_code": "515030",
-      "mapping_score": 36,
+      "mapping_score": 35,
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": null,
         "long": "transmission"
       }
@@ -521,7 +521,7 @@
       "confidence": 90,
       "signal": "divergence",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "divergence",
         "long": "divergence"
       }
@@ -533,7 +533,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "divergence",
         "long": null
       }
@@ -545,7 +545,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": "divergence",
         "long": null
       }
@@ -565,7 +565,7 @@
     {
       "theme_id": "cn_base_metals",
       "cn_code": "512400",
-      "mapping_score": 50,
+      "mapping_score": 51,
       "confidence": 60,
       "signal": null,
       "votes": {
@@ -689,7 +689,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": "transmission",
         "long": null
       }

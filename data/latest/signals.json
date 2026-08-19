@@ -1,19 +1,19 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-20T01:50:52.563496+08:00",
+  "generated_at": "2026-08-20T06:49:02.491714+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": null,
-      "direction": "down",
-      "direction_tier": "low",
-      "trigger_cn_etf": null,
+      "signal": "transmission",
+      "direction": "up",
+      "direction_tier": null,
+      "trigger_cn_etf": "512760",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "transmission"
       },
-      "description": "美股存储芯片 composite 66 动量观察中"
+      "description": "美股 composite 73 领先, A股尚未同步"
     },
     {
       "theme_id": "semiconductor",
@@ -65,7 +65,7 @@
         "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股原油/油气 composite 86 中长期走强, 共振偏多（高置信）"
+      "description": "美股原油/油气 composite 85 中长期走强, 共振偏多（高置信）"
     },
     {
       "theme_id": "cn_coal",
@@ -91,20 +91,20 @@
         "mid": null,
         "long": null
       },
-      "description": "美股新能源车 composite 31 动量观察中"
+      "description": "美股新能源车 composite 32 动量观察中"
     },
     {
       "theme_id": "cn_battery",
       "signal": null,
       "direction": "down",
-      "direction_tier": null,
+      "direction_tier": "low",
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
         "mid": null,
         "long": null
       },
-      "description": "美股锂电池 composite 38 动量观察中"
+      "description": "美股锂电池 composite 43 动量观察中"
     },
     {
       "theme_id": "cn_chemicals",
@@ -130,7 +130,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股机器人 composite 27 动量观察中"
+      "description": "美股机器人 composite 28 动量观察中"
     },
     {
       "theme_id": "gold",
@@ -143,7 +143,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股黄金 composite 60 动量观察中"
+      "description": "美股黄金 composite 61 动量观察中"
     },
     {
       "theme_id": "silver",
@@ -156,7 +156,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股白银 composite 38 动量观察中"
+      "description": "美股白银 composite 41 动量观察中"
     },
     {
       "theme_id": "cn_base_metals",
@@ -169,7 +169,7 @@
         "mid": "transmission",
         "long": "divergence"
       },
-      "description": "美股 composite 70 领先, A股尚未同步"
+      "description": "美股 composite 73 领先, A股尚未同步"
     },
     {
       "theme_id": "china_internet",
@@ -182,7 +182,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股中概互联网/港股 composite 40 动量观察中"
+      "description": "美股中概互联网/港股 composite 41 动量观察中"
     },
     {
       "theme_id": "cn_brokerage",
@@ -208,20 +208,20 @@
         "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股银行 composite 60 动量观察中, 共振偏空（高置信）"
+      "description": "美股银行 composite 56 动量观察中, 共振偏空（高置信）"
     },
     {
       "theme_id": "cn_insurance",
-      "signal": "transmission",
-      "direction": "up",
-      "direction_tier": "low",
-      "trigger_cn_etf": "159851",
+      "signal": null,
+      "direction": "down",
+      "direction_tier": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "divergence"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股 composite 70 领先, A股尚未同步"
+      "description": "美股保险 composite 63 动量观察中"
     },
     {
       "theme_id": "solar_clean_energy",
@@ -234,7 +234,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股光伏/清洁能源 composite 16 动量观察中"
+      "description": "美股光伏/清洁能源 composite 17 动量观察中"
     },
     {
       "theme_id": "biotech",
@@ -260,7 +260,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股航天军工 composite 62 动量观察中"
+      "description": "美股航天军工 composite 60 动量观察中"
     },
     {
       "theme_id": "rare_earth",
@@ -412,9 +412,9 @@
       "cn_code": "512480",
       "mapping_score": 30,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": "transmission"
       }
@@ -424,9 +424,9 @@
       "cn_code": "512760",
       "mapping_score": 32,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": "transmission"
       }
@@ -446,25 +446,25 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "159995",
-      "mapping_score": 33,
+      "mapping_score": 42,
       "confidence": 90,
       "signal": null,
       "votes": {
         "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": "resonance"
       }
     },
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 11,
+      "mapping_score": 24,
       "confidence": 60,
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
-        "long": "transmission"
+        "mid": "transmission",
+        "long": "resonance"
       }
     },
     {
@@ -542,7 +542,7 @@
     {
       "theme_id": "robotics",
       "cn_code": "562500",
-      "mapping_score": 35,
+      "mapping_score": 34,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -566,7 +566,7 @@
     {
       "theme_id": "gold",
       "cn_code": "518880",
-      "mapping_score": 33,
+      "mapping_score": 32,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -578,7 +578,7 @@
     {
       "theme_id": "silver",
       "cn_code": "161226",
-      "mapping_score": 36,
+      "mapping_score": 35,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -602,7 +602,7 @@
     {
       "theme_id": "china_internet",
       "cn_code": "513050",
-      "mapping_score": 71,
+      "mapping_score": 70,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -618,8 +618,8 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "divergence",
         "long": null
       }
     },
@@ -638,11 +638,11 @@
     {
       "theme_id": "cn_insurance",
       "cn_code": "159851",
-      "mapping_score": 16,
+      "mapping_score": 15,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": "divergence"
       }
@@ -650,7 +650,7 @@
     {
       "theme_id": "solar_clean_energy",
       "cn_code": "515790",
-      "mapping_score": 25,
+      "mapping_score": 24,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -662,7 +662,7 @@
     {
       "theme_id": "biotech",
       "cn_code": "512290",
-      "mapping_score": 2,
+      "mapping_score": 3,
       "confidence": 90,
       "signal": "resonance",
       "votes": {
@@ -674,7 +674,7 @@
     {
       "theme_id": "biotech",
       "cn_code": "159992",
-      "mapping_score": 5,
+      "mapping_score": 6,
       "confidence": 90,
       "signal": "resonance",
       "votes": {
@@ -686,7 +686,7 @@
     {
       "theme_id": "aerospace_defense",
       "cn_code": "512660",
-      "mapping_score": 28,
+      "mapping_score": 29,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -698,7 +698,7 @@
     {
       "theme_id": "aerospace_defense",
       "cn_code": "512710",
-      "mapping_score": 21,
+      "mapping_score": 22,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -746,7 +746,7 @@
     {
       "theme_id": "cn_consumer",
       "cn_code": "159936",
-      "mapping_score": 23,
+      "mapping_score": 22,
       "confidence": 60,
       "signal": "divergence",
       "votes": {

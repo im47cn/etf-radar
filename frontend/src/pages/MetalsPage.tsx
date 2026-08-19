@@ -1,3 +1,4 @@
+import type React from 'react';
 import { Link } from 'react-router-dom';
 import { useMetals } from '@/hooks/useMetals';
 import { useDataContext } from '@/providers/dataContext';
@@ -40,6 +41,27 @@ const METALS_HELP: HelpSection[] = [
     ],
   },
 ];
+
+/** 白银 LOF 与美股 SLV 的中美偏离警告条: 数据可算则带实测偏离幅度, 否则仅静态警示. */
+const LofWarning: React.FC<{ usR60: number | null; lofR60: number | null }> = ({ usR60, lofR60 }) => {
+  const gap =
+    usR60 != null && lofR60 != null ? `${Math.round((Math.abs(usR60 - lofR60)) * 100)}pp` : null;
+  return (
+    <p
+      className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700"
+      role="status"
+    >
+      ⚠ 白银 A 股端为 LOF（161226），场内价格含溢价、流动性受限，与美股 SLV 存在常态性偏离
+      {gap && (
+        <>
+          （当前近 60 日偏离 <strong>{gap}</strong>
+          ，溢价回归或复权口径差异所致，勿当价格信号）
+        </>
+      )}
+      。溢价数据源未接入，数值仅供参考。
+    </p>
+  );
+};
 
 const MetalsContent = () => {
   const { data, error, isLoading } = useMetals();
@@ -103,9 +125,12 @@ const MetalsContent = () => {
               </div>
             ))}
           </div>
-          <p className="mt-1.5 text-xs text-gray-400">
-            LOF 场内价格含溢价，可能偏离净值；溢价数据源未接入（premium 预留）。
-          </p>
+          <div className="mt-2">
+            <LofWarning
+              usR60={themes?.themes.find((t) => t.tags.includes('白银'))?.returns.r_60d ?? null}
+              lofR60={cn.silver_lof?.r_60d ?? null}
+            />
+          </div>
         </div>
       )}
 

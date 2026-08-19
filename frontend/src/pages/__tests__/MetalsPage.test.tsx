@@ -21,8 +21,8 @@ const METALS = {
   dxy: { value: 98.87, r_20d: -0.0224, r_60d: -0.0045 },
   miner_leverage: { ratio: 0.236, percentile_1y: 0.992 },
   cn_side: {
-    gold_etf: { code: '518880', name: '黄金ETF', price: 9.078, r_1d: 0.01, amount_yi: 20.5, premium_pct: null },
-    silver_lof: { code: '161226', name: '白银LOF', price: 1.833, r_1d: -0.024, amount_yi: 2.28, premium_pct: null },
+    gold_etf: { code: '518880', name: '黄金ETF', price: 9.078, r_1d: 0.01, r_20d: 0.05, r_60d: 0.08, amount_yi: 20.5, premium_pct: null },
+    silver_lof: { code: '161226', name: '白银LOF', price: 1.833, r_1d: -0.024, r_20d: -0.037, r_60d: -0.27, amount_yi: 2.28, premium_pct: null },
   },
   source_status: { gold_silver: 'ok', real_rate: 'ok', dxy: 'ok', miner_leverage: 'ok', cn_side: 'ok' },
 };
@@ -98,6 +98,8 @@ describe('MetalsPage', () => {
     expect(screen.getByText('白银')).toBeInTheDocument();
     expect(screen.queryByText('半导体')).not.toBeInTheDocument(); // 非贵金属被过滤
     expect(screen.getAllByText(/161226/).length).toBeGreaterThanOrEqual(1); // A股端行情(行情行+主题卡)
+    // LOF 警告条: SLV r60 -0.13 vs LOF r60 -0.27 → 偏离 14pp
+    expect(screen.getByRole('status').textContent).toContain('14pp');
   });
 
   it('非会员: 分位与利率相关上锁', () => {

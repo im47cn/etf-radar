@@ -109,9 +109,9 @@ class TestRun:
             'schema_version': '1.1', 'generated_at': 'x',
             'etfs': [
                 {'code': '518880', 'name': '黄金ETF', 'price': 7.5,
-                 'returns': {'r_1d': 0.01}, 'amount_yi': 20.0},
+                 'returns': {'r_1d': 0.01, 'r_20d': 0.02, 'r_60d': 0.03}, 'amount_yi': 20.0},
                 {'code': '161226', 'name': '白银LOF', 'price': 4.2,
-                 'returns': {'r_1d': -0.005}, 'amount_yi': 1.5},
+                 'returns': {'r_1d': -0.005, 'r_20d': -0.04, 'r_60d': -0.27}, 'amount_yi': 1.5},
             ],
         }), encoding='utf-8')
         out = run(tmp_path, provider=FakeProvider())
@@ -120,6 +120,7 @@ class TestRun:
         assert data['schema_version'] == '1.0'
         assert data['cn_side']['gold_etf']['code'] == '518880'
         assert data['cn_side']['silver_lof']['name'] == '白银LOF'
+        assert data['cn_side']['silver_lof']['r_60d'] == -0.27
         assert data['cn_side']['silver_lof']['premium_pct'] is None
         assert data['source_status']['cn_side'] == 'ok'
 

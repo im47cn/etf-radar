@@ -175,6 +175,8 @@ def _cn_side(data_root: Path) -> dict[str, Any]:
                     'name': e.get('name'),
                     'price': e.get('price'),
                     'r_1d': (e.get('returns') or {}).get('r_1d'),
+                    'r_20d': (e.get('returns') or {}).get('r_20d'),
+                    'r_60d': (e.get('returns') or {}).get('r_60d'),
                     'amount_yi': e.get('amount_yi'),
                     'premium_pct': None,  # LOF 溢价数据源未接, 预留
                 }

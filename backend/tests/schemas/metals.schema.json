@@ -72,12 +72,14 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["code", "name", "price", "r_1d", "amount_yi", "premium_pct"],
+          "required": ["code", "name", "price", "r_1d", "r_20d", "r_60d", "amount_yi", "premium_pct"],
           "properties": {
             "code": { "type": "string" },
             "name": { "type": ["string", "null"] },
             "price": { "type": ["number", "null"] },
             "r_1d": { "type": ["number", "null"] },
+            "r_20d": { "type": ["number", "null"] },
+            "r_60d": { "type": ["number", "null"] },
             "amount_yi": { "type": ["number", "null"] },
             "premium_pct": { "type": ["number", "null"] }
           }

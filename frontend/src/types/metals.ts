@@ -39,6 +39,8 @@ export const CnEtfSchema = z.object({
   name: str,
   price: num,
   r_1d: num,
+  r_20d: num,
+  r_60d: num,
   amount_yi: num,
   premium_pct: num,
 });

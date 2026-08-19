@@ -15,7 +15,7 @@ SCHEMAS = Path(__file__).parent / 'schemas'
 LATEST = ROOT / 'data' / 'latest'
 
 
-@pytest.mark.parametrize('name', ['themes', 'etfs', 'signals', 'meta'])
+@pytest.mark.parametrize('name', ['themes', 'etfs', 'signals', 'meta', 'metals'])
 def test_latest_matches_schema(name: str) -> None:
     schema_file = SCHEMAS / f'{name}.schema.json'
     data_file = LATEST / f'{name}.json'
@@ -33,7 +33,7 @@ def test_latest_matches_schema(name: str) -> None:
 
 def test_all_4_schemas_loadable() -> None:
     """4 个 schema 文件本身必须是合法 JSON Schema (即使 data 没生成也跑这个)."""
-    for name in ['themes', 'etfs', 'signals', 'meta']:
+    for name in ['themes', 'etfs', 'signals', 'meta', 'metals']:
         schema = json.loads((SCHEMAS / f'{name}.schema.json').read_text(encoding='utf-8'))
         Draft7Validator.check_schema(schema)
 

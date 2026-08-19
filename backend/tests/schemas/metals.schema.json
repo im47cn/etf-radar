@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Metals file (data/latest/metals.json)",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "as_of", "gold_silver_ratio", "real_rate", "dxy", "miner_leverage", "cn_side", "source_status"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "generated_at": { "type": "string" },
+    "as_of": { "type": ["string", "null"] },
+    "gold_silver_ratio": {
+      "type": "object",
+      "required": ["value", "percentile_5y", "series"],
+      "properties": {
+        "value": { "type": ["number", "null"] },
+        "percentile_5y": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "series": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": [{ "type": "string" }, { "type": "number" }]
+          }
+        }
+      }
+    },
+    "real_rate": {
+      "type": "object",
+      "required": ["tip_price", "change_60d", "corr_gold_20d"],
+      "properties": {
+        "tip_price": { "type": ["number", "null"] },
+        "change_60d": { "type": ["number", "null"] },
+        "corr_gold_20d": { "type": ["number", "null"], "minimum": -1, "maximum": 1 }
+      }
+    },
+    "dxy": {
+      "type": "object",
+      "required": ["value", "r_20d", "r_60d"],
+      "properties": {
+        "value": { "type": ["number", "null"] },
+        "r_20d": { "type": ["number", "null"] },
+        "r_60d": { "type": ["number", "null"] }
+      }
+    },
+    "miner_leverage": {
+      "type": "object",
+      "required": ["ratio", "percentile_1y"],
+      "properties": {
+        "ratio": { "type": ["number", "null"] },
+        "percentile_1y": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+      }
+    },
+    "cn_side": {
+      "type": "object",
+      "required": ["gold_etf", "silver_lof"],
+      "properties": {
+        "gold_etf": { "$ref": "#/$defs/cn_etf" },
+        "silver_lof": { "$ref": "#/$defs/cn_etf" }
+      }
+    },
+    "source_status": {
+      "type": "object",
+      "required": ["gold_silver", "real_rate", "dxy", "miner_leverage", "cn_side"],
+      "additionalProperties": false,
+      "patternProperties": {
+        ".*": { "enum": ["ok", "missing"] }
+      }
+    }
+  },
+  "$defs": {
+    "cn_etf": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["code", "name", "price", "r_1d", "amount_yi", "premium_pct"],
+          "properties": {
+            "code": { "type": "string" },
+            "name": { "type": ["string", "null"] },
+            "price": { "type": ["number", "null"] },
+            "r_1d": { "type": ["number", "null"] },
+            "amount_yi": { "type": ["number", "null"] },
+            "premium_pct": { "type": ["number", "null"] }
+          }
+        },
+        { "type": "null" }
+      ]
+    }
+  }
+}

@@ -101,6 +101,15 @@ themes:
     cn_etfs:
       - {code: '518880', name: 黄金ETF, tracking: 上海黄金交易所黄金现货合约, match_type: exact}
 
+  - id: silver
+    name: 白银
+    us_etfs: [SLV]
+    primary_us: SLV
+    tags: [白银, 贵金属]
+    note: "A股端为白银LOF(161226), 场内流动性受限"
+    cn_etfs:
+      - {code: '161226', name: 白银LOF, tracking: 上海期货交易所白银期货连续合约, match_type: exact}
+
   - id: cn_base_metals
     name: 有色金属
     us_etfs: [PICK]

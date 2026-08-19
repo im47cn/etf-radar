@@ -69,6 +69,12 @@ jobs:
         timeout-minutes: 12
         run: cd backend && uv run python -m src.pipeline --mode=full --data-root=../data --config-dir=../config
         continue-on-error: true
+      - name: Metals indicators (/metals 页)
+        if: steps.cal.outputs.is_trading == 'true'
+        # 辅助指标: 组件级降级不阻断, 挂起由步骤级超时兜底 (正常 <1min).
+        timeout-minutes: 5
+        run: cd backend && uv run python -m src.metals.pipeline --data-root=../data
+        continue-on-error: true
       - name: Compute commit metadata
         if: steps.cal.outputs.is_trading == 'true'
         id: meta

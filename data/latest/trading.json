@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-08-20T16:00:48.657774+00:00",
+  "environment": {
+    "regime": "neutral",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 5,
+        "criteria": [
+          false,
+          true,
+          true,
+          true,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 4592.75
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 4,
+        "criteria": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 7850.401
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 6,
+        "criteria": [
+          false,
+          true,
+          true,
+          true,
+          true,
+          true,
+          false,
+          true
+        ],
+        "close": 3495.589
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "ma20_pct": 0.812,
+      "ma60_pct": 0.486,
+      "ma120_pct": 0.243
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [],
+  "universe_stats": {
+    "total": 5547,
+    "tradable": 2888,
+    "stage2": 551,
+    "vcp": 0,
+    "top": 0
+  }
+}

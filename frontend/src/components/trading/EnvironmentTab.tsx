@@ -71,7 +71,11 @@ const BreadthCard = ({ env }: { env: TradingEnvironment }) => {
   return (
     <div className="rounded-lg border bg-white p-4 shadow-sm">
       <div className="text-sm font-medium text-gray-800">宽度佐证</div>
-      <div className="mt-1 text-xs text-gray-500">全市场个股 MA 站上率（不参与档位计算）</div>
+      <div className="mt-1 text-xs text-gray-500">
+        全市场个股 MA 站上率（不参与档位计算）
+        {b != null && b.as_of != null ? ` · 截至 ${b.as_of}` : ''}
+        {b != null && b.stale ? ' · 数据陈旧' : ''}
+      </div>
       <div className="mt-3 flex gap-6">
         <div>
           <div className="text-lg font-semibold text-gray-900">{b != null ? fmtBreadth(b.ma20_pct) : '—'}</div>

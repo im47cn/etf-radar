@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-20T16:00:48.657774+00:00",
+  "generated_at": "2026-08-20T16:28:32.161738+00:00",
   "environment": {
     "regime": "neutral",
     "indices": [
@@ -55,13 +55,15 @@
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "ma20_pct": 0.812,
-      "ma60_pct": 0.486,
-      "ma120_pct": 0.243
+      "as_of": "2026-08-19",
+      "stale": false,
+      "ma20_pct": 0.502,
+      "ma60_pct": 0.327,
+      "ma120_pct": 0.175
     },
     "source_status": {
       "indices": "ok",
-      "rs_benchmark": "ok",
+      "rs_benchmark": "missing",
       "spot": "ok",
       "breadth": "ok",
       "universe": "ok",
@@ -72,7 +74,7 @@
   "universe_stats": {
     "total": 5547,
     "tradable": 2888,
-    "stage2": 551,
+    "stage2": 320,
     "vcp": 0,
     "top": 0
   }

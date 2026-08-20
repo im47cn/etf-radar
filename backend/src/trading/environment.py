@@ -95,11 +95,19 @@ def read_breadth(data_root: Path) -> dict[str, Any] | None:
         doc = json.loads(path.read_text(encoding='utf-8'))
         periods = doc['periods']
         out: dict[str, Any] = {'source': 'market_temperature.json'}
+        # 携带数据时点: 前端据此展示"截至", 与温度页对数时可判断陈旧 (trading 产物是快照,
+        # 温度页读的永远是最新文件, 两者时点天然可能差一个更新周期)
+        if isinstance(doc.get('as_of'), str):
+            out['as_of'] = doc['as_of']
+        if isinstance(doc.get('stale'), bool):
+            out['stale'] = doc['stale']
         for key in ('ma20', 'ma60', 'ma120'):
-            market = periods[key]['market']  # [{date, rate(0-100)}, ...]
-            if not market:
+            market = periods[key]['market']  # [{date, rate(0-100|null)}, ...]
+            # 末条 rate 可为 None (当日未算完), 取最后一个非空值
+            rates = [e['rate'] for e in market if e.get('rate') is not None]
+            if not rates:
                 return None
-            out[f'{key}_pct'] = round(float(market[-1]['rate']) / 100.0, 4)
+            out[f'{key}_pct'] = round(float(rates[-1]) / 100.0, 4)
         return out
     except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as e:
         log.warning('trading breadth degraded: %s', e)

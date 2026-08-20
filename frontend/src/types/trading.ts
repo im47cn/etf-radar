@@ -30,6 +30,8 @@ export const TradingBreadthSchema = z.object({
   ma60_pct: num,
   ma120_pct: num,
   source: str,
+  as_of: str,
+  stale: z.boolean().nullish().transform((v) => v ?? false),
 });
 export type TradingBreadth = z.infer<typeof TradingBreadthSchema>;
 

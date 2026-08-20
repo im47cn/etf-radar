@@ -165,6 +165,26 @@ describe('TradingPage 页壳与环境 Tab', () => {
     expect(screen.getByText('+62.0%')).toBeInTheDocument();
   });
 
+  it('宽度佐证展示 as_of 时点与陈旧标记 (与温度页对数可判断快照新旧)', () => {
+    const data = mkTrading();
+    (data.environment as { breadth: Record<string, unknown> }).breadth = {
+      ...mkTrading().environment.breadth!,
+      as_of: '2026-08-19',
+      stale: false,
+    };
+    renderTrading({ data });
+    expect(screen.getByText(/截至 2026-08-19/)).toBeInTheDocument();
+    expect(screen.queryByText(/数据陈旧/)).toBeNull();
+    const staleData = mkTrading();
+    (staleData.environment as { breadth: Record<string, unknown> }).breadth = {
+      ...staleData.environment.breadth!,
+      as_of: '2026-08-10',
+      stale: true,
+    };
+    renderTrading({ data: staleData });
+    expect(screen.getByText(/数据陈旧/)).toBeInTheDocument();
+  });
+
   it('regime null 显示数据缺失徽标, breadth null 显示 —', () => {
     const data = mkTrading();
     (data.environment as Record<string, unknown>).regime = null;

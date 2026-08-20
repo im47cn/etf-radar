@@ -118,6 +118,42 @@ def test_read_breadth_ok(tmp_path: Path) -> None:
     assert b['source'] == 'market_temperature.json'
 
 
+def test_read_breadth_carries_asof_and_stale(tmp_path: Path) -> None:
+    """as_of/stale 透传: 前端据此展示数据时点, 与温度页对数可判断陈旧。"""
+    doc = {
+        'schema_version': '2.0',
+        'as_of': '2026-08-19',
+        'stale': False,
+        'periods': {
+            k: {'market': [{'date': '2026-08-19', 'rate': v}]}
+            for k, v in (('ma20', 50.2), ('ma60', 32.7), ('ma120', 17.5))
+        },
+    }
+    (tmp_path / 'latest').mkdir(parents=True, exist_ok=True)
+    (tmp_path / 'latest' / 'market_temperature.json').write_text(json.dumps(doc), encoding='utf-8')
+    b = read_breadth(tmp_path)
+    assert b is not None
+    assert b['as_of'] == '2026-08-19'
+    assert b['stale'] is False
+    assert b['ma20_pct'] == 0.502
+
+
+def test_read_breadth_trailing_none_rate_skipped(tmp_path: Path) -> None:
+    """末条 rate=None (当日未算完) 不降级整组, 取最后非空值。"""
+    doc = {
+        'schema_version': '2.0',
+        'periods': {
+            k: {'market': [{'date': '2026-08-18', 'rate': v}, {'date': '2026-08-19', 'rate': None}]}
+            for k, v in (('ma20', 81.2), ('ma60', 48.6), ('ma120', 24.3))
+        },
+    }
+    (tmp_path / 'latest').mkdir(parents=True, exist_ok=True)
+    (tmp_path / 'latest' / 'market_temperature.json').write_text(json.dumps(doc), encoding='utf-8')
+    b = read_breadth(tmp_path)
+    assert b is not None
+    assert b['ma20_pct'] == 0.812
+
+
 def test_read_breadth_missing_file(tmp_path: Path) -> None:
     assert read_breadth(tmp_path) is None
 

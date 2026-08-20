@@ -37,7 +37,9 @@
             "ma20_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
             "ma60_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
             "ma120_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-            "source": { "type": "string" }
+            "source": { "type": "string" },
+            "as_of": { "type": "string" },
+            "stale": { "type": "boolean" }
           }
         },
         "source_status": {

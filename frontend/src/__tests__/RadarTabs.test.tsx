@@ -4,14 +4,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { RadarTabs } from '@/components/Header/RadarTabs';
 
 describe('RadarTabs', () => {
-  it('旅程式顺序: 温度→雷达→轮动→持仓→自选→证据→网格→贵金属', () => {
+  it('旅程式顺序: 温度→雷达→轮动→持仓→自选→证据→网格→贵金属→交易', () => {
     render(
       <MemoryRouter>
         <RadarTabs />
       </MemoryRouter>,
     );
     const labels = screen.getAllByRole('link').map((a) => a.textContent);
-    expect(labels).toEqual(['温度', '雷达', '轮动', '持仓', '自选', '证据', '网格', '贵金属']);
+    expect(labels).toEqual(['温度', '雷达', '轮动', '持仓', '自选', '证据', '网格', '贵金属', '交易']);
   });
 
   it('当前路径对应 tab 高亮 (bg-blue-600)', () => {

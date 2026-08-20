@@ -17,6 +17,7 @@ export const RadarTabs = () => {
       <Link to="/evidence" className={linkClass(pathname === '/evidence')}>证据</Link>
       <Link to="/grid" className={linkClass(pathname === '/grid')}>网格</Link>
       <Link to="/metals" className={linkClass(pathname === '/metals')}>贵金属</Link>
+      <Link to="/trading" className={linkClass(pathname === '/trading')}>交易</Link>
     </div>
   );
 };

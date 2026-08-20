@@ -93,6 +93,51 @@ export const GATE_COPY: Record<GatedPage, {
       lines: ['订阅数据仅用于会员服务', '不与任何第三方共享', '不构成投资建议'],
     },
   },
+  'trading-signals': {
+    icon: '📡',
+    title: '交易信号跟踪',
+    subtitle: 'SEPA 趋势模板 + VCP 形态的 A 股候选池每日快照',
+    features: [
+      '全市场漏斗筛选：趋势模板 → Stage 2 → VCP → 综合分 Top 50',
+      '买区 / 止损位 / 距买区距离的事实性状态展示',
+      '风险预算法仓位计算器（纯算术，无指令）',
+    ],
+    unconfiguredHint: '交易信号跟踪功能',
+    footer: {
+      heading: '⚠ 免责声明',
+      lines: ['全部内容为事实性数据展示，非买卖指令', '不构成投资建议'],
+    },
+  },
+  'trading-positions': {
+    icon: '📌',
+    title: '持仓管理',
+    subtitle: '您的持仓每日信号事件跟踪（止损位 / 均线 / 阶段变化）',
+    features: [
+      '持仓每日 EOD 信号事件：事实性状态变化记录',
+      '止损位跟踪（只上移规则的计算展示）',
+      '云端存储（Supabase），仅本人可见',
+    ],
+    unconfiguredHint: '持仓管理功能',
+    footer: {
+      heading: '🔒 数据隐私',
+      lines: ['持仓数据仅用于本人信号叠加', '不与任何第三方共享', '不构成投资建议'],
+    },
+  },
+  'trading-review': {
+    icon: '🧾',
+    title: '交易复盘',
+    subtitle: '按纪律分与结果分（R 倍数）回顾交易记录',
+    features: [
+      '纪律分 0-100：入场 / 止损执行 / 退出响应 / 仓位合规',
+      '结果分：R 倍数、持仓天数、MAE',
+      '按环境档位切片的胜率与期望统计',
+    ],
+    unconfiguredHint: '交易复盘功能',
+    footer: {
+      heading: '⚠ 免责声明',
+      lines: ['复盘统计为历史记录描述', '不构成投资建议'],
+    },
+  },
 };
 
 interface FeatureGateProps {

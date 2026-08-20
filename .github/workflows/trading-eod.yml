@@ -1,0 +1,91 @@
+name: trading-eod
+
+on:
+  schedule:
+    # UTC 09:00 = BJT 17:00, 晚 stocks-daily(UTC 08:30) 约 30 分钟:
+    # 错峰避让新浪源并发限速 + 错开 push main 窗口
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+
+env:
+  # uv 冻结模式: pyproject/uv.lock 漂移(dependabot 改约束未同步 lock)时不改写 uv.lock,
+  # 防脏工作树 -> Commit 步骤 git pull --rebase exit 128 停更 (2026-07-09 事故加固)
+  UV_FROZEN: "1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trading-eod
+
+jobs:
+  ohlcv:
+    runs-on: ubuntu-latest
+    # 全市场 ~5000 只整窗拉取(qfq 前复权因子随除权改写全窗, 无法按日期增量) +
+    # 单只失败隔离重试, 海外 runner 限速下耗时未知。给足上限, 实跑校准后再下调
+    # (20min 误配截断正常慢运行致 5 周停更的先例, 勿配短)。
+    timeout-minutes: 120
+    steps:
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Check CN trading day
+        id: cal
+        run: |
+          pip install chinese-calendar -q
+          is_trading=$(python -c "
+          from datetime import datetime, timezone, timedelta
+          import chinese_calendar
+          today = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
+          # 须与 src/etl/calendar.py is_cn_trading_day 同步: isoweekday 保护 + 调休误判/未来年兜底
+          def _ok(d):
+              if d.isoweekday() > 5:
+                  return False
+              try:
+                  return chinese_calendar.is_workday(d) and not chinese_calendar.is_holiday(d)
+              except NotImplementedError:
+                  return False
+          ok = _ok(today)
+          print('true' if ok else 'false')
+          ")
+          echo "is_trading=$is_trading" >> $GITHUB_OUTPUT
+          echo "trading_day=$is_trading"
+      - uses: actions/checkout@v7
+        if: steps.cal.outputs.is_trading == 'true'
+        with:
+          token: ${{ secrets.DATA_BOT_PAT }}
+      - name: Install uv
+        if: steps.cal.outputs.is_trading == 'true'
+        run: pip install uv
+      - name: Install deps
+        if: steps.cal.outputs.is_trading == 'true'
+        run: cd backend && uv sync --all-extras --frozen
+      - name: Run OHLCV increment
+        if: steps.cal.outputs.is_trading == 'true'
+        run: cd backend && uv run python -m src.stocks_ohlcv_pipeline --data-root ../data
+      # ---- M4: 信号管线 + 复盘闭环 (M0 ohlcv 之上追加) ----
+      - name: Run trading signal pipeline
+        if: steps.cal.outputs.is_trading == 'true'
+        run: cd backend && uv run python -m src.trading.pipeline --data-root ../data
+      - name: Trading EOD actions (review + notify)
+        if: steps.cal.outputs.is_trading == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+        run: cd backend && uv run python -m src.trading.actions_main --data-root ../data
+      - name: Compute commit metadata
+        if: steps.cal.outputs.is_trading == 'true'
+        id: meta
+        run: echo "ts=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
+      - name: Commit & push
+        if: steps.cal.outputs.is_trading == 'true'
+        uses: ./.github/actions/commit-and-push
+        with:
+          paths: |
+            data/stocks/ohlcv/
+            data/latest/trading.json
+            data/latest/trading_notify_state.json
+          message: "data: trading eod ${{ steps.meta.outputs.ts }}"
+          user-name: data-bot
+          user-email: data-bot@users.noreply.github.com

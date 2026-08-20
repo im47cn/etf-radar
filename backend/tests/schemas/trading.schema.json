@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trading file (data/latest/trading.json) — SEPA spec §2.3",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "environment", "candidates", "universe_stats"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "generated_at": { "type": "string" },
+    "environment": {
+      "type": "object",
+      "required": ["regime", "indices", "breadth", "source_status"],
+      "properties": {
+        "regime": { "enum": ["offense", "neutral", "defense"] },
+        "indices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code", "name", "template_pass", "criteria", "close"],
+            "properties": {
+              "code": { "type": "string" },
+              "name": { "type": "string" },
+              "template_pass": { "type": "integer", "minimum": 0, "maximum": 8 },
+              "criteria": {
+                "type": "array",
+                "minItems": 8,
+                "maxItems": 8,
+                "items": { "type": "boolean" }
+              },
+              "close": { "type": ["number", "null"] }
+            }
+          }
+        },
+        "breadth": {
+          "type": ["object", "null"],
+          "required": ["ma20_pct", "ma60_pct", "ma120_pct", "source"],
+          "properties": {
+            "ma20_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "ma60_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "ma120_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "source": { "type": "string" }
+          }
+        },
+        "source_status": {
+          "type": "object",
+          "required": ["indices", "rs_benchmark"],
+          "properties": {
+            "indices": { "enum": ["ok", "partial", "missing"] },
+            "rs_benchmark": { "enum": ["ok", "missing"] },
+            "spot": { "enum": ["ok", "missing"] },
+            "breadth": { "enum": ["ok", "missing"] },
+            "universe": { "enum": ["ok", "empty"] },
+            "vol": { "enum": ["ok", "missing"] }
+          }
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": [
+          "code", "name", "composite_score", "stage", "template_pass", "rs_pct", "vcp",
+          "pivot", "buy_zone_low", "buy_zone_high", "stop", "state", "limit_up_unexecutable",
+          "chg_pct", "board", "vol_forecast_ann"
+        ],
+        "properties": {
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "composite_score": { "type": ["number", "null"], "minimum": 0, "maximum": 10 },
+          "stage": { "type": "integer", "minimum": 1, "maximum": 4 },
+          "template_pass": { "type": ["integer", "null"], "minimum": 0, "maximum": 8 },
+          "rs_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+          "vcp": {
+            "type": ["object", "null"],
+            "required": ["contractions", "depth_pct", "quality", "volume_dryup"],
+            "properties": {
+              "contractions": { "type": "integer", "minimum": 2 },
+              "depth_pct": { "type": ["number", "null"], "minimum": 0 },
+              "quality": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+              "volume_dryup": { "type": "boolean" }
+            }
+          },
+          "pivot": { "type": ["number", "null"] },
+          "buy_zone_low": { "type": ["number", "null"] },
+          "buy_zone_high": { "type": ["number", "null"] },
+          "stop": { "type": ["number", "null"] },
+          "state": { "enum": ["in_buy_zone", "near_buy_zone", "watch"] },
+          "limit_up_unexecutable": { "type": "boolean" },
+          "chg_pct": { "type": ["number", "null"] },
+          "board": { "enum": ["main", "chinext", "star"] },
+          "vol_forecast_ann": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "universe_stats": {
+      "type": "object",
+      "required": ["total", "tradable", "stage2", "vcp", "top"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "tradable": { "type": "integer", "minimum": 0 },
+        "stage2": { "type": "integer", "minimum": 0 },
+        "vcp": { "type": "integer", "minimum": 0 },
+        "top": { "type": "integer", "minimum": 0, "maximum": 50 }
+      }
+    }
+  }
+}

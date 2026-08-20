@@ -15,6 +15,7 @@ import { TemperaturePage } from '@/pages/TemperaturePage';
 import { EvidencePage } from '@/pages/EvidencePage';
 import { GridPage } from '@/pages/GridPage';
 import { MetalsPage } from '@/pages/MetalsPage';
+import { TradingPage } from '@/pages/TradingPage';
 import { MembershipPage } from '@/pages/MembershipPage';
 import { WatchlistPage } from '@/pages/WatchlistPage';
 
@@ -32,6 +33,7 @@ const AnimatedRoutes = () => {
         <Route path="/evidence"       element={<EvidencePage />} />
       <Route path="/grid"           element={<GridPage />} />
         <Route path="/metals"         element={<MetalsPage />} />
+        <Route path="/trading"        element={<TradingPage />} />
         <Route path="/portfolio"      element={<PortfolioPage />} />
         <Route path="/membership"     element={<MembershipPage />} />
         <Route path="/watchlist"      element={<WatchlistPage />} />

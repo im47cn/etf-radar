@@ -1,19 +1,19 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-20T14:35:24.188858+08:00",
+  "generated_at": "2026-08-20T16:04:24.093658+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": null,
+      "signal": "transmission",
       "direction": "up",
       "direction_tier": null,
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "512760",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "transmission"
       },
-      "description": "美股存储芯片 composite 72 动量观察中"
+      "description": "美股 composite 72 领先, A股尚未同步"
     },
     {
       "theme_id": "semiconductor",
@@ -134,16 +134,16 @@
     },
     {
       "theme_id": "gold",
-      "signal": "resonance",
+      "signal": null,
       "direction": "up",
       "direction_tier": "high",
-      "trigger_cn_etf": "518880",
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "resonance",
-        "mid": "resonance",
+        "short": null,
+        "mid": null,
         "long": null
       },
-      "description": "美股黄金 composite 61 动量观察中, 共振偏多（高置信）"
+      "description": "美股黄金 composite 61 动量观察中"
     },
     {
       "theme_id": "silver",
@@ -165,7 +165,7 @@
       "direction_tier": null,
       "trigger_cn_etf": "512400",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": "transmission"
       },
@@ -412,11 +412,11 @@
       "cn_code": "512480",
       "mapping_score": 30,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "resonance"
+        "long": "transmission"
       }
     },
     {
@@ -424,11 +424,11 @@
       "cn_code": "512760",
       "mapping_score": 32,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "resonance"
+        "long": "transmission"
       }
     },
     {
@@ -440,7 +440,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "resonance"
+        "long": "transmission"
       }
     },
     {
@@ -488,7 +488,7 @@
       "votes": {
         "short": null,
         "mid": "transmission",
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -568,10 +568,10 @@
       "cn_code": "518880",
       "mapping_score": 32,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
-        "short": "resonance",
-        "mid": "resonance",
+        "short": "transmission",
+        "mid": null,
         "long": null
       }
     },
@@ -582,7 +582,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -594,7 +594,7 @@
       "confidence": 60,
       "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": "transmission"
       }
@@ -607,7 +607,7 @@
       "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": null,
+        "mid": "resonance",
         "long": null
       }
     },
@@ -618,8 +618,8 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
-        "mid": null,
+        "short": "transmission",
+        "mid": "divergence",
         "long": null
       }
     },
@@ -666,7 +666,7 @@
       "confidence": 90,
       "signal": "resonance",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "resonance",
         "long": "resonance"
       }
@@ -738,7 +738,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": null,
         "long": "divergence"
       }

@@ -7,13 +7,18 @@ vi.mock('@/hooks/useTrading', async (importOriginal) => {
   return { ...actual, useTrading: vi.fn() };
 });
 vi.mock('@/lib/subscription/useSubscription', () => ({ useSubscription: vi.fn() }));
+vi.mock('@/hooks/useTrades', () => ({ useTrades: vi.fn() }));
+vi.mock('@/lib/trading/api', () => ({ listReviews: vi.fn() }));
 
 import { useTrading } from '@/hooks/useTrading';
 import { useSubscription } from '@/lib/subscription/useSubscription';
+import { useTrades } from '@/hooks/useTrades';
+import { listReviews } from '@/lib/trading/api';
 import { AuthContext } from '@/providers/authContext';
 import { TradingPage } from '@/pages/TradingPage';
 import { TradingSchema } from '@/types/trading';
 import { calcPosition } from '@/components/trading/PositionCalculator';
+import { DEFAULT_SETTINGS_VALUES, type TradeReview } from '@/lib/trading/types';
 
 // ── 夹具 (spec §2.3 样例) ─────────────────────────────────────────────
 
@@ -80,7 +85,11 @@ const mkTrading = (over: Record<string, unknown> = {}) => ({
 
 // ── 渲染 helper (member 态, 同 GridPage 模式) ──────────────────────────
 
-const renderTrading = (hookOverrides: Record<string, unknown> = {}) => {
+const renderTrading = (
+  hookOverrides: Record<string, unknown> = {},
+  tradesOverrides: Record<string, unknown> = {},
+  reviews: TradeReview[] = [],
+) => {
   vi.mocked(useSubscription).mockReturnValue({ state: 'member' } as never);
   vi.mocked(useTrading).mockReturnValue({
     data: mkTrading(),
@@ -88,6 +97,19 @@ const renderTrading = (hookOverrides: Record<string, unknown> = {}) => {
     isLoading: false,
     ...hookOverrides,
   } as never);
+  vi.mocked(useTrades).mockReturnValue({
+    trades: [],
+    positions: [],
+    settings: { user_id: '', updated_at: '', ...DEFAULT_SETTINGS_VALUES },
+    loading: false,
+    error: null,
+    addTrade: vi.fn(),
+    removeTrade: vi.fn(),
+    updateSettings: vi.fn(),
+    refresh: vi.fn(),
+    ...tradesOverrides,
+  } as never);
+  vi.mocked(listReviews).mockReset().mockResolvedValue(reviews);
   render(
     <MemoryRouter>
       <AuthContext.Provider value={{ status: 'authenticated', user: { email: 'a@b.com' } } as never}>
@@ -286,15 +308,58 @@ describe('TradingPage 信号 Tab', () => {
   });
 });
 
-// ── 持仓 / 复盘占位 Tab ──────────────────────────────────────────────
+// ── 持仓 / 复盘 Tab (member 门内) ────────────────────────────────────
 
-describe('TradingPage 持仓/复盘占位', () => {
-  it('member 态点持仓/复盘显示接线占位', () => {
+describe('TradingPage 持仓/复盘 Tab', () => {
+  it('member 态点持仓: 空数据渲染四区块与合规脚注', async () => {
     renderTrading();
     clickTab('持仓');
-    expect(screen.getByText(/持仓管理建设中/)).toBeInTheDocument();
+    expect(screen.getByText(/暂无持仓/)).toBeInTheDocument();
+    expect(screen.getByText(/暂无交易记录/)).toBeInTheDocument();
+    expect(screen.getByText('权益与风控参数')).toBeInTheDocument();
+    expect(screen.getByText(/不构成买卖指令或投资建议/)).toBeInTheDocument();
+    // 录入表单在空态下直接可见（无需展开）
+    expect(screen.getByLabelText('交易记录录入')).toBeInTheDocument();
     clickTab('复盘');
-    expect(screen.getByText(/交易复盘建设中/)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByText(/复盘评分将在每晚交易数据管线运行后生成/)).toBeInTheDocument(),
+    );
+  });
+
+  it('持仓 Tab: loading 骨架与数据加载失败提示', () => {
+    renderTrading({}, { loading: true });
+    clickTab('持仓');
+    expect(screen.getByLabelText('加载中')).toBeInTheDocument();
+    cleanup();
+    renderTrading({}, { loading: false, error: 'connection refused' });
+    clickTab('持仓');
+    expect(screen.getByRole('alert')).toHaveTextContent('connection refused');
+  });
+
+  it('持仓 Tab: 有持仓渲染表格行', () => {
+    renderTrading({}, {
+      positions: [{
+        code: '600519', name: '贵州茅台', shares: 100, avg_cost: 1710.5, stop_current: 1573.2,
+      }],
+    });
+    clickTab('持仓');
+    const rows = screen.getAllByRole('row');
+    expect(rows[1]?.textContent).toContain('600519');
+    expect(rows[1]?.textContent).toContain('1573.20');
+  });
+
+  it('复盘 Tab: Actions 产出后渲染统计卡与逐笔列表', async () => {
+    renderTrading({}, {}, [
+      {
+        id: 'rv1', user_id: 'u', trade_id: 't1', review_date: '2026-08-19',
+        discipline_score: 100, result_r: 2, mae_pct: -1,
+        events: { pnl: 100, dimensions: {} }, computed_at: '2026-08-19T17:30:00Z',
+      },
+    ]);
+    clickTab('复盘');
+    await waitFor(() => expect(screen.getByText('100.0%')).toBeInTheDocument());
+    expect(screen.getByText('1 笔已复盘')).toBeInTheDocument();
+    expect(screen.getByText('逐笔复盘')).toBeInTheDocument();
   });
 });
 
@@ -341,6 +406,44 @@ describe('PositionCalculator UI (信号 Tab 内)', () => {
     clickTab('信号');
     expect(screen.getByText(/输入权益、入场价、止损价后显示计算结果/)).toBeInTheDocument();
     expect(screen.getByText(/当前环境档位为进攻/)).toBeInTheDocument();
+  });
+
+  it('初始参数联动 trading_settings: 已保存时回填, 未保存时回落本地默认', () => {
+    // 未保存 (updated_at 空): 权益空, 本地默认 0.75% / 20%
+    renderTrading();
+    clickTab('信号');
+    expect(screen.getByPlaceholderText('100000')).toHaveValue('');
+    expect(screen.getByDisplayValue('0.75')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('20')).toBeInTheDocument();
+    cleanup();
+    // 已保存: DB 值作为计算器初始值
+    renderTrading({}, {
+      settings: {
+        user_id: 'u', updated_at: '2026-08-20T09:00:00Z', equity_cny: 200000,
+        risk_per_trade_pct: 1, max_positions: 3, max_position_pct: 30, max_portfolio_risk_pct: 5,
+      },
+    });
+    clickTab('信号');
+    expect(screen.getByPlaceholderText('100000')).toHaveValue('200000');
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('30')).toBeInTheDocument();
+    // 联动后本地修改仍生效 (临时改参数参与计算)
+    fireEvent.change(screen.getByPlaceholderText('17.10'), { target: { value: '17.1' } });
+    fireEvent.change(screen.getByPlaceholderText('15.73'), { target: { value: '15.73' } });
+    // 风险 1% × 200000 = 2000, 每股风险 1.37 → 1459 股
+    expect(screen.getByText('1459 股')).toBeInTheDocument();
+  });
+
+  it('settings 已保存但权益未设置: 参数回填, 权益保留空输入', () => {
+    renderTrading({}, {
+      settings: {
+        user_id: 'u', updated_at: '2026-08-20T09:00:00Z', equity_cny: null,
+        risk_per_trade_pct: 0.75, max_positions: 5, max_position_pct: 20, max_portfolio_risk_pct: 4,
+      },
+    });
+    clickTab('信号');
+    expect(screen.getByPlaceholderText('100000')).toHaveValue('');
+    expect(screen.getByDisplayValue('0.75')).toBeInTheDocument();
   });
 
   it('输入三值输出风险预算股数与口径对照', () => {

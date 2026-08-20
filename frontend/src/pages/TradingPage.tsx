@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { FeatureGate } from '@/components/gate/FeatureGate';
 import { EnvironmentTab } from '@/components/trading/EnvironmentTab';
 import { SignalsTab } from '@/components/trading/SignalsTab';
+import { PositionsTab } from '@/components/trading/positions/PositionsTab';
+import { ReviewsTab } from '@/components/trading/review/ReviewsTab';
 
-/** 四 Tab 页壳: 环境(免费) / 信号🔒 / 持仓🔒 / 复盘🔒. 持仓与复盘为 M3/M4 接线占位. */
+/** 四 Tab 页壳: 环境(免费) / 信号🔒 / 持仓🔒 / 复盘🔒. */
 type TabKey = 'env' | 'signals' | 'positions' | 'review';
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -17,22 +19,6 @@ const tabBtn = (active: boolean): string =>
   active
     ? 'px-3 py-1 rounded bg-blue-600 text-white text-sm transition-all duration-150'
     : 'px-3 py-1 rounded text-gray-700 hover:bg-gray-100 text-sm transition-all duration-150 active:scale-95';
-
-/** 持仓 Tab 占位 (M3 lane 接线: TradesProvider + 交易录入). */
-const PositionsPlaceholder = () => (
-  <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
-    持仓管理建设中：将接入云端交易记录与每日 EOD 持仓信号事件
-    （止损位变化 / 收盘跌破 50 日均线 / 阶段转换 / 停牌冻结），全部为事实性状态展示。
-  </div>
-);
-
-/** 复盘 Tab 占位 (M3/M4 lane 接线: trade_reviews + Actions 评分). */
-const ReviewPlaceholder = () => (
-  <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
-    交易复盘建设中：将接入纪律分（0-100）与结果分（R 倍数 / 持仓天数 / MAE），
-    并按环境档位切片统计胜率与期望。
-  </div>
-);
 
 export const TradingPage = () => {
   const [tab, setTab] = useState<TabKey>('env');
@@ -67,13 +53,13 @@ export const TradingPage = () => {
 
       {tab === 'positions' && (
         <FeatureGate copy="trading-positions" required="member">
-          <PositionsPlaceholder />
+          <PositionsTab />
         </FeatureGate>
       )}
 
       {tab === 'review' && (
         <FeatureGate copy="trading-review" required="member">
-          <ReviewPlaceholder />
+          <ReviewsTab />
         </FeatureGate>
       )}
 

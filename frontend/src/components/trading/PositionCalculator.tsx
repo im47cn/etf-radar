@@ -1,10 +1,13 @@
 /* eslint-disable react-refresh/only-export-components -- calcPosition 是 PositionCalculator 的配套纯函数, 供单测直接验证 */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useTrades } from '@/hooks/useTrades';
 import type { TradingRegime } from '@/types/trading';
 
 /**
  * 仓位计算器 (spec §1.7): 风险预算法纯算术展示.
  * 输出为计算结果而非操作指令 (合规立场 §0).
+ * 初始参数联动 trading_settings（持仓 Tab 保存值）；未保存（updated_at 空）回落本地默认
+ * 0.75%/20%。本地修改保留——settings 引用不变时 effect 不重跑，仅显式保存后的新值回填。
  */
 
 export interface PositionCalcInput {
@@ -80,11 +83,23 @@ const regimeHint = (regime: TradingRegime | null): string => {
 };
 
 export const PositionCalculator = ({ regime }: { regime: TradingRegime | null }) => {
+  const { settings } = useTrades();
   const [equityStr, setEquityStr] = useState('');
   const [entryStr, setEntryStr] = useState('');
   const [stopStr, setStopStr] = useState('');
   const [riskPctStr, setRiskPctStr] = useState('0.75');
   const [maxPosPctStr, setMaxPosPctStr] = useState('20');
+
+  // settings 回填初始值（仅 DB 已保存的行, updated_at 非空）；equity 未设置(null)不清空本地输入。
+  // DB 值 → 本地草稿的单层回填, 无级联渲染, 豁免 set-state-in-effect（同 TradingSettingsPanel）。
+  /* eslint-disable react-hooks/set-state-in-effect -- DB 异步值回填本地草稿, 单层无级联 */
+  useEffect(() => {
+    if (settings.updated_at === '') return; // 未保存过: 保留本地默认 0.75%/20%
+    if (settings.equity_cny != null) setEquityStr(String(settings.equity_cny));
+    setRiskPctStr(String(settings.risk_per_trade_pct));
+    setMaxPosPctStr(String(settings.max_position_pct));
+  }, [settings]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const equity = parsePositive(equityStr);
   const entry = parsePositive(entryStr);

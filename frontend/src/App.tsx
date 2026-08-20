@@ -4,6 +4,7 @@ import { DataProvider } from '@/providers/DataProvider';
 import { UIStateProvider } from '@/providers/UIStateProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { HoldingsProvider } from '@/providers/HoldingsProvider';
+import { TradesProvider } from '@/providers/TradesProvider';
 import { EventsProvider } from '@/providers/EventsProvider';
 import { Header } from '@/components/Header';
 import { RadarPage } from '@/pages/RadarPage';
@@ -50,14 +51,16 @@ export default function App() {
       <HashRouter>
         <AuthProvider>
           <HoldingsProvider>
-            <EventsProvider>
+            <TradesProvider>
+              <EventsProvider>
               <UIStateProvider>
                 <div className="min-h-screen bg-gray-50">
                   <Header />
                   <AnimatedRoutes />
                 </div>
               </UIStateProvider>
-            </EventsProvider>
+              </EventsProvider>
+            </TradesProvider>
           </HoldingsProvider>
         </AuthProvider>
       </HashRouter>

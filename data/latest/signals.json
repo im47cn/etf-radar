@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-20T13:24:20.117236+08:00",
+  "generated_at": "2026-08-20T13:55:04.977691+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -17,16 +17,16 @@
     },
     {
       "theme_id": "semiconductor",
-      "signal": "transmission",
+      "signal": null,
       "direction": "down",
       "direction_tier": "high",
-      "trigger_cn_etf": "159516",
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "resonance"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股 composite 46 领先, A股尚未同步"
+      "description": "美股半导体 composite 46 动量观察中"
     },
     {
       "theme_id": "cybersecurity",
@@ -460,9 +460,9 @@
       "cn_code": "159516",
       "mapping_score": 24,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
         "long": "resonance"
       }
@@ -488,7 +488,7 @@
       "votes": {
         "short": null,
         "mid": "transmission",
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -595,7 +595,7 @@
       "signal": null,
       "votes": {
         "short": "resonance",
-        "mid": null,
+        "mid": "transmission",
         "long": "divergence"
       }
     },
@@ -618,8 +618,8 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
-        "mid": null,
+        "short": null,
+        "mid": "divergence",
         "long": null
       }
     },
@@ -738,7 +738,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": null,
         "long": "divergence"
       }

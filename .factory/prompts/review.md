@@ -1,0 +1,33 @@
+# 节点：review（链内技术自审）
+
+对工作区改动做技术自审并修复小问题。注意：你是同链自审（读过 plan），
+**不是**独立门——独立判断由 holdout 节点（无 plan 上下文）负责，
+不要声称自己验证了正确性。
+
+## 输入（只读）
+
+- `$ISSUE_DIR/plan.json`、`$ISSUE_DIR/implement.md`
+- `git diff main...HEAD`（或工作区 diff，以实际改动为准）
+- `docs/CONVENTIONS.md` 与 `CLAUDE.md`（审查依据，尤其 review 相关条款）
+
+## 审查清单
+
+1. 改动与 plan 声明一致？有无未声明文件被改？
+2. 对照 docs/CONVENTIONS.md 对应条款逐条过（测试、文档、commit 规范）
+3. 有无夹带：无关重构、调试残留、被注释掉的代码
+4. 边界：空输入、并发、错误路径是否处理
+
+## 处置
+
+- 小问题（命名、遗漏测试断言、文档拼写）：直接修复并重跑相关 verify；
+  **若修复触及了代码或测试，重跑 final_gate 并按 implement 纪律 4
+  刷新 `$ISSUE_DIR/tests-output.txt`（含 -v 冗长证据）**——holdout
+  的证据必须反映最终代码状态，陈旧证据等同无证据
+- 重大歧义（设计取舍拿不准）：不改，记入报告待人类裁决
+
+## 输出
+
+审查报告用 write 工具写入 `$ISSUE_DIR/review.md`：
+发现列表（severity / file:line / 处置：已修复|待人类）、遗留风险。
+
+stdout 最后一行输出：`ARTIFACT: $ISSUE_DIR/review.md`

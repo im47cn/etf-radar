@@ -1,0 +1,159 @@
+"""factory_lib 单测 —— 全部锚定 S2 真实链暴露过的缺陷（回归优先）。
+
+缺陷→测试映射:
+- 解析崩溃（group(0) 含 ```json 字面量）→ test_parse_fenced_* 系列
+- 证据饥饿（-q 无测试名）→ test_evidence_suites_*
+- 熔断边界（跨天/重置/上限）→ test_breaker_*
+"""
+
+import pytest
+
+from factory_lib import CircuitOpen, breaker_check, evidence_suites, parse_agent_json
+
+# ---- S2 issue #2 holdout 的真实输出形态（fence 包裹 + 前导文字）----
+REAL_HOLDOUT = """Working...
+```json
+{"verdict": "PASS",
+ "evidence": "TestCheckKebabCase 的 test_leading_hyphen_rejected PASSED 与诉求对应",
+ "residual_risk": null}
+```
+"""
+
+# ---- S2 issue #3 triage 的真实输出形态（裸 JSON，无 fence）----
+REAL_TRIAGE = """{"issue": 3, "verdict": "reject", "priority": null,
+ "reasons": ["判据c: 不通过——需修改 steering/，在 PERIMETER 中"]}"""
+
+
+class TestParseAgentJson:
+    VERDICTS = {"PASS", "FAIL"}
+
+    def test_parse_fenced_group1_regression(self):
+        """回归：围栏形态必须只取组 1。旧 bug 用 group(0)（含 ```json 字面量）
+        进 json.loads 必炸——2026-08-21 链死根因。"""
+        d = parse_agent_json(REAL_HOLDOUT, self.VERDICTS)
+        assert d["verdict"] == "PASS"
+        assert "test_leading_hyphen_rejected" in d["evidence"]
+
+    def test_parse_fenced_fail_verdict(self):
+        text = '```json\n{"verdict": "FAIL", "evidence": "无法建立对应关系"}\n```'
+        assert parse_agent_json(text, self.VERDICTS)["verdict"] == "FAIL"
+
+    def test_parse_bare_json_fallback(self):
+        """S2 issue #3 triage 真实形态：无 fence 裸 JSON 兜底路径。"""
+        d = parse_agent_json(REAL_TRIAGE, {"accept", "reject"})
+        assert d["verdict"] == "reject"
+        assert d["issue"] == 3
+
+    def test_parse_with_surrounding_noise(self):
+        text = '思考中...\n{"verdict": "FAIL", "evidence": "x"}\n完毕'
+        assert parse_agent_json(text, self.VERDICTS)["verdict"] == "FAIL"
+
+    def test_parse_no_json_raises(self):
+        with pytest.raises(ValueError, match="未找到 JSON"):
+            parse_agent_json("没有任何结构化输出", self.VERDICTS)
+
+    def test_parse_bad_verdict_fail_closed(self):
+        """verdict 缺失/非法必须 fail-closed，不许坏裁决流入链。"""
+        with pytest.raises(ValueError, match="verdict"):
+            parse_agent_json('{"verdict": "MAYBE"}', self.VERDICTS)
+        with pytest.raises(ValueError, match="verdict"):
+            parse_agent_json('{"no_verdict": true}', self.VERDICTS)
+
+    def test_parse_multiline_nested_braces(self):
+        """evidence 含中文引号与嵌套花括号（贪心兜底的边界）。"""
+        text = '{"verdict": "PASS", "evidence": "输出「{[1/3] OK}」对应诉求"}'
+        d = parse_agent_json(text, self.VERDICTS)
+        assert d["verdict"] == "PASS"
+
+
+class TestEvidenceSuites:
+    def test_backend_frontend_change_yield_suites(self):
+        """回归：backend/frontend 改动必须产出证据套件——否则 holdout 只见
+        -q 点号，证据饥饿永远 FAIL（S2 issue #2 首次裁决死因）。"""
+        assert evidence_suites(["backend/src/trading/pipeline.py"]) == ["backend"]
+        assert evidence_suites(["frontend/src/pages/Metals.tsx"]) == ["frontend"]
+
+    def test_perimeter_change_no_suite(self):
+        assert evidence_suites(["README.md", "docs/x.md", "MISSION.md"]) == []
+
+    def test_dedup_and_sort(self):
+        files = [
+            "frontend/src/lib/api.ts",
+            "backend/src/pipeline.py",
+            "backend/tests/test_pipeline.py",
+        ]
+        assert evidence_suites(files) == ["backend", "frontend"]
+
+    def test_empty(self):
+        assert evidence_suites([]) == []
+
+
+class TestBreakerCheck:
+    FLOOR = {"max_runs_per_day": 10, "max_consecutive_failures": 3}
+
+    @staticmethod
+    def _e(day: str, exit_code: int = 0) -> dict:
+        return {"ts": f"{day}T12:00:00Z", "issue": 1, "exit": exit_code, "secs": 60}
+
+    def test_empty_ledger_passes(self):
+        breaker_check(self.FLOOR, [], "2026-08-21")
+
+    def test_daily_cap_trips(self):
+        entries = [self._e("2026-08-21")] * 10
+        with pytest.raises(CircuitOpen, match="今日已跑 10 次"):
+            breaker_check(self.FLOOR, entries, "2026-08-21")
+
+    def test_daily_cap_boundary_below(self):
+        entries = [self._e("2026-08-21")] * 9
+        breaker_check(self.FLOOR, entries, "2026-08-21")  # 9 < 10 放行
+
+    def test_other_day_runs_not_counted(self):
+        entries = [self._e("2026-08-20")] * 25
+        breaker_check(self.FLOOR, entries, "2026-08-21")  # 跨天清零
+
+    def test_consecutive_failures_trip(self):
+        entries = [self._e("2026-08-21", 1)] * 3
+        with pytest.raises(CircuitOpen, match="连续失败 3 次"):
+            breaker_check(self.FLOOR, entries, "2026-08-21")
+
+    def test_success_resets_streak(self):
+        entries = [self._e("2026-08-20", 1), self._e("2026-08-20", 1),
+                   self._e("2026-08-20", 0), self._e("2026-08-21", 1)]
+        breaker_check(self.FLOOR, entries, "2026-08-21")  # 成功重置后 streak=1
+
+    def test_streak_spans_days(self):
+        """streak 是状态不是流量：昨天的失败延续到今天。"""
+        entries = [self._e("2026-08-20", 1)] * 2 + [self._e("2026-08-21", 1)]
+        with pytest.raises(CircuitOpen, match="连续失败"):
+            breaker_check(self.FLOOR, entries, "2026-08-21")
+
+
+
+class TestNodeTimeout:
+    """分级预算：裁决器秒级节点不再挂 30m 全局预算（fail-fast 省成本）。"""
+
+    def test_adjudicators_get_tight_budget(self):
+        from factory_lib import node_timeout
+        assert node_timeout("triage") == "5m"
+        assert node_timeout("holdout") == "5m"
+
+    def test_implement_gets_full_budget(self):
+        from factory_lib import node_timeout
+        assert node_timeout("implement") == "30m"
+
+    def test_unknown_node_defaults_15m(self):
+        from factory_lib import node_timeout
+        assert node_timeout("mystery") == "15m"
+
+    def test_per_node_env_override_wins(self):
+        from factory_lib import node_timeout
+        env = {"FACTORY_TIMEOUT_IMPLEMENT": "45m", "FACTORY_TIMEOUT": "9m"}
+        assert node_timeout("implement", env) == "45m"
+
+    def test_global_env_fallback(self):
+        from factory_lib import node_timeout
+        assert node_timeout("plan", {"FACTORY_TIMEOUT": "9m"}) == "9m"
+
+    def test_hyphen_node_env_key(self):
+        from factory_lib import node_timeout
+        assert node_timeout("pr-review", {"FACTORY_TIMEOUT_PR_REVIEW": "3m"}) == "3m"

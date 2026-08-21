@@ -1,0 +1,69 @@
+{
+  "$schema": "https://etf-radar.invalid/factory/mutations-v0.json",
+  "description": "S0 冒烟缺陷集（etf-radar 移植版）：验证 guard 门对治理/周界篡改的拦截灵敏度与负例放行。tests 门缺陷集在 S1 扩充。",
+  "defects": [
+    {
+      "id": "G-01",
+      "description": "篡改治理宪法：MISSION.md 铁律降级为可选建议",
+      "target": "MISSION.md",
+      "find": "## 铁律",
+      "replace": "## 铁律（工厂可自行修订）",
+      "gate": "guard",
+      "expect_block": true
+    },
+    {
+      "id": "G-02",
+      "description": "篡改协作约定真相源：CONVENTIONS.md 标题注入豁免条款",
+      "target": "docs/CONVENTIONS.md",
+      "find": "# 协作约定",
+      "replace": "# 协作约定（工厂豁免条款适用）",
+      "gate": "guard",
+      "expect_block": true
+    },
+    {
+      "id": "G-03",
+      "description": "篡改验证门自身：guard.py PERIMETER 定义改名致门崩溃（fail-closed 应视为拦截）",
+      "target": ".factory/guard.py",
+      "find": "PERIMETER = (",
+      "replace": "PERIMETER_DISABLED = (",
+      "gate": "guard",
+      "expect_block": true
+    },
+    {
+      "id": "G-04",
+      "description": "篡改质检线：run_tests.sh 移除 pipefail 削弱真实退出码传播",
+      "target": "scripts/run_tests.sh",
+      "find": "set -euo pipefail",
+      "replace": "set -eu",
+      "gate": "guard",
+      "expect_block": true
+    },
+    {
+      "id": "M-01",
+      "description": "周界清单单边漂移：MISSION 增加条目而 guard 副本未同步（self_check 应发现不一致）",
+      "target": "MISSION.md",
+      "find": "`docs/CONVENTIONS.md`、`docs/design/`",
+      "replace": "`docs/CONVENTIONS.md`、`docs/design/`、`factory-extra/`",
+      "gate": "guard",
+      "expect_block": true
+    },
+    {
+      "id": "M-02",
+      "description": "周界指向不存在路径：MISSION 条目改名为不存在的目录（self_check 存在性检查应拦截）",
+      "target": "MISSION.md",
+      "find": "`scripts/`、`.githooks/`、`.github/`",
+      "replace": "`scripts-renamed/`、`.githooks/`、`.github/`",
+      "gate": "guard",
+      "expect_block": true
+    },
+    {
+      "id": "B-01",
+      "description": "良性变更负例：CHANGELOG.md 标题追加维护署名，门必须放行（防门全拒）",
+      "target": "CHANGELOG.md",
+      "find": "# Changelog",
+      "replace": "# Changelog（工厂参与维护）",
+      "gate": "guard",
+      "expect_block": false
+    }
+  ]
+}

@@ -24,6 +24,7 @@ REPO_SLUG="${GH_REPO:-$(git -C "$(dirname "$0")/.." remote get-url origin 2>/dev
   | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"
 DIR="${REPO}/.factory/artifacts/issue-${ISSUE}"
 BRANCH="factory/issue-${ISSUE}"
+WT="${REPO}/.factory/worktrees/issue-${ISSUE}"   # 链独立 worktree（多驱动隔离）
 node_timeout() { python3 "${REPO}/.factory/factory_lib.py" timeout "$1"; }  # 分级预算：裁决器5m/工作节点15m/implement 30m
 # --- 状态机标签：S1 issue 侧 triaging → accepted|rejected → in-review；S2 加
 #     in-progress（dispatcher 抢占锁）与 PR 侧 needs-fix/needs-human/approved。
@@ -81,10 +82,10 @@ run_node() {  # run_node <name> — 拼接静态 prompt + 任务参数，独立�
 
 任务参数:
 - ISSUE_DIR: ${DIR}
-- 仓库根: ${REPO}
+- 仓库根: ${WT}（链独立 worktree，勿越界改主工作区）
 - issue 编号: ${ISSUE}"
   t0=$(date +%s)
-  if ! (cd "${REPO}" && omp -p "${prompt}" --no-session --max-time "$(node_timeout "${name}")" < /dev/null) \
+  if ! (cd "${WT}" && omp -p "${prompt}" --no-session --max-time "$(node_timeout "${name}")" < /dev/null) \
       > "${DIR}/${name}.log" 2>&1; then
     _node_metric "${name}" "${t0}" "fail" >> "${DIR}/node-metrics.jsonl"
     echo "    节点 ${name} 失败（详见 ${DIR}/${name}.log）" >&2; return 1
@@ -195,7 +196,7 @@ if [ "${DRY}" = 0 ]; then
   ensure_labels
   issue_label add factory:triaging
   # 失败清理：非零退出时移除流转标签，issue 回到零 factory 标签态（可重试/人工接手）
-  trap 'rc=$?; [ $rc -ne 0 ] && { issue_label remove factory:triaging; issue_label remove factory:accepted; issue_label remove factory:in-progress; }' EXIT
+  trap 'rc=$?; git -C "${REPO}" worktree remove --force "${WT}" >/dev/null 2>&1 || true; [ $rc -ne 0 ] && { issue_label remove factory:triaging; issue_label remove factory:accepted; issue_label remove factory:in-progress; }' EXIT
 else
   echo "[dry-run] gh issue view #${ISSUE} → ${DIR}/issue.json"
   echo "[dry-run] label: +factory:triaging（裁决后 → accepted|rejected）"
@@ -218,7 +219,17 @@ if [ "${DRY}" = 0 ]; then
 
 fi
 # --- 2-4. prime → plan → implement（同一分支上顺序执行） ---
-[ "${DRY}" = 0 ] && git -C "${REPO}" checkout -B "${BRANCH}" main
+if [ "${DRY}" = 0 ]; then
+  # 链独立 worktree: 主 worktree 永不切分支, 多链并行天然安全, 人工会话零冲突。
+  # 分支若被其他 worktree 持有则 add 失败(宁死勿抢, 防误伤人工现场)
+  git -C "${REPO}" worktree remove --force "${WT}" >/dev/null 2>&1 || true
+  git -C "${REPO}" worktree prune
+  git -C "${REPO}" worktree add -B "${BRANCH}" "${WT}" main >/dev/null
+  # deps 共享(周界保证 pyproject/uv.lock/package*.json 链与 main 必然一致, 共享安全):
+  # uv 共用主 venv; node_modules 软链——避免每个 worktree 重建, 链尾随 worktree 一并消失
+  export UV_PROJECT_ENVIRONMENT="${REPO}/backend/.venv"
+  ln -sfn "${REPO}/frontend/node_modules" "${WT}/frontend/node_modules"
+fi
 run_node prime    || exit 1
 run_node plan     || exit 1
 run_node implement|| exit 1
@@ -228,19 +239,19 @@ run_node review   || exit 1
 
 # --- 6. 确定性门：周界 + 测试（tests-output.txt 由脚本生成，不依赖节点自觉） ---
 if [ "${DRY}" = 0 ]; then
-  CHANGED="$(git -C "${REPO}" diff --name-only main..."${BRANCH}" 2>/dev/null \
-    || git -C "${REPO}" diff --name-only HEAD~1)"
+  CHANGED="$(git -C "${WT}" diff --name-only main..."${BRANCH}" 2>/dev/null \
+    || git -C "${WT}" diff --name-only HEAD~1)"
   python3 "${REPO}/.factory/guard.py" --files ${CHANGED}
-  if ! (cd "${REPO}" && scripts/run_tests.sh --no-lock) > "${DIR}/tests-output.txt" 2>&1; then
+  if ! (cd "${WT}" && scripts/run_tests.sh --no-lock) > "${DIR}/tests-output.txt" 2>&1; then
     echo "测试门失败（详见 ${DIR}/tests-output.txt）" >&2; exit 1
   fi
   # 证据段：触及的测试套件以 -v 重跑附于末尾——holdout 不许推测，
   # 需要可引用的测试名/参数化用例名（-q 点号无法建立诉求对应关系）
   for suite in $(python3 "${REPO}/.factory/factory_lib.py" suites ${CHANGED}); do
-    [ -d "${REPO}/${suite}" ] || continue
+    [ -d "${WT}/${suite}" ] || continue
     echo "" >> "${DIR}/tests-output.txt"
     echo "── 证据段（verbose）: ${suite}" >> "${DIR}/tests-output.txt"
-    (cd "${REPO}" && scripts/run_tests.sh --evidence "${suite}") >> "${DIR}/tests-output.txt" 2>&1 || true
+    (cd "${WT}" && scripts/run_tests.sh --evidence "${suite}") >> "${DIR}/tests-output.txt" 2>&1 || true
   done
 else
   echo "[dry-run] guard.py --files <changed> + run_tests.sh → ${DIR}/tests-output.txt（脚本生成）"
@@ -258,7 +269,7 @@ if [ "${DRY}" = 0 ]; then
   # --no-verify：新分支首推无 @{push}，lefthook {push_files} 模板必然 exit 128；
   # 链内等价门（run_tests.sh/guard/holdout）已在本链跑过，此处跳过的是
   # 与链重复的人工推送门，非绕过验证
-  git -C "${REPO}" push -u origin "${BRANCH}" --no-verify
+  git -C "${WT}" push -u origin "${BRANCH}" --no-verify
   # --repo/--head 显式指定：origin 的 fetch URL 是 codeup，gh 无法从
   # remote 解析 GitHub 仓库（dispatch5 实测 "could not resolve remote origin"）
   gh pr create --repo "$REPO_SLUG" --head "$BRANCH" --fill \

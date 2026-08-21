@@ -23,6 +23,9 @@ if ! /usr/bin/shlock -f "$LOCK" -p $$; then
 fi
 trap 'rm -f "$LOCK"' EXIT INT TERM
 {
+  echo "── $(ts) triage 批次开始"
+  "${REPO}/.factory/triage-batch.sh" && rc=0 || rc=$?
+  echo "── $(ts) triage 批次结束（exit=${rc}）"
   echo "── $(ts) dispatch 开始"
   "${REPO}/.factory/dispatch.sh"
   echo "── $(ts) dispatch 结束（exit=$?）"

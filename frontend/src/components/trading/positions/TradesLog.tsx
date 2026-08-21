@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTrades } from '@/hooks/useTrades';
 import type { Trade } from '@/lib/trading/types';
 import { TRADE_SIDE_LABEL } from './sideLabel';
+import { isCloseDeleteLocked } from './closeGuard';
 
 const sideBadgeClass = (side: Trade['side']): string =>
   side === 'open' || side === 'add'
@@ -55,6 +56,7 @@ export const TradesLog = () => {
           const stopLabel = t.stop_after != null ? `止损位 ${t.stop_after.toFixed(2)}` : '';
           const isConfirming = confirmId === t.id;
           const isBusy = busyId === t.id;
+          const isLocked = isCloseDeleteLocked(t);
           const btnLabel = isConfirming ? '确认删除' : '删除';
           const btnClass = isConfirming
             ? 'rounded bg-red-600 px-2 py-0.5 text-xs text-white'
@@ -68,15 +70,27 @@ export const TradesLog = () => {
               <span>{t.price.toFixed(2)} × {t.shares} 股</span>
               {stopLabel !== '' && <span className="text-gray-500">{stopLabel}</span>}
               <span className="ml-auto">
-                <button type="button" className={btnClass} disabled={isBusy} onClick={() => onRemove(t.id)}>
-                  {isBusy ? '删除中...' : btnLabel}
-                </button>
+                {isLocked ? (
+                  <span
+                    className="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-300"
+                    title="清仓事件超过 7 天不可删除：删除会使已平仓交易在复盘中复活（历史事实保护）"
+                  >
+                    已锁定
+                  </span>
+                ) : (
+                  <button type="button" className={btnClass} disabled={isBusy} onClick={() => onRemove(t.id)}>
+                    {isBusy ? '删除中...' : btnLabel}
+                  </button>
+                )}
+                {isConfirming && t.side === 'close' && (
+                  <span className="text-[10px] text-amber-600">删除清仓事件会使该交易回到持仓列表</span>
+                )}
               </span>
             </li>
           );
         })}
       </ul>
-      <div className="mt-1 text-[10px] text-gray-400">删除仅用于录错回滚：删除一笔事件后，持仓将按剩余事件流重新推导。</div>
+      <div className="mt-1 text-[10px] text-gray-400">删除仅用于录错回滚：删除一笔事件后，持仓将按剩余事件流重新推导。清仓事件超过 7 天自动锁定（删除会使已平仓交易复活）。</div>
       {error && (
         <div role="alert" className="mt-2 text-xs text-red-600">
           {error}

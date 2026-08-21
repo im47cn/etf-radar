@@ -56,6 +56,11 @@ where schemaname = 'public' and tablename in ('trades','trade_reviews','trading_
 - [ ] `backend/migrations/007_review_aggregates.sql` 贴入 SQL Editor（review_aggregates 表，
       本人仅 SELECT，Actions service_role 每晚按用户覆写）。前端复盘 Tab 优先生读此快照。
 
+### 1c. 清仓事件删除护栏（008，历史事实保护）
+
+- [ ] `backend/migrations/008_close_delete_guard.sql` 贴入 SQL Editor（服务端强制：
+      close 事件超 7 天 DELETE 被拒；前端同口径禁用为「已锁定」）。
+
 ### 2. Realtime（可选，推荐）
 
 TradesProvider 已订阅 `trades` 表变更（多端录入实时刷新）。执行：

@@ -5,6 +5,7 @@ vi.mock('@/hooks/useTrades', () => ({ useTrades: vi.fn() }));
 
 import { useTrades } from '@/hooks/useTrades';
 import { TradesLog } from '../TradesLog';
+import { isCloseDeleteLocked } from '../closeGuard';
 import type { Trade } from '@/lib/trading/types';
 
 const mkTrade = (id: string, over: Partial<Trade> = {}): Trade => ({
@@ -101,5 +102,45 @@ describe('TradesLog', () => {
     fireEvent.click(screen.getByRole('button', { name: '删除' }));
     fireEvent.click(screen.getByRole('button', { name: '确认删除' }));
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('网络错误'));
+  });
+});
+
+
+// ── 清仓事件删除护栏 (008 同口径) ────────────────────────────────────
+
+describe('isCloseDeleteLocked + TradesLog 锁定 UI', () => {
+  it('纯函数: close 超 7 天锁定, 7 天内/非 close 不锁', () => {
+    const today = new Date('2026-08-21T00:00:00Z');
+    const close8d = mkTrade('c8', { side: 'close', trade_date: '2026-08-12' });
+    const close7d = mkTrade('c7', { side: 'close', trade_date: '2026-08-14' });
+    const openOld = mkTrade('o1', { side: 'open', trade_date: '2026-01-01' });
+    expect(isCloseDeleteLocked(close8d, today)).toBe(true);
+    expect(isCloseDeleteLocked(close7d, today)).toBe(false);
+    expect(isCloseDeleteLocked(openOld, today)).toBe(false);
+  });
+
+  it('锁定 close: 显示已锁定, 无删除按钮', () => {
+    vi.useFakeTimers().setSystemTime(new Date('2026-08-21T00:00:00Z'));
+    try {
+      mockTrades([mkTrade('c1', { side: 'close', trade_date: '2026-08-10' })]);
+      render(<TradesLog />);
+      expect(screen.getByText('已锁定')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: '删除' })).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('7 天内 close: 可删且两步确认显示复活警告', () => {
+    vi.useFakeTimers().setSystemTime(new Date('2026-08-21T00:00:00Z'));
+    try {
+      mockTrades([mkTrade('c2', { side: 'close', trade_date: '2026-08-18' })]);
+      render(<TradesLog />);
+      fireEvent.click(screen.getByRole('button', { name: '删除' }));
+      expect(screen.getByText(/删除清仓事件会使该交易回到持仓列表/)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '确认删除' })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

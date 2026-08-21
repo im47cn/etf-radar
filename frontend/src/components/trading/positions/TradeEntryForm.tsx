@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useTrades } from '@/hooks/useTrades';
 import type { TradeSide } from '@/lib/trading/types';
 import { TRADE_SIDES, TRADE_SIDE_LABEL } from './sideLabel';
+import { validateTradeFields, parseStopAfter } from './tradeValidation';
 
 const inputClass =
   'w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none';
@@ -35,16 +36,7 @@ export const TradeEntryForm = () => {
     e.preventDefault();
     setSaved(false);
 
-    const errs: string[] = [];
-    if (!/^\d{6}$/.test(code.trim())) errs.push('代码须为 6 位数字');
-    if (name.trim() === '') errs.push('请填写名称');
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) errs.push('请填写交易日期');
-    const p = Number(price);
-    if (!(p > 0)) errs.push('价格须为正数');
-    const s = Number(shares);
-    if (!Number.isInteger(s) || s <= 0) errs.push('股数须为正整数');
-    const stop = stopAfter.trim() === '' ? null : Number(stopAfter);
-    if (stop != null && !(stop > 0)) errs.push('止损位须为正数（可留空）');
+    const errs = validateTradeFields({ code, name, tradeDate: date, price, shares, stopAfter });
     setErrors(errs);
     if (errs.length > 0) return;
 
@@ -54,9 +46,9 @@ export const TradeEntryForm = () => {
       name: name.trim(),
       side,
       trade_date: date,
-      price: p,
-      shares: s,
-      stop_after: stop,
+      price: Number(price),
+      shares: Number(shares),
+      stop_after: parseStopAfter(stopAfter),
     });
     setSubmitting(false);
     if (r.error) {

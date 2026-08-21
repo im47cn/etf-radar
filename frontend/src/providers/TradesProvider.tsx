@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { isSupabaseConfigured, getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { listTrades, insertTrade, deleteTrade, getSettings, saveSettings } from '@/lib/trading/api';
+import { listTrades, insertTrade, deleteTrade, editTrade as editTradeApi, getSettings, saveSettings } from '@/lib/trading/api';
 import { derivePositions } from '@/lib/trading/derivePositions';
 import {
   DEFAULT_SETTINGS_VALUES,
@@ -20,6 +20,7 @@ export interface UseTradesResult {
   error:     string | null;
   addTrade:       (input: TradeInput) => Promise<{ error: string | null }>;
   removeTrade:    (id: string) => Promise<{ error: string | null }>;
+  editTrade:      (id: string, input: TradeInput) => Promise<{ error: string | null }>;
   updateSettings: (patch: SettingsInput) => Promise<{ error: string | null }>;
   refresh:  () => Promise<void>;
 }
@@ -97,6 +98,13 @@ function useTradesImpl(): UseTradesResult {
     return r;
   }, [user, refresh]);
 
+  const editTrade = useCallback(async (id: string, input: TradeInput) => {
+    if (!user) return { error: '未登录' };
+    const r = await editTradeApi(user.id, id, input);
+    if (!r.error) await refresh();
+    return r;
+  }, [user, refresh]);
+
   const updateSettings = useCallback(async (patch: SettingsInput) => {
     if (!user) return { error: '未登录' };
     const r = await saveSettings(user.id, patch);
@@ -113,6 +121,7 @@ function useTradesImpl(): UseTradesResult {
     error,
     addTrade,
     removeTrade,
+    editTrade,
     updateSettings,
     refresh,
   };

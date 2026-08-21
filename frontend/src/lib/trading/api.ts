@@ -71,6 +71,22 @@ export async function deleteTrade(userId: string | null, id: string): Promise<{ 
   return { error: error ? error.message : null };
 }
 
+// 编辑错录事件 = 删旧插新（008 删除护栏天然继承：超 7 天的 close 删不掉即改不掉）
+export async function editTrade(
+  userId: string | null,
+  id: string,
+  input: TradeInput,
+): Promise<{ error: string | null }> {
+  const del = await deleteTrade(userId, id);
+  if (del.error) return del;
+  const ins = await insertTrade(userId, input);
+  // 非原子：插入失败时原事件已删，须明确告知用户重录（不可静默）
+  if (ins.error) {
+    return { error: `原记录已删除但新记录写入失败（${ins.error}），请重新录入该笔交易` };
+  }
+  return { error: null };
+}
+
 // ========== trade_reviews（M4 Actions 写入，此处仅本人读取） ==========
 
 export async function listReviews(userId: string | null): Promise<TradeReview[]> {

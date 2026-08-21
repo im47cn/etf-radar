@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 let tradesResult:   { data: unknown[] | null; error: { message: string } | null };
 let settingsResult: { data: unknown | null;  error: { message: string } | null };
 const insertMock = vi.fn();
+const deleteEqMock = vi.fn();
 const upsertMock = vi.fn();
 
 function chain(result: { data: unknown; error: unknown }) {
@@ -22,7 +23,7 @@ vi.mock('@/lib/supabase', () => ({
         const p = Promise.resolve(settingsResult);
         return { select: () => ({ eq: () => ({ maybeSingle: () => p }) }), upsert: upsertMock };
       }
-      return { select: () => chain(tradesResult), insert: insertMock };
+      return { select: () => chain(tradesResult), insert: insertMock, delete: () => ({ eq: deleteEqMock }) };
     },
     channel: () => ({ on: () => ({ subscribe: () => undefined }) }),
     removeChannel: () => undefined,
@@ -57,6 +58,7 @@ beforeEach(() => {
   tradesResult   = { data: [], error: null };
   settingsResult = { data: null, error: null };
   insertMock.mockReset().mockResolvedValue({ data: null, error: null });
+  deleteEqMock.mockReset().mockResolvedValue({ error: null });
   upsertMock.mockReset().mockResolvedValue({ error: null });
 });
 
@@ -123,6 +125,41 @@ describe('useTrades (TradesProvider)', () => {
     }));
     await waitFor(() => expect(result.current.positions).toHaveLength(1));
     expect(result.current.positions[0]).toMatchObject({ shares: 100, avg_cost: 1710.5, stop_current: 1573.2 });
+  });
+
+  it('editTrade 成功 → 删旧插新并刷新（修正后事件反映到 trades）', async () => {
+    const { result } = renderHook(() => useTrades(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    // 下一次拉取返回修正后的事件（价格 100 → 1720）
+    tradesResult = {
+      data: [tradeRow('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', 'open', 1720, 100, '2026-08-19', null)],
+      error: null,
+    };
+    await act(async () => {
+      const r = await result.current.editTrade('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', {
+        code: '600519', name: '贵州茅台', side: 'open', trade_date: '2026-08-19', price: 1720, shares: 100,
+      });
+      expect(r.error).toBeNull();
+    });
+    expect(deleteEqMock).toHaveBeenCalledWith('id', 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d');
+    expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ user_id: UID, price: 1720 }));
+    await waitFor(() => expect(result.current.trades).toHaveLength(1));
+    expect(result.current.trades[0]).toMatchObject({ price: 1720 });
+  });
+
+  it('editTrade 未登录 → 拒绝不触库', async () => {
+    mockAuthState.user = null;
+    mockAuthState.status = 'anonymous';
+    const { result } = renderHook(() => useTrades(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      const r = await result.current.editTrade('x', {
+        code: '600519', name: 'x', side: 'open', trade_date: '2026-08-19', price: 1, shares: 1,
+      });
+      expect(r.error).toBe('未登录');
+    });
+    expect(deleteEqMock).not.toHaveBeenCalled();
+    expect(insertMock).not.toHaveBeenCalled();
   });
 
   it('addTrade 触库失败 → 返回错误消息，positions 不变', async () => {

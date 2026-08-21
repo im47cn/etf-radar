@@ -25,16 +25,18 @@ const mkTrade = (id: string, over: Partial<Trade> = {}): Trade => ({
 });
 
 const removeTrade = vi.fn();
+const editTrade = vi.fn();
 
 const mockTrades = (trades: Trade[]) => {
   vi.mocked(useTrades).mockReturnValue({
     trades, positions: [], settings: null as never, loading: false, error: null,
-    addTrade: vi.fn(), removeTrade, updateSettings: vi.fn(), refresh: vi.fn(),
+    addTrade: vi.fn(), removeTrade, editTrade, updateSettings: vi.fn(), refresh: vi.fn(),
   } as never);
 };
 
 beforeEach(() => {
   removeTrade.mockReset().mockResolvedValue({ error: null });
+  editTrade.mockReset().mockResolvedValue({ error: null });
 });
 
 const rowOf = (code: string) => screen.getByText(code).closest('li') as HTMLElement;
@@ -106,6 +108,39 @@ describe('TradesLog', () => {
 });
 
 
+// ── 编辑（删旧插新, 修正错录） ──────────────────────────────────────
+
+describe('TradesLog 编辑入口', () => {
+  it('点击编辑展开行内表单（预填当前值）, 隐藏该行操作按钮; 取消后收起', () => {
+    mockTrades([mkTrade('t1', { trade_date: '2026-08-19' })]);
+    render(<TradesLog />);
+    fireEvent.click(screen.getByRole('button', { name: '编辑' }));
+    const form = screen.getByLabelText('交易记录编辑');
+    expect((form.querySelector('input') as HTMLInputElement).value).toBe('600519'); // 预填代码
+    expect(screen.getByDisplayValue('开仓')).toBeInTheDocument();                    // 预填事件类型
+    expect(screen.getByDisplayValue('1710.5')).toBeInTheDocument();                  // 预填价格
+    // 编辑中该行不再显示删除按钮
+    expect(within(rowOf('600519')).queryByRole('button', { name: '删除' })).toBeNull();
+    fireEvent.click(within(form).getByRole('button', { name: '取消' }));
+    expect(screen.queryByLabelText('交易记录编辑')).toBeNull();
+    expect(screen.getByRole('button', { name: '删除' })).toBeInTheDocument();
+  });
+
+  it('编辑保存调用 editTrade 并携带原 reason; 成功后表单收起', async () => {
+    mockTrades([mkTrade('t1', { reason: 'pivot breakthrough' })]);
+    render(<TradesLog />);
+    fireEvent.click(screen.getByRole('button', { name: '编辑' }));
+    fireEvent.change(screen.getByDisplayValue('1710.5'), { target: { value: '1720.0' } });
+    fireEvent.click(screen.getByRole('button', { name: '保存修改' }));
+    await waitFor(() => expect(editTrade).toHaveBeenCalledWith('t1', expect.objectContaining({
+      price: 1720,
+      reason: 'pivot breakthrough',
+    })));
+    await waitFor(() => expect(screen.queryByLabelText('交易记录编辑')).toBeNull());
+  });
+});
+
+
 // ── 清仓事件删除护栏 (008 同口径) ────────────────────────────────────
 
 describe('isCloseDeleteLocked + TradesLog 锁定 UI', () => {
@@ -126,6 +161,7 @@ describe('isCloseDeleteLocked + TradesLog 锁定 UI', () => {
       render(<TradesLog />);
       expect(screen.getByText('已锁定')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: '删除' })).toBeNull();
+      expect(screen.queryByRole('button', { name: '编辑' })).toBeNull(); // 编辑=删+插, 同口径禁用
     } finally {
       vi.useRealTimers();
     }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { listTrades, insertTrade, deleteTrade, getSettings, saveSettings, listReviews, getReviewAggregates } from '../api';
+import { listTrades, insertTrade, deleteTrade, editTrade, getSettings, saveSettings, listReviews, getReviewAggregates } from '../api';
 import { TradingApiError } from '../types';
 
 // ── supabase mock（builder 模式：supabase-js 的 order/eq 返回可继续链式的 thenable） ──
@@ -122,6 +122,38 @@ describe('deleteTrade', () => {
     expect(r.error).toBeNull();
     expect(deleteEqMock).toHaveBeenCalledWith('id', 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d');
     expect((await deleteTrade(null, 'x')).error).toBe('未登录');
+  });
+});
+
+describe('editTrade', () => {
+  const TID = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
+  const input = { code: '600519', name: 'x', side: 'open', trade_date: '2026-08-19', price: 1, shares: 1 };
+
+  it('未登录 → 不触库', async () => {
+    expect((await editTrade(null, TID, input)).error).toBe('未登录');
+    expect(deleteEqMock).not.toHaveBeenCalled();
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it('成功 → 先删后插', async () => {
+    const r = await editTrade(UID, TID, input);
+    expect(r.error).toBeNull();
+    expect(deleteEqMock).toHaveBeenCalledWith('id', TID);
+    expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ user_id: UID, code: '600519' }));
+  });
+
+  it('删除失败（如 008 护栏拦截超 7 天 close）→ 短路不插入', async () => {
+    deleteEqMock.mockResolvedValue({ error: { message: 'close event locked' } });
+    const r = await editTrade(UID, TID, input);
+    expect(r.error).toBe('close event locked');
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it('插入失败 → 提示原记录已删需重录（非原子风险显式暴露）', async () => {
+    insertMock.mockResolvedValue({ data: null, error: { message: 'network' } });
+    const r = await editTrade(UID, TID, input);
+    expect(r.error).toContain('原记录已删除但新记录写入失败');
+    expect(r.error).toContain('network');
   });
 });
 

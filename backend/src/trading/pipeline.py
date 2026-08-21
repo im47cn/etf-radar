@@ -131,9 +131,10 @@ def run(
 ) -> Path:
     """拉数据 -> 漏斗 -> defense gating -> 写 data_root/latest/trading.json。"""
     if index_providers is None:
-        from ..providers.index_provider import EmIndexProvider, IndexProvider
+        from ..providers.index_provider import EmIndexProvider, IndexProvider, TencentIndexProvider
 
-        index_providers = [IndexProvider(), EmIndexProvider()]
+        # 三级 chain: 新浪(000985 截断靠护栏拒收) → 东财(间歇掐断) → 腾讯(最终兜底)
+        index_providers = [IndexProvider(), EmIndexProvider(), TencentIndexProvider()]
     data_root = Path(data_root)
 
     # 1) 指数环境 (核心: 三指数可用 <2 只 -> ProviderError)

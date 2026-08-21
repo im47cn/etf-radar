@@ -20,7 +20,7 @@ from typing import Any, Protocol
 from zoneinfo import ZoneInfo
 
 from ..output.writer import atomic_write_json
-from ..providers.index_provider import EmIndexProvider, IndexProvider
+from ..providers.index_provider import EmIndexProvider, IndexProvider, TencentIndexProvider
 
 log = logging.getLogger(__name__)
 BJT = ZoneInfo('Asia/Shanghai')
@@ -98,7 +98,7 @@ def run(
     温度文件缺失 (首次运行/上游失败) 时写空 index_series.json, 不抛错拖累 cron.
     """
     if providers is None:
-        providers = [IndexProvider(), EmIndexProvider()]
+        providers = [IndexProvider(), EmIndexProvider(), TencentIndexProvider()]
     temp_path = Path(data_root) / 'latest' / 'market_temperature.json'
     out = Path(data_root) / 'latest' / 'index_series.json'
     if not temp_path.exists():

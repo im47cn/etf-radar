@@ -1,11 +1,15 @@
 """A 股主要指数收盘价 Provider
 
-两个独立源, 供 market_breadth.index_series 做 chain 逐级兜底 (CLAUDE.md 硬约束):
-- IndexProvider (新浪 ak.stock_zh_index_daily): 稳定, 首选.
+三个独立源, 供 market_breadth.index_series / trading.pipeline 做 chain 逐级兜底 (CLAUDE.md 硬约束):
+- IndexProvider (新浪 ak.stock_zh_index_daily): 稳定, 首选; 但 000985 长期截断至
+  2016-06 (成功返回坏数据, 靠调用方新鲜度护栏拒收).
 - EmIndexProvider (东财 ak.stock_zh_index_daily_em): 东财 push2his 间歇性
-  RemoteDisconnected (见 data-fetch-resilience memory), 仅作兜底.
+  RemoteDisconnected (见 data-fetch-resilience memory), 兜底.
+- TencentIndexProvider (腾讯 web.ifzq.gtimg.cn fqkline): 第三级兜底,
+  根治新浪截断+东财掐断同发时 RS 基准无源可用 (2026-08-20 实证两源同挂).
 
-两源字段一致 [date, open, high, low, close, volume(, amount)], 仅取收盘价.
+前两者字段一致 [date, open, high, low, close, volume(, amount)], 仅取收盘价.
+腾讯接口行元素为 [date, open, close, high, low, volume], 同样仅取收盘价.
 指数前缀映射: 000xxx → sh(上证系列), 399xxx → sz(深证系列), 与个股前缀映射独立.
 """
 from __future__ import annotations
@@ -13,10 +17,11 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
 import akshare as ak  # type: ignore[import-untyped]
 import pandas as pd  # type: ignore[import-untyped]
+import requests
 
 from ._http_retry import install_requests_retry
 
@@ -108,3 +113,51 @@ class EmIndexProvider:
                     log.warning('%s em retry %d after %gs: %s', code, attempt + 1, backoff, e)
                     time.sleep(backoff)
         raise IndexFetchError(f'{code} em fetch failed: {last_err}')
+
+
+@dataclass
+class TencentIndexProvider:
+    """腾讯指数日线 + 退避重试 (第三级兜底源).
+
+    web.ifzq.gtimg.cn fqkline 接口: 指数行元素 [date, open, close, high, low, volume];
+    指数数据落在 data[symbol]['day'] 键 ('qfqday' 为复权个股键, 指数无复权, 兼容取用).
+    RS 基准 000985 在新浪截断 + 东财掐断同发时的最终兜底 (2026-08-20 实证).
+    """
+
+    name: str = 'index-tencent'
+    max_retries: int = 2
+    base_backoff: float = 1.0
+    base_url: str = 'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get'
+    bars: int = 640  # 覆盖 trading.pipeline INDEX_LOOKBACK=400 + 余量
+
+    def fetch_close(self, code: str) -> list[tuple[date, float]]:
+        symbol = to_index_symbol(code)
+        last_err: Exception | None = None
+        for attempt in range(self.max_retries + 1):
+            try:
+                resp = requests.get(
+                    self.base_url,
+                    params={'param': f'{symbol},day,,,{self.bars},qfq'},
+                    timeout=10,
+                )
+                resp.raise_for_status()
+                doc = resp.json()
+                node = doc.get('data', {}).get(symbol)
+                if not isinstance(node, dict):
+                    raise IndexFetchError(f'{code}: empty payload')
+                klines = node.get('day') or node.get('qfqday') or []
+                if not klines:
+                    raise IndexFetchError(f'{code}: empty kline')
+                return [
+                    (datetime.strptime(str(k[0]), '%Y-%m-%d').date(), float(k[2]))  # noqa: DTZ007  日期标签,时区无关
+                    for k in klines
+                ]
+            except IndexFetchError:
+                raise
+            except Exception as e:  # noqa: BLE001  外部数据源兜底
+                last_err = e
+                if attempt < self.max_retries:
+                    backoff = self.base_backoff * (2 ** attempt)
+                    log.warning('%s tencent retry %d after %gs: %s', code, attempt + 1, backoff, e)
+                    time.sleep(backoff)
+        raise IndexFetchError(f'{code} tencent fetch failed: {last_err}')

@@ -8,11 +8,13 @@ import { isSupabaseConfigured, getSupabase } from '@/lib/supabase';
 import {
   TradeSchema,
   TradeReviewSchema,
+  ReviewAggregatesRowSchema,
   TradingSettingsSchema,
   DEFAULT_SETTINGS_VALUES,
   TradingApiError,
   type Trade,
   type TradeReview,
+  type ReviewAggregatesRow,
   type TradeInput,
   type TradingSettings,
   type SettingsInput,
@@ -79,6 +81,21 @@ export async function listReviews(userId: string | null): Promise<TradeReview[]>
     .order('computed_at', { ascending: false });
   if (error) throw new TradingApiError('db', error.message);
   return parseRows(data ?? [], TradeReviewSchema);
+}
+
+// ========== review_aggregates (Actions 物化快照, 单行) ==========
+
+export async function getReviewAggregates(
+  userId: string | null,
+): Promise<ReviewAggregatesRow | null> {
+  if (!userId || !isSupabaseConfigured()) return null;
+  const { data, error } = await getSupabase()
+    .from('review_aggregates')
+    .select('*')
+    .limit(1);
+  if (error) throw new TradingApiError('db', error.message);
+  const rows = parseRows(data ?? [], ReviewAggregatesRowSchema);
+  return rows.length > 0 ? rows[0]! : null;
 }
 
 // ========== trading_settings ==========

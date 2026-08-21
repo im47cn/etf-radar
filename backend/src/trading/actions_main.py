@@ -309,7 +309,7 @@ def run(
 
     holdings: list[HoldingSignalResult] = []
     reviews: list[dict[str, Any]] = []  # trade_reviews 行 (全用户)
-    review_results: list[Any] = []
+    results_by_user: dict[str, list[Any]] = {}  # 按用户收集, 聚合统计按用户物化
     stats = aggregate_stats([], None)
     degraded = False
 
@@ -338,7 +338,7 @@ def run(
                     log.warning('actions_main review skip %s %s: bars 缺失', rt.code, rt.open_date)
                     continue
                 result = review_round_trip(rt, ctx)
-                review_results.append(result)
+                results_by_user.setdefault(user_id, []).append(result)
                 reviews.append(
                     {
                         'user_id': user_id,
@@ -364,7 +364,33 @@ def run(
                     'trade_reviews', f'user_id=eq.{user_id}&review_date=eq.{as_of.isoformat()}'
                 )
                 rest.insert('trade_reviews', [r for r in reviews if r['user_id'] == user_id])
-        stats = aggregate_stats(review_results, regime_history)
+        # 聚合统计物化: 按用户覆写 review_aggregates (PK=user_id), 前端只读此快照,
+        # 消除前后端双实现口径漂移。有交易的用户才写; 无交易用户保留旧快照 (口径历史)。
+        if not dry_run:
+            for user_id, results in sorted(results_by_user.items()):
+                user_stats = aggregate_stats(results, regime_history)
+                rest.delete('review_aggregates', f'user_id=eq.{user_id}')
+                rest.insert(
+                    'review_aggregates',
+                    [
+                        {
+                            'user_id': user_id,
+                            'as_of': as_of.isoformat(),
+                            'stats': {
+                                'n': user_stats.n,
+                                'win_rate': user_stats.win_rate,
+                                'avg_r': user_stats.avg_r,
+                                'profit_factor': user_stats.profit_factor,
+                                'expectancy': user_stats.expectancy,
+                                'max_drawdown': user_stats.max_drawdown,
+                                'by_regime': user_stats.by_regime,
+                            },
+                        }
+                    ],
+                )
+        stats = aggregate_stats(
+            [r for rs in results_by_user.values() for r in rs], regime_history
+        )
     except Exception as e:  # noqa: BLE001  整体降级: 复盘跳过 + 告警
         degraded = True
         log.warning('actions_main Supabase 降级: %s', e)

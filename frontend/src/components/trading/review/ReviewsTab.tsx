@@ -2,10 +2,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrades } from '@/hooks/useTrades';
-import { listReviews } from '@/lib/trading/api';
+import { getReviewAggregates, listReviews } from '@/lib/trading/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ReviewsList, reviewPnl, fmtR } from './ReviewsList';
-import type { TradeReview } from '@/lib/trading/types';
+import type { ReviewAggregatesRow, TradeReview } from '@/lib/trading/types';
 
 export interface ReviewAggregates {
   /** 复盘条数 */
@@ -79,6 +79,8 @@ export const ReviewsTab = () => {
   const { trades } = useTrades();
   // null = 加载中；[] = 已加载且为空（Actions 尚未跑过）
   const [reviews, setReviews] = useState<TradeReview[] | null>(null);
+  // null = 无物化快照（Actions 未跑过/表为空）→ 客户端兜底聚合
+  const [materialized, setMaterialized] = useState<ReviewAggregatesRow | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const userId = user?.id ?? null;
@@ -94,6 +96,14 @@ export const ReviewsTab = () => {
       .catch((e: unknown) => {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       });
+    getReviewAggregates(userId)
+      .then((row) => {
+        if (!cancelled) setMaterialized(row);
+      })
+      .catch(() => {
+        // 物化快照读失败不阻断页面: 落客户端兜底口径
+        if (!cancelled) setMaterialized(null);
+      });
     return () => {
       cancelled = true;
     };
@@ -105,8 +115,21 @@ export const ReviewsTab = () => {
     return m;
   }, [trades]);
 
-  const agg = useMemo(() => aggregateReviews(reviews ?? []), [reviews]);
+  // 优先 Actions 物化快照 (单一权威口径); 无快照时客户端兜底聚合。
+  // 物化 stats 为后端 snake_case, 在此映射为本组件 camelCase 接口。
+  const fallbackAgg = useMemo(() => aggregateReviews(reviews ?? []), [reviews]);
+  const agg: ReviewAggregates =
+    materialized != null
+      ? {
+          n: materialized.stats.n,
+          winRate: materialized.stats.win_rate,
+          avgR: materialized.stats.avg_r,
+          profitFactor: materialized.stats.profit_factor,
+          expectancy: materialized.stats.expectancy,
+        }
+      : fallbackAgg;
   const nLabel = agg.n > 0 ? `${agg.n} 笔已复盘` : '';
+  const statsSource = materialized != null ? '服务端统一口径' : '客户端兜底口径';
 
   return (
     <div className="flex flex-col gap-4">
@@ -126,7 +149,9 @@ export const ReviewsTab = () => {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="text-sm font-medium text-gray-800">复盘统计</div>
-              <div className="text-xs text-gray-400">{nLabel}</div>
+              <div className="text-xs text-gray-400">
+                {nLabel}{nLabel !== '' ? ' · ' : ''}{statsSource}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
               <StatCard label="胜率" value={fmtPct(agg.winRate)} />

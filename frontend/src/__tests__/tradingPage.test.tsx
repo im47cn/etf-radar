@@ -8,12 +8,12 @@ vi.mock('@/hooks/useTrading', async (importOriginal) => {
 });
 vi.mock('@/lib/subscription/useSubscription', () => ({ useSubscription: vi.fn() }));
 vi.mock('@/hooks/useTrades', () => ({ useTrades: vi.fn() }));
-vi.mock('@/lib/trading/api', () => ({ listReviews: vi.fn() }));
+vi.mock('@/lib/trading/api', () => ({ listReviews: vi.fn(), getReviewAggregates: vi.fn() }));
 
 import { useTrading } from '@/hooks/useTrading';
 import { useSubscription } from '@/lib/subscription/useSubscription';
 import { useTrades } from '@/hooks/useTrades';
-import { listReviews } from '@/lib/trading/api';
+import { getReviewAggregates, listReviews } from '@/lib/trading/api';
 import { AuthContext } from '@/providers/authContext';
 import { TradingPage } from '@/pages/TradingPage';
 import { TradingSchema } from '@/types/trading';
@@ -110,6 +110,7 @@ const renderTrading = (
     ...tradesOverrides,
   } as never);
   vi.mocked(listReviews).mockReset().mockResolvedValue(reviews);
+  vi.mocked(getReviewAggregates).mockReset().mockResolvedValue(null);
   render(
     <MemoryRouter>
       <AuthContext.Provider value={{ status: 'authenticated', user: { email: 'a@b.com' } } as never}>
@@ -358,7 +359,7 @@ describe('TradingPage 持仓/复盘 Tab', () => {
     ]);
     clickTab('复盘');
     await waitFor(() => expect(screen.getByText('100.0%')).toBeInTheDocument());
-    expect(screen.getByText('1 笔已复盘')).toBeInTheDocument();
+    expect(screen.getByText(/1 笔已复盘/)).toBeInTheDocument();
     expect(screen.getByText('逐笔复盘')).toBeInTheDocument();
   });
 });

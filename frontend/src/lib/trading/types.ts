@@ -62,6 +62,27 @@ export const TradingSettingsSchema = z.object({
 });
 export type TradingSettings = z.infer<typeof TradingSettingsSchema>;
 
+// ========== review_aggregates：Actions 物化的按用户聚合统计（本人只读） ==========
+// stats 与后端 review.AggregateStats 对齐（单一权威口径，客户端聚合仅兜底）。
+export const AggregateStatsSchema = z.object({
+  n: z.number().int(),
+  win_rate: z.number().nullable(),
+  avg_r: z.number().nullable(),
+  profit_factor: z.number().nullable(),
+  expectancy: z.number().nullable(),
+  max_drawdown: z.number().nullable(),
+  by_regime: z.record(z.string(), z.unknown()).nullish().transform((v) => v ?? null),
+});
+export type AggregateStats = z.infer<typeof AggregateStatsSchema>;
+
+export const ReviewAggregatesRowSchema = z.object({
+  user_id: z.string().uuid(),
+  as_of: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  stats: AggregateStatsSchema,
+  computed_at: z.string(),
+});
+export type ReviewAggregatesRow = z.infer<typeof ReviewAggregatesRowSchema>;
+
 // 未建行 / 未配置时的默认值（规格 §1 第 7 条：0.75% 单笔风险、5 只、20% 单票、4% 组合）
 export const DEFAULT_SETTINGS_VALUES = {
   equity_cny:             null as number | null,

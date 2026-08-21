@@ -3,11 +3,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: vi.fn() }));
 vi.mock('@/hooks/useTrades', () => ({ useTrades: vi.fn() }));
-vi.mock('@/lib/trading/api', () => ({ listReviews: vi.fn() }));
+vi.mock('@/lib/trading/api', () => ({ listReviews: vi.fn(), getReviewAggregates: vi.fn() }));
 
 import { useAuth } from '@/hooks/useAuth';
 import { useTrades } from '@/hooks/useTrades';
-import { listReviews } from '@/lib/trading/api';
+import { getReviewAggregates, listReviews } from '@/lib/trading/api';
 import { ReviewsTab, aggregateReviews } from '../ReviewsTab';
 import type { Trade, TradeReview } from '@/lib/trading/types';
 
@@ -37,6 +37,7 @@ beforeEach(() => {
     addTrade: vi.fn(), removeTrade: vi.fn(), updateSettings: vi.fn(), refresh: vi.fn(),
   } as never);
   vi.mocked(listReviews).mockReset().mockResolvedValue([]);
+  vi.mocked(getReviewAggregates).mockReset().mockResolvedValue(null);
 });
 
 // ── aggregateReviews 纯函数 ───────────────────────────────────────────
@@ -112,7 +113,7 @@ describe('ReviewsTab', () => {
     expect(screen.getByText('+0.50R')).toBeInTheDocument(); // 平均 R
     expect(screen.getByText('2.00')).toBeInTheDocument(); // 盈亏比
     expect(screen.getByText('+25 元')).toBeInTheDocument(); // 期望
-    expect(screen.getByText('2 笔已复盘')).toBeInTheDocument();
+    expect(screen.getByText(/2 笔已复盘/)).toBeInTheDocument();
     expect(screen.getByText('600519')).toBeInTheDocument(); // 映射命中
     expect(screen.getByText('—')).toBeInTheDocument(); // trade-b 未命中 → code —
   });
@@ -121,5 +122,46 @@ describe('ReviewsTab', () => {
     vi.mocked(listReviews).mockRejectedValue(new Error('db down'));
     render(<ReviewsTab />);
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('db down'));
+  });
+});
+
+
+// ── 物化聚合快照 (单一权威口径) ───────────────────────────────────────
+
+describe('ReviewsTab 物化聚合', () => {
+  it('有物化快照: 统计卡用服务端数值并标注服务端统一口径', async () => {
+    vi.mocked(listReviews).mockResolvedValue([mkReview('1', { events: { pnl: 100 } })]);
+    vi.mocked(getReviewAggregates).mockResolvedValue({
+      user_id: 'uid',
+      as_of: '2026-08-19',
+      stats: { n: 7, win_rate: 0.571, avg_r: 1.2, profit_factor: 1.85, expectancy: 120.5, max_drawdown: 800, by_regime: {} },
+      computed_at: '2026-08-19T17:30:00Z',
+    } as never);
+    render(<ReviewsTab />);
+    await waitFor(() => {
+      expect(screen.getByText('7 笔已复盘 · 服务端统一口径')).toBeInTheDocument();
+    });
+    expect(screen.getByText('57.1%')).toBeInTheDocument();
+    expect(screen.getByText('+1.20R')).toBeInTheDocument();
+    expect(screen.getByText('1.85')).toBeInTheDocument();
+    expect(screen.getByText('+121 元')).toBeInTheDocument();
+  });
+
+  it('无物化快照: 落客户端兜底口径标注', async () => {
+    vi.mocked(listReviews).mockResolvedValue([mkReview('1', { events: { pnl: 100 } })]);
+    render(<ReviewsTab />);
+    await waitFor(() => {
+      expect(screen.getByText(/客户端兜底口径/)).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/服务端统一口径/)).toBeNull();
+  });
+
+  it('物化快照读失败不阻断: 静默落兜底口径', async () => {
+    vi.mocked(listReviews).mockResolvedValue([mkReview('1')]);
+    vi.mocked(getReviewAggregates).mockRejectedValue(new Error('rls denied'));
+    render(<ReviewsTab />);
+    await waitFor(() => {
+      expect(screen.getByText(/客户端兜底口径/)).toBeInTheDocument();
+    });
   });
 });

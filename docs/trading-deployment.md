@@ -51,6 +51,11 @@ select tablename, policyname, cmd from pg_policies
 where schemaname = 'public' and tablename in ('trades','trade_reviews','trading_settings');
 ```
 
+### 1b. 聚合统计物化表（007，复盘统计单一口径）
+
+- [ ] `backend/migrations/007_review_aggregates.sql` 贴入 SQL Editor（review_aggregates 表，
+      本人仅 SELECT，Actions service_role 每晚按用户覆写）。前端复盘 Tab 优先生读此快照。
+
 ### 2. Realtime（可选，推荐）
 
 TradesProvider 已订阅 `trades` 表变更（多端录入实时刷新）。执行：

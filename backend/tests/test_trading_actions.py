@@ -203,8 +203,11 @@ def test_run_writes_reviews_idempotently_and_state(data_root: Path, monkeypatch:
     code = run(data_root, dry_run=False, as_of=AS_OF, rest=rest)
     assert code == 0
     # 幂等: 先删当日旧行再插
-    assert rest.deletes == [('trade_reviews', 'user_id=eq.u1&review_date=eq.2026-08-20')]
-    assert len(rest.inserts) == 1
+    assert rest.deletes == [
+        ('trade_reviews', 'user_id=eq.u1&review_date=eq.2026-08-20'),
+        ('review_aggregates', 'user_id=eq.u1'),  # 聚合物化: PK=user_id 覆写
+    ]
+    assert len(rest.inserts) == 2
     table, rows = rest.inserts[0]
     assert table == 'trade_reviews' and len(rows) == 1
     row = rows[0]
@@ -220,6 +223,35 @@ def test_run_writes_reviews_idempotently_and_state(data_root: Path, monkeypatch:
     state = json.loads((data_root / 'latest' / am.STATE_FILENAME).read_text(encoding='utf-8'))
     assert state['states'] == {'600519': 'in_buy_zone'}
     assert state['regime_history'] == {'2026-08-20': 'neutral'}
+    # 聚合统计物化行: as_of 基准日 + AggregateStats 字段齐备
+    agg_table, agg_rows = rest.inserts[1]
+    assert agg_table == 'review_aggregates' and len(agg_rows) == 1
+    agg = agg_rows[0]
+    assert agg['user_id'] == 'u1' and agg['as_of'] == '2026-08-20'
+    assert agg['stats']['n'] == 1
+    assert agg['stats']['win_rate'] == 1.0  # 夹具单笔盈利
+    assert set(agg['stats']) >= {'n', 'win_rate', 'avg_r', 'profit_factor', 'expectancy', 'max_drawdown', 'by_regime'}
+
+
+def test_run_materializes_aggregates_per_user(data_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """聚合统计按用户物化, 不跨用户混装 (多用户隔离)。"""
+    monkeypatch.setattr(am, 'send_alert', lambda t, d: True)
+    trades = [
+        *DEFAULT_TRADES,
+        trade_row('open', (AS_OF - timedelta(days=30)).isoformat(), 10.5, 100, stop=9.8, seq=5, user='u2'),
+        trade_row('close', AS_OF.isoformat(), 11.2, 100, seq=6, user='u2'),
+    ]
+    rest = FakeRest(trades, [])
+    run(data_root, dry_run=False, as_of=AS_OF, rest=rest)
+    agg_writes = [(tbl, q) for tbl, q in rest.deletes if tbl == 'review_aggregates']
+    assert agg_writes == [
+        ('review_aggregates', 'user_id=eq.u1'),
+        ('review_aggregates', 'user_id=eq.u2'),
+    ]
+    agg_rows = [r for tbl, rs in rest.inserts if tbl == 'review_aggregates' for r in rs]
+    assert {r['user_id'] for r in agg_rows} == {'u1', 'u2'}
+    for r in agg_rows:
+        assert r['stats']['n'] == 1  # 各用户各 1 笔, 无混装
 
 
 def test_run_regime_history_accumulates(data_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -26,6 +26,30 @@ DIR="${REPO}/.factory/artifacts/issue-${ISSUE}"
 BRANCH="factory/issue-${ISSUE}"
 WT="${REPO}/.factory/worktrees/issue-${ISSUE}"   # 链独立 worktree（多驱动隔离）
 node_timeout() { python3 "${REPO}/.factory/factory_lib.py" timeout "$1"; }  # 分级预算：裁决器5m/工作节点15m/implement 30m
+
+# --- 互斥与环境标记（2026-08-21 三链并发事故修复） ---
+# D2: 链内所有子进程(omp 节点)可见，仓库 pre-push 钩子据此禁推 main
+export FACTORY_CHAIN=1
+# D1: S1 手动直跑与 S2 派发器共用 dispatcher 目录锁；派发器子进程
+# (FACTORY_DISPATCHED=1)锁已由父持有，重复获取会自锁。
+# worktree 隔离落地后 checkout 安全已由分支独占保证，此锁额外序列化
+# label 操作与 gate 资源占用（验证 e2e 后可评估放开）
+MANUAL_LOCK=0
+if [ "${FACTORY_DISPATCHED:-0}" != 1 ] && [ "${DRY}" = 0 ]; then
+  LOCKDIR="${REPO}/.factory/locks/dispatcher"
+  if mkdir "$LOCKDIR" 2>/dev/null; then
+    echo $$ > "$LOCKDIR/pid"; MANUAL_LOCK=1
+  else
+    _pid="$(cat "$LOCKDIR/pid" 2>/dev/null || true)"
+    if [ -n "${_pid}" ] && ! kill -0 "${_pid}" 2>/dev/null; then
+      echo "锁持有者 pid=${_pid} 已死，接管陈锁" >&2
+      rm -rf "$LOCKDIR" && mkdir "$LOCKDIR" && echo $$ > "$LOCKDIR/pid" && MANUAL_LOCK=1
+    fi
+  fi
+  [ "${MANUAL_LOCK}" = 1 ] || { echo "dispatcher 或另一链运行中（${LOCKDIR}），稍后再试" >&2; exit 3; }
+  # 早期退出(设下方链 trap 前)也要放锁
+  trap '[ "${MANUAL_LOCK}" = 1 ] && rm -rf "${REPO}/.factory/locks/dispatcher" 2>/dev/null' EXIT
+fi
 # --- 状态机标签：S1 issue 侧 triaging → accepted|rejected → in-review；S2 加
 #     in-progress（dispatcher 抢占锁）与 PR 侧 needs-fix/needs-human/approved。
 #     完整转移表唯一权威在 state.py TRANSITIONS；标签派生/收敛见 factory-state.sh ---
@@ -37,7 +61,7 @@ FACTORY_LABELS=(
   "factory:in-progress d4c5f9 dispatcher已抢占，链运行中"
   "factory:needs-fix fbca04 PR被打回待修（≤2轮）"
   "factory:needs-human e99695 轮次耗尽，人工接管"
-  "factory:approved 2cbe4e 审查通过（merge受A5门控）",
+  "factory:approved 2cbe4e 审查通过（merge受A5门控）"
   "factory:needs-review 1d76db PR已开待人工审查"
 )
 
@@ -196,7 +220,8 @@ if [ "${DRY}" = 0 ]; then
   ensure_labels
   issue_label add factory:triaging
   # 失败清理：非零退出时移除流转标签，issue 回到零 factory 标签态（可重试/人工接手）
-  trap 'rc=$?; git -C "${REPO}" worktree remove --force "${WT}" >/dev/null 2>&1 || true; [ $rc -ne 0 ] && { issue_label remove factory:triaging; issue_label remove factory:accepted; issue_label remove factory:in-progress; }' EXIT
+  # D1: 本 trap 覆盖早期放锁 trap，故自带锁释放；派发链 MANUAL_LOCK=0 不动锁
+  trap 'rc=$?; git -C "${REPO}" worktree remove --force "${WT}" >/dev/null 2>&1 || true; [ $rc -ne 0 ] && { issue_label remove factory:triaging; issue_label remove factory:accepted; issue_label remove factory:in-progress; }; [ "${MANUAL_LOCK}" = 1 ] && rm -rf "${REPO}/.factory/locks/dispatcher" 2>/dev/null' EXIT
 else
   echo "[dry-run] gh issue view #${ISSUE} → ${DIR}/issue.json"
   echo "[dry-run] label: +factory:triaging（裁决后 → accepted|rejected）"
@@ -208,8 +233,8 @@ run_triage || exit 1
 if [ "${DRY}" = 0 ]; then
   VERDICT="$(json_field "${DIR}/triage.json" 'd["verdict"]')"
   if [ "${VERDICT}" = accept ]; then
-    # S1/S2 互斥: in-progress 使 dispatcher 队列(只认 accepted)与
-    # needs-fix 重派(跳过 in-progress)都不会重复认领本 issue
+    # S1/S2 互斥: in-progress 双标签 + dispatch.sh accepted 队列显式跳过
+    # in-progress 条目（gh label 过滤是"含有"非"仅有"，2026-08-21 实证双派）
     issue_label_swap "factory:triaging" "factory:accepted,factory:in-progress"
   else
     issue_label_swap "factory:triaging" "factory:rejected"

@@ -28,7 +28,7 @@ REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
 [ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug" >&2; exit 2; }
 
 DRY="${DRY:-0}"; WATCH=0; INTERVAL="${INTERVAL:-1800}"
-MAX_PARALLEL="${MAX_PARALLEL:-4}"
+MAX_PARALLEL="${MAX_PARALLEL:-1}"  # 2026-08-21 三链并发事故: 链共享同一 checkout，worktree 隔离(WT)落地前强制串行
 MERGE_METHOD="${FACTORY_MERGE_METHOD:-merge}"
 AUTO_MERGE=0
 [ "${FACTORY_AUTO_MERGE:-0}" = 1 ] && [ -f "$FACTORY/metrics/auto-merge-unlocked" ] && AUTO_MERGE=1
@@ -85,7 +85,8 @@ claim() {  # <issue-number>  消费 accepted → in-progress（幂等重试 ×2�
 
 run_chain() {  # <issue-number>  占并发槽运行链
   if [ "$DRY" = 1 ]; then say "run: bash .factory/fix-issue.sh $1"; return 0; fi
-  bash "$FACTORY/fix-issue.sh" "$1" >> "$FACTORY/artifacts/issue-$1/dispatch.log" 2>&1 &
+  # FACTORY_DISPATCHED=1: 链知道自己已被 dispatcher 锁护，S1 手动互斥锁免获取(防自锁)
+  FACTORY_DISPATCHED=1 bash "$FACTORY/fix-issue.sh" "$1" >> "$FACTORY/artifacts/issue-$1/dispatch.log" 2>&1 &
   while [ "$(jobs -rp | wc -l | tr -d ' ')" -ge "$MAX_PARALLEL" ]; do sleep 5; done
 }
 
@@ -153,6 +154,12 @@ for pr in json.load(sys.stdin): print(pr["number"])')"
   QUEUE="$(gh issue list --repo "$REPO_SLUG" --state open --label factory:accepted \
     --json number,labels --limit 100 | sort_by_priority)"
   for N in $QUEUE; do
+    # D4(2026-08-21 实证双派): gh label 过滤是"含有"而非"仅有"，
+    # accepted+in-progress 双标签条目仍在队列，必须显式跳过在跑的
+    if gh issue view "$N" --repo "$REPO_SLUG" --json labels -q '.labels[].name' 2>/dev/null \
+       | grep -q '^factory:in-progress$'; then
+      echo "  issue #$N 已 in-progress，跳过"; continue
+    fi
     if claim "$N"; then say "issue #$N → 链"; run_chain "$N"; fi
   done
 

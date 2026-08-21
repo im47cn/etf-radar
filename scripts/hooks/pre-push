@@ -8,6 +8,16 @@
 # 自定义对比基准: DIFF_COVERAGE_BASE=origin/main git push
 set -euo pipefail
 
+# D2(2026-08-21 事故: 链节点直推 main 绕过 issue→PR 流程): 工厂链环境禁推 main
+if [ "${FACTORY_CHAIN:-0}" = 1 ]; then
+  while read -r _lref _lsha _rref _rsha; do
+    if [ "${_rref}" = "refs/heads/main" ]; then
+      echo "pre-push: 工厂链禁止推送 main（issue→PR 铁律），已拒绝" >&2
+      exit 1
+    fi
+  done
+fi
+
 REPO=$(git rev-parse --show-toplevel)
 COMPARE="${DIFF_COVERAGE_BASE:-origin/main}"
 FAIL_UNDER=95

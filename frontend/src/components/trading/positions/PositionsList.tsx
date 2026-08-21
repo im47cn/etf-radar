@@ -28,13 +28,13 @@ export const PositionsList = () => {
         <tbody>
           {positions.map((p) => {
             // 止损 null → '—'：提 const 避免 JSX 内 ?? 的 coverage 盲区
-            const stopLabel = p.stop_current != null ? p.stop_current.toFixed(2) : '—';
+            const stopLabel = p.stop_current != null ? p.stop_current.toFixed(3) : '—';
             return (
               <tr key={p.code} className="border-b border-gray-800 hover:bg-gray-800/60">
                 <td className="px-2 py-1.5 font-mono text-gray-400">{p.code}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap">{p.name}</td>
                 <td className="px-2 py-1.5">{p.shares}</td>
-                <td className="px-2 py-1.5">{p.avg_cost.toFixed(2)}</td>
+                <td className="px-2 py-1.5">{p.avg_cost.toFixed(3)}</td>
                 <td className="px-2 py-1.5">{stopLabel}</td>
               </tr>
             );

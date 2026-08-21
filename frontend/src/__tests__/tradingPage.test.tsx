@@ -346,7 +346,8 @@ describe('TradingPage 持仓/复盘 Tab', () => {
     clickTab('持仓');
     const rows = screen.getAllByRole('row');
     expect(rows[1]?.textContent).toContain('600519');
-    expect(rows[1]?.textContent).toContain('1573.20');
+    expect(rows[1]?.textContent).toContain('1573.200');
+    expect(rows[1]?.textContent).toContain('1710.500');
   });
 
   it('复盘 Tab: Actions 产出后渲染统计卡与逐笔列表', async () => {

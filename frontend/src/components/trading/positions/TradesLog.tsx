@@ -56,7 +56,7 @@ export const TradesLog = () => {
         {rows.map((t) => {
           const badge = TRADE_SIDE_LABEL[t.side];
           const badgeClass = sideBadgeClass(t.side);
-          const stopLabel = t.stop_after != null ? `止损位 ${t.stop_after.toFixed(2)}` : '';
+          const stopLabel = t.stop_after != null ? `止损位 ${t.stop_after.toFixed(3)}` : '';
           const isConfirming = confirmId === t.id;
           const isBusy = busyId === t.id;
           const isLocked = isCloseDeleteLocked(t);
@@ -71,7 +71,7 @@ export const TradesLog = () => {
               <span className="font-mono">{t.code}</span>
               <span>{t.name}</span>
               <span className={`rounded px-1.5 py-0.5 ${badgeClass}`}>{badge}</span>
-              <span>{t.price.toFixed(2)} × {t.shares} 股</span>
+              <span>{t.price.toFixed(3)} × {t.shares} 股</span>
               {stopLabel !== '' && <span className="text-gray-500">{stopLabel}</span>}
               {!isEditing && (
                 <span className="ml-auto">

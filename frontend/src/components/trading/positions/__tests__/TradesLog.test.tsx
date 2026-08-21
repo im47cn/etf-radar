@@ -51,19 +51,22 @@ describe('TradesLog', () => {
   it('事件流最新在前, 含事件标签与止损位; null 止损不显示止损段', () => {
     // 契约: trades 来自 listTrades 按 trade_date 升序
     mockTrades([
+      mkTrade('t4', { trade_date: '2026-08-17', code: '510300', name: '沪深300ETF', price: 1.732, shares: 10000, stop_after: 1.58 }),
       mkTrade('t1', { trade_date: '2026-08-18' }),
       mkTrade('t3', { trade_date: '2026-08-19', side: 'add', price: 1720 }),
       mkTrade('t2', { trade_date: '2026-08-20', side: 'reduce', shares: 50, stop_after: null }),
     ]);
     render(<TradesLog />);
     const items = screen.getAllByRole('listitem');
-    expect(items).toHaveLength(3);
+    expect(items).toHaveLength(4);
     expect(items[0]?.textContent).toContain('2026-08-20'); // 最新在前
     expect(items[0]?.textContent).toContain('减仓');
     expect(items[0]?.textContent).not.toContain('止损位');
     expect(items[1]?.textContent).toContain('加仓');
-    expect(items[1]?.textContent).toContain('止损位 1573.20');
+    expect(items[1]?.textContent).toContain('止损位 1573.200');
     expect(items[2]?.textContent).toContain('2026-08-18');
+    expect(items[3]?.textContent).toContain('1.732 × 10000 股');
+    expect(items[3]?.textContent).toContain('止损位 1.580');
   });
 
   it('删除两步确认: 先变确认按钮, 再点才调用 removeTrade', async () => {

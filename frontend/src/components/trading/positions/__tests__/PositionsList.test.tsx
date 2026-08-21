@@ -33,17 +33,20 @@ describe('PositionsList', () => {
 
   it('渲染持仓表: 代码/名称/股数/成本/止损位, null 止损降级 —', () => {
     vi.mocked(useTrades).mockReturnValue({
-      positions: [mkPosition(), mkPosition({ code: '300750', name: '宁德时代', stop_current: null })],
+      positions: [mkPosition(), mkPosition({ code: '300750', name: '宁德时代', stop_current: null }), mkPosition({ code: '510300', name: '沪深300ETF', shares: 10000, avg_cost: 1.732, stop_current: 1.58 })],
       trades: [], settings: null as never, loading: false, error: null,
       addTrade: vi.fn(), removeTrade: vi.fn(), updateSettings: vi.fn(), refresh: vi.fn(),
     } as never);
     render(<PositionsList />);
     const rows = screen.getAllByRole('row');
-    expect(rows).toHaveLength(3); // 表头 + 2 行
+    expect(rows).toHaveLength(4); // 表头 + 3 行
     expect(rows[1]?.textContent).toContain('600519');
-    expect(rows[1]?.textContent).toContain('1710.50');
-    expect(rows[1]?.textContent).toContain('1573.20');
+    expect(rows[1]?.textContent).toContain('1710.500');
+    expect(rows[1]?.textContent).toContain('1573.200');
     expect(rows[2]?.textContent).toContain('300750');
     expect(rows[2]?.textContent).toContain('—');
+    expect(rows[3]?.textContent).toContain('510300');
+    expect(rows[3]?.textContent).toContain('1.732');
+    expect(rows[3]?.textContent).toContain('1.580');
   });
 });

@@ -127,7 +127,7 @@ describe('deleteTrade', () => {
 
 describe('editTrade', () => {
   const TID = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-  const input = { code: '600519', name: 'x', side: 'open', trade_date: '2026-08-19', price: 1, shares: 1 };
+  const input = { code: '600519', name: 'x', side: 'open' as const, trade_date: '2026-08-19', price: 1, shares: 1 };
 
   it('未登录 → 不触库', async () => {
     expect((await editTrade(null, TID, input)).error).toBe('未登录');

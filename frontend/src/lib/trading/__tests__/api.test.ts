@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { listTrades, insertTrade, deleteTrade, getSettings, saveSettings, listReviews } from '../api';
+import { listTrades, insertTrade, deleteTrade, getSettings, saveSettings, listReviews, getReviewAggregates } from '../api';
 import { TradingApiError } from '../types';
 
 // ── supabase mock（builder 模式：supabase-js 的 order/eq 返回可继续链式的 thenable） ──
 let configured = true;
 let tradesResult:    { data: unknown[] | null; error: { message: string } | null };
 let reviewsResult:   { data: unknown[] | null; error: { message: string } | null };
+let aggregatesResult: { data: unknown[] | null; error: { message: string } | null };
 let settingsResult:  { data: unknown | null;  error: { message: string } | null };
 const insertMock   = vi.fn();
 const deleteEqMock = vi.fn();
@@ -30,6 +31,9 @@ function fromMock(table: string) {
   }
   if (table === 'trade_reviews') {
     return { select: () => chain(reviewsResult) };
+  }
+  if (table === 'review_aggregates') {
+    return { select: () => ({ limit: () => chain(aggregatesResult) }) };
   }
   return { select: () => chain(tradesResult), insert: insertMock, delete: () => ({ eq: deleteEqMock }) };
 }
@@ -189,5 +193,46 @@ describe('saveSettings', () => {
       { onConflict: 'user_id' },
     );
     expect((await saveSettings(null, {})).error).toBe('未登录');
+  });
+});
+
+
+// ── getReviewAggregates (物化快照, 单行或 null) ───────────────────────
+
+const aggRow = {
+  user_id: UID,
+  as_of: '2026-08-21',
+  stats: { n: 7, win_rate: 0.571, avg_r: 1.2, profit_factor: 1.85, expectancy: 120.5, max_drawdown: 800, by_regime: {} },
+  computed_at: '2026-08-21T09:30:00Z',
+};
+
+describe('getReviewAggregates', () => {
+  it('未配置/未登录返回 null', async () => {
+    configured = false;
+    expect(await getReviewAggregates(null)).toBeNull();
+    configured = true;
+    expect(await getReviewAggregates(null)).toBeNull();
+  });
+
+  it('有物化行: 解析返回首行', async () => {
+    aggregatesResult = { data: [aggRow], error: null };
+    const row = await getReviewAggregates(UID);
+    expect(row?.as_of).toBe('2026-08-21');
+    expect(row?.stats.win_rate).toBe(0.571);
+  });
+
+  it('空表: 返回 null (Actions 未跑过)', async () => {
+    aggregatesResult = { data: [], error: null };
+    expect(await getReviewAggregates(UID)).toBeNull();
+  });
+
+  it('坏行被 zod 过滤: 行不合法返回 null', async () => {
+    aggregatesResult = { data: [{ ...aggRow, stats: { n: 'x' } }], error: null };
+    expect(await getReviewAggregates(UID)).toBeNull();
+  });
+
+  it('db error: 抛 TradingApiError', async () => {
+    aggregatesResult = { data: null, error: { message: 'rls denied' } };
+    await expect(getReviewAggregates(UID)).rejects.toThrow(TradingApiError);
   });
 });

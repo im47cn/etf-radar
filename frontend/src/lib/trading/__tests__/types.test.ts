@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  ReviewAggregatesRowSchema,
   TradeSchema,
   TradeReviewSchema,
   TradingSettingsSchema,
@@ -141,5 +142,25 @@ describe('TradingApiError', () => {
     expect(e.name).toBe('TradingApiError');
     expect(e.kind).toBe('not_configured');
     expect(e.message).toBe('Supabase 未配置');
+  });
+});
+
+
+// ── ReviewAggregatesRow (物化快照 schema) ─────────────────────────────
+
+describe('ReviewAggregatesRowSchema', () => {
+  it('完整行 parse 成功, by_regime 缺省转 null', () => {
+    const row = ReviewAggregatesRowSchema.parse({
+      user_id: 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e',
+      as_of: '2026-08-21',
+      stats: { n: 7, win_rate: 0.571, avg_r: 1.2, profit_factor: 1.85, expectancy: 120.5, max_drawdown: 800 },
+      computed_at: '2026-08-21T09:30:00Z',
+    });
+    expect(row.stats.n).toBe(7);
+    expect(row.stats.by_regime).toBeNull();
+  });
+
+  it('null 字段与非法行: 拒绝缺 stats / 坏 as_of', () => {
+    expect(() => ReviewAggregatesRowSchema.parse({ user_id: 'x' })).toThrow();
   });
 });

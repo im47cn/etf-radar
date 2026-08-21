@@ -36,7 +36,8 @@ FACTORY_LABELS=(
   "factory:in-progress d4c5f9 dispatcher已抢占，链运行中"
   "factory:needs-fix fbca04 PR被打回待修（≤2轮）"
   "factory:needs-human e99695 轮次耗尽，人工接管"
-  "factory:approved 2cbe4e 审查通过（merge受A5门控）"
+  "factory:approved 2cbe4e 审查通过（merge受A5门控）",
+  "factory:needs-review 1d76db PR已开待人工审查"
 )
 
 ensure_labels() {
@@ -197,6 +198,9 @@ if [ "${DRY}" = 0 ]; then
   issue_label remove factory:triaging
   if [ "${VERDICT}" = accept ]; then
     issue_label add factory:accepted
+    # S1/S2 互斥: in-progress 使 dispatcher 队列(只认 accepted)与
+    # needs-fix 重派(跳过 in-progress)都不会重复认领本 issue
+    issue_label add factory:in-progress
   else
     issue_label add factory:rejected
     echo "triage=${VERDICT}，链终止"

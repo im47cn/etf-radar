@@ -56,6 +56,17 @@ issue_label() { # issue_label <add|remove> <name> —— 失败仅告警
   fi
 }
 
+issue_label_swap() { # issue_label_swap <"删,删"> <"加,加"> —— 单请求原子转移，失败链终止
+  # 逐个 add/remove 会把状态机跳变拆成可失败的顺序依赖（半途断裂=双标签或裸奔）；
+  # 单请求换标签消除顺序问题。失败非零退出，由 EXIT trap 清理、factory-state.sh sync 兜底。
+  if gh issue edit "${ISSUE}" --remove-label "${1}" --add-label "${2}" >/dev/null 2>&1; then
+    echo "  [label] -${1} +${2}"
+  else
+    echo "[error] 标签转移失败：-${1} +${2}（issue #${ISSUE}），链终止" >&2
+    exit 1
+  fi
+}
+
 
 run_node() {  # run_node <name> — 拼接静态 prompt + 任务参数，独立进程执行
   local name="$1" t0 t1
@@ -195,14 +206,12 @@ echo "=== fix-issue #${ISSUE} → ${DIR} ==="
 run_triage || exit 1
 if [ "${DRY}" = 0 ]; then
   VERDICT="$(json_field "${DIR}/triage.json" 'd["verdict"]')"
-  issue_label remove factory:triaging
   if [ "${VERDICT}" = accept ]; then
-    issue_label add factory:accepted
     # S1/S2 互斥: in-progress 使 dispatcher 队列(只认 accepted)与
     # needs-fix 重派(跳过 in-progress)都不会重复认领本 issue
-    issue_label add factory:in-progress
+    issue_label_swap "factory:triaging" "factory:accepted,factory:in-progress"
   else
-    issue_label add factory:rejected
+    issue_label_swap "factory:triaging" "factory:rejected"
     echo "triage=${VERDICT}，链终止"
     exit 0
   fi
@@ -258,9 +267,7 @@ if [ "${DRY}" = 0 ]; then
   # PR 落地后 issue 侧转移：accepted → in-review（PR 状态接管 issue，§7）。
   # in-progress 由链属主自清：锁不进 PR 阶段，避免 in-review+in-progress
   # 双标签滞留到 closed（锁单一属主原则，链是 in-progress 生命周期的终点）
-  issue_label remove factory:accepted
-  issue_label remove factory:in-progress
-  issue_label add factory:in-review
+  issue_label_swap "factory:accepted,factory:in-progress" "factory:in-review"
   echo "PR 已建（factory:needs-review）。issue #${ISSUE} → factory:in-review。人类合并。"
 else
   echo "[dry-run] push + gh pr create --label factory:needs-review；issue: accepted → in-review"

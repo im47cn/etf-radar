@@ -56,17 +56,9 @@ BASE="$("${GITUP[@]}" rev-parse --verify "$FREMOTE/main^{commit}")" \
 PUSH_URL="$("${GITUP[@]}" remote -v | awk -v repo="$UPSTREAM_REPO" \
   '$0 ~ /github\.com/ && $0 ~ repo && $3 == "(push)" {print $2; exit}')"
 [ -n "$PUSH_URL" ] || die "上游 clone 无指向 github.com/${UPSTREAM_REPO} 的 push url"
-# 跨仓对象：上游对象库没有本仓提交，cherry-pick 前临时挂源 remote 拉取
-# （结束移除；拉入对象随后不可达，交由上游 gc，无残留引用）
+# REMOTE_ADDED=0 先行初始化（cleanup 引用，set -u）；remote add 本体
+# 移至 dry-run 出口之后——dry-run 不做上游配置变更（PR #69 审查）
 REMOTE_ADDED=0
-if "${GITUP[@]}" remote add feedback-src "$REPO" >/dev/null 2>&1; then
-  REMOTE_ADDED=1
-else
-  # 已存在则验证可用后复用；仅本次添加的才在 cleanup 移除（防误删用户既有 remote）
-  "${GITUP[@]}" remote get-url feedback-src >/dev/null 2>&1 \
-    || die "feedback-src remote 已存在但不可用"
-fi
-"${GITUP[@]}" fetch -q feedback-src main
 cleanup() {
   git -C "$UPSTREAM_PATH" worktree remove --force "$WT" >/dev/null 2>&1 || true
   git -C "$UPSTREAM_PATH" branch -qD "$BRANCH" >/dev/null 2>&1 || true
@@ -85,6 +77,18 @@ say "上游 worktree: $WT 分支: $BRANCH (基点 $FREMOTE/main@${BASE:0:9})"
 #     上游 bare 无工作树，2026-08-22 前的磁盘直比已不可行） ---
 python3 "$FACTORY/feedback.py" report "$WT"
 [ "$DRY" = 1 ] && { say "[dry-run] 到此为止，未做任何变更"; exit 0; }
+
+# 跨仓对象：上游对象库没有本仓提交，cherry-pick 前临时挂源 remote 拉取
+# （结束移除；拉入对象随后不可达，交由上游 gc，无残留引用）。
+# dry-run 出口之后才做：remote add 属上游配置变更，只读模式不碰
+if "${GITUP[@]}" remote add feedback-src "$REPO" >/dev/null 2>&1; then
+  REMOTE_ADDED=1
+else
+  # 已存在则验证可用后复用；仅本次添加的才在 cleanup 移除（防误删用户既有 remote）
+  "${GITUP[@]}" remote get-url feedback-src >/dev/null 2>&1 \
+    || die "feedback-src remote 已存在但不可用"
+fi
+"${GITUP[@]}" fetch -q feedback-src main
 
 # --- 3.6 依赖闭包（fail-closed）：候选脚本引用的 .factory 资产必须
 #     上游已有 ∨ 候选随行；防 PR #18 只带主脚本、配套件断链复演 ---

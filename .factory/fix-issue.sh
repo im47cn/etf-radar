@@ -98,6 +98,17 @@ issue_label_swap() { # issue_label_swap <"删,删"> <"加,加"> —— 单请求
   fi
 }
 
+issue_comment() { # issue_comment <body-file> —— 链写 issue 评论的唯一出口
+  # 安全不变量在出口：发送前 factory_lib sanitize 原地中和正文中的
+  # [factory:rejected] 子串——链产正文（LLM reasons 等）可能回显用户评论
+  # 里的标记，state.py 子串扫描会把携带标记的链评论当人工覆盖、永久钉死
+  # rejected。渲染器不各自记得，出口统一管。中和失败 fail-closed 不发送
+  # （防毒丸放出），正文文件保留供排查。
+  python3 "${REPO}/.factory/factory_lib.py" sanitize "${1}" || {
+    echo "  [warn] 评论正文标记中和对失败（${1}），不发送" >&2; return 1; }
+  gh issue comment "${ISSUE}" --body-file "${1}"
+}
+
 
 run_node() {  # run_node <name> — 拼接静态 prompt + 任务参数，独立进程执行
   local name="$1" t0 t1
@@ -253,13 +264,12 @@ if [ "${DRY}" = 0 ]; then
     issue_label_swap "factory:triaging,factory:in-progress" "factory:rejected"
     # 拒绝回执：判据明细评论到 issue（#57/#59/#60 实证——triage.json 只存
     # 本地运行时产物，人类只见标签不知道为何被拒，无法介入补充上下文）。
-    # 回执刻意不含裸标记 `[factory:rejected]`：state.py 标记评论通道优先级
-    # 最高且无撤销语义，链自动写入会把重投钉死在 rejected（毒丸）；
+    # 经 issue_comment 唯一出口发送（出口内含标记中和，见其注释）；
     # 标记通道保留给人类手动覆盖。评论失败仅告警——裁决已由标签转移落定，
     # 回执是透明度而非门，正文存 artifacts 供手动补发（同 issue_label 语义）。
     if python3 "${REPO}/.factory/factory_lib.py" receipt "${DIR}/triage.json" \
         > "${DIR}/reject-receipt.md" 2>/dev/null; then
-      if gh issue comment "${ISSUE}" --body-file "${DIR}/reject-receipt.md" >/dev/null 2>&1; then
+      if issue_comment "${DIR}/reject-receipt.md" >/dev/null 2>&1; then
         echo "  [receipt] 拒绝回执已评论到 issue #${ISSUE}"
       else
         echo "  [warn] 拒绝回执评论失败，正文在 ${DIR}/reject-receipt.md（可手动补发）" >&2

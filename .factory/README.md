@@ -100,6 +100,11 @@ python3 -m pytest .factory/test_state.py -o addopts= -q   # 状态机测试
   reviewDecision、needs-fix 的 label-add 事件计数、`[factory:rejected]`
   标记评论——从这些仓库可见事实整体推导目标态，`factory-state.sh`
   幂等收敛。没有散落的转移代码，漏写转移这类缺陷在结构上不存在。
+- **链写 issue 评论唯一出口 = `issue_comment()`**（fix-issue.sh）：发送前
+  `factory_lib sanitize` 原地中和正文中的 `[factory:rejected]` 子串——
+  链产正文（LLM reasons 等）可能回显用户评论里的标记，携带即被 state.py
+  标记评论通道识别为人工覆盖、永久钉死 rejected。中和在出口统一执行，
+  渲染器不各自记得；中和失败 fail-closed 不发送。新增链评论点必须走它。
 - **锁例外**：`triaging`（链写）/`in-progress`（dispatch 写）是运行中
   声明，sync 永不触碰；终态（rejected/closed）清理除外（漂移自愈）。
 - **转移表即 spec**：`state.py TRANSITIONS` 是唯一权威；

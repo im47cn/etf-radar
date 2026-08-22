@@ -119,13 +119,15 @@ REJECT_GUIDANCE: dict[str, str] = {
 }
 
 
-def _neutralize_marker(text: str) -> str:
-    """破坏文本中的裸标记子串（数据侧防注入）。
+def neutralize_marker(text: str) -> str:
+    """破坏文本中的裸标记子串（issue 评论出口的统一防注入）。
 
-    triage reasons 是 LLM 产物，可能从 issue 评论回显 `[factory:rejected]`
-    （用户以标记表达异议）。state.py 对 issue 评论做子串扫描，回执原样
-    引用即被识别为人工覆盖 → 永久钉死 rejected。去括号保留语义、破坏
-    子串；循环替换防 `[[...]]` 嵌套构造替换一次后重组出标记。
+    链产正文（回执 reasons、未来任何 LLM 产物）可能从 issue 评论回显
+    `[factory:rejected]`（用户以标记表达异议）。state.py 对 issue 评论做
+    子串扫描，链评论原样携带即被识别为人工覆盖 → 永久钉死 rejected。
+    本函数是**评论出口**（fix-issue.sh issue_comment → sanitize）的唯一
+    中和点，渲染器不各自记得。去括号保留语义；循环替换防 `[[...]]`
+    嵌套构造替换一次后重组出标记。
     """
     while "[factory:rejected]" in text:
         text = text.replace("[factory:rejected]", "factory:rejected")
@@ -135,16 +137,14 @@ def _neutralize_marker(text: str) -> str:
 def reject_receipt(triage: dict) -> str:
     """triage 裁决（reject）→ 拒绝回执 markdown（五段式：结论/依据/指引/关联/边界）。
 
-    确定性渲染，零 LLM（链脚本纪律，铁律 4 同源）。安全不变量：**输出永不
-    包含裸标记 `[factory:rejected]`**——模板侧字面量不写标记，数据侧
-    （reasons，LLM 产物）经 _neutralize_marker 中和。state.py 标记评论通道
-    优先级最高且无撤销语义，回执携带标记会把重投（MISSION：补充上下文后
-    重开）永久钉死在 rejected；标记通道保留给人类手动覆盖（人写人删）。
-    rejected 的机器状态由标签承载，人类审计由本回执承载。
+    确定性渲染，零 LLM（链脚本纪律，铁律 4 同源）。安全不变量不在本函数：
+    标记中和统一在评论出口（issue_comment → factory_lib sanitize）执行，
+    渲染器管内容、出口管安全——本函数原样渲染 reasons（可能含标记）。
+    rejected 的机器状态由标签承载，人类审计由回执承载；标记评论通道
+    保留给人类手动覆盖（人写人删，state.py 语义）。
     """
     raw = triage.get("reasons")
     reasons = raw if isinstance(raw, list) else []  # 标量/缺失 → 空，不抛 TypeError
-    reasons = [_neutralize_marker(r) if isinstance(r, str) else r for r in reasons]
     lines = [
         "## 工厂 triage 裁决：reject",
         "",
@@ -178,8 +178,8 @@ def reject_receipt(triage: dict) -> str:
         "  置信度: 二值裁决基于 issue 文本与 MISSION 判据核对，无运行时验证",
         "",
     ]
-    assert "[factory:rejected]" not in "\n".join(lines)  # 双保险：模板+数据中和后仍断言
     return "\n".join(lines)
+
 
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
@@ -192,6 +192,16 @@ def main(argv: list[str]) -> int:
     if cmd == "receipt":
         # receipt <triage.json> —— 拒绝回执 markdown（确定性模板，零 LLM）
         print(reject_receipt(json.loads(Path(argv[2]).read_text(encoding="utf-8"))))
+        return 0
+    if cmd == "sanitize":
+        # sanitize <file>... —— 评论出口标记中和：原地写回（无变化则跳过，
+        # 幂等）。issue_comment 发送前必经；详见 neutralize_marker
+        for p in argv[2:]:
+            path = Path(p)
+            text = path.read_text(encoding="utf-8")
+            fixed = neutralize_marker(text)
+            if fixed != text:
+                path.write_text(fixed, encoding="utf-8")
         return 0
     if cmd == "parse":
         # parse <logfile> <outjson> <allowed-csv>

@@ -129,3 +129,42 @@ def test_render_report_no_drift_marker():
 def test_status_line_with_and_without_pending():
     assert "3 commits" in feedback.status_line(3)
     assert "0" in feedback.status_line(0) and "无需动作" in feedback.status_line(0)
+
+
+# ---- 依赖闭包（PR #18 实败防复演）----
+
+def test_extract_refs_collects_and_dedups():
+    src = ('A="$(cat "$FACTORY/prompts/feedback-adapt.md)"\n'
+           'python3 "$FACTORY/feedback.py" pending\n'
+           '${FACTORY}/factory_lib.py x\n'
+           '$FACTORY/artifacts/fb/manifest.json\n')  # 运行时产物，不算依赖
+    assert feedback.extract_factory_refs(src) == [
+        "factory_lib.py", "feedback.py", "prompts/feedback-adapt.md"]
+
+
+def test_closure_flags_missing_dep_pr18_replay():
+    """PR #18 实败复演：只反哺 feedback-upstream.sh，引用的配套件未随行。"""
+    patch = ('+PROMPT="$(cat "$FACTORY/prompts/feedback-adapt.md)"\n'
+             '+python3 "$FACTORY/feedback.py" pending\n')
+    cands = [{"sha": "9" * 40, "subject": "s", "feedable": True,
+              "patch": patch, "files": [".factory/feedback-upstream.sh"]}]
+    missing = feedback.closure_missing(cands, upstream_factory_files=[
+        ".factory/dispatch.sh", ".factory/factory_lib.py"])
+    assert set(missing) == {"feedback.py", "prompts/feedback-adapt.md"}
+    assert missing["feedback.py"] == ["9" * 9]
+
+
+def test_closure_passes_when_dep_in_candidate_files():
+    patch = '+python3 "$FACTORY/feedback.py" pending\n'
+    cands = [{"sha": "a" * 40, "subject": "s", "feedable": True,
+              "patch": patch, "files": [".factory/x.sh", ".factory/feedback.py"]}]
+    assert feedback.closure_missing(
+        cands, upstream_factory_files=[".factory/dispatch.sh"]) == {}
+
+
+def test_closure_passes_when_dep_upstream_has_it():
+    patch = '+python3 "$FACTORY/feedback.py" pending\n'
+    cands = [{"sha": "a" * 40, "subject": "s", "feedable": True,
+              "patch": patch, "files": [".factory/x.sh"]}]
+    assert feedback.closure_missing(
+        cands, upstream_factory_files=[".factory/feedback.py"]) == {}

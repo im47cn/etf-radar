@@ -38,7 +38,8 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 FB_DIR="$FACTORY/artifacts/feedback-$STAMP"
 mkdir -p "$FB_DIR/patches"
 BRANCH="feedback/etf-radar-$(date +%Y%m%d)"
-# 目录名须为 awesome-rules：上游 skills/skill-evo 测试断言 repo_root().name == 'awesome-rules'
+# 目录名与断言解耦：上游 repo_root 测试已改锚结构不变量（PR #22），
+# checkout 目录名不再参与判定；保留 basename 仅为语义可读
 WT="$FB_DIR/upstream-wt/awesome-rules"
 mkdir -p "$FB_DIR/upstream-wt"
 GITUP=(git -C "$UPSTREAM_PATH")
@@ -53,16 +54,25 @@ FREMOTE="${FREMOTE:-origin}"
 BASE="$("${GITUP[@]}" rev-parse --verify "$FREMOTE/main^{commit}")" \
   || die "无法解析 $FREMOTE/main"
 PUSH_URL="$("${GITUP[@]}" remote -v | awk -v repo="$UPSTREAM_REPO" \
-  '$0 ~ repo && $3 == "(push)" {print $2; exit}')"
-[ -n "$PUSH_URL" ] || die "上游 clone 无指向 ${UPSTREAM_REPO} 的 push url"
+  '$0 ~ /github\.com/ && $0 ~ repo && $3 == "(push)" {print $2; exit}')"
+[ -n "$PUSH_URL" ] || die "上游 clone 无指向 github.com/${UPSTREAM_REPO} 的 push url"
 # 跨仓对象：上游对象库没有本仓提交，cherry-pick 前临时挂源 remote 拉取
 # （结束移除；拉入对象随后不可达，交由上游 gc，无残留引用）
-"${GITUP[@]}" remote add feedback-src "$REPO" >/dev/null 2>&1 || true
+REMOTE_ADDED=0
+if "${GITUP[@]}" remote add feedback-src "$REPO" >/dev/null 2>&1; then
+  REMOTE_ADDED=1
+else
+  # 已存在则验证可用后复用；仅本次添加的才在 cleanup 移除（防误删用户既有 remote）
+  "${GITUP[@]}" remote get-url feedback-src >/dev/null 2>&1 \
+    || die "feedback-src remote 已存在但不可用"
+fi
 "${GITUP[@]}" fetch -q feedback-src main
 cleanup() {
   git -C "$UPSTREAM_PATH" worktree remove --force "$WT" >/dev/null 2>&1 || true
   git -C "$UPSTREAM_PATH" branch -qD "$BRANCH" >/dev/null 2>&1 || true
-  git -C "$UPSTREAM_PATH" remote remove feedback-src >/dev/null 2>&1 || true
+  # 仅移除本次添加的 remote；已存在被复用的不动（防误删用户既有配置）
+  [ "$REMOTE_ADDED" = 1 ] \
+    && git -C "$UPSTREAM_PATH" remote remove feedback-src >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 abandon() { say "已放弃，分支与 worktree 已清理（产物: ${FB_DIR}）"; exit 1; }
@@ -75,6 +85,10 @@ say "上游 worktree: $WT 分支: $BRANCH (基点 $FREMOTE/main@${BASE:0:9})"
 #     上游 bare 无工作树，2026-08-22 前的磁盘直比已不可行） ---
 python3 "$FACTORY/feedback.py" report "$WT"
 [ "$DRY" = 1 ] && { say "[dry-run] 到此为止，未做任何变更"; exit 0; }
+
+# --- 3.6 依赖闭包（fail-closed）：候选脚本引用的 .factory 资产必须
+#     上游已有 ∨ 候选随行；防 PR #18 只带主脚本、配套件断链复演 ---
+python3 "$FACTORY/feedback.py" closure "$WT"
 
 # --- 4. cherry-pick：clean 保真，conflicted 交适配节点 ---
 CONFLICTED=()

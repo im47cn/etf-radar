@@ -35,6 +35,11 @@ BOOTSTRAP_CANDIDATES = {
 
 TRAILER_RE = re.compile(r"^Upstream-Feedback:\s*yes\s*$", re.M | re.I)
 
+# 依赖闭包：.factory 脚本引用的仓库资产（$FACTORY/<path>）；运行时目录产物不算依赖
+FACTORY_REF_RE = re.compile(r"\$\{?FACTORY\}?/([\w./+-]+\.(?:py|sh|md))")
+RUNTIME_REF_PREFIXES = ("artifacts/", "locks/", "worktrees/", "metrics/",
+                        "mutations/")
+
 # 漂移对比时排除的运行时目录（两侧各自的运行痕迹，非工厂资产）
 DRIFT_EXCLUDES = [
     "artifacts", "locks", "worktrees", "metrics",
@@ -66,6 +71,31 @@ def collect_pending(commits, ledger_shas):
                and not any(c["sha"].startswith(s) for s in ledger_shas)]
     return pending[::-1] if pending else []
 
+def extract_factory_refs(text):
+    """从 shell 源文本提取 $FACTORY/<资产> 引用；运行时目录产物不算依赖。"""
+    return sorted({
+        m.group(1) for m in FACTORY_REF_RE.finditer(text)
+        if not m.group(1).startswith(RUNTIME_REF_PREFIXES)})
+
+
+def closure_missing(candidates, upstream_factory_files):
+    """依赖闭包：候选触碰的脚本引用的 .factory 资产，必须落在
+    上游已有 ∪ 候选触碰 的并集内。返回 {缺失资产: [引用者短 sha]}。
+
+    防 PR #18 实败复演：只反哺了 feedback-upstream.sh，其引用的
+    feedback.py / prompts/feedback-adapt.md 未随行——上游拿到即在
+    set -e 下死于 cat 不存在的提示词，整条 PR 不可运行。"""
+    def _rel(p):
+        return p[len(".factory/"):] if p.startswith(".factory/") else p
+    projected = {_rel(p) for p in upstream_factory_files}
+    for c in candidates:
+        projected.update(_rel(p) for p in c.get("files", ()))
+    missing = {}
+    for c in candidates:
+        for ref in extract_factory_refs(c.get("patch", "")):
+            if ref not in projected:
+                missing.setdefault(ref, []).append(c["sha"][:9])
+    return missing
 
 def load_ledger(path):
     """读账本 → 已反哺 SHA 集合（短 sha 前缀匹配用）。文件不存在视为空。"""
@@ -162,6 +192,31 @@ def main():
     if cmd == "pending":
         for c in pending:
             print("%s\t%s" % (c["sha"], c["subject"]))
+    elif cmd == "closure":
+        # closure <upstream-wt>: 樱桃前 fail-closed——候选引用的资产必须随行可达
+        upstream = sys.argv[2]
+        out = subprocess.run(
+            ["git", "-C", upstream, "ls-files", "--", ".factory"],
+            capture_output=True, text=True, check=True).stdout
+        ups = [p[len(".factory/"):] for p in out.split()]
+        cands = []
+        for c in pending:
+            patch = subprocess.run(
+                ["git", "show", "--format=", c["sha"]],
+                capture_output=True, text=True, check=True).stdout
+            files = subprocess.run(
+                ["git", "show", "--name-only", "--format=", c["sha"]],
+                capture_output=True, text=True, check=True).stdout.split()
+            cands.append(dict(c, patch=patch, files=files))
+        missing = closure_missing(cands, ups)
+        if missing:
+            print("依赖闭包缺失（樱桃前 fail-closed）:")
+            for ref, shas in sorted(missing.items()):
+                print("  %s  ← %s" % (ref, ", ".join(shas)))
+            print("处置: 该资产的引入提交补录 BOOTSTRAP_CANDIDATES，"
+                  "或提交带 trailer 的资产变更后重跑")
+            sys.exit(1)
+        print("依赖闭包完备: %d 候选引用的 .factory 资产全部可达" % len(cands))
     elif cmd == "status":
         print(status_line(len(pending)))
     elif cmd == "report":
@@ -179,8 +234,9 @@ def main():
                           "im47cn/awesome-rules")
         print("账本已更新: %s" % ledger_path)
     else:
-        print("用法: feedback.py pending|status|report <upstream_path>|"
-              "record <pr> <sha>:<subject>...", file=sys.stderr)
+        print("用法: feedback.py pending|status|closure <upstream_wt>|"
+              "report <upstream_path>|record <pr> <sha>:<subject>...",
+              file=sys.stderr)
         sys.exit(2)
 
 

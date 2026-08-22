@@ -121,7 +121,11 @@ def classify_task(files: list[str]) -> str:
         return "empty"
 
     def _is_test(f: str) -> bool:
-        return "/tests/" in f or f.startswith("tests/") or "/test_" in f or f.startswith("test_")
+        # 前端约定也算 test（PR #69 审查）：.test.* / .spec.* / __tests__
+        return ("/tests/" in f or f.startswith("tests/")
+                or "/__tests__/" in f or f.startswith("__tests__/")
+                or "/test_" in f or f.startswith("test_")
+                or ".test." in f or ".spec." in f)
 
     md = [f for f in files if f.endswith((".md", ".mdx"))]
     code = [f for f in files if not f.endswith((".md", ".mdx"))]

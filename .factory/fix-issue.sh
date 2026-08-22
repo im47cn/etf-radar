@@ -25,7 +25,9 @@ REPO_SLUG="${GH_REPO:-$(
   # 逐条扫含 github.com 者（github remote 名优先）；443 端口形态兼容
   { git -C "$(dirname "$0")/.." remote get-url --all --push github 2>/dev/null
     git -C "$(dirname "$0")/.." remote get-url --all --push origin 2>/dev/null
-  } | grep -m1 'github\.com' | sed -E 's#^.*github\.com(:[0-9]+)?[/:]##; s#\.git$##'
+  # grep 不用 -m1：早退关读端会让 git 组 SIGPIPE（pipefail 下 141，PR #70 审查）；
+  # sed -n 1p 取首行且消费全部输入，无早退
+  } | grep 'github\.com' | sed -n '1p' | sed -E 's#^.*github\.com(:[0-9]+)?[/:]##; s#\.git$##'
 )}"
 DIR="${REPO}/.factory/artifacts/issue-${ISSUE}"
 BRANCH="factory/issue-${ISSUE}"
@@ -241,13 +243,16 @@ if [ "${DRY}" = 0 ]; then
     if [ -f "${DIR}/triage.json" ] && [ "$(json_field "${DIR}/triage.json" 'd["verdict"]' 2>/dev/null)" = reject ]; then
       kind=rejected
     else
-      local changed
-      # || true 而非 | true：pipefail 下 true 提前关读端 → git SIGPIPE(141)
-      # → set -e 中止整个 EXIT trap（标签/台账/worktree 三重残留，#23 实证）
-      changed="$(git -C "${REPO}" diff --name-only main..."${BRANCH}" 2>/dev/null || true)"
-      [ -z "${changed}" ] && changed="$(git -C "${REPO}" diff --name-only HEAD~1 2>/dev/null || true)"
-      if [ -n "${changed}" ]; then
-        kind="$(python3 "${REPO}/.factory/factory_lib.py" classify ${changed})"
+      # NUL 分隔读入数组（bash 3.2 无 mapfile）：文件名含空白/通配符不拆分
+      # （PR #70 审查）；classify 失败降级 no-diff，trap 不因分类器死（#23 教训）
+      local -a files=()
+      local f
+      while IFS= read -r -d '' f; do files+=("$f"); done \
+        < <(git -C "${REPO}" diff --name-only -z main..."${BRANCH}" 2>/dev/null || true)
+      [ "${#files[@]}" -eq 0 ] && while IFS= read -r -d '' f; do files+=("$f"); done \
+        < <(git -C "${REPO}" diff --name-only -z HEAD~1 2>/dev/null || true)
+      if [ "${#files[@]}" -gt 0 ]; then
+        kind="$(python3 "${REPO}/.factory/factory_lib.py" classify "${files[@]}")" || kind=no-diff
       else
         kind=no-diff
       fi

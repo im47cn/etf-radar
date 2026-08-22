@@ -15,3 +15,8 @@ def prev_weekday(d: date) -> date:
     while prev.weekday() >= 5:  # 5=周六, 6=周日
         prev -= timedelta(days=1)
     return prev
+
+
+def is_weekend(d: date) -> bool:
+    """判断给定日期是否为周末（周六或周日）。"""
+    return d.weekday() >= 5  # 5=周六, 6=周日

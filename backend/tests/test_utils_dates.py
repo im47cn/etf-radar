@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from src.utils.dates import next_weekday, prev_weekday
+from src.utils.dates import is_weekend, next_weekday, prev_weekday
 
 
 @pytest.mark.parametrize(
@@ -30,3 +30,16 @@ def test_next_weekday(d: date, expected: date) -> None:
 )
 def test_prev_weekday(d: date, expected: date) -> None:
     assert prev_weekday(d) == expected
+
+
+@pytest.mark.parametrize(
+    ("d", "expected"),
+    [
+        (date(2026, 6, 6), True),  # Saturday -> True
+        (date(2026, 6, 7), True),  # Sunday -> True
+        (date(2026, 6, 1), False),  # Monday -> False
+        (date(2026, 6, 5), False),  # Friday -> False
+    ],
+)
+def test_is_weekend(d: date, expected: bool) -> None:
+    assert is_weekend(d) == expected

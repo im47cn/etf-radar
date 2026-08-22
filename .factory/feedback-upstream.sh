@@ -28,10 +28,10 @@ PENDING="$(python3 "$FACTORY/feedback.py" pending)" || die "候选收集失败"
 N_TOTAL="$(printf '%s\n' "$PENDING" | wc -l | tr -d ' ')"
 say "待反哺候选: ${N_TOTAL} 个"
 
-# --- 2. 漂移报告（上游独有/两侧分歧，仅报告不动作） ---
-[ -d "$UPSTREAM_PATH/.git" ] || die "上游 clone 不存在: $UPSTREAM_PATH"
-python3 "$FACTORY/feedback.py" report "$UPSTREAM_PATH"
-[ "$DRY" = 1 ] && { say "[dry-run] 到此为止，未做任何变更"; exit 0; }
+# --- 2. 上游可用性（2026-08-22 起上游为 bare 仓，无 .git 子目录与工作树） ---
+git -C "$UPSTREAM_PATH" rev-parse --git-dir >/dev/null 2>&1 \
+  || die "上游仓不可用: $UPSTREAM_PATH"
+
 
 # --- 3. 上游准备：独立 worktree（不碰上游主工作区及其未提交改动，同链 D3 实践） ---
 STAMP="$(date +%Y%m%d-%H%M%S)"
@@ -70,6 +70,11 @@ abandon() { say "已放弃，分支与 worktree 已清理（产物: ${FB_DIR}）
   || die "worktree 创建失败（分支 $BRANCH 可能被占用，请手工清理）"
 GITW=(git -C "$WT")
 say "上游 worktree: $WT 分支: $BRANCH (基点 $FREMOTE/main@${BASE:0:9})"
+
+# --- 3.5 漂移报告（上游独有/两侧分歧，仅报告不动作；对 worktree 检出内容，
+#     上游 bare 无工作树，2026-08-22 前的磁盘直比已不可行） ---
+python3 "$FACTORY/feedback.py" report "$WT"
+[ "$DRY" = 1 ] && { say "[dry-run] 到此为止，未做任何变更"; exit 0; }
 
 # --- 4. cherry-pick：clean 保真，conflicted 交适配节点 ---
 CONFLICTED=()

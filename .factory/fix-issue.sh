@@ -240,8 +240,12 @@ if [ "${DRY}" = 0 ]; then
   VERDICT="$(json_field "${DIR}/triage.json" 'd["verdict"]')"
   if [ "${VERDICT}" = accept ]; then
     # S1/S2 互斥: in-progress 双标签 + dispatch.sh accepted 队列显式跳过
-    # in-progress 条目（gh label 过滤是"含有"非"仅有"，2026-08-21 实证双派）
-    issue_label_swap "factory:triaging" "factory:accepted,factory:in-progress"
+    # in-progress 条目（gh label 过滤是"含有"非"仅有"，2026-08-21 实证双派）。
+    # rejected 同步自清：重投（补充上下文后移除标签重跑链）被 accept 时，
+    # 上轮 rejected 残留会让三标签并存、成功合并的 issue 永久挂 rejected
+    # （closed 清理只保留 rejected——残留即被当作裁决记录）。remove-absent
+    # 安全（首轮无此标签，同 :249 模式）
+    issue_label_swap "factory:triaging,factory:rejected" "factory:accepted,factory:in-progress"
   else
     # in-progress 同步自清（S2 claim 残留）：锁单一属主原则，
     # 链是 in-progress 生命周期终点（同 :351 PR 路径）；S1 无此标签，

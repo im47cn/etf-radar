@@ -140,6 +140,8 @@ def reject_receipt(triage: dict) -> str:
 
     failed: set[str] = set()
     for r in reasons:
+        if not isinstance(r, str):  # LLM 偶发非字符串元素：跳过匹配，
+            continue                # 不让回执阶段崩掉整条链的评论
         m = re.match(r"^判据([abc])[:：]", r)
         if m and ("不通过" in r or "存疑" in r):
             failed.add(m.group(1))

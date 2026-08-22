@@ -214,3 +214,11 @@ class TestRejectReceipt:
         """LLM 输出偏离「判据x:」前缀 → 原样渲染，无前缀解析崩溃。"""
         md = reject_receipt({"verdict": "reject", "reasons": ["与本仓库使命无关"]})
         assert "- 与本仓库使命无关" in md
+
+    def test_receipt_nonstring_reasons_no_crash(self):
+        """审查修复（PR #66 评论1）：reasons 混入非字符串元素（dict/int）
+        → re.match 不抛 TypeError，回执仍渲染；指引只从字符串项提取。"""
+        md = reject_receipt({"verdict": "reject", "reasons": [
+            {"detail": "嵌套对象"}, 42, "判据b: 不通过——无可判定标准"]})
+        assert "判据b（可判定）" in md
+        assert "[factory:rejected]" not in md

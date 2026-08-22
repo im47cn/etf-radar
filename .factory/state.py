@@ -77,8 +77,11 @@ def plan_phase(issue, pr, events, current_pr_labels=None):
     issue_labels = _labels(issue)
     pr_labels = set(current_pr_labels if current_pr_labels is not None else _labels(pr))
 
-    # 链标记评论 → rejected（#3 实测形态：标记在正文任意位置，子串匹配；
-    # 误报风险=正文引用标记，可接受——标记只由链写）
+    # 人类手动覆盖标记评论 → rejected（#3 实测形态：标记在正文任意位置，
+    # 子串匹配）。标记只由人类写、人写人删——链的拒绝回执刻意不含裸标记：
+    # 本分支优先级最高且无撤销语义，链自动写入会把重投（MISSION：补充
+    # 上下文后重开）永久钉死在 rejected。链侧 rejected 由标签承载，
+    # 判据明细由回执评论承载（fix-issue.sh 拒绝分支）。
     if any("[factory:rejected]" in (c.get("body") or "")
            for c in (issue or {}).get("comments", [])):
         for l in sorted(issue_labels - {"factory:rejected"}):

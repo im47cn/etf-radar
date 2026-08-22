@@ -111,6 +111,53 @@ def node_timeout(name: str, env: dict | None = None) -> str:
     return per_node or env.get("FACTORY_TIMEOUT") or NODE_TIMEOUTS.get(name, "15m")
 
 
+# 重投指引模板：键 = 未通过的 MISSION 判据（a 使命一致 / b 可判定 / c 不触周界）
+REJECT_GUIDANCE: dict[str, str] = {
+    "a": "判据a（使命一致）：写明落点组件——backend 流水线（providers/scoring/output/etl）、frontend 页面与组件、既有测试、或文档；",
+    "b": "判据b（可判定）：把完成标准写成可机械验证的形式——验收 = 具体测试/脚本的断言（公式、逐条清单、file:line 级差异），避免「持续 / 优化 / 失修」类开放措辞；",
+    "c": "判据c（不触周界）：触及 PERIMETER 的部分拆成独立 issue 走人类 PR（治理 / 质检线 / 数据面 / 依赖发布面清单见 MISSION.md）；",
+}
+
+
+def reject_receipt(triage: dict) -> str:
+    """triage 裁决（reject）→ 拒绝回执 markdown（五段式：结论/依据/指引/边界）。
+
+    确定性渲染，零 LLM（链脚本纪律，铁律 4 同源）。安全不变量：**永不包含
+    裸标记 `[factory:rejected]`**——state.py 标记评论通道优先级最高且无撤销
+    语义，链自动写入会把重投（MISSION：补充上下文后重开）永久钉死在
+    rejected；标记通道保留给人类手动覆盖（人写人删）。rejected 的机器状态
+    由标签承载，人类审计由本回执承载。
+    """
+    reasons = list(triage.get("reasons") or [])
+    lines = [
+        "## 工厂 triage 裁决：reject",
+        "",
+        "**结论**：未通过 [MISSION.md](../blob/main/MISSION.md)「Triage 判据」，链已终止，issue 落标 factory:rejected。",
+        "",
+        "**依据**（物理隔离 triage 节点产出，逐条判据）：",
+    ]
+    lines += [f"- {r}" for r in reasons] or ["- （裁决器未给出判据明细）"]
+
+    failed: set[str] = set()
+    for r in reasons:
+        m = re.match(r"^判据([abc])[:：]", r)
+        if m and ("不通过" in r or "存疑" in r):
+            failed.add(m.group(1))
+    lines += ["", "**重投指引**：不同意裁决可补充上下文后重开，下一轮 triage 全新评估。针对未通过判据："]
+    lines += [f"- {REJECT_GUIDANCE[k]}" for k in sorted(failed)] or [
+        "- 对照 MISSION.md「Triage 判据」逐条补足 issue 上下文。"
+    ]
+
+    lines += [
+        "",
+        "── 证据边界 ──",
+        "  已验证: 判据核对——triage 节点（--no-tools 物理隔离，输入仅 MISSION 全文 + issue 标题正文）",
+        "  未覆盖: 仓库事实核对（裁决器无工具权限，不做代码 / 数据检索；重投前请补足具体事实）",
+        "  置信度: 二值裁决基于 issue 文本与 MISSION 判据核对，无运行时验证",
+        "",
+    ]
+    return "\n".join(lines)
+
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -118,6 +165,10 @@ def main(argv: list[str]) -> int:
     cmd = argv[1]
     if cmd == "timeout":
         print(node_timeout(argv[2]))
+        return 0
+    if cmd == "receipt":
+        # receipt <triage.json> —— 拒绝回执 markdown（确定性模板，零 LLM）
+        print(reject_receipt(json.loads(Path(argv[2]).read_text(encoding="utf-8"))))
         return 0
     if cmd == "parse":
         # parse <logfile> <outjson> <allowed-csv>

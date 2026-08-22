@@ -37,8 +37,8 @@ NODE_TIMEOUT=30m .factory/fix-issue.sh 42
 ## 链结构
 
 ```
-gh issue view N（+label factory:triaging）
-  → triage（裁决 accept|reject；落标 factory:accepted|rejected，reject 即停）
+  → triage（裁决 accept|reject；落标 factory:accepted|rejected，
+           reject 附判据明细回执评论到 issue 后终止）
   → git checkout -b factory/issue-N
   → prime（研究笔记，不做设计）
   → plan（任务级计划 plan.json，含每任务 verify 命令）
@@ -65,6 +65,7 @@ gh issue view N（+label factory:triaging）
 | `plan.json` | plan | tasks[] 每项含 verify 命令；forbidden 周界清单 |
 | `implement.md` | implement | 执行日志（每任务改动与 verify 结果） |
 | `review.md` | review | 自审报告（已修复 / 待人类） |
+| `reject-receipt.md` | 链脚本 | 拒绝回执正文（已评论到 issue；评论失败时手动补发源） |
 
 ## S2 派发器与标签同步器
 

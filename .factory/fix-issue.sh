@@ -242,8 +242,10 @@ if [ "${DRY}" = 0 ]; then
       kind=rejected
     else
       local changed
-      changed="$(git -C "${REPO}" diff --name-only main..."${BRANCH}" 2>/dev/null | true)"
-      [ -z "${changed}" ] && changed="$(git -C "${REPO}" diff --name-only HEAD~1 2>/dev/null | true)"
+      # || true 而非 | true：pipefail 下 true 提前关读端 → git SIGPIPE(141)
+      # → set -e 中止整个 EXIT trap（标签/台账/worktree 三重残留，#23 实证）
+      changed="$(git -C "${REPO}" diff --name-only main..."${BRANCH}" 2>/dev/null || true)"
+      [ -z "${changed}" ] && changed="$(git -C "${REPO}" diff --name-only HEAD~1 2>/dev/null || true)"
       if [ -n "${changed}" ]; then
         kind="$(python3 "${REPO}/.factory/factory_lib.py" classify ${changed})"
       else

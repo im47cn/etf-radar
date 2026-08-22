@@ -23,8 +23,10 @@
 set -u
 REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "不在 git 仓库" >&2; exit 2; }
 FACTORY="$REPO/.factory"
-REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
+REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url github 2>/dev/null \
   | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"
+REPO_SLUG="${REPO_SLUG:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
+  | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"  # github 优先、origin 兜底(双远程仓 origin 常是 codeup)
 [ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug" >&2; exit 2; }
 
 DRY="${DRY:-0}"; WATCH=0; INTERVAL="${INTERVAL:-1800}"
@@ -52,7 +54,12 @@ gh >/dev/null 2>&1 || { echo "需要 gh CLI" >&2; exit 2; }
 # --- 双实例硬锁：mkdir 原子性 + PID 活性检测（macOS 无 flock(1)） ---
 # GitHub 换标签非原子，claim 互斥完全依赖单 dispatcher；此锁把"文档假设"
 # 变成进程级事实。cron 包装器（cron-dispatch.sh）与本脚本共用此锁。
-LOCKDIR="$FACTORY/locks/dispatcher"
+# 跨 worktree 全局（39b6b8e 思想）：链在独立 worktree/派发树跑后各树
+# locks/ 互不可见，锁随树走会绕开互斥。git-common-dir 在 worktree 中
+# 指向主 .git，据此回到主树 .factory。
+MAIN_FACTORY="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null \
+  | sed 's#/\.git$##')/.factory"
+LOCKDIR="${MAIN_FACTORY:-$FACTORY}/locks/dispatcher"
 acquire_lock() {
   if mkdir "$LOCKDIR" 2>/dev/null; then
     echo $$ > "$LOCKDIR/pid"
@@ -61,12 +68,12 @@ acquire_lock() {
   fi
   local pid; pid="$(cat "$LOCKDIR/pid" 2>/dev/null || true)"
   if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then
-    echo "锁持有者 pid=$pid 已死，接管陈锁" >&2
+    echo "锁持有者 pid=${pid} 已死，接管陈锁" >&2
     rm -rf "$LOCKDIR"
     mkdir "$LOCKDIR" && echo $$ > "$LOCKDIR/pid" \
       && trap 'rm -rf "$LOCKDIR"' EXIT && return 0
   fi
-  echo "另一 dispatcher 运行中（pid=$pid），退出" >&2; return 1
+  echo "另一 dispatcher 运行中（pid=${pid}），退出" >&2; return 1
 }
 acquire_lock || exit 0
 

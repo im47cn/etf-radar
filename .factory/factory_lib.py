@@ -45,16 +45,21 @@ def parse_agent_json(text: str, allowed: set[str]) -> dict:
 
 
 def evidence_suites(changed_files: list[str]) -> list[str]:
-    """变更文件 → 需 verbose 证据段的测试套件（backend / frontend）。
+    """变更文件 → 需 verbose 证据段的测试套件（布局双适配，2026-08-22 对账吸收）。
 
-    套件名与 scripts/run_tests.sh --evidence <suite> 的取值一一对应；
-    非 backend/、frontend/ 改动不产生证据段。
+    monorepo（backend|frontend）与 skills/<name>/scripts 两种布局都识别；
+    套件名与 scripts/run_tests.sh --evidence <suite> 的取值一一对应。
+    不存在的套件由调用方（fix-issue.sh）的 -d 探测过滤，引擎不做仓假设。
     """
     suites = set()
     for f in changed_files:
         m = re.match(r"(backend|frontend)/", f)
         if m:
             suites.add(m.group(1))
+            continue
+        m = re.match(r"(skills/[^/]+)/", f)
+        if m:
+            suites.add(f"{m.group(1)}/scripts")
     return sorted(suites)
 
 

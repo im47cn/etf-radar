@@ -20,8 +20,10 @@ if [ -z "${ISSUE}" ]; then
 fi
 
 REPO="$(git rev-parse --show-toplevel)"
-REPO_SLUG="${GH_REPO:-$(git -C "$(dirname "$0")/.." remote get-url origin 2>/dev/null \
+REPO_SLUG="${GH_REPO:-$(git -C "$(dirname "$0")/.." remote get-url github 2>/dev/null \
   | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"
+REPO_SLUG="${REPO_SLUG:-$(git -C "$(dirname "$0")/.." remote get-url origin 2>/dev/null \
+  | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"  # github 优先、origin 兜底(双远程仓 origin 常是 codeup)
 DIR="${REPO}/.factory/artifacts/issue-${ISSUE}"
 BRANCH="factory/issue-${ISSUE}"
 WT="${REPO}/.factory/worktrees/issue-${ISSUE}"   # 链独立 worktree（多驱动隔离）
@@ -30,13 +32,17 @@ node_timeout() { python3 "${REPO}/.factory/factory_lib.py" timeout "$1"; }  # �
 # --- 互斥与环境标记（2026-08-21 三链并发事故修复） ---
 # D2: 链内所有子进程(omp 节点)可见，仓库 pre-push 钩子据此禁推 main
 export FACTORY_CHAIN=1
+# 锁全局化(39b6b8e 思想): 手动链可能在任意树, git-common-dir 指回主树,
+# 各树 locks/ 互不可见的局部锁会被并发绕过（对账 2026-08-22 吸收）
+MAIN_FACTORY="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null \
+  | sed 's#/\.git$##')/.factory"
+LOCKDIR="${MAIN_FACTORY:-${REPO}/.factory}/locks/dispatcher"
 # D1: S1 手动直跑与 S2 派发器共用 dispatcher 目录锁；派发器子进程
 # (FACTORY_DISPATCHED=1)锁已由父持有，重复获取会自锁。
 # worktree 隔离落地后 checkout 安全已由分支独占保证，此锁额外序列化
 # label 操作与 gate 资源占用（验证 e2e 后可评估放开）
 MANUAL_LOCK=0
 if [ "${FACTORY_DISPATCHED:-0}" != 1 ] && [ "${DRY}" = 0 ]; then
-  LOCKDIR="${REPO}/.factory/locks/dispatcher"
   if mkdir "$LOCKDIR" 2>/dev/null; then
     echo $$ > "$LOCKDIR/pid"; MANUAL_LOCK=1
   else
@@ -48,7 +54,7 @@ if [ "${FACTORY_DISPATCHED:-0}" != 1 ] && [ "${DRY}" = 0 ]; then
   fi
   [ "${MANUAL_LOCK}" = 1 ] || { echo "dispatcher 或另一链运行中（${LOCKDIR}），稍后再试" >&2; exit 3; }
   # 早期退出(设下方链 trap 前)也要放锁
-  trap '[ "${MANUAL_LOCK}" = 1 ] && rm -rf "${REPO}/.factory/locks/dispatcher" 2>/dev/null' EXIT
+  trap '[ "${MANUAL_LOCK}" = 1 ] && rm -rf "${LOCKDIR}" 2>/dev/null' EXIT
 fi
 # --- 状态机标签：S1 issue 侧 triaging → accepted|rejected → in-review；S2 加
 #     in-progress（dispatcher 抢占锁）与 PR 侧 needs-fix/needs-human/approved。
@@ -221,7 +227,7 @@ if [ "${DRY}" = 0 ]; then
   issue_label add factory:triaging
   # 失败清理：非零退出时移除流转标签，issue 回到零 factory 标签态（可重试/人工接手）
   # D1: 本 trap 覆盖早期放锁 trap，故自带锁释放；派发链 MANUAL_LOCK=0 不动锁
-  trap 'rc=$?; git -C "${REPO}" worktree remove --force "${WT}" >/dev/null 2>&1 || true; [ $rc -ne 0 ] && { issue_label remove factory:triaging; issue_label remove factory:accepted; issue_label remove factory:in-progress; }; [ "${MANUAL_LOCK}" = 1 ] && rm -rf "${REPO}/.factory/locks/dispatcher" 2>/dev/null' EXIT
+  trap 'rc=$?; git -C "${REPO}" worktree remove --force "${WT}" >/dev/null 2>&1 || true; [ $rc -ne 0 ] && { issue_label remove factory:triaging; issue_label remove factory:accepted; issue_label remove factory:in-progress; }; [ "${MANUAL_LOCK}" = 1 ] && rm -rf "${LOCKDIR}" 2>/dev/null' EXIT
 else
   echo "[dry-run] gh issue view #${ISSUE} → ${DIR}/issue.json"
   echo "[dry-run] label: +factory:triaging（裁决后 → accepted|rejected）"
@@ -252,8 +258,9 @@ if [ "${DRY}" = 0 ]; then
   git -C "${REPO}" worktree add -B "${BRANCH}" "${WT}" main >/dev/null
   # deps 共享(周界保证 pyproject/uv.lock/package*.json 链与 main 必然一致, 共享安全):
   # uv 共用主 venv; node_modules 软链——避免每个 worktree 重建, 链尾随 worktree 一并消失
-  export UV_PROJECT_ENVIRONMENT="${REPO}/backend/.venv"
-  ln -sfn "${REPO}/frontend/node_modules" "${WT}/frontend/node_modules"
+  # 目录探测守卫(2026-08-22 多仓通用化): 非 backend/frontend 布局的仓库跳过对应共享
+  if [ -d "${REPO}/backend" ]; then export UV_PROJECT_ENVIRONMENT="${REPO}/backend/.venv"; fi
+  if [ -d "${REPO}/frontend/node_modules" ]; then ln -sfn "${REPO}/frontend/node_modules" "${WT}/frontend/node_modules"; fi
 fi
 run_node prime    || exit 1
 run_node plan     || exit 1

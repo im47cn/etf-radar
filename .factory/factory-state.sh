@@ -14,9 +14,11 @@
 set -u
 REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "不在 git 仓库" >&2; exit 2; }
 FACTORY="$REPO/.factory"
-REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
+REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url github 2>/dev/null \
   | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"
-[ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug（GH_REPO 或 github remote）" >&2; exit 2; }
+REPO_SLUG="${REPO_SLUG:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
+  | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"  # github 优先、origin 兜底(双远程仓 origin 常是 codeup)
+[ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug（GH_REPO 或 github/origin remote）" >&2; exit 2; }
 
 TARGET=""; PLAN=0
 for a in "$@"; do

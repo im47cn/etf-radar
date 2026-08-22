@@ -14,10 +14,13 @@
 set -u
 REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "不在 git 仓库" >&2; exit 2; }
 FACTORY="$REPO/.factory"
-REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url github 2>/dev/null \
-  | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"
-REPO_SLUG="${REPO_SLUG:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
-  | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"  # github 优先、origin 兜底(双远程仓 origin 常是 codeup)
+REPO_SLUG="${GH_REPO:-$(
+  # 双 remote 布局：origin pushurl 可能多条（codeup 镜像 + github），
+  # 逐条扫含 github.com 者（github remote 名优先）；443 端口形态兼容
+  { git -C "$REPO" remote get-url --all --push github 2>/dev/null
+    git -C "$REPO" remote get-url --all --push origin 2>/dev/null
+  } | grep -m1 'github\.com' | sed -E 's#^.*github\.com(:[0-9]+)?[/:]##; s#\.git$##'
+)}"
 [ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug（GH_REPO 或 github/origin remote）" >&2; exit 2; }
 
 TARGET=""; PLAN=0

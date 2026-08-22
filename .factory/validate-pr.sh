@@ -94,7 +94,7 @@ else
 ——diff 开始——
 ${DIFF}
 ——diff 结束——"
-  local t0; t0=$(date +%s)
+  t0=$(date +%s)
   if ! (cd "${REPO}" && omp -p "${prompt}" --no-session --max-time "$(node_timeout pr-review)" < /dev/null) \
       > "${DIR}/review.log" 2>&1; then
     _node_metric pr-review "${t0}" "fail" >> "${DIR}/node-metrics.jsonl"
@@ -122,7 +122,7 @@ else
 ——tests-output.txt 开始——
 ${OUT}
 ——tests-output.txt 结束——"
-  local t0; t0=$(date +%s)
+  t0=$(date +%s)
   if ! (cd "${REPO}" && omp -p "${prompt}" --no-tools --no-session --max-time "$(node_timeout holdout)" < /dev/null) \
       > "${DIR}/holdout.log" 2>&1; then
     _node_metric holdout "${t0}" "fail" >> "${DIR}/node-metrics.jsonl"

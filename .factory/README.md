@@ -34,11 +34,24 @@
 NODE_TIMEOUT=30m .factory/fix-issue.sh 42
 ```
 
+### 重投（对 rejected 不服）
+
+评论补充上下文**不触发**任何自动化——triage 节点已内联 issue 评论，
+评论只是下一轮裁决的输入。重投是明确手势：
+
+```bash
+gh issue edit 42 --remove-label factory:rejected   # 维护者表达"重审"意图
+NODE_TIMEOUT=30m .factory/fix-issue.sh 42           # 重跑链，triage 全新评估
+```
+
+链 accept 时自动清掉上轮 rejected 残留（fix-issue.sh 标签转移），
+不会三标签并存。
+
 ## 链结构
 
 ```
-gh issue view N（+label factory:triaging）
-  → triage（裁决 accept|reject；落标 factory:accepted|rejected，reject 即停）
+  → triage（裁决 accept|reject；落标 factory:accepted|rejected，
+           reject 附判据明细回执评论到 issue 后终止）
   → git checkout -b factory/issue-N
   → prime（研究笔记，不做设计）
   → plan（任务级计划 plan.json，含每任务 verify 命令）
@@ -50,6 +63,9 @@ gh issue view N（+label factory:triaging）
              issue 标题 + tests-output.txt，全部内联）
   → PASS → gh pr create --label factory:needs-review（人类合并）
   → FAIL → 不建 PR，链终止
+
+重投：人类移除 rejected 标签后重跑链（评论本身不触发——它是下一轮
+triage 的输入，不是决策手势；标签才是）。
 ```
 
 节点失败（非零退出或产物缺 `ARTIFACT:` 行）= 整链终止，
@@ -65,6 +81,7 @@ gh issue view N（+label factory:triaging）
 | `plan.json` | plan | tasks[] 每项含 verify 命令；forbidden 周界清单 |
 | `implement.md` | implement | 执行日志（每任务改动与 verify 结果） |
 | `review.md` | review | 自审报告（已修复 / 待人类） |
+| `reject-receipt.md` | 链脚本 | 拒绝回执正文（已评论到 issue；评论失败时手动补发源） |
 
 ## S2 派发器与标签同步器
 

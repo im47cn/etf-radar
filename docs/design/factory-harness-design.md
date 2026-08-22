@@ -258,7 +258,9 @@ Issue: factory:triaging → factory:accepted | factory:rejected
                           → factory:in-review（PR 打开，状态接管）
 PR:   factory:needs-review → factory:approved | factory:needs-fix | factory:needs-human
       factory:needs-fix ×≤2（label-add 事件计数）→ 第 3 次 needs-human
-终态: rejected（标记评论裁决，标签保留作记录）| closed（GitHub 原生，清流转标签）
+终态: rejected（标签承载机器状态，判据明细由回执评论承载 #57/#59/#60 实证；
+      标记评论=人类手动覆盖通道，人写人删——链回执刻意不含裸标记，
+      否则重投被永久钉死） | closed（GitHub 原生，清流转标签）
 优先级：priority:critical|high|medium|low（triage 打标，dispatch 排序）
 ```
 

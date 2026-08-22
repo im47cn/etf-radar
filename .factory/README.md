@@ -12,6 +12,8 @@
 | `guard.py` | 周界锁（前缀匹配，fail-closed，铁律 3） |
 | `mutations/run.py` | 门灵敏度冒烟（注入缺陷→断言拦截→字节还原，铁律 5） |
 | `prompts/*.md` | 六个 AI 节点提示词（版本化、引擎无关，禁内联） |
+| `feedback-upstream.sh` | 反哺上游：可泛化改进 → awesome-rules PR（人工工具，链不调用） |
+| `feedback.py` + `feedback-log.jsonl` | 反哺决策层（候选收集/漂移分类）与已反哺账本 |
 | `artifacts/issue-N/` | 链产物（运行时输出，勿提交 git） |
 
 ## 前置条件
@@ -116,6 +118,27 @@ git diff --name-only base...head | python3 .factory/guard.py # stdin 模式
 # 门灵敏度冒烟（退出码 0=全拦截 1=有 FAIL 2=配置错 3=还原失败 4=有 SKIP）
 python3 .factory/mutations/run.py [--only G-01,G-03]
 ```
+
+## 反哺上游（awesome-rules）
+
+本工厂移植自 awesome-rules，两侧各自演化。反哺 = 把本仓对工厂的**可泛化**
+改进以 PR 形式推回上游，人工合并；上游漂移只报告不自动吸收。
+
+```bash
+bash .factory/feedback-upstream.sh --dry-run   # 只看候选 + 漂移报告，零副作用
+bash .factory/feedback-upstream.sh             # 完整管线：pick→AI适配→上游门禁→PR
+```
+
+- **候选标记**：可泛化的工厂提交在 commit message 尾部加
+  `Upstream-Feedback: yes` trailer（判断在提交时做出）；历史提交经
+  `feedback.py BOOTSTRAP_CANDIDATES` 一次性补录。
+- **管线**：clean cherry-pick 由脚本完成（保真）；conflicted 与特化剥离交
+  omp 适配节点（`prompts/feedback-adapt.md`）；上游 `scripts/run_tests.sh
+  --no-lock` 绿才开 PR，红只收报告。一候选一提交，只允许动 `.factory/`。
+- **账本**：`.factory/feedback-log.jsonl`（append-only）记录已反哺 SHA 与
+  上游 PR 号，防重复反哺；`factory-state.sh --all` 末尾输出待反哺计数。
+- env：`UPSTREAM_PATH`（默认 `~/sources/awesome-rules`）、
+  `UPSTREAM_REPO`、`NODE_TIMEOUT`。
 
 ## 移植记录（awesome-rules → etf-radar，2026-08-21）
 

@@ -20,13 +20,20 @@ if [ -z "${ISSUE}" ]; then
 fi
 
 REPO="$(git rev-parse --show-toplevel)"
-REPO_SLUG="${GH_REPO:-$(git -C "$(dirname "$0")/.." remote get-url github 2>/dev/null \
-  | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"
-REPO_SLUG="${REPO_SLUG:-$(git -C "$(dirname "$0")/.." remote get-url origin 2>/dev/null \
-  | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"  # github 优先、origin 兜底(双远程仓 origin 常是 codeup)
+REPO_SLUG="${GH_REPO:-$(
+  # 双 remote 布局：origin pushurl 可能多条（codeup 镜像 + github），
+  # 逐条扫含 github.com 者（github remote 名优先）；443 端口形态兼容。
+  # pushurl 扫描而非 remote get-url github：后者在无 github remote 的布局下
+  # rc=2 穿透 pipefail → set -e 静默链死（2026-08-23 #59 链实证，零输出）
+  { git -C "$(dirname "$0")/.." remote get-url --all --push github 2>/dev/null
+    git -C "$(dirname "$0")/.." remote get-url --all --push origin 2>/dev/null
+  } | grep -m1 'github\.com' | sed -E 's#^.*github\.com(:[0-9]+)?[/:]##; s#\.git$##'
+)}"
 DIR="${REPO}/.factory/artifacts/issue-${ISSUE}"
 BRANCH="factory/issue-${ISSUE}"
 WT="${REPO}/.factory/worktrees/issue-${ISSUE}"   # 链独立 worktree（多驱动隔离）
+# 链副作用共享库：issue 评论唯一出口 + 拒绝单一动作（契约见库头注释）
+source "${REPO}/.factory/factory-lib.sh"
 node_timeout() { python3 "${REPO}/.factory/factory_lib.py" timeout "$1"; }  # 分级预算：裁决器5m/工作节点15m/implement 30m
 
 # --- 互斥与环境标记（2026-08-21 三链并发事故修复） ---
@@ -86,29 +93,6 @@ issue_label() { # issue_label <add|remove> <name> —— 失败仅告警
     echo "  [warn] 标签操作失败：${1} ${2}（可观测性降级，链继续）" >&2
   fi
 }
-
-issue_label_swap() { # issue_label_swap <"删,删"> <"加,加"> —— 单请求原子转移，失败链终止
-  # 逐个 add/remove 会把状态机跳变拆成可失败的顺序依赖（半途断裂=双标签或裸奔）；
-  # 单请求换标签消除顺序问题。失败非零退出，由 EXIT trap 清理、factory-state.sh sync 兜底。
-  if gh issue edit "${ISSUE}" --remove-label "${1}" --add-label "${2}" >/dev/null 2>&1; then
-    echo "  [label] -${1} +${2}"
-  else
-    echo "[error] 标签转移失败：-${1} +${2}（issue #${ISSUE}），链终止" >&2
-    exit 1
-  fi
-}
-
-issue_comment() { # issue_comment <body-file> —— 链写 issue 评论的唯一出口
-  # 安全不变量在出口：发送前 factory_lib sanitize 原地中和正文中的
-  # [factory:rejected] 子串——链产正文（LLM reasons 等）可能回显用户评论
-  # 里的标记，state.py 子串扫描会把携带标记的链评论当人工覆盖、永久钉死
-  # rejected。渲染器不各自记得，出口统一管。中和失败 fail-closed 不发送
-  # （防毒丸放出），正文文件保留供排查。
-  python3 "${REPO}/.factory/factory_lib.py" sanitize "${1}" || {
-    echo "  [warn] 评论正文标记中和对失败（${1}），不发送" >&2; return 1; }
-  gh issue comment "${ISSUE}" --body-file "${1}"
-}
-
 
 run_node() {  # run_node <name> — 拼接静态 prompt + 任务参数，独立进程执行
   local name="$1" t0 t1
@@ -256,27 +240,12 @@ if [ "${DRY}" = 0 ]; then
     # 上轮 rejected 残留会让三标签并存、成功合并的 issue 永久挂 rejected
     # （closed 清理只保留 rejected——残留即被当作裁决记录）。remove-absent
     # 安全（首轮无此标签，同 :249 模式）
-    issue_label_swap "factory:triaging,factory:rejected" "factory:accepted,factory:in-progress"
+    issue_label_swap "factory:triaging,factory:rejected" "factory:accepted,factory:in-progress" || exit 1
   else
     # in-progress 同步自清（S2 claim 残留）：锁单一属主原则，
-    # 链是 in-progress 生命周期终点（同 :351 PR 路径）；S1 无此标签，
-    # remove-absent 安全（:351 已在生产验证同模式）
-    issue_label_swap "factory:triaging,factory:in-progress" "factory:rejected"
-    # 拒绝回执：判据明细评论到 issue（#57/#59/#60 实证——triage.json 只存
-    # 本地运行时产物，人类只见标签不知道为何被拒，无法介入补充上下文）。
-    # 经 issue_comment 唯一出口发送（出口内含标记中和，见其注释）；
-    # 标记通道保留给人类手动覆盖。评论失败仅告警——裁决已由标签转移落定，
-    # 回执是透明度而非门，正文存 artifacts 供手动补发（同 issue_label 语义）。
-    if python3 "${REPO}/.factory/factory_lib.py" receipt "${DIR}/triage.json" \
-        > "${DIR}/reject-receipt.md" 2>/dev/null; then
-      if issue_comment "${DIR}/reject-receipt.md" >/dev/null 2>&1; then
-        echo "  [receipt] 拒绝回执已评论到 issue #${ISSUE}"
-      else
-        echo "  [warn] 拒绝回执评论失败，正文在 ${DIR}/reject-receipt.md（可手动补发）" >&2
-      fi
-    else
-      echo "  [warn] 拒绝回执生成失败（triage.json 解析异常），跳过评论" >&2
-    fi
+    # 链是 in-progress 生命周期终点；S1 无此标签，remove-absent 安全。
+    # 落标 + 判据回执一次收口（回执语义/失败分级见 factory-lib.sh）
+    issue_reject "factory:triaging,factory:in-progress" "${DIR}/triage.json" || exit 1
     echo "triage=${VERDICT}，链终止"
     exit 0
   fi
@@ -343,7 +312,7 @@ if [ "${DRY}" = 0 ]; then
   # PR 落地后 issue 侧转移：accepted → in-review（PR 状态接管 issue，§7）。
   # in-progress 由链属主自清：锁不进 PR 阶段，避免 in-review+in-progress
   # 双标签滞留到 closed（锁单一属主原则，链是 in-progress 生命周期的终点）
-  issue_label_swap "factory:accepted,factory:in-progress" "factory:in-review"
+  issue_label_swap "factory:accepted,factory:in-progress" "factory:in-review" || exit 1
   echo "PR 已建（factory:needs-review）。issue #${ISSUE} → factory:in-review。人类合并。"
 else
   echo "[dry-run] push + gh pr create --label factory:needs-review；issue: accepted → in-review"

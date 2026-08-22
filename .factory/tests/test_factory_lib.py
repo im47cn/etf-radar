@@ -222,3 +222,28 @@ class TestRejectReceipt:
             {"detail": "嵌套对象"}, 42, "判据b: 不通过——无可判定标准"]})
         assert "判据b（可判定）" in md
         assert "[factory:rejected]" not in md
+
+    def test_receipt_neutralizes_embedded_marker(self):
+        """PR #20 评论1（security）：reason 内嵌标记（LLM 从 issue 评论
+        回显）会被 state.py 标记评论通道识别为人工覆盖、永久钉死
+        rejected——渲染前中和子串，语义保留；含 [[...]] 嵌套构造。"""
+        md = reject_receipt({"verdict": "reject", "reasons": [
+            "判据b: 不通过，评论已写 [factory:rejected] 表示异议",
+            "判据c: 不通过，嵌套 [[factory:rejected]] 构造"]})
+        assert "[factory:rejected]" not in md
+        assert "factory:rejected" in md  # 去括号保留语义
+
+    def test_receipt_nonlist_reasons_fail_open(self):
+        """PR #20 评论2：reasons 为标量（int/str）→ 视为空渲染占位行，
+        不在 list() 处抛 TypeError（标签已落，回执必须发得出去）。"""
+        for scalar in (42, "判据b: 不通过"):
+            md = reject_receipt({"verdict": "reject", "reasons": scalar})
+            assert "未给出判据明细" in md
+            assert "[factory:rejected]" not in md
+
+    def test_receipt_has_correlation_section(self):
+        """PR #20 评论3：五段式补齐「关联」段——无因果模块时显式声明，
+        不静默缺位（对齐 review-report-standards.md 第 4 段）。"""
+        md = reject_receipt(REAL_REJECT)
+        assert "── 关联 ──" in md
+        assert "── 证据边界 ──" in md  # 段序：关联在前，边界收尾

@@ -16,7 +16,10 @@ describe('RadarTabs', () => {
     expect(screen.getByText('温度').closest('a')).toHaveAttribute('href', '/');
     expect(screen.getByText('轮动').closest('a')).toHaveAttribute('href', '/rotation');
     expect(screen.getByText('雷达').closest('a')).toHaveAttribute('href', '/radar');
-    expect(screen.getByText('持仓').closest('a')).toHaveAttribute('href', '/portfolio');
+    expect(screen.getByText('交易').closest('a')).toHaveAttribute('href', '/trading');
+    // 持仓/自选入口收口到交易页 Tab, 一级导航不再出现
+    expect(screen.queryByText('持仓')).toBeNull();
+    expect(screen.queryByText('自选')).toBeNull();
     // 会员 tab 已移至 UserMenu，不应出现在主导航
     expect(screen.queryByText('会员')).toBeNull();
   });
@@ -44,9 +47,9 @@ describe('RadarTabs', () => {
     expect(radarLink.className).toMatch(/bg-blue-600/);
   });
 
-  it('marks portfolio tab active on /portfolio', () => {
-    renderAt('/portfolio');
-    const portfolioLink = screen.getByText('持仓').closest('a')!;
-    expect(portfolioLink.className).toMatch(/bg-blue-600/);
+  it('marks trading tab active on /trading', () => {
+    renderAt('/trading');
+    const tradingLink = screen.getByText('交易').closest('a')!;
+    expect(tradingLink.className).toMatch(/bg-blue-600/);
   });
 });

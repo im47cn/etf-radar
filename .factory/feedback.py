@@ -4,12 +4,16 @@
 与 state.py 同构：bash（feedback-upstream.sh）编排 git/gh/omp，本模块承载
 全部判定逻辑，零 LLM、零副作用（append_ledger 是唯一写操作，由编排器调用）。
 
-候选契约：
+候选契约（2026-08-23 升级：逐资产最后触碰者链）：
 1. 范围 = PORT_POINT 之后、触碰 .factory/ 的提交。
-2. 可泛化标记 = commit message 带 `Upstream-Feedback: yes` trailer（判断在
-   提交时上下文最新鲜处做出），或属 BOOTSTRAP_CANDIDATES（trailer 机制
-   诞生前已合入 main、不可改写历史，人工判定一次性补录）。
-3. 账本（feedback-log.jsonl）记录已反哺 SHA；待反哺 = 上两者 − 账本。
+2. 资产 feedable = 该资产在范围内的【最后触碰者】带 `Upstream-Feedback:
+   yes` trailer（或属 BOOTSTRAP_CANDIDATES）——最后意图优先：资产被
+   无 trailer 提交特化后整体不反哺（保护上游）；trailer 化演进则
+   历史触碰者全部入链（配套件断链自愈，PR #18 实败根治）。判定随
+   资产走而非随 commit 走：amend/rebase 换 sha 后，只要资产的
+   最后触碰者带 trailer，判定即可重建。
+3. 候选 = 触碰任一 feedable 资产的全部提交 − 账本（已反哺 SHA，
+   短前缀匹配），cherry-pick 顺序旧→新。
 
 运行：python3 -m pytest .factory/test_feedback.py -o addopts= -q
 """
@@ -47,6 +51,11 @@ DRIFT_EXCLUDES = [
 ]
 
 
+
+# 资产链判定的运行时排除（带 .factory/ 前缀）：账本是本仓反哺记录，
+# 随补录 chore 反复触碰会让 feedable 横跳，且上游不该收本仓账本
+ASSET_EXCLUDES = {".factory/feedback-log.jsonl"}
+
 def parse_git_log(text):
     """解析 `git log --format=%H%x00%s%x00%b%x1e` 输出 → [{sha,subject,feedable}]。"""
     commits = []
@@ -64,10 +73,29 @@ def parse_git_log(text):
     return commits
 
 
+def feedable_assets(commits):
+    """逐资产最后触碰者链：最后触碰者 feedable 的资产集合。
+
+    commits 为 git log 顺序（新→旧）；每资产取最先出现者即最后触碰者
+    （线性历史假设，与 cherry-pick 顺序契约一致）。无 files 键的提交
+    视为未触碰任何资产。"""
+    last_toucher = {}
+    for c in commits:
+        for f in c.get("files", ()):
+            if f in ASSET_EXCLUDES:
+                continue
+            last_toucher.setdefault(f, c)
+    return {f for f, c in last_toucher.items() if c["feedable"]}
+
+
 def collect_pending(commits, ledger_shas):
-    """待反哺候选：feedable ∧ 不在账本，cherry-pick 顺序（旧→新）。"""
+    """待反哺候选：触碰任一 feedable 资产 ∧ 不在账本，旧→新。
+
+    判定在资产层（feedable_assets），提交仅作反哺载体——无 trailer
+    的历史触碰者随 feedable 资产入链，保证依赖闭包完整。"""
+    assets = feedable_assets(commits)
     pending = [c for c in commits
-               if c["feedable"]
+               if set(c.get("files", ())) & assets
                and not any(c["sha"].startswith(s) for s in ledger_shas)]
     return pending[::-1] if pending else []
 
@@ -181,11 +209,33 @@ def _git_log_commits():
     return parse_git_log(out)
 
 
+def _files_by_sha():
+    """sha → 触碰的 .factory 文件集（带 .factory/ 前缀，与 ls-files 一致）。
+
+    记录头 \x1e 标记（\x1e<sha> 开段，--name-only 文件行随后归属本条；
+    若分隔符放段尾会把上一条的文件错配给下一条）；线性历史假设与
+    cherry-pick 顺序契约一致。"""
+    out = subprocess.run(
+        ["git", "log", "--format=%x1e%H", "--name-only",
+         "%s..HEAD" % PORT_POINT, "--", ".factory"],
+        capture_output=True, text=True, check=True).stdout
+    files_by_sha = {}
+    for record in out.split("\x1e"):
+        lines = [ln for ln in record.strip("\n").split("\n") if ln.strip()]
+        if not lines:
+            continue
+        sha, files = lines[0], lines[1:]
+        if files:
+            files_by_sha.setdefault(sha, set()).update(files)
+    return files_by_sha
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     here = pathlib.Path(__file__).parent
     ledger_path = here / "feedback-log.jsonl"
     commits = _git_log_commits()
+    fbs = _files_by_sha()
+    commits = [dict(c, files=fbs.get(c["sha"], ())) for c in commits]
     ledger = load_ledger(ledger_path)
     pending = collect_pending(commits, ledger)
 
@@ -204,10 +254,7 @@ def main():
             patch = subprocess.run(
                 ["git", "show", "--format=", c["sha"]],
                 capture_output=True, text=True, check=True).stdout
-            files = subprocess.run(
-                ["git", "show", "--name-only", "--format=", c["sha"]],
-                capture_output=True, text=True, check=True).stdout.split()
-            cands.append(dict(c, patch=patch, files=files))
+            cands.append(dict(c, patch=patch))
         missing = closure_missing(cands, ups)
         if missing:
             print("依赖闭包缺失（樱桃前 fail-closed）:")

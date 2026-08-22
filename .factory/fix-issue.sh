@@ -218,6 +218,11 @@ if [ "${DRY}" = 0 ]; then
   mkdir -p "${DIR}"
   gh issue view "${ISSUE}" --json number,title,body,comments > "${DIR}/issue.json" 2>/dev/null \
     || { echo "issue #${ISSUE} 不存在或不可读" >&2; exit 2; }
+  # fail-closed：rc=0 但输出为空/非 JSON 的 gh（网络截断、代理 stub 等）不可信——
+  # 空数据流入 triage 会产出"空 issue 拒绝"+毒回执（run_triage 处于 `|| exit 1`
+  # 条件上下文，set -e 在函数体内豁免，json_field 崩溃被吞成空串，2026-08-23 实证）
+  python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("title") else 3)' \
+    "${DIR}/issue.json" 2>/dev/null || { echo "issue.json 无效（空/非 JSON/无 title），链终止" >&2; exit 2; }
   ensure_labels
   issue_label add factory:triaging
   # 失败清理：非零退出时移除流转标签，issue 回到零 factory 标签态（可重试/人工接手）

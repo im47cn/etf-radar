@@ -184,3 +184,23 @@ bash .factory/feedback-upstream.sh             # 完整管线：pick→AI适配�
 - `--fill` 生成的 PR 标题质量依赖 implement 的 commit 信息。
 - needs-fix 重派复用 `fix-issue.sh`（`checkout -b || true` 落在既有分支），
   全节点重跑；链内断点续跑（resume）未实现。
+
+## 多会话并行协议（worktree 隔离 + 分支约定）
+
+工厂链在独立 worktree（`../etf-radar-factory`）跑，人工侧工作树不受
+链的 checkout/commit 影响。但 worktree 共享 refs 与 git config——它隔离
+文件层，不隔离历史层。硬边界约定：
+
+- **专属分支**：每个 worktree/会话一个专属分支提交（工厂链分支
+  `factory/issue-N`，worktree 空闲驻留 `factory/base`）；链基线取
+  `github/main`（fetch 后），不依赖人工侧本地 main 的更新时序。
+- **main 服务端保护**（唯一硬执行点）：require PR、禁 force push、
+  禁删除；直推 main 一律被拒。链 auto-merge 用 `--admin` 合并。
+  本地 git 无权限模型——任何本地约定对失控会话无执行力，服务端才有。
+- **历史重写后盘点孤儿**：任何 force push / 分支重置 / 快照压缩之后，
+  立即 `git fsck --lost-found` 列出全部失联提交对象，逐个鉴定
+  （`git show <sha> --stat`：真实工作 / 已被吸收 / 破坏 / 过时变体），
+  真实工作以文件级 patch 恢复走 PR，确认无价值才允许丢弃——失联 ≠
+  丢失，对象在 gc（默认两周）前都可救。
+- **单写者推定**：人工侧会话不要跑 `.factory/` 脚本（watch 常驻实例
+  互斥靠主树 `.factory/locks/dispatcher`，但 git 写入无互斥）。

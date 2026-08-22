@@ -8,6 +8,8 @@ implement 节点可以不做任何设计决策地照做。
 - `$ISSUE_DIR/issue.json`（含 `comments` 字段：重投/整改时人类的补充
   验收标准在评论里，**以评论为准**，正文不可覆盖评论要求）
 - `$ISSUE_DIR/prime.md`
+- `$ISSUE_DIR/chain-history`（历史轮次：上轮 holdout FAIL evidence 已被
+  prime 提炼——若 prime 标记了上轮拒绝理由，对应修复必须是首个任务）
 
 ## 任务
 

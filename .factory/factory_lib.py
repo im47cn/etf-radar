@@ -110,6 +110,32 @@ def node_timeout(name: str, env: dict | None = None) -> str:
     per_node = env.get(f"FACTORY_TIMEOUT_{name.upper().replace('-', '_')}")
     return per_node or env.get("FACTORY_TIMEOUT") or NODE_TIMEOUTS.get(name, "15m")
 
+def classify_task(files: list[str]) -> str:
+    """变更文件 → 任务类型（成本归因用；doc/code 分开统计预算分布）。
+
+    rejected（triage 拒绝）由调用方直接写 "rejected"，不走本函数。
+    规则：全 .md → doc；纯测试文件（无 md 无 src）→ test；
+    md 与任何代码（含测试）并存 → mixed；其余纯代码 → code。
+    """
+    if not files:
+        return "empty"
+
+    def _is_test(f: str) -> bool:
+        return "/tests/" in f or f.startswith("tests/") or "/test_" in f or f.startswith("test_")
+
+    md = [f for f in files if f.endswith((".md", ".mdx"))]
+    code = [f for f in files if not f.endswith((".md", ".mdx"))]
+    tests = [f for f in code if _is_test(f)]
+    src = [f for f in code if not _is_test(f)]
+    if not code:
+        return "doc"
+    if not src and not md:
+        return "test"
+    if md:  # md 与任何代码（含测试）并存
+        return "mixed"
+    return "code"
+
+
 
 # 重投指引模板：键 = 未通过的 MISSION 判据（a 使命一致 / b 可判定 / c 不触周界）
 REJECT_GUIDANCE: dict[str, str] = {
@@ -165,6 +191,9 @@ def main(argv: list[str]) -> int:
         print(__doc__, file=sys.stderr)
         return 2
     cmd = argv[1]
+    if cmd == "classify":
+        print(classify_task(argv[2:]))
+        return 0
     if cmd == "timeout":
         print(node_timeout(argv[2]))
         return 0

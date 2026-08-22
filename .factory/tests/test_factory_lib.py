@@ -165,6 +165,39 @@ class TestNodeTimeout:
         from factory_lib import node_timeout
         assert node_timeout("pr-review", {"FACTORY_TIMEOUT_PR_REVIEW": "3m"}) == "3m"
 
+
+class TestClassifyTask:
+    """任务类型分类：doc/code 预算分布分开统计的数据基础（S3 耗时分析结论）。"""
+
+    def test_doc_only(self):
+        from factory_lib import classify_task
+        assert classify_task(["README.md", "docs/x.md", "notes/y.mdx"]) == "doc"
+
+    def test_code_with_tests(self):
+        from factory_lib import classify_task
+        assert classify_task(["a.py", "test_a.py"]) == "code"
+
+    def test_test_only(self):
+        from factory_lib import classify_task
+        assert classify_task(["test_a.py", "pkg/tests/b.py"]) == "test"
+
+    def test_mixed(self):
+        from factory_lib import classify_task
+        assert classify_task(["a.py", "README.md"]) == "mixed"
+
+    def test_md_code_test_mix(self):
+        """上游 #5 round3 实际形态：md + code + test 混合 → mixed（真实回归锚点）。"""
+        from factory_lib import classify_task
+        assert classify_task([
+            "docs/01-guide.md",
+            "README.md",
+            "factory/tests/test_factory_lib.py",
+        ]) == "mixed"
+
+    def test_empty(self):
+        from factory_lib import classify_task
+        assert classify_task([]) == "empty"
+
 # ---- S2 issue #60 triage 的真实 reject 形态（三判据全有前缀，b 不通过）----
 REAL_REJECT = {
     "issue": 60, "verdict": "reject", "priority": None,

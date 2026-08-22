@@ -28,7 +28,7 @@ REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
 [ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug" >&2; exit 2; }
 
 DRY="${DRY:-0}"; WATCH=0; INTERVAL="${INTERVAL:-1800}"
-MAX_PARALLEL="${MAX_PARALLEL:-1}"  # 2026-08-21 三链并发事故: 链共享同一 checkout，worktree 隔离(WT)落地前强制串行
+MAX_PARALLEL="${MAX_PARALLEL:-4}"  # worktree 隔离(246cba05)+D1/D4 修复(e2e 2026-08-22 issue#64 全绿)后恢复并行
 MERGE_METHOD="${FACTORY_MERGE_METHOD:-merge}"
 AUTO_MERGE=0
 [ "${FACTORY_AUTO_MERGE:-0}" = 1 ] && [ -f "$FACTORY/metrics/auto-merge-unlocked" ] && AUTO_MERGE=1

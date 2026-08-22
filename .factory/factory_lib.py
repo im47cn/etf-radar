@@ -119,16 +119,32 @@ REJECT_GUIDANCE: dict[str, str] = {
 }
 
 
-def reject_receipt(triage: dict) -> str:
-    """triage 裁决（reject）→ 拒绝回执 markdown（五段式：结论/依据/指引/边界）。
+def _neutralize_marker(text: str) -> str:
+    """破坏文本中的裸标记子串（数据侧防注入）。
 
-    确定性渲染，零 LLM（链脚本纪律，铁律 4 同源）。安全不变量：**永不包含
-    裸标记 `[factory:rejected]`**——state.py 标记评论通道优先级最高且无撤销
-    语义，链自动写入会把重投（MISSION：补充上下文后重开）永久钉死在
-    rejected；标记通道保留给人类手动覆盖（人写人删）。rejected 的机器状态
-    由标签承载，人类审计由本回执承载。
+    triage reasons 是 LLM 产物，可能从 issue 评论回显 `[factory:rejected]`
+    （用户以标记表达异议）。state.py 对 issue 评论做子串扫描，回执原样
+    引用即被识别为人工覆盖 → 永久钉死 rejected。去括号保留语义、破坏
+    子串；循环替换防 `[[...]]` 嵌套构造替换一次后重组出标记。
     """
-    reasons = list(triage.get("reasons") or [])
+    while "[factory:rejected]" in text:
+        text = text.replace("[factory:rejected]", "factory:rejected")
+    return text
+
+
+def reject_receipt(triage: dict) -> str:
+    """triage 裁决（reject）→ 拒绝回执 markdown（五段式：结论/依据/指引/关联/边界）。
+
+    确定性渲染，零 LLM（链脚本纪律，铁律 4 同源）。安全不变量：**输出永不
+    包含裸标记 `[factory:rejected]`**——模板侧字面量不写标记，数据侧
+    （reasons，LLM 产物）经 _neutralize_marker 中和。state.py 标记评论通道
+    优先级最高且无撤销语义，回执携带标记会把重投（MISSION：补充上下文后
+    重开）永久钉死在 rejected；标记通道保留给人类手动覆盖（人写人删）。
+    rejected 的机器状态由标签承载，人类审计由本回执承载。
+    """
+    raw = triage.get("reasons")
+    reasons = raw if isinstance(raw, list) else []  # 标量/缺失 → 空，不抛 TypeError
+    reasons = [_neutralize_marker(r) if isinstance(r, str) else r for r in reasons]
     lines = [
         "## 工厂 triage 裁决：reject",
         "",
@@ -152,12 +168,17 @@ def reject_receipt(triage: dict) -> str:
 
     lines += [
         "",
+        "── 关联 ──",
+        "  未识别出因果相关模块——triage 节点 --no-tools 无仓库事实核对能力，",
+        "  且拒绝裁决不产生代码变更，无下游影响面；重投协议见 .factory/README.md。",
+        "",
         "── 证据边界 ──",
         "  已验证: 判据核对——triage 节点（--no-tools 物理隔离，输入仅 MISSION 全文 + issue 标题正文）",
         "  未覆盖: 仓库事实核对（裁决器无工具权限，不做代码 / 数据检索；重投前请补足具体事实）",
         "  置信度: 二值裁决基于 issue 文本与 MISSION 判据核对，无运行时验证",
         "",
     ]
+    assert "[factory:rejected]" not in "\n".join(lines)  # 双保险：模板+数据中和后仍断言
     return "\n".join(lines)
 
 def main(argv: list[str]) -> int:

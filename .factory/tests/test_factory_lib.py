@@ -13,6 +13,8 @@ from factory_lib import (
     CircuitOpen,
     breaker_check,
     evidence_suites,
+    neutralize_marker,
+    node_timeout,
     parse_agent_json,
     reject_receipt,
 )
@@ -273,15 +275,13 @@ class TestRejectReceipt:
         assert "判据b（可判定）" in md
         assert "[factory:rejected]" not in md
 
-    def test_receipt_neutralizes_embedded_marker(self):
-        """PR #20 评论1（security）：reason 内嵌标记（LLM 从 issue 评论
-        回显）会被 state.py 标记评论通道识别为人工覆盖、永久钉死
-        rejected——渲染前中和子串，语义保留；含 [[...]] 嵌套构造。"""
+    def test_receipt_renders_marker_verbatim(self):
+        """出口下沉后职责分离：渲染器管内容——reason 内嵌标记（LLM 从
+        issue 评论回显）原样进正文，中和统一由评论出口执行
+        （issue_comment → sanitize，见 TestNeutralizeMarker）。"""
         md = reject_receipt({"verdict": "reject", "reasons": [
-            "判据b: 不通过，评论已写 [factory:rejected] 表示异议",
-            "判据c: 不通过，嵌套 [[factory:rejected]] 构造"]})
-        assert "[factory:rejected]" not in md
-        assert "factory:rejected" in md  # 去括号保留语义
+            "判据b: 不通过，评论已写 [factory:rejected] 表示异议"]})
+        assert "[factory:rejected]" in md  # 渲染不中和——出口负责
 
     def test_receipt_nonlist_reasons_fail_open(self):
         """PR #20 评论2：reasons 为标量（int/str）→ 视为空渲染占位行，
@@ -297,3 +297,31 @@ class TestRejectReceipt:
         md = reject_receipt(REAL_REJECT)
         assert "── 关联 ──" in md
         assert "── 证据边界 ──" in md  # 段序：关联在前，边界收尾
+
+
+class TestNeutralizeMarker:
+    """评论出口中和（唯一安全点）：fix-issue.sh issue_comment 发送前必经
+    factory_lib sanitize——渲染器不各自记得，出口统一管。"""
+
+    def test_neutralize_plain_and_nested(self):
+        """去括号破坏子串、语义保留；循环替换防 [[...]] 嵌套构造
+        替换一次后重组出标记（PR #20 评论1 security 回归锚点）。"""
+        assert neutralize_marker("评论已写 [factory:rejected] 表示异议") == (
+            "评论已写 factory:rejected 表示异议")
+        assert "[factory:rejected]" not in neutralize_marker(
+            "嵌套 [[factory:rejected]] 构造")
+
+    def test_neutralize_idempotent_and_noop(self):
+        """幂等（二次中和不变）且无标记时原样返回（出口可无条件调用）。"""
+        once = neutralize_marker("x [factory:rejected] y")
+        assert neutralize_marker(once) == once
+        assert neutralize_marker("普通正文无标记") == "普通正文无标记"
+
+    def test_neutralize_receipt_output_end_to_end(self):
+        """端到端：receipt 渲染（含标记原文）→ 出口中和 → 发布正文无标记。"""
+        md = reject_receipt({"verdict": "reject", "reasons": [
+            "判据b: 不通过，评论已写 [factory:rejected] 表示异议",
+            "判据c: 不通过，嵌套 [[factory:rejected]] 构造"]})
+        published = neutralize_marker(md)
+        assert "[factory:rejected]" not in published
+        assert "factory:rejected" in published  # 语义保留

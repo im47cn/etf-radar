@@ -9,7 +9,8 @@
 # 用法: feedback-upstream.sh [--dry-run]
 #   --dry-run  只打印待反哺候选与上游漂移报告，零副作用
 # env: UPSTREAM_PATH(默认 ~/sources/awesome-rules)  UPSTREAM_REPO(默认 im47cn/awesome-rules)
-#      NODE_TIMEOUT(适配节点预算，默认 30m)
+#      NODE_TIMEOUT(适配节点预算，默认 30m)  GH_HOST(github 主机，默认 github.com)
+#      PUSH_URL(显式推送目标，最高优先)  FREMOTE(显式基点 remote，镜像拓扑用)
 set -euo pipefail
 
 REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "不在仓库内" >&2; exit 2; }
@@ -45,28 +46,38 @@ mkdir -p "$FB_DIR/upstream-wt"
 GITUP=(git -C "$UPSTREAM_PATH")
 # remote 拓扑随用户工作流变化（2026-08-22 实测：github remote 并入 origin 双推送，
 # fetch=codeup 镜像 / push=codeup+github）。故不假设 remote 名：
-# - 拉基点用 origin（用户既定事实源；有专用 fetch remote 时优先）
-# - 推送显式解析 github push-URL 直推，避免多 pushurl 连带镜像
-FREMOTE="$("${GITUP[@]}" remote -v | awk -v repo="$UPSTREAM_REPO" \
-  '$0 ~ repo && $3 == "(fetch)" {print $1; exit}')"
-FREMOTE="${FREMOTE:-origin}"
+# - 拉基点（FREMOTE）：①环境变量显式指定（镜像拓扑逃生口）；②fetch URL 确指
+#   UPSTREAM_REPO 的 remote；③origin 兜底——其 fetch∨push URL 任一确指才可信
+#   （双推镜像：fetch=codeup 无 slug、push=github 有），无关 origin 的 main 会
+#   成为错误基点、PR 基于错误仓历史，故不可信即 fail（PR #71 审查 1，fail-closed）
+# - 推送显式解析 github push-URL 直推（主机经 GH_HOST 配置，GHE/别名可用），
+#   避免多 pushurl 连带镜像
+FREMOTE="${FREMOTE:-}"
+if [ -z "$FREMOTE" ]; then
+  FREMOTE="$("${GITUP[@]}" remote -v | awk -v repo="$UPSTREAM_REPO" \
+    'index($0, repo) && $3 == "(fetch)" {print $1; exit}')"
+fi
+if [ -z "$FREMOTE" ]; then
+  if "${GITUP[@]}" remote -v | awk -v repo="$UPSTREAM_REPO" \
+      '$1 == "origin" && index($0, repo) {ok=1} END {exit !ok}'; then
+    FREMOTE=origin
+  else
+    die "无可信基点 remote：无 fetch URL 指向 ${UPSTREAM_REPO}，origin 的 URL 亦不含（镜像拓扑可用 FREMOTE 显式指定）"
+  fi
+fi
 "${GITUP[@]}" fetch "$FREMOTE" main --quiet
 BASE="$("${GITUP[@]}" rev-parse --verify "$FREMOTE/main^{commit}")" \
   || die "无法解析 $FREMOTE/main"
-PUSH_URL="$("${GITUP[@]}" remote -v | awk -v repo="$UPSTREAM_REPO" \
-  '$0 ~ /github\.com/ && $0 ~ repo && $3 == "(push)" {print $2; exit}')"
-[ -n "$PUSH_URL" ] || die "上游 clone 无指向 github.com/${UPSTREAM_REPO} 的 push url"
-# 跨仓对象：上游对象库没有本仓提交，cherry-pick 前临时挂源 remote 拉取
-# （结束移除；拉入对象随后不可达，交由上游 gc，无残留引用）
-REMOTE_ADDED=0
-if "${GITUP[@]}" remote add feedback-src "$REPO" >/dev/null 2>&1; then
-  REMOTE_ADDED=1
-else
-  # 已存在则验证可用后复用；仅本次添加的才在 cleanup 移除（防误删用户既有 remote）
-  "${GITUP[@]}" remote get-url feedback-src >/dev/null 2>&1 \
-    || die "feedback-src remote 已存在但不可用"
+# 主机不硬编码 github.com——GHE/SSH 别名经 GH_HOST 配置（与 gh CLI 同名同默认）；
+# 显式 PUSH_URL 环境变量最高优先（PR #71 审查 3）。index() 字面匹配免转义
+if [ -z "${PUSH_URL:-}" ]; then
+  PUSH_URL="$("${GITUP[@]}" remote -v | awk -v repo="$UPSTREAM_REPO" -v host="${GH_HOST:-github.com}" \
+    'index($0, host) && index($0, repo) && $3 == "(push)" {print $2; exit}')"
 fi
-"${GITUP[@]}" fetch -q feedback-src main
+[ -n "$PUSH_URL" ] || die "上游 clone 无指向 ${UPSTREAM_REPO} 的 push url（GH_HOST/PUSH_URL 可配置）"
+# REMOTE_ADDED=0 先行初始化（cleanup 引用，set -u）；remote add 本体
+# 移至 dry-run 出口之后——dry-run 不做上游配置变更（PR #69 审查）
+REMOTE_ADDED=0
 cleanup() {
   git -C "$UPSTREAM_PATH" worktree remove --force "$WT" >/dev/null 2>&1 || true
   git -C "$UPSTREAM_PATH" branch -qD "$BRANCH" >/dev/null 2>&1 || true
@@ -85,6 +96,20 @@ say "上游 worktree: $WT 分支: $BRANCH (基点 $FREMOTE/main@${BASE:0:9})"
 #     上游 bare 无工作树，2026-08-22 前的磁盘直比已不可行） ---
 python3 "$FACTORY/feedback.py" report "$WT"
 [ "$DRY" = 1 ] && { say "[dry-run] 到此为止，未做任何变更"; exit 0; }
+
+# 跨仓对象：上游对象库没有本仓提交，cherry-pick 前临时挂源 remote 拉取
+# （结束移除；拉入对象随后不可达，交由上游 gc，无残留引用）。
+# dry-run 出口之后才做：remote add 属上游配置变更，只读模式不碰
+if "${GITUP[@]}" remote add feedback-src "$REPO" >/dev/null 2>&1; then
+  REMOTE_ADDED=1
+else
+  # 已存在则校验 URL 确指本仓后复用——存在≠正确，指向他仓会让 fetch/cherry-pick
+  # 读到错误对象源（PR #71 审查 2）；仅本次添加的才在 cleanup 移除（防误删用户配置）
+  EXISTING_SRC="$("${GITUP[@]}" remote get-url feedback-src 2>/dev/null || true)"
+  [ -n "$EXISTING_SRC" ] && [ "$EXISTING_SRC" = "$REPO" ] \
+    || die "既有 feedback-src 指向「${EXISTING_SRC:-空}」≠ 本仓 ${REPO}，拒绝复用（请手工处理）"
+fi
+"${GITUP[@]}" fetch -q feedback-src main
 
 # --- 3.6 依赖闭包（fail-closed）：候选脚本引用的 .factory 资产必须
 #     上游已有 ∨ 候选随行；防 PR #18 只带主脚本、配套件断链复演 ---

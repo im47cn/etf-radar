@@ -15,8 +15,13 @@ set -euo pipefail
 
 REPO="$(git rev-parse --show-toplevel)"
 FACTORY="$REPO/.factory"
-REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
-  | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"
+REPO_SLUG="${GH_REPO:-$(
+  # 双 remote 布局：origin pushurl 可能多条（codeup 镜像 + github），
+  # 逐条扫含 github.com 者（github remote 名优先）；443 端口形态兼容
+  { git -C "$REPO" remote get-url --all --push github 2>/dev/null
+    git -C "$REPO" remote get-url --all --push origin 2>/dev/null
+  } | grep -m1 'github\.com' | sed -E 's#^.*github\.com(:[0-9]+)?[/:]##; s#\.git$##'
+)}"
 [ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug" >&2; exit 2; }
 MAX_TRIAGE="${MAX_TRIAGE:-5}"
 command -v gh >/dev/null || { echo "需要 gh CLI" >&2; exit 2; }

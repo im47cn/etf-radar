@@ -225,9 +225,38 @@ if [ "${DRY}" = 0 ]; then
     "${DIR}/issue.json" 2>/dev/null || { echo "issue.json 无效（空/非 JSON/无 title），链终止" >&2; exit 2; }
   ensure_labels
   issue_label add factory:triaging
-  # 失败清理：非零退出时移除流转标签，issue 回到零 factory 标签态（可重试/人工接手）
+  # 轮次：同 issue 的第 N 次链（chain-history 计数；首轮通过率的分母）
+  ROUND=$(( $(grep -c 'chain-start' "${DIR}/chain-history" 2>/dev/null || echo 0) + 1 ))
+  # 清上一轮裁决产物：防陈旧 triage.json/holdout.json 污染本轮判定与台账分类
+  rm -f "${DIR}/triage.json" "${DIR}/holdout.json"
+  CHAIN_T0=$(date +%s)
+  echo "chain-start $(date -u +%Y-%m-%dT%H:%M:%SZ) round=${ROUND}" >> "${DIR}/chain-history"
+  # 台账（EXIT 时写）：{ts, issue, round, type, exit, secs}——重派率/首轮通过率 jq 一行可算。
+  # type: rejected=triage 拒绝；否则按分支 diff 分类（doc/code/test/mixed）
+  write_ledger() {
+    local rc=$1 kind
+    if [ -f "${DIR}/triage.json" ] && [ "$(json_field "${DIR}/triage.json" 'd["verdict"]' 2>/dev/null)" = reject ]; then
+      kind=rejected
+    else
+      local changed
+      changed="$(git -C "${REPO}" diff --name-only main..."${BRANCH}" 2>/dev/null | true)"
+      [ -z "${changed}" ] && changed="$(git -C "${REPO}" diff --name-only HEAD~1 2>/dev/null | true)"
+      if [ -n "${changed}" ]; then
+        kind="$(python3 "${REPO}/.factory/factory_lib.py" classify ${changed})"
+      else
+        kind=no-diff
+      fi
+    fi
+    mkdir -p "${REPO}/.factory/locks"
+    printf '{"ts": "%s", "issue": %s, "round": %s, "type": "%s", "exit": %s, "secs": %s}\n' \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${ISSUE}" "${ROUND}" "${kind}" "${rc}" \
+      "$(( $(date +%s) - CHAIN_T0 ))" >> "${REPO}/.factory/locks/ledger.jsonl"
+  }
+  # 失败清理 + 台账 + worktree 回收：非零退出移除流转标签回零标签态（可重试），
+  # 无论成败都记账；worktree 无论成败一并回收（分支推送后树内仅剩未跟踪产物）
   # D1: 本 trap 覆盖早期放锁 trap，故自带锁释放；派发链 MANUAL_LOCK=0 不动锁
-  trap 'rc=$?; git -C "${REPO}" worktree remove --force "${WT}" >/dev/null 2>&1 || true; [ $rc -ne 0 ] && { issue_label remove factory:triaging; issue_label remove factory:accepted; issue_label remove factory:in-progress; }; [ "${MANUAL_LOCK}" = 1 ] && rm -rf "${LOCKDIR}" 2>/dev/null' EXIT
+  # shellcheck disable=SC2154  # rc 于本 trap 行内由 rc=$? 赋值，shellcheck 不解析 trap 字符串
+  trap 'rc=$?; write_ledger "${rc}"; git -C "${REPO}" worktree remove --force "${WT}" >/dev/null 2>&1 || true; [ $rc -ne 0 ] && { issue_label remove factory:triaging; issue_label remove factory:accepted; issue_label remove factory:in-progress; }; [ "${MANUAL_LOCK}" = 1 ] && rm -rf "${LOCKDIR}" 2>/dev/null' EXIT
 else
   echo "[dry-run] gh issue view #${ISSUE} → ${DIR}/issue.json"
   echo "[dry-run] label: +factory:triaging（裁决后 → accepted|rejected）"
@@ -299,8 +328,14 @@ fi
 # --- 7. holdout（独立验证；输入白名单见 prompt） ---
 run_holdout || exit 1
 if [ "${DRY}" = 0 ]; then
+  # 裁决按 round 存档（失败证据永不覆盖丢失；下轮 prime 回流的输入源）
+  python3 - "${DIR}" "${ROUND}" <<'PYA' >> "${DIR}/chain-history"
+import json, sys, pathlib
+d = json.loads(pathlib.Path(sys.argv[1], "holdout.json").read_text())
+print(f"holdout round={sys.argv[2]} verdict={d['verdict']} evidence={d['evidence'][:200]}")
+PYA
   [ "$(json_field "${DIR}/holdout.json" 'd["verdict"]')" = PASS ] \
-    || { echo "holdout=FAIL，链终止（不建 PR）"; exit 1; }
+    || { echo "holdout=FAIL，链终止（不建 PR；evidence 已存 chain-history）"; exit 1; }
 fi
 
 # --- 8. 开 PR（S1 到此为止：merge 由人类决定，铁律 5） ---

@@ -29,6 +29,8 @@ BOOTSTRAP_CANDIDATES = {
     "6997bfc9",  # triage 批次：补齐"写 issue→自动看见"的 S2 缺口
     "246cba05",  # 链改独立 git worktree，根治多驱动方工作区冲突
     "2d61e1bd",  # 三链并发事故修复 D1/D2/D4
+    "f550eb73",  # 门禁升级 gauntlet + remote 拓扑动态解析 + WT 目录名契约
+    "4657b836",  # 上游 bare 化适配：git 层探测 + 漂移报告走 worktree
 }
 
 TRAILER_RE = re.compile(r"^Upstream-Feedback:\s*yes\s*$", re.M | re.I)

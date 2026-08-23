@@ -74,7 +74,17 @@ def self_check() -> None:
             "PERIMETER 与 MISSION.md 周界清单不一致（MISSION 独有: %s；guard 独有: %s）"
             % (sorted(mission_paths - guard_paths), sorted(guard_paths - mission_paths))
         )
-    missing = [p for p in sorted(guard_paths) if not (REPO_ROOT / p).exists()]
+    # worktree 兼容：未跟踪配置目录（.crush/ 等）可能未检出本 worktree，
+    # 但存在于主工作树——存在性 = 当前树 ∪ 主树（M-02 的"从未存在"仍拦）
+    import subprocess
+    main_root = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        capture_output=True, text=True,
+    ).stdout.strip().removesuffix("/.git")
+    missing = [
+        p for p in sorted(guard_paths)
+        if not (REPO_ROOT / p).exists() and not (Path(main_root) / p).exists()
+    ]
     if missing:
         raise RuntimeError(f"周界路径不存在（疑似漂移）: {missing}")
 

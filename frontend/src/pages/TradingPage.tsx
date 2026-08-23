@@ -1,19 +1,25 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FeatureGate } from '@/components/gate/FeatureGate';
 import { EnvironmentTab } from '@/components/trading/EnvironmentTab';
 import { SignalsTab } from '@/components/trading/SignalsTab';
 import { PositionsTab } from '@/components/trading/positions/PositionsTab';
 import { ReviewsTab } from '@/components/trading/review/ReviewsTab';
+import { WatchlistPage } from '@/pages/WatchlistPage';
+import { PortfolioPage } from '@/pages/PortfolioPage';
 
-/** 四 Tab 页壳: 环境(免费) / 信号🔒 / 持仓🔒 / 复盘🔒. */
-type TabKey = 'env' | 'signals' | 'positions' | 'review';
+/** 六 Tab 页壳: 环境(免费) / 信号🔒 / 自选🔒 / 持仓🔒 / 主题持仓(auth 开放) / 复盘🔒. */
+type TabKey = 'env' | 'signals' | 'watchlist' | 'positions' | 'holdings' | 'review';
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'env', label: '环境' },
-  { key: 'signals', label: '信号' },
-  { key: 'positions', label: '持仓' },
-  { key: 'review', label: '复盘' },
+const TABS: { key: TabKey; label: string; locked: boolean }[] = [
+  { key: 'env', label: '环境', locked: false },
+  { key: 'signals', label: '信号', locked: true },
+  { key: 'watchlist', label: '自选', locked: true },
+  { key: 'positions', label: '持仓', locked: true },
+  { key: 'holdings', label: '主题持仓', locked: false },
+  { key: 'review', label: '复盘', locked: true },
 ];
+
+const isTabKey = (k: string | null): k is TabKey => TABS.some((t) => t.key === k);
 
 const tabBtn = (active: boolean): string =>
   active
@@ -21,7 +27,10 @@ const tabBtn = (active: boolean): string =>
     : 'px-3 py-1 rounded text-gray-700 hover:bg-gray-100 text-sm transition-all duration-150 active:scale-95';
 
 export const TradingPage = () => {
-  const [tab, setTab] = useState<TabKey>('env');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const tab: TabKey = isTabKey(tabParam) ? tabParam : 'env';
+  const selectTab = (key: TabKey) => setSearchParams({ tab: key }, { replace: true });
 
   return (
     <main className="flex flex-col gap-4 p-4 animate-crossfade">
@@ -34,10 +43,10 @@ export const TradingPage = () => {
               role="tab"
               aria-selected={tab === t.key}
               className={tabBtn(tab === t.key)}
-              onClick={() => setTab(t.key)}
+              onClick={() => selectTab(t.key)}
             >
               {t.label}
-              {t.key !== 'env' && <span aria-hidden>🔒</span>}
+              {t.locked && <span aria-hidden>🔒</span>}
             </button>
           ))}
         </div>
@@ -51,11 +60,15 @@ export const TradingPage = () => {
         </FeatureGate>
       )}
 
+      {tab === 'watchlist' && <WatchlistPage />}
+
       {tab === 'positions' && (
         <FeatureGate copy="trading-positions" required="member">
           <PositionsTab />
         </FeatureGate>
       )}
+
+      {tab === 'holdings' && <PortfolioPage />}
 
       {tab === 'review' && (
         <FeatureGate copy="trading-review" required="member">

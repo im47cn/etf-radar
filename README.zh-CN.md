@@ -14,9 +14,13 @@
 | `/` `/temperature` | 温度 | 市场温度计 — 个股 MA20/MA5 站上率，二级/一级行业聚合 + 热力图（默认首页） |
 | `/rotation` | 轮动 | 主题轮动散点象限图，X=长期强度 Y=短期强度，中线 50 切四象限 |
 | `/radar` | 雷达 | 跨市雷达 — 主题列表 + 信号详情 + A 股 ETF 映射 |
+| `/evidence` | 证据 | 信号证据 — IC 滚动/期限图 + ARCH 诊断 + 记分卡（需会员） |
+| `/grid` | 网格 | 网格交易与适配度分析（需会员） |
+| `/metals` | 贵金属 | 贵金属宏观指标 — 金银比分位（描述性指标） |
+| `/trading` | 交易 | 环境 / 信号 / 持仓 / 复盘（环境免费，其余需会员） |
 | `/theme/:id/stocks` | 个股 | 主题成分股分析（A 股 ETF 持仓 + 盘口 + 技术指标） |
-| `/portfolio` | 持仓 | 持仓监控（需 Supabase 凭据） |
-| `/watchlist` | 自选 | 自选股列表（需登录 + 会员） |
+| `/portfolio` → `/trading?tab=holdings` | 持仓（重定向） | 旧持仓入口，重定向到交易页主题持仓 Tab |
+| `/watchlist` | 自选 | 自选股列表（需登录 + 会员；入口在交易页自选 Tab） |
 | `/membership` | 会员 | 会员信息 |
 | `/auth/callback` | — | Magic Link / OAuth 登录回调 |
 
@@ -34,16 +38,19 @@
 | 时段 | Workflow | 内容 |
 |------|----------|------|
 | 工作日 06:30 | `us-refresh` | 美股全量刷新 |
-| 工作日 08:30 | `holdings-refresh` | 每月 1 日持仓刷新 |
+| 每月 1 日 08:30 | `holdings-refresh` | 每月持仓刷新 |
 | 工作日 09:15 | `cn-refresh` (full) | A 股全量刷新 + 重算信号 + 市场温度 |
 | 工作日 09:30-11:45 / 13:00-15:45 | `cn-refresh` (intraday) | 每 15 分钟刷新 A 股价格 |
 | 工作日 09:00-15:30 | `stocks-spot-refresh` | 每 30 分钟个股盘口快照 |
 | 工作日 16:30 | `stocks-daily` | 个股日线增量 + 自愈检测 |
+| 工作日 17:00 | `trading-eod` | 交易信号 EOD — OHLCV 增量 + 信号流水线 + 复盘/通知（较 stocks-daily 错峰 30 分钟） |
 | 工作日 18:00 | `cn-eod-archive` | 收盘后 EOD 全量刷新 + 当日数据归档 |
 | 每小时 :05 | `health-monitor` | 数据新鲜度巡检 + 关键 workflow 自愈 |
-| 每月 1 日 | `stock-industry-map` | 个股→巨潮行业映射刷新 |
+| 每月 2 日 04:00 | `stock-industry-map` | 个股→巨潮行业映射刷新 |
+| 每月 2 日 08:07 | `evidence-monthly` | 信号证据计算 (IC + ARCH) + 提交部署 |
 | 手动触发 | `membership-digest` | 会员变化摘要邮件推送 |
 | 手动触发 | `stocks-history-backfill` | 个股历史数据回填 |
+| 手动触发 | `stocks-archive` | 月度/年度归档分片（海外 IP 限速，手动 dispatch） |
 
 ## 本地开发
 
@@ -52,7 +59,7 @@
 ```bash
 cd backend
 uv venv && uv sync --extra dev
-uv run pytest                              # 跑测试 (370 passed)
+uv run pytest                              # 跑测试（以 CI 为准）
 uv run python -m src.pipeline --mode=full --data-root=../data --config-dir=../config
 ```
 
@@ -63,7 +70,7 @@ cd frontend
 npm ci
 npm run dev      # http://localhost:5173/etf-radar/
 npm run build
-npm test -- --run  # 448 tests
+npm test -- --run  # 以 CI 为准
 ```
 
 ### 持仓 / 自选功能本地开发
@@ -75,7 +82,7 @@ cp frontend/.env.local.example frontend/.env.local
 # 编辑 .env.local，填入 Supabase Project URL 和 anon key
 # 凭据可向项目维护者索取，或自行创建 Supabase 项目
 
-npm run dev  # http://localhost:5173/etf-radar/#/portfolio
+npm run dev  # http://localhost:5173/etf-radar/#/trading?tab=holdings
 ```
 
 **Magic Link 登录**：邮件可能进国内邮箱（QQ/163）的垃圾箱，请检查；或使用 Google OAuth 一键登录。
@@ -151,8 +158,7 @@ python scripts/archive_cleanup.py
 
 ## 关键文档
 
-- 设计文档：[`docs/superpowers/specs/2026-06-05-etf-radar-design.md`](docs/superpowers/specs/2026-06-05-etf-radar-design.md)
-- 实施计划：[`docs/superpowers/plans/2026-06-05-etf-radar-implementation.md`](docs/superpowers/plans/2026-06-05-etf-radar-implementation.md)
+- 设计/实施过程文档：会话期产物不入库（见 [docs/CONVENTIONS.md](docs/CONVENTIONS.md)）
 - 原产品文档：[`docs/htsc-us-cn-linkage-product-doc.md`](docs/htsc-us-cn-linkage-product-doc.md)
 - 原需求文档：[`docs/htsc-us-cn-linkage-requirements.md`](docs/htsc-us-cn-linkage-requirements.md)
 
@@ -162,8 +168,8 @@ python scripts/archive_cleanup.py
 |----|------|
 | Backend | Python 3.11, uv, pandas, numpy, scipy, pydantic v2, yfinance, akshare, chinese_calendar, pandas_market_calendars, ta (技术指标) |
 | Frontend | React 19, Vite, TypeScript strict, Tailwind v4, Base UI, Recharts, SWR, zod, react-router-dom, lucide-react |
-| DevOps | GitHub Actions (13 workflows), GitHub Pages |
-| 测试 | pytest (370 passed), vitest (448 passed), ruff, mypy strict, jsonschema |
+| DevOps | GitHub Actions, GitHub Pages |
+| 测试 | pytest, vitest, ruff, mypy strict, jsonschema |
 
 ## License
 

@@ -16,9 +16,13 @@ Tracks US theme ETF strength and momentum, auto-maps them to China A-share ETFs,
 | `/` `/temperature` | Temperature | Market temperature gauge — MA20/MA5 standing rate, 2nd/1st-level industry aggregation + heatmap (default landing page) |
 | `/rotation` | Rotation | Theme rotation scatter quadrant — X=long-term strength, Y=short-term strength, midline 50 splits four quadrants |
 | `/radar` | Radar | Cross-market radar — theme list + signal details + A-share ETF mapping |
+| `/evidence` | Evidence | Signal evidence — IC rolling/horizon charts + ARCH diagnostics + scorecard (requires membership) |
+| `/grid` | Grid | Grid trading & suitability analysis (requires membership) |
+| `/metals` | Metals | Precious-metals macro indicator — gold/silver ratio percentile (descriptive, no alpha claimed) |
+| `/trading` | Trading | Environment / signals / positions / review tabs (env tab free; other tabs require membership) |
 | `/theme/:id/stocks` | Stocks | Theme constituent stock analysis (A-share ETF holdings + spot + technical indicators) |
-| `/portfolio` | Portfolio | Portfolio monitor (requires Supabase credentials) |
-| `/watchlist` | Watchlist | Personal watchlist (requires login + membership) |
+| `/portfolio` → `/trading?tab=holdings` | 持仓（重定向） | Legacy portfolio entry — redirects to Trading 主题持仓 tab |
+| `/watchlist` | Watchlist | Personal watchlist (requires login + membership; entry lives in Trading 自选 tab) |
 | `/membership` | Membership | Membership info |
 | `/auth/callback` | — | Magic Link / OAuth login callback |
 
@@ -36,16 +40,19 @@ Tracks US theme ETF strength and momentum, auto-maps them to China A-share ETFs,
 | Time | Workflow | Description |
 |------|----------|-------------|
 | Weekdays 06:30 | `us-refresh` | US market full refresh |
-| Weekdays 08:30 | `holdings-refresh` | Holdings refresh (1st of month) |
+| 1st of month 08:30 | `holdings-refresh` | Monthly holdings refresh |
 | Weekdays 09:15 | `cn-refresh` (full) | A-share full refresh + signal recompute + market temperature |
 | Weekdays 09:30-11:45 / 13:00-15:45 | `cn-refresh` (intraday) | A-share price refresh every 15 min |
 | Weekdays 09:00-15:30 | `stocks-spot-refresh` | Stock spot snapshot every 30 min |
 | Weekdays 16:30 | `stocks-daily` | Stock daily candle increment + self-heal check |
+| Weekdays 17:00 | `trading-eod` | Trading signal EOD — OHLCV increment + signal pipeline + review & notify (staggered 30 min after stocks-daily) |
 | Weekdays 18:00 | `cn-eod-archive` | Post-close EOD full refresh + daily archive |
 | Hourly :05 | `health-monitor` | Data freshness check + critical workflow self-heal |
-| 1st of month | `stock-industry-map` | Stock → JR (juchao) industry mapping refresh |
+| 2nd of month 04:00 | `stock-industry-map` | Stock → JR (juchao) industry mapping refresh |
+| 2nd of month 08:07 | `evidence-monthly` | Signal evidence computation (IC + ARCH) + commit & deploy |
 | Manual | `membership-digest` | Membership change digest email |
 | Manual | `stocks-history-backfill` | Stock history backfill |
+| Manual | `stocks-archive` | Monthly/yearly archive sharding (overseas IP rate-limited; dispatch manually) |
 
 ## Local Development
 
@@ -54,7 +61,7 @@ Tracks US theme ETF strength and momentum, auto-maps them to China A-share ETFs,
 ```bash
 cd backend
 uv venv && uv sync --extra dev
-uv run pytest                              # run tests (370 passed)
+uv run pytest                              # run tests (see CI for counts)
 uv run python -m src.pipeline --mode=full --data-root=../data --config-dir=../config
 ```
 
@@ -65,7 +72,7 @@ cd frontend
 npm ci
 npm run dev      # http://localhost:5173/etf-radar/
 npm run build
-npm test -- --run  # 448 tests
+npm test -- --run  # run tests (see CI for counts)
 ```
 
 ### Portfolio / Watchlist Local Dev
@@ -77,7 +84,7 @@ cp frontend/.env.local.example frontend/.env.local
 # Edit .env.local with your Supabase Project URL and anon key
 # Ask the project maintainer for credentials, or create your own Supabase project
 
-npm run dev  # http://localhost:5173/etf-radar/#/portfolio
+npm run dev  # http://localhost:5173/etf-radar/#/trading?tab=holdings
 ```
 
 **Magic Link login**: emails may land in the spam folder of Chinese mailboxes (QQ/163) — please check; or use Google OAuth for one-click login.
@@ -153,8 +160,7 @@ python scripts/archive_cleanup.py
 
 ## Key Documents
 
-- Design doc: [`docs/superpowers/specs/2026-06-05-etf-radar-design.md`](docs/superpowers/specs/2026-06-05-etf-radar-design.md)
-- Implementation plan: [`docs/superpowers/plans/2026-06-05-etf-radar-implementation.md`](docs/superpowers/plans/2026-06-05-etf-radar-implementation.md)
+- Design & implementation process docs: session-scoped artifacts, not tracked in-repo (see [docs/CONVENTIONS.md](docs/CONVENTIONS.md))
 - Original product doc: [`docs/htsc-us-cn-linkage-product-doc.md`](docs/htsc-us-cn-linkage-product-doc.md)
 - Original requirements: [`docs/htsc-us-cn-linkage-requirements.md`](docs/htsc-us-cn-linkage-requirements.md)
 
@@ -164,8 +170,8 @@ python scripts/archive_cleanup.py
 |-------|------------|
 | Backend | Python 3.11, uv, pandas, numpy, scipy, pydantic v2, yfinance, akshare, chinese_calendar, pandas_market_calendars, ta (technical indicators) |
 | Frontend | React 19, Vite, TypeScript strict, Tailwind v4, Base UI, Recharts, SWR, zod, react-router-dom, lucide-react |
-| DevOps | GitHub Actions (13 workflows), GitHub Pages |
-| Testing | pytest (370 passed), vitest (448 passed), ruff, mypy strict, jsonschema |
+| DevOps | GitHub Actions, GitHub Pages |
+| Testing | pytest, vitest, ruff, mypy strict, jsonschema |
 
 ## License
 

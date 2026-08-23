@@ -42,9 +42,22 @@ test.describe('Trading page (anonymous)', () => {
 
   test('匿名点持仓 Tab 显示门控卡', async ({ page }) => {
     await page.goto('/#/trading');
-    await page.getByRole('tab', { name: /持仓/ }).click();
+    await page.getByRole('tab', { name: '持仓', exact: true }).click();
     const gateVisible = await Promise.race([
       page.getByText('持仓管理').first().waitFor({ state: 'visible', timeout: 5000 }).then(() => 'login'),
+      page.getByText('未配置 Supabase').waitFor({ state: 'visible', timeout: 5000 }).then(() => 'unconfig'),
+    ]).catch(() => null);
+    expect(gateVisible).toBeTruthy();
+  });
+
+  test('交易页含 自选 与 主题持仓 Tab, 匿名点主题持仓显示门控卡', async ({ page }) => {
+    await page.goto('/#/trading');
+    await expect(page.getByRole('tab', { name: '自选', exact: true })).toBeVisible();
+    await expect(page.getByRole('tab', { name: '主题持仓', exact: true })).toBeVisible();
+    await page.getByRole('tab', { name: '主题持仓', exact: true }).click();
+    // 主题持仓为 auth 开放功能: 匿名态显示登录卡 (HeroLogin copy 'portfolio') 或未配置卡
+    const gateVisible = await Promise.race([
+      page.getByText('持仓信号监控').waitFor({ state: 'visible', timeout: 5000 }).then(() => 'login'),
       page.getByText('未配置 Supabase').waitFor({ state: 'visible', timeout: 5000 }).then(() => 'unconfig'),
     ]).catch(() => null);
     expect(gateVisible).toBeTruthy();

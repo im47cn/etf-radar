@@ -73,6 +73,13 @@ def test_feedable_assets_last_toucher_decides():
                _c("e" * 40, "", {".factory/dispatch.sh"})]
     assert feedback.feedable_assets(commits) == {".factory/dispatch.sh"}
 
+def test_ledger_file_excluded_from_asset_chain():
+    # 账本是运行时记录：trailer 提交触碰也不 feedable，不进反哺链
+    commits = [_c("f" * 40, "Upstream-Feedback: yes",
+                  {".factory/feedback-log.jsonl"})]
+    assert feedback.feedable_assets(commits) == set()
+    assert feedback.collect_pending(commits, set()) == []
+
 
 def test_collect_pending_pulls_untrailer_toucher_into_chain():
     """断链自愈核心：feedable 资产的无 trailer 历史触碰者随链入候选。"""

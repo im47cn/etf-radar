@@ -51,6 +51,11 @@ DRIFT_EXCLUDES = [
 ]
 
 
+
+# 资产链判定的运行时排除（带 .factory/ 前缀）：账本是本仓反哺记录，
+# 随补录 chore 反复触碰会让 feedable 横跳，且上游不该收本仓账本
+ASSET_EXCLUDES = {".factory/feedback-log.jsonl"}
+
 def parse_git_log(text):
     """解析 `git log --format=%H%x00%s%x00%b%x1e` 输出 → [{sha,subject,feedable}]。"""
     commits = []
@@ -77,6 +82,8 @@ def feedable_assets(commits):
     last_toucher = {}
     for c in commits:
         for f in c.get("files", ()):
+            if f in ASSET_EXCLUDES:
+                continue
             last_toucher.setdefault(f, c)
     return {f for f, c in last_toucher.items() if c["feedable"]}
 

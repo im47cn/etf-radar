@@ -21,9 +21,11 @@
    subject 不变。
 2. **应用 conflicted 候选**：读对应 patch，在上游分支上以等价语义手工应用
    （`git apply -3` 或手工编辑后 `git add`）。提交 subject 保持原样，正文
-   追加一行 `Adapted-from: etf-radar@<sha>` 及适配说明。冲突解决**倾向上游
-   现状结构**（如 `locks/ledger.jsonl`、`cron-dispatch.sh` 已存在的机制），
-   保留候选提交的语义修复。
+   追加一行 `Adapted-from: etf-radar@<sha>` 及适配说明。**例外**：上游
+   commitlint subject ≤50 字符（error 级钩子）时可最小缩略，原 subject
+   全量在正文首行声明。manifest 列表顺序 = 源仓提交时序（旧→新），按序
+   应用。冲突解决**倾向上游现状结构**（如 `locks/ledger.jsonl`、
+   `cron-dispatch.sh` 已存在的机制），保留候选提交的语义修复。
 3. **铁的约束**：
    - 只改 `.factory/` 内路径（本 PR 的周界纪律）
    - 禁止合并、拆分、丢弃候选；冗余候选也保留提交（人审裁决）

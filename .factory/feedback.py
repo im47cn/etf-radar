@@ -254,7 +254,10 @@ def main():
             patch = subprocess.run(
                 ["git", "show", "--format=", c["sha"]],
                 capture_output=True, text=True, check=True).stdout
-            cands.append(dict(c, patch=patch))
+            files = subprocess.run(
+                ["git", "show", "--name-only", "--format=", c["sha"]],
+                capture_output=True, text=True, check=True).stdout.split()
+            cands.append(dict(c, patch=patch, files=files))
         missing = closure_missing(cands, ups)
         if missing:
             print("依赖闭包缺失（樱桃前 fail-closed）:")

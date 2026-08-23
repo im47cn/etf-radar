@@ -55,25 +55,63 @@ def test_parse_empty_input():
     assert feedback.parse_git_log("") == []
 
 
-# ---- collect_pending：账本排除与顺序 ----
+# ---- 资产链判定：feedable_assets / collect_pending ----
+
+def _c(sha, body, files):
+    return {"sha": sha, "subject": "s", "feedable": "yes" in body,
+            "files": files}
+
+
+def test_feedable_assets_last_toucher_decides():
+    # 新→旧：dispatch.sh 先被 trailer 提交泛化、后被更新的无 trailer 提交特化
+    # → 最后触碰者无 trailer → 不 feedable（特化保护，整体不反哺）
+    commits = [_c("e" * 40, "", {".factory/dispatch.sh"}),
+               _c("f" * 40, "Upstream-Feedback: yes", {".factory/dispatch.sh"})]
+    assert feedback.feedable_assets(commits) == set()
+    # 反序：最后（最新）触碰者带 trailer → feedable
+    commits = [_c("f" * 40, "Upstream-Feedback: yes", {".factory/dispatch.sh"}),
+               _c("e" * 40, "", {".factory/dispatch.sh"})]
+    assert feedback.feedable_assets(commits) == {".factory/dispatch.sh"}
+
+def test_ledger_file_excluded_from_asset_chain():
+    # 账本是运行时记录：trailer 提交触碰也不 feedable，不进反哺链
+    commits = [_c("f" * 40, "Upstream-Feedback: yes",
+                  {".factory/feedback-log.jsonl"})]
+    assert feedback.feedable_assets(commits) == set()
+    assert feedback.collect_pending(commits, set()) == []
+
+
+def test_collect_pending_pulls_untrailer_toucher_into_chain():
+    """断链自愈核心：feedable 资产的无 trailer 历史触碰者随链入候选。"""
+    commits = [  # 新→旧
+        _c("c" * 40, "Upstream-Feedback: yes", {".factory/feedback.py"}),
+        _c("b" * 40, "", {".factory/feedback.py", ".factory/README.md"}),
+        _c("a" * 40, "Upstream-Feedback: yes", {".factory/dispatch.sh"})]
+    # README.md 最后触碰者 b 无 trailer → 不 feedable；dispatch.sh 最后
+    # 触碰者 a 带 trailer → feedable；feedback.py 同理 → a、b、c 全入链
+    pending = feedback.collect_pending(commits, set())
+    assert [c["sha"] for c in pending] == ["a" * 40, "b" * 40, "c" * 40]
+
+
+def test_collect_pending_excludes_pure_specialization():
+    # 资产最后触碰者无 trailer → 其全部触碰者不进候选（特化资产不反哺）
+    commits = [_c("b" * 40, "Upstream-Feedback: yes", {".factory/x.py"}),
+               _c("a" * 40, "", {".factory/backend.py"})]
+    pending = feedback.collect_pending(commits, set())
+    assert [c["sha"] for c in pending] == ["b" * 40]
+
 
 def test_collect_pending_excludes_ledger_and_keeps_cherry_pick_order():
-    commits = feedback.parse_git_log(_log(
-        ("f" * 40, "新 trailer 提交", "Upstream-Feedback: yes"),
-        ("e" * 40, "已反哺 trailer 提交", "Upstream-Feedback: yes"),
-        ("d" * 40, "无标记提交", ""),
-        (feedback.BOOTSTRAP_CANDIDATES.__iter__().__next__() + "x" * 33,
-         "bootstrap 补录", "")))
+    commits = [  # 新→旧
+        _c("f" * 40, "Upstream-Feedback: yes", {".factory/a.sh"}),
+        _c("e" * 40, "Upstream-Feedback: yes", {".factory/a.sh"}),
+        _c("d" * 40, "", {".factory/b.py"})]
     pending = feedback.collect_pending(commits, {"e" * 40})
-    # git log 新→旧；pending 必须反转为旧→新（cherry-pick 顺序）
-    assert [c["sha"] for c in pending] == [
-        feedback.BOOTSTRAP_CANDIDATES.__iter__().__next__() + "x" * 33,
-        "f" * 40]
+    assert [c["sha"] for c in pending] == ["f" * 40]
 
 
 def test_collect_pending_empty_when_all_ledgered():
-    commits = feedback.parse_git_log(_log(
-        ("a" * 40, "s", "Upstream-Feedback: yes")))
+    commits = [_c("a" * 40, "Upstream-Feedback: yes", {".factory/a.sh"})]
     assert feedback.collect_pending(commits, {"a" * 40}) == []
 
 

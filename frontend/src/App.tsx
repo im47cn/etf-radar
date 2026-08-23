@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useUIState } from '@/providers/uiStateContext';
 import { DataProvider } from '@/providers/DataProvider';
 import { UIStateProvider } from '@/providers/UIStateProvider';
@@ -9,7 +9,6 @@ import { EventsProvider } from '@/providers/EventsProvider';
 import { Header } from '@/components/Header';
 import { RadarPage } from '@/pages/RadarPage';
 import { RotationPage } from '@/pages/RotationPage';
-import { PortfolioPage } from '@/pages/PortfolioPage';
 import { AuthCallback } from '@/pages/AuthCallback';
 import { StocksPage } from '@/pages/StocksPage';
 import { TemperaturePage } from '@/pages/TemperaturePage';
@@ -35,7 +34,7 @@ const AnimatedRoutes = () => {
       <Route path="/grid"           element={<GridPage />} />
         <Route path="/metals"         element={<MetalsPage />} />
         <Route path="/trading"        element={<TradingPage />} />
-        <Route path="/portfolio"      element={<PortfolioPage />} />
+        <Route path="/portfolio"      element={<Navigate to="/trading?tab=holdings" replace />} />
         <Route path="/membership"     element={<MembershipPage />} />
         <Route path="/watchlist"      element={<WatchlistPage />} />
         <Route path="/auth/callback"  element={<AuthCallback />} />

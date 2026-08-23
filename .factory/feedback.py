@@ -99,6 +99,26 @@ def collect_pending(commits, ledger_shas):
                and not any(c["sha"].startswith(s) for s in ledger_shas)]
     return pending[::-1] if pending else []
 
+def superseded_map(commits, ledger_shas):
+    """疑似已随演化反哺：pending 提交的文件集 ⊆ 某更晚已反哺提交的文件集。
+
+    SHA 语义缺口补丁（#66 实证）：反哺走 cherry-pick+适配演化，内容等价
+    但 SHA 不一的提交永久 pending，人工识别孪生不可持续。本函数只做确定性
+    文件集覆盖判定，产出"疑似"清单供人工确认后 record 补录——不自动入账
+    （文件集覆盖是强信号，非内容等价证明）。commits 为 git log 顺序（新→旧），
+    "更晚" = 序更靠前；返回 {pending_sha: superseder_sha}。"""
+    order = {c["sha"]: i for i, c in enumerate(commits)}
+    result = {}
+    for c in collect_pending(commits, ledger_shas):
+        p_files = set(c.get("files", ()))
+        for r in commits[:order[c["sha"]]]:  # 更晚（更新）的提交
+            if not any(r["sha"].startswith(s) for s in ledger_shas):
+                continue
+            if p_files <= set(r.get("files", ())):
+                result[c["sha"]] = r["sha"]
+                break
+    return result
+
 def extract_factory_refs(text):
     """从 shell 源文本提取 $FACTORY/<资产> 引用；运行时目录产物不算依赖。"""
     return sorted({
@@ -242,6 +262,12 @@ def main():
     if cmd == "pending":
         for c in pending:
             print("%s\t%s" % (c["sha"], c["subject"]))
+    elif cmd == "superseded":
+        # 疑似已随演化反哺（SHA 语义缺口）：sha\tsubject\t<=superseder_sha
+        smap = superseded_map(commits, ledger)
+        for c in pending:
+            if c["sha"] in smap:
+                print("%s\t%s\t<=%s" % (c["sha"], c["subject"], smap[c["sha"]]))
     elif cmd == "closure":
         # closure <upstream-wt>: 樱桃前 fail-closed——候选引用的资产必须随行可达
         upstream = sys.argv[2]
@@ -276,7 +302,6 @@ def main():
             capture_output=True, text=True).stdout
         print(render_report(pending, classify_drift(diff, "%s/.factory" % upstream)))
     elif cmd == "record":
-        # record <upstream_pr> <sha>:<subject> [<sha>:<subject> ...]
         upstream_pr = sys.argv[2]
         for arg in sys.argv[3:]:
             sha, subject = arg.split(":", 1)
@@ -284,7 +309,7 @@ def main():
                           "im47cn/awesome-rules")
         print("账本已更新: %s" % ledger_path)
     else:
-        print("用法: feedback.py pending|status|closure <upstream_wt>|"
+        print("用法: feedback.py pending|superseded|status|closure <upstream_wt>|"
               "report <upstream_path>|record <pr> <sha>:<subject>...",
               file=sys.stderr)
         sys.exit(2)

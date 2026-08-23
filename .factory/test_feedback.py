@@ -206,3 +206,43 @@ def test_closure_passes_when_dep_upstream_has_it():
               "patch": patch, "files": [".factory/x.sh"]}]
     assert feedback.closure_missing(
         cands, upstream_factory_files=[".factory/feedback.py"]) == {}
+
+
+# ---- superseded_map：SHA 语义缺口（疑似已随演化反哺） ----
+
+def _sup_env():
+    """新→旧四提交：R1 覆盖 P 并已入账；R2 更晚未入账；R3 更早已入账。"""
+    p, r1, r2, r3 = "p" * 40, "1" * 40, "2" * 40, "3" * 40
+    commits = [  # git log 顺序：新 → 旧
+        _c(r2, "yes", [".factory/fix-issue.sh"]),          # 最新，未入账
+        _c(r1, "yes", [".factory/fix-issue.sh", ".factory/factory_lib.py"]),  # 已入账
+        _c(p, "yes", [".factory/fix-issue.sh"]),           # pending 候选
+        _c(r3, "yes", [".factory/fix-issue.sh", ".factory/factory_lib.py"]),  # 最旧，已入账
+    ]
+    return commits, {"ledger": {r1, r3}, "p": p, "r1": r1}
+
+
+def test_superseded_file_cover_by_later_recorded():
+    commits, env = _sup_env()
+    assert feedback.superseded_map(commits, env["ledger"]) == {env["p"]: env["r1"]}
+
+
+def test_superseded_ignores_older_recorded():
+    """更早的已反哺提交不可能携带更晚 pending 的内容（演化方向）。"""
+    commits, env = _sup_env()
+    ledger = {env["p"]: None}  # 占位不可用——直接构造仅含 r3 的账本
+    smap = feedback.superseded_map(commits, {"3" * 40})
+    assert smap == {}  # r3 更早；r2 未入账 → p 无有效 superseder
+
+
+def test_superseded_ignores_unrecorded_cover():
+    """文件集覆盖但未入账（r2 自己也 pending）不作数。"""
+    commits, env = _sup_env()
+    assert feedback.superseded_map(commits, set()) == {}
+
+
+def test_superseded_prefix_ledger_sha_matches():
+    """账本短 SHA 前缀匹配（历史账本存在短记录，如 dfe8a3ab）。
+    r3 全量入账，r1 仅前缀入账——两者都算已反哺，pending 只剩 p/r2。"""
+    commits, env = _sup_env()
+    assert feedback.superseded_map(commits, {"1" * 8, "3" * 40}) == {env["p"]: env["r1"]}

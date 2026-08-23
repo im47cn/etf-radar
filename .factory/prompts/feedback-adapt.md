@@ -28,6 +28,11 @@
    - 只改 `.factory/` 内路径（本 PR 的周界纪律）
    - 禁止合并、拆分、丢弃候选；冗余候选也保留提交（人审裁决）
    - 禁止触碰上游 git 配置、远程、分支
+   - **源仓（etf-radar）对你只读**：发现源仓/工具链缺陷 → 写入
+     `$FEEDBACK_DIR/findings.md`（标题 + file:line + 建议），绝不直接修复；
+     禁止对源仓任何 git 写操作（branch/commit/checkout/tag/stash）
+   - **禁止对任何仓库 push、禁止 gh pr create/comment**——推送与 PR 由
+     脚本完成（PR #71 事故：节点自行在源仓开分支/开 PR，破坏人工治理边界）
    - 结束时工作树必须干净（无未提交改动）
 
 ## 输出

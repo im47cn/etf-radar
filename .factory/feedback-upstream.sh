@@ -25,6 +25,17 @@ die() { printf '✗ %s\n' "$*" >&2; exit 1; }
 
 # --- 1. 待反哺候选（trailer ∨ bootstrap，− 账本；旧→新） ---
 PENDING="$(python3 "$FACTORY/feedback.py" pending)" || die "候选收集失败"
+# --- 1.5 疑似已随演化反哺（SHA 语义缺口）：内容经 cherry-pick+适配演化
+#        反哺、SHA 未直樱桃的提交会永久 pending（#66 实证，曾靠人工识别
+#        孪生补录）。确定性文件集覆盖判定 → 跳过 + 亮清单，人工确认后
+#        feedback.py record 补录清账（不自动入账：覆盖是强信号非等价证明）
+SUPERSEDED="$(python3 "$FACTORY/feedback.py" superseded)" || die "superseded 收集失败"
+if [ -n "$SUPERSEDED" ]; then
+  say "疑似已随演化反哺 $(printf '%s\n' "$SUPERSEDED" | wc -l | tr -d ' ') 条（跳过；人工确认后 feedback.py record 补录）:"
+  printf '%s\n' "$SUPERSEDED" | sed 's/^/  /'
+  PENDING="$(printf '%s\n' "$PENDING" \
+    | grep -vFf <(printf '%s\n' "$SUPERSEDED" | cut -f1) || true)"
+fi
 [ -z "$PENDING" ] && { say "无待反哺候选（账本已覆盖全部标记提交）"; exit 0; }
 N_TOTAL="$(printf '%s\n' "$PENDING" | wc -l | tr -d ' ')"
 say "待反哺候选: ${N_TOTAL} 个"
@@ -148,11 +159,19 @@ pathlib.Path(fb_dir, "manifest.json").write_text(
 PYEOF
 PROMPT="$(cat "$FACTORY/prompts/feedback-adapt.md")
 
+
 ——任务参数:
 - FEEDBACK_DIR: $FB_DIR
 - 上游 worktree: ${WT}（你在此工作树上操作；基点含上游最新 main）
 - 候选数: ${N_TOTAL}（manifest.json 为准）"
 say "==> 适配节点（fresh context 进程，预算 ${NODE_TIMEOUT:-30m}）"
+# 越界检测基线（源仓）：适配节点曾在源仓自行开分支/提交/开 PR（PR #71
+# 事故——prompt 当时只约束上游 git）。节点自身的 push/PR 无法本地拦截
+# （凭据是环境态），此指纹保证脚本自身的推送/入账前发现越界并终止。
+# 分支表 = 硬判据（dispatcher 归位只 checkout 不建分支，零误报源）；
+# HEAD 漂移 = 仅告警（dispatcher factory/base 归位是已知良性源，不可区分）
+SRC_HEADS_BEFORE="$(git -C "$REPO" for-each-ref --format='%(refname)' refs/heads/ | sort)"
+SRC_HEAD_BEFORE="$(git -C "$REPO" rev-parse HEAD)"
 NODE_RC=0
 (cd "$WT" && omp -p "$PROMPT" --no-session \
       --max-time "${NODE_TIMEOUT:-30m}" </dev/null) > "$FB_DIR/adapt.log" 2>&1 || NODE_RC=$?
@@ -178,6 +197,19 @@ if [ -n "$BAD_FILES" ]; then
 fi
 [ -z "$("${GITW[@]}" status --porcelain)" ] || die "上游 worktree 残留未提交改动（adapt.md 说明见 ${FB_DIR}）"
 say "✓ 适配完成: ${N_COMMITS} commits，全部位于 .factory/"
+# 越界检测（源仓，PR #71 事故收口）：分支表变动 = die（推送/入账前拦截）；
+# HEAD/分支漂移 = 告警（dispatcher 归位不可区分，人工甄别）；findings.md
+# = 节点按 prompt 契约上报的源仓/工具链缺陷，人工处置
+SRC_HEADS_AFTER="$(git -C "$REPO" for-each-ref --format='%(refname)' refs/heads/ | sort)"
+[ "$SRC_HEADS_BEFORE" = "$SRC_HEADS_AFTER" ] \
+  || die "适配节点越界：源仓分支表变动（git for-each-ref 甄别；产物 ${FB_DIR}）"
+if [ "$(git -C "$REPO" rev-parse HEAD)" != "$SRC_HEAD_BEFORE" ]; then
+  say "⚠ 源仓 HEAD 在节点运行期间漂移（或为 dispatcher 归位；请人工确认）"
+fi
+[ -f "$FB_DIR/findings.md" ] && {
+  say "⚑ 节点上报源仓/工具链缺陷（人工处置，findings.md）:"
+  sed 's/^/  /' "$FB_DIR/findings.md"
+}
 
 # --- 7. 上游门禁：红 → 不开 PR，只收报告 ---
 # gauntlet（不是 run_tests.sh）: 2026-08-22 事故——适配节点产出 BRANCH 未定义

@@ -9,6 +9,8 @@
 #
 # 限量: 每轮 MAX_TRIAGE(默认 5)个, 防标签批量清理后的重裁风暴。
 # 产物: .factory/artifacts/issue-N/triage.{json,log}（fix-issue 链复用重裁, 幂等）
+# reject 落标+判据回执经 factory-lib.sh issue_reject() 单一动作收口
+# （#59 二次拒绝静默实证：批次只落标不发回执 = 链路缺陷的另一半）
 set -euo pipefail
 
 REPO="$(git rev-parse --show-toplevel)"
@@ -18,6 +20,8 @@ REPO_SLUG="${GH_REPO:-$(git -C "$REPO" remote get-url origin 2>/dev/null \
 [ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug" >&2; exit 2; }
 MAX_TRIAGE="${MAX_TRIAGE:-5}"
 command -v gh >/dev/null || { echo "需要 gh CLI" >&2; exit 2; }
+# 链副作用共享库（契约：REPO/REPO_SLUG 已定义；ISSUE 为循环变量）
+source "${FACTORY}/factory-lib.sh"
 
 # 零 factory 标签的 open issue（json 一次取齐, python 过滤排序）
 QUEUE="$(gh issue list --repo "$REPO_SLUG" --state open --limit 100 \
@@ -73,8 +77,12 @@ ${cmts}
     gh issue edit "${ISSUE}" --repo "$REPO_SLUG" --add-label factory:accepted >/dev/null
     echo "    → accept（已入派发队列）"
   else
-    gh issue edit "${ISSUE}" --repo "$REPO_SLUG" --add-label factory:rejected >/dev/null
-    echo "    → reject（链不启动; 人工补充上下文后移除标签即可重裁）"
+    # 落标 + 判据回执一次收口；落标失败仅告警不中断批次（下一 issue 继续）
+    if issue_reject "" "${DIR}/triage.json"; then
+      echo "    → reject（人工补充上下文后移除标签即可重裁）"
+    else
+      echo "    [warn] 拒绝落标失败（issue #${ISSUE}），跳过回执" >&2
+    fi
   fi
 done
 [ "$COUNT" -eq 0 ] && echo "无待裁决 issue（零 factory 标签）" || true

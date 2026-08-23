@@ -88,15 +88,20 @@ def feedable_assets(commits):
     return {f for f, c in last_toucher.items() if c["feedable"]}
 
 
-def collect_pending(commits, ledger_shas):
+def collect_pending(commits, ledger_shas, ledger_patch_ids=frozenset()):
     """待反哺候选：触碰任一 feedable 资产 ∧ 不在账本，旧→新。
 
     判定在资产层（feedable_assets），提交仅作反哺载体——无 trailer
-    的历史触碰者随 feedable 资产入链，保证依赖闭包完整。"""
+    的历史触碰者随 feedable 资产入链，保证依赖闭包完整。
+    去重双通道：SHA 前缀（同对象重放）+ patch-id（rebase/amend 后内容
+    不变即识别——SHA 去重在本地历史重写后全部失效，已反哺内容会以新
+    SHA 重新成为候选、重复反哺；2026-08-22 孪生 SHA 手工补账实证）。
+    条目无 patch_id（空 diff 或未计算）时退化为纯 SHA 匹配。"""
     assets = feedable_assets(commits)
     pending = [c for c in commits
                if set(c.get("files", ())) & assets
-               and not any(c["sha"].startswith(s) for s in ledger_shas)]
+               and not any(c["sha"].startswith(s) for s in ledger_shas)
+               and c.get("patch_id") not in ledger_patch_ids]
     return pending[::-1] if pending else []
 
 def extract_factory_refs(text):
@@ -229,6 +234,16 @@ def _files_by_sha():
             files_by_sha.setdefault(sha, set()).update(files)
     return files_by_sha
 
+def _patch_id(sha):
+    """提交 → patch-id（--stable，跨 rebase/amend 内容不变即同 id）。
+    空 diff（纯 merge/空提交）返回 None——此类退化纯 SHA 匹配。"""
+    out = subprocess.run(
+        ["bash", "-c",
+         'git show --format= %s | git patch-id --stable' % sha],
+        capture_output=True, text=True).stdout.strip()
+    return out.split()[0] if out else None
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     here = pathlib.Path(__file__).parent
@@ -237,7 +252,13 @@ def main():
     fbs = _files_by_sha()
     commits = [dict(c, files=fbs.get(c["sha"], ())) for c in commits]
     ledger = load_ledger(ledger_path)
-    pending = collect_pending(commits, ledger)
+    # patch-id 只为触碰 feedable 资产的提交计算（候选判定必要条件，
+    # 全历史逐条子进程不可承受）；账本全量（几十条，秒级）
+    assets = feedable_assets(commits)
+    commits = [dict(c, patch_id=_patch_id(c["sha"]) if set(c.get("files", ())) & assets else None)
+               for c in commits]
+    ledger_pids = {p for s in ledger if (p := _patch_id(s)) is not None}
+    pending = collect_pending(commits, ledger, ledger_pids)
 
     if cmd == "pending":
         for c in pending:

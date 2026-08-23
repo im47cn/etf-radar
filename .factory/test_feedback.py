@@ -114,6 +114,25 @@ def test_collect_pending_empty_when_all_ledgered():
     commits = [_c("a" * 40, "Upstream-Feedback: yes", {".factory/a.sh"})]
     assert feedback.collect_pending(commits, {"a" * 40}) == []
 
+def test_collect_pending_patch_id_dedup_beats_sha_drift():
+    """patch-id 去重：rebase/amend 后 SHA 变、内容不变 → 仍排除。
+    2026-08-22 孪生 SHA 实证——SHA 去重随本地历史重写失效，已反哺内容
+    重新成为候选、重复反哺。"""
+    reborn = dict(_c("9" * 40, "Upstream-Feedback: yes", {".factory/a.sh"}),
+                  patch_id="pid-1")
+    assert feedback.collect_pending([reborn], set(), {"pid-1"}) == []
+
+
+def test_collect_pending_patch_id_mismatch_keeps_candidate():
+    """patch-id 不同（真新内容）→ 正常入候选；无 patch_id 条目退化 SHA 匹配。"""
+    new = dict(_c("7" * 40, "Upstream-Feedback: yes", {".factory/a.sh"}),
+               patch_id="pid-2")
+    assert [c["sha"] for c in
+            feedback.collect_pending([new], set(), {"pid-1"})] == ["7" * 40]
+    noid = _c("8" * 40, "Upstream-Feedback: yes", {".factory/a.sh"})
+    assert [c["sha"] for c in
+            feedback.collect_pending([noid], set(), {"pid-1"})] == ["8" * 40]
+
 
 # ---- 账本读写往返 ----
 

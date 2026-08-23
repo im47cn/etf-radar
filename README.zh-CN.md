@@ -19,8 +19,8 @@
 | `/metals` | 贵金属 | 贵金属宏观指标 — 金银比分位（描述性指标） |
 | `/trading` | 交易 | 环境 / 信号 / 持仓 / 复盘（环境免费，其余需会员） |
 | `/theme/:id/stocks` | 个股 | 主题成分股分析（A 股 ETF 持仓 + 盘口 + 技术指标） |
-| `/portfolio` | 持仓 | 持仓监控（需 Supabase 凭据） |
-| `/watchlist` | 自选 | 自选股列表（需登录 + 会员） |
+| `/portfolio` → `/trading?tab=holdings` | 持仓（重定向） | 旧持仓入口，重定向到交易页主题持仓 Tab |
+| `/watchlist` | 自选 | 自选股列表（需登录 + 会员；入口在交易页自选 Tab） |
 | `/membership` | 会员 | 会员信息 |
 | `/auth/callback` | — | Magic Link / OAuth 登录回调 |
 
@@ -82,7 +82,7 @@ cp frontend/.env.local.example frontend/.env.local
 # 编辑 .env.local，填入 Supabase Project URL 和 anon key
 # 凭据可向项目维护者索取，或自行创建 Supabase 项目
 
-npm run dev  # http://localhost:5173/etf-radar/#/portfolio
+npm run dev  # http://localhost:5173/etf-radar/#/trading?tab=holdings
 ```
 
 **Magic Link 登录**：邮件可能进国内邮箱（QQ/163）的垃圾箱，请检查；或使用 Google OAuth 一键登录。

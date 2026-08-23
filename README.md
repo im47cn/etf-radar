@@ -21,8 +21,8 @@ Tracks US theme ETF strength and momentum, auto-maps them to China A-share ETFs,
 | `/metals` | Metals | Precious-metals macro indicator — gold/silver ratio percentile (descriptive, no alpha claimed) |
 | `/trading` | Trading | Environment / signals / positions / review tabs (env tab free; other tabs require membership) |
 | `/theme/:id/stocks` | Stocks | Theme constituent stock analysis (A-share ETF holdings + spot + technical indicators) |
-| `/portfolio` | Portfolio | Portfolio monitor (requires Supabase credentials) |
-| `/watchlist` | Watchlist | Personal watchlist (requires login + membership) |
+| `/portfolio` → `/trading?tab=holdings` | 持仓（重定向） | Legacy portfolio entry — redirects to Trading 主题持仓 tab |
+| `/watchlist` | Watchlist | Personal watchlist (requires login + membership; entry lives in Trading 自选 tab) |
 | `/membership` | Membership | Membership info |
 | `/auth/callback` | — | Magic Link / OAuth login callback |
 
@@ -84,7 +84,7 @@ cp frontend/.env.local.example frontend/.env.local
 # Edit .env.local with your Supabase Project URL and anon key
 # Ask the project maintainer for credentials, or create your own Supabase project
 
-npm run dev  # http://localhost:5173/etf-radar/#/portfolio
+npm run dev  # http://localhost:5173/etf-radar/#/trading?tab=holdings
 ```
 
 **Magic Link login**: emails may land in the spam folder of Chinese mailboxes (QQ/163) — please check; or use Google OAuth for one-click login.

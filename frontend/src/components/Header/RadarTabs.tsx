@@ -12,8 +12,6 @@ export const RadarTabs = () => {
       <Link to="/" className={linkClass(pathname === '/' || pathname === '/temperature')}>温度</Link>
       <Link to="/radar" className={linkClass(pathname === '/radar')}>雷达</Link>
       <Link to="/rotation" className={linkClass(pathname === '/rotation')}>轮动</Link>
-      <Link to="/portfolio" className={linkClass(pathname === '/portfolio')}>持仓</Link>
-      <Link to="/watchlist" className={linkClass(pathname === '/watchlist')}>自选</Link>
       <Link to="/evidence" className={linkClass(pathname === '/evidence')}>证据</Link>
       <Link to="/grid" className={linkClass(pathname === '/grid')}>网格</Link>
       <Link to="/metals" className={linkClass(pathname === '/metals')}>贵金属</Link>

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 
 vi.mock('@/hooks/useTrading', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/hooks/useTrading')>();
@@ -9,6 +9,10 @@ vi.mock('@/hooks/useTrading', async (importOriginal) => {
 vi.mock('@/lib/subscription/useSubscription', () => ({ useSubscription: vi.fn() }));
 vi.mock('@/hooks/useTrades', () => ({ useTrades: vi.fn() }));
 vi.mock('@/lib/trading/api', () => ({ listReviews: vi.fn(), getReviewAggregates: vi.fn() }));
+
+// 自选/主题持仓 Tab 接线测试的页面 stub（gate 行为由两页面各自既有测试背书）
+vi.mock('@/pages/WatchlistPage', () => ({ WatchlistPage: () => <div>watchlist-page-marker</div> }));
+vi.mock('@/pages/PortfolioPage', () => ({ PortfolioPage: () => <div>portfolio-page-marker</div> }));
 
 import { useTrading } from '@/hooks/useTrading';
 import { useSubscription } from '@/lib/subscription/useSubscription';
@@ -85,7 +89,7 @@ const mkTrading = (over: Record<string, unknown> = {}) => ({
 
 // ── 渲染 helper (member 态, 同 GridPage 模式) ──────────────────────────
 
-const renderTrading = (
+const setupMocks = (
   hookOverrides: Record<string, unknown> = {},
   tradesOverrides: Record<string, unknown> = {},
   reviews: TradeReview[] = [],
@@ -111,8 +115,17 @@ const renderTrading = (
   } as never);
   vi.mocked(listReviews).mockReset().mockResolvedValue(reviews);
   vi.mocked(getReviewAggregates).mockReset().mockResolvedValue(null);
+};
+
+const renderTrading = (
+  hookOverrides: Record<string, unknown> = {},
+  tradesOverrides: Record<string, unknown> = {},
+  reviews: TradeReview[] = [],
+  initialEntries: string[] = ['/trading'],
+) => {
+  setupMocks(hookOverrides, tradesOverrides, reviews);
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <AuthContext.Provider value={{ status: 'authenticated', user: { email: 'a@b.com' } } as never}>
         <TradingPage />
       </AuthContext.Provider>
@@ -121,8 +134,10 @@ const renderTrading = (
 };
 
 const clickTab = (label: string) => {
-  fireEvent.click(screen.getByRole('tab', { name: new RegExp(label) }));
+  // 锚定正则: 持仓 与 主题持仓 互为子串, 🔒 span 为 aria-hidden 不计入可访问名
+  fireEvent.click(screen.getByRole('tab', { name: new RegExp('^' + label + '$') }));
 };
+
 
 // ── zod schema (types/trading.ts 声明行需 parse 执行产生 DA) ───────────
 
@@ -177,10 +192,16 @@ describe('TradingSchema', () => {
 // ── 页壳 + 环境 Tab ──────────────────────────────────────────────────
 
 describe('TradingPage 页壳与环境 Tab', () => {
-  it('渲染四 Tab 按钮, 默认环境 Tab 免费展示档位/指数/宽度', () => {
+  it('渲染六 Tab 按钮, 免费/开放 tab 无锁、member tab 带锁, 默认环境 Tab 免费展示', () => {
     renderTrading();
-    for (const label of ['环境', '信号', '持仓', '复盘']) {
-      expect(screen.getByRole('tab', { name: new RegExp(label) })).toBeInTheDocument();
+    for (const label of ['环境', '信号', '自选', '持仓', '主题持仓', '复盘']) {
+      expect(screen.getByRole('tab', { name: new RegExp('^' + label + '$') })).toBeInTheDocument();
+    }
+    // locked 两分支: 主题持仓为 auth 开放功能不带锁, 其余 member tab 带 🔒
+    expect(screen.getByRole('tab', { name: /^环境$/ }).textContent).not.toContain('🔒');
+    expect(screen.getByRole('tab', { name: /^主题持仓$/ }).textContent).not.toContain('🔒');
+    for (const label of ['信号', '自选', '持仓', '复盘']) {
+      expect(screen.getByRole('tab', { name: new RegExp('^' + label + '$') }).textContent).toContain('🔒');
     }
     expect(screen.getByText('进攻')).toBeInTheDocument();
     expect(screen.getByText('6/8')).toBeInTheDocument();
@@ -306,6 +327,53 @@ describe('TradingPage 信号 Tab', () => {
     renderTrading({ error: new Error('x'), data: undefined });
     clickTab('信号');
     expect(screen.getByText('暂无交易信号数据')).toBeInTheDocument();
+  });
+});
+
+// ── 自选/主题持仓 Tab 接线与 URL 参数 ────────────────────────────────
+
+describe('自选/主题持仓 Tab 接线与 URL 参数', () => {
+  it('点自选 Tab 渲染 WatchlistPage', () => {
+    renderTrading();
+    clickTab('自选');
+    expect(screen.getByText('watchlist-page-marker')).toBeInTheDocument();
+  });
+
+  it('点主题持仓 Tab 渲染 PortfolioPage', () => {
+    renderTrading();
+    clickTab('主题持仓');
+    expect(screen.getByText('portfolio-page-marker')).toBeInTheDocument();
+  });
+
+  it('deep-link ?tab=holdings 免点击直达主题持仓', () => {
+    renderTrading({}, {}, [], ['/trading?tab=holdings']);
+    expect(screen.getByText('portfolio-page-marker')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^主题持仓$/ })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('非法 tab 参数回落环境 Tab (isTabKey false 分支)', () => {
+    renderTrading({}, {}, [], ['/trading?tab=xyz']);
+    expect(screen.getByRole('tab', { name: /^环境$/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('进攻')).toBeInTheDocument();
+  });
+
+  it('点自选后 location.search 更新为 ?tab=watchlist', () => {
+    const searches: string[] = [];
+    const Probe = () => {
+      searches.push(useLocation().search);
+      return null;
+    };
+    setupMocks();
+    render(
+      <MemoryRouter initialEntries={['/trading']}>
+        <AuthContext.Provider value={{ status: 'authenticated', user: { email: 'a@b.com' } } as never}>
+          <Probe />
+          <TradingPage />
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    );
+    clickTab('自选');
+    expect(searches.at(-1)).toBe('?tab=watchlist');
   });
 });
 

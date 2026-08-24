@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-08-21T12:52:57.484764+00:00",
+  "environment": {
+    "regime": "neutral",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 5,
+        "criteria": [
+          false,
+          true,
+          true,
+          true,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 4618.895
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 4,
+        "criteria": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 7854.334
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 6,
+        "criteria": [
+          false,
+          true,
+          true,
+          true,
+          true,
+          true,
+          false,
+          true
+        ],
+        "close": 3545.577
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "as_of": "2026-08-20",
+      "stale": false,
+      "ma20_pct": 0.589,
+      "ma60_pct": 0.408,
+      "ma120_pct": 0.203
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [
+    {
+      "code": "601985",
+      "name": "中国核电",
+      "composite_score": 5.5,
+      "stage": 2,
+      "template_pass": 6,
+      "rs_pct": 79.6,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 5.4,
+        "quality": 0.2193,
+        "volume_dryup": true
+      },
+      "pivot": 9.13,
+      "buy_zone_low": 9.13,
+      "buy_zone_high": 9.5865,
+      "stop": 8.71,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.23,
+      "board": "main",
+      "vol_forecast_ann": 0.1639
+    },
+    {
+      "code": "600236",
+      "name": "桂冠电力",
+      "composite_score": 5.1,
+      "stage": 2,
+      "template_pass": 6,
+      "rs_pct": 47.8,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 28.3,
+        "quality": 0.3471,
+        "volume_dryup": true
+      },
+      "pivot": 12.24,
+      "buy_zone_low": 12.24,
+      "buy_zone_high": 12.852,
+      "stop": 11.2608,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 0.2,
+      "board": "main",
+      "vol_forecast_ann": null
+    }
+  ],
+  "universe_stats": {
+    "total": 5548,
+    "tradable": 2878,
+    "stage2": 548,
+    "vcp": 2,
+    "top": 2
+  }
+}

@@ -138,16 +138,36 @@ def test_collect_pending_patch_id_mismatch_keeps_candidate():
 
 def test_ledger_roundtrip(tmp_path):
     ledger = tmp_path / "feedback-log.jsonl"
-    assert feedback.load_ledger(ledger) == set()  # 不存在 → 空
+    assert feedback.load_ledger(ledger) == []  # 不存在 → 空
     feedback.append_ledger(ledger, "a" * 40, "s", 7, "im47cn/awesome-rules")
     feedback.append_ledger(ledger, "b" * 40, "s2", 7, "im47cn/awesome-rules")
-    assert feedback.load_ledger(ledger) == {"a" * 40, "b" * 40}
+    assert {e["sha"] for e in feedback.load_ledger(ledger)} == {"a" * 40, "b" * 40}
 
 
 def test_load_ledger_tolerates_corrupt_line(tmp_path):
     ledger = tmp_path / "feedback-log.jsonl"
     ledger.write_text('{"sha": "%s"}\nnot-json\n' % ("a" * 40), encoding="utf-8")
-    assert feedback.load_ledger(ledger) == {"a" * 40}
+    assert {e["sha"] for e in feedback.load_ledger(ledger)} == {"a" * 40}
+
+
+def test_ledger_persists_patch_id(tmp_path):
+    """PR#75：patch-id 落账本——记录时的计算结果随条目持久化。"""
+    ledger = tmp_path / "feedback-log.jsonl"
+    feedback.append_ledger(ledger, "a" * 40, "s", 7, "r", patch_id="pid-a")
+    feedback.append_ledger(ledger, "b" * 40, "s2", 7, "r")  # None 也合法（空 diff/非资产）
+    entries = feedback.load_ledger(ledger)
+    assert entries[0]["patch_id"] == "pid-a" and entries[1]["patch_id"] is None
+
+
+def test_stored_patch_id_survives_object_loss(tmp_path, monkeypatch):
+    """PR#75 核心：账本已有 patch_id 的条目不依赖对象重算——账本提交被
+    GC 后（重算 _patch_id 返回 None），持久化值仍参与去重。"""
+    entries = [{"sha": "a" * 40, "patch_id": "pid-a"},
+               {"sha": "b" * 40}]                       # 旧条目：无字段 → 重算兜底
+    monkeypatch.setattr(feedback, "_patch_id", lambda sha: "pid-recalc")
+    assert feedback.ledger_patch_ids(entries) == {"pid-a", "pid-recalc"}
+    monkeypatch.setattr(feedback, "_patch_id", lambda sha: None)   # 对象全丢
+    assert feedback.ledger_patch_ids(entries) == {"pid-a"}
 
 
 # ---- 漂移分类 ----

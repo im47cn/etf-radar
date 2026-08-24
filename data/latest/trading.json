@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-21T12:52:57.484764+00:00",
+  "generated_at": "2026-08-24T10:46:07.560443+00:00",
   "environment": {
     "regime": "neutral",
     "indices": [
       {
         "code": "000300",
         "name": "沪深300",
-        "template_pass": 5,
+        "template_pass": 4,
         "criteria": [
           false,
           true,
@@ -16,9 +16,9 @@
           false,
           true,
           false,
-          true
+          false
         ],
-        "close": 4618.895
+        "close": 4563.127
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 7854.334
+        "close": 7717.085
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 3545.577
+        "close": 3431.885
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-08-20",
+      "as_of": "2026-08-21",
       "stale": false,
-      "ma20_pct": 0.589,
-      "ma60_pct": 0.408,
-      "ma120_pct": 0.203
+      "ma20_pct": 0.538,
+      "ma60_pct": 0.391,
+      "ma120_pct": 0.194
     },
     "source_status": {
       "indices": "ok",
@@ -77,11 +77,11 @@
       "composite_score": 5.5,
       "stage": 2,
       "template_pass": 6,
-      "rs_pct": 79.6,
+      "rs_pct": 76.1,
       "vcp": {
         "contractions": 2,
         "depth_pct": 5.4,
-        "quality": 0.2193,
+        "quality": 0.227,
         "volume_dryup": true
       },
       "pivot": 9.13,
@@ -90,21 +90,21 @@
       "stop": 8.71,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -0.23,
+      "chg_pct": 0.69,
       "board": "main",
       "vol_forecast_ann": 0.1639
     },
     {
       "code": "600236",
       "name": "桂冠电力",
-      "composite_score": 5.1,
+      "composite_score": 4.9,
       "stage": 2,
       "template_pass": 6,
-      "rs_pct": 47.8,
+      "rs_pct": 40.2,
       "vcp": {
         "contractions": 3,
         "depth_pct": 28.3,
-        "quality": 0.3471,
+        "quality": 0.37,
         "volume_dryup": true
       },
       "pivot": 12.24,
@@ -113,15 +113,15 @@
       "stop": 11.2608,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": 0.2,
+      "chg_pct": -0.1,
       "board": "main",
       "vol_forecast_ann": null
     }
   ],
   "universe_stats": {
     "total": 5548,
-    "tradable": 2878,
-    "stage2": 548,
+    "tradable": 2892,
+    "stage2": 538,
     "vcp": 2,
     "top": 2
   }

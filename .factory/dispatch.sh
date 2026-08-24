@@ -64,6 +64,9 @@ MAIN_FACTORY="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/nul
   | sed 's#/\.git$##')/.factory"
 LOCKDIR="${MAIN_FACTORY:-$FACTORY}/locks/dispatcher"
 acquire_lock() {
+  # 父目录预建（同 fix-issue.sh：单级 mkdir 原子声明，父缺 ENOENT 会
+  # 被误读为"另一 dispatcher 运行中"）
+  mkdir -p "${LOCKDIR%/*}" 2>/dev/null || true
   if mkdir "$LOCKDIR" 2>/dev/null; then
     echo $$ > "$LOCKDIR/pid"
     trap 'rm -rf "$LOCKDIR"' EXIT

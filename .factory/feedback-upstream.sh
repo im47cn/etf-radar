@@ -46,10 +46,12 @@ git -C "$UPSTREAM_PATH" rev-parse --git-dir >/dev/null 2>&1 \
 
 
 # --- 3. 上游准备：独立 worktree（不碰上游主工作区及其未提交改动，同链 D3 实践） ---
-STAMP="$(date +%Y%m%d-%H%M%S)"
+STAMP="$(date +%Y%m%d-%H%M%S)-$$"   # 秒级时戳同秒两跑必撞（PR#75 审查）：BRANCH/FB_DIR/WT 全撞；$$ 后缀跨触发隔离（macOS date 无 %N，PID 可移植）
 FB_DIR="$FACTORY/artifacts/feedback-$STAMP"
 mkdir -p "$FB_DIR/patches"
-BRANCH="feedback/etf-radar-$(date +%Y%m%d)"
+# 含时分秒（同 STAMP）：按日命名一天多跑必撞远端同名分支，push 被拒后
+# 整链报废只能手工重放（2026-08-22 实证）；时戳分支随 PR 合并自动删除
+BRANCH="feedback/etf-radar-${STAMP}"
 # 目录名与断言解耦：上游 repo_root 测试已改锚结构不变量（PR #22），
 # checkout 目录名不再参与判定；保留 basename 仅为语义可读
 WT="$FB_DIR/upstream-wt/awesome-rules"
@@ -88,8 +90,16 @@ fi
 [ -n "$PUSH_URL" ] || die "上游 clone 无指向 ${UPSTREAM_REPO} 的 push url（GH_HOST/PUSH_URL 可配置）"
 # REMOTE_ADDED=0 先行初始化（cleanup 引用，set -u）；remote add 本体
 # 移至 dry-run 出口之后——dry-run 不做上游配置变更（PR #69 审查）
-REMOTE_ADDED=0
+# push 失败保留现场标志（cleanup 检查）：适配成果只存在于本地 worktree，
+# 失败即删 = 全丢。账本未记（PR 未开），重跑会重复反哺——保留供手工
+# push/开 PR 或排查，恢复指引随 die 输出
+REMOTE_ADDED=0   # cleanup 在 set -u 下读它；remote add 前任何 die（dry-run/worktree/fetch 失败）都会先进 EXIT trap（PR#75 审查）
+KEEP_WT=0
 cleanup() {
+  if [ "${KEEP_WT}" = 1 ]; then
+    say "现场已保留: worktree ${WT} 分支 ${BRANCH}（产物: ${FB_DIR}）"
+    return
+  fi
   git -C "$UPSTREAM_PATH" worktree remove --force "$WT" >/dev/null 2>&1 || true
   git -C "$UPSTREAM_PATH" branch -qD "$BRANCH" >/dev/null 2>&1 || true
   # 仅移除本次添加的 remote；已存在被复用的不动（防误删用户既有配置）
@@ -229,8 +239,10 @@ fi
 # --no-verify：git 注入 GIT_DIR 使 pre-push 全量套件在污染 env 下假红
 # （skills/* 测试非密封，2026-08-22 实测 tmp_path 内 git init 被劫持）；
 # 门禁主权归第 7 节脚本确定性执行
-"${GITW[@]}" push -q --no-verify "$PUSH_URL" "$BRANCH"
-PR_BODY="$FB_DIR/pr-body.md"
+"${GITW[@]}" push -q --no-verify "$PUSH_URL" "$BRANCH" || {
+  KEEP_WT=1
+  die "push 失败——现场已保留（worktree ${WT}，分支 ${BRANCH}）。恢复: cd ${WT} && git push --no-verify ${PUSH_URL} ${BRANCH}，或排查后手工清理: git -C ${UPSTREAM_PATH} worktree remove --force ${WT}"
+}
 { echo "自 etf-radar 反哺工厂改进（一候选一提交，clean pick 保真 / conflicted 适配）。"
   echo
   printf '%s\n' "$PENDING" | while IFS=$'\t' read -r sha subject; do

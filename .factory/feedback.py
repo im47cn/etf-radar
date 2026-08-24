@@ -88,15 +88,20 @@ def feedable_assets(commits):
     return {f for f, c in last_toucher.items() if c["feedable"]}
 
 
-def collect_pending(commits, ledger_shas):
+def collect_pending(commits, ledger_shas, ledger_patch_ids=frozenset()):
     """待反哺候选：触碰任一 feedable 资产 ∧ 不在账本，旧→新。
 
     判定在资产层（feedable_assets），提交仅作反哺载体——无 trailer
-    的历史触碰者随 feedable 资产入链，保证依赖闭包完整。"""
+    的历史触碰者随 feedable 资产入链，保证依赖闭包完整。
+    去重双通道：SHA 前缀（同对象重放）+ patch-id（rebase/amend 后内容
+    不变即识别——SHA 去重在本地历史重写后全部失效，已反哺内容会以新
+    SHA 重新成为候选、重复反哺；2026-08-22 孪生 SHA 手工补账实证）。
+    条目无 patch_id（空 diff 或未计算）时退化为纯 SHA 匹配。"""
     assets = feedable_assets(commits)
     pending = [c for c in commits
                if set(c.get("files", ())) & assets
-               and not any(c["sha"].startswith(s) for s in ledger_shas)]
+               and not any(c["sha"].startswith(s) for s in ledger_shas)
+               and c.get("patch_id") not in ledger_patch_ids]
     return pending[::-1] if pending else []
 
 def superseded_map(commits, ledger_shas):
@@ -146,11 +151,13 @@ def closure_missing(candidates, upstream_factory_files):
     return missing
 
 def load_ledger(path):
-    """读账本 → 已反哺 SHA 集合（短 sha 前缀匹配用）。文件不存在视为空。"""
+    """读账本 → 条目 dict 列表（sha 集合由调用方派生）。文件不存在视为空。
+    patch_id 持久化（PR#75 审查）：账本提交对象被 GC 后重算不可得，
+    账本是唯一可靠载体；旧条目无此字段 → 调用方退化为重算兜底。"""
     p = pathlib.Path(path)
     if not p.exists():
-        return set()
-    shas = set()
+        return []
+    entries = []
     for line in p.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
@@ -160,17 +167,28 @@ def load_ledger(path):
         except json.JSONDecodeError:
             continue  # 账本损坏行不阻断收集，保守跳过
         if "sha" in entry:
-            shas.add(entry["sha"])
-    return shas
+            entries.append(entry)
+    return entries
 
 
-def append_ledger(path, sha, subject, upstream_pr, repo):
-    """追加一条已反哺记录（jsonl，append-only）。"""
+def ledger_patch_ids(entries):
+    """账本条目 → patch-id 集。持久化值优先（对象被 GC 后重算不可得）；
+    旧条目无字段 → 对象仍在时重算兜底（与持久化等价）。"""
+    pids = {e["patch_id"] for e in entries if e.get("patch_id")}
+    pids |= {p for e in entries if not e.get("patch_id")
+             if (p := _patch_id(e["sha"])) is not None}
+    return pids
+
+
+def append_ledger(path, sha, subject, upstream_pr, repo, patch_id=None):
+    """追加一条已反哺记录（jsonl，append-only）。patch_id 可为 None
+    （空 diff/非资产提交——此类退化纯 SHA 匹配）。"""
     entry = {
         "sha": sha,
         "subject": subject,
         "repo": repo,
         "upstream_pr": upstream_pr,
+        "patch_id": patch_id,
     }
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
@@ -249,6 +267,22 @@ def _files_by_sha():
             files_by_sha.setdefault(sha, set()).update(files)
     return files_by_sha
 
+def _patch_id(sha):
+    """提交 → patch-id（--stable，跨 rebase/amend 内容不变即同 id）。
+    空 diff（纯 merge/空提交）返回 None——此类退化纯 SHA 匹配。
+    argv 直传不经 shell（PR#75 审查：注入面收口；--no-ext-diff 隔离
+    外部 diff 驱动配置，保住 --stable 的跨环境可比性）。"""
+    show = subprocess.run(
+        ["git", "show", "--format=", "--no-ext-diff", sha],
+        capture_output=True, text=True)
+    if show.returncode != 0:
+        return None
+    out = subprocess.run(
+        ["git", "patch-id", "--stable"],
+        input=show.stdout, capture_output=True, text=True).stdout.strip()
+    return out.split()[0] if out else None
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     here = pathlib.Path(__file__).parent
@@ -256,8 +290,15 @@ def main():
     commits = _git_log_commits()
     fbs = _files_by_sha()
     commits = [dict(c, files=fbs.get(c["sha"], ())) for c in commits]
-    ledger = load_ledger(ledger_path)
-    pending = collect_pending(commits, ledger)
+    entries = load_ledger(ledger_path)
+    ledger = {e["sha"] for e in entries}
+    # patch-id 只为触碰 feedable 资产的提交计算（候选判定必要条件，
+    # 全历史逐条子进程不可承受）；账本侧优先持久化值（PR#75 审查）
+    assets = feedable_assets(commits)
+    commits = [dict(c, patch_id=_patch_id(c["sha"]) if set(c.get("files", ())) & assets else None)
+               for c in commits]
+    ledger_pids = ledger_patch_ids(entries)
+    pending = collect_pending(commits, ledger, ledger_pids)
 
     if cmd == "pending":
         for c in pending:
@@ -306,7 +347,7 @@ def main():
         for arg in sys.argv[3:]:
             sha, subject = arg.split(":", 1)
             append_ledger(ledger_path, sha, subject, upstream_pr,
-                          "im47cn/awesome-rules")
+                          "im47cn/awesome-rules", patch_id=_patch_id(sha))
         print("账本已更新: %s" % ledger_path)
     else:
         print("用法: feedback.py pending|superseded|status|closure <upstream_wt>|"

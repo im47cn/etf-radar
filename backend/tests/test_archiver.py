@@ -42,6 +42,17 @@ def test_archive_copies_market_temperature_when_present() -> None:
         assert (root / 'snapshots' / '2026-06-05' / 'market_temperature.json').exists()
 
 
+def test_archive_copies_trading_when_present() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        _seed_latest(root)
+        (root / 'latest' / 'trading.json').write_text('{"candidates":[]}', encoding='utf-8')
+
+        archive_latest(root, date(2026, 6, 5))
+
+        assert (root / 'snapshots' / '2026-06-05' / 'trading.json').exists()
+
+
 def test_archive_handles_missing_files() -> None:
     """latest/ 部分文件缺失时不应抛错, 只复制存在的"""
     with tempfile.TemporaryDirectory() as d:

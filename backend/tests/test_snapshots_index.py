@@ -30,6 +30,22 @@ def test_build_index_returns_sorted_dates():
         assert idx['snapshots'][0]['themes_path'] == 'snapshots/2026-04-01/themes.json'
 
 
+def test_build_index_includes_trading_path():
+    """含 trading.json 的快照 entry 带 trading_path; 只有 themes.json 的快照无该键"""
+    with tempfile.TemporaryDirectory() as d:
+        data_root = Path(d)
+        snap_root = data_root / 'snapshots'
+        _touch_snapshot(snap_root, '2026-06-15')
+        (snap_root / '2026-06-15' / 'trading.json').write_text('{}', encoding='utf-8')
+        _touch_snapshot(snap_root, '2026-06-16')
+
+        idx = build_snapshots_index(data_root)
+        by_date = {s['date']: s for s in idx['snapshots']}
+
+        assert by_date['2026-06-15']['trading_path'] == 'snapshots/2026-06-15/trading.json'
+        assert 'trading_path' not in by_date['2026-06-16']
+
+
 def test_build_index_skips_invalid_dirs():
     """非日期格式的目录 / 缺 themes.json 的目录 应被跳过"""
     with tempfile.TemporaryDirectory() as d:

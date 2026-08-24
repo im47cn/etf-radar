@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-24T10:36:45.082812+08:00",
+  "generated_at": "2026-08-24T10:48:37.682173+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -160,16 +160,16 @@
     },
     {
       "theme_id": "cn_base_metals",
-      "signal": "resonance",
+      "signal": "transmission",
       "direction": "up",
       "direction_tier": "high",
       "trigger_cn_etf": "512400",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "resonance",
         "long": "transmission"
       },
-      "description": "美股有色金属 composite 80 中长期走强, 共振偏多（高置信）"
+      "description": "美股 composite 80 领先, A股尚未同步"
     },
     {
       "theme_id": "china_internet",
@@ -199,16 +199,16 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": "resonance",
+      "signal": null,
       "direction": "down",
       "direction_tier": "high",
-      "trigger_cn_etf": "512800",
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "resonance",
-        "long": "resonance"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股银行 composite 56 动量观察中, 共振偏空（高置信）"
+      "description": "美股银行 composite 56 动量观察中"
     },
     {
       "theme_id": "cn_insurance",
@@ -592,9 +592,9 @@
       "cn_code": "512400",
       "mapping_score": 49,
       "confidence": 60,
-      "signal": "resonance",
+      "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "resonance",
         "long": "transmission"
       }
@@ -628,10 +628,10 @@
       "cn_code": "512800",
       "mapping_score": 20,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "resonance",
+        "mid": null,
         "long": "resonance"
       }
     },

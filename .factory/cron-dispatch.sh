@@ -10,6 +10,7 @@ LOCK="${REPO}/.factory/locks/dispatch.lock"
 PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 cd "$REPO" || { echo "无法进入 ${REPO}" >&2; exit 2; }
 export PATH HOME="${HOME:?cron 环境未设置 HOME}"
+mkdir -p "${REPO}/.factory/locks"  # 净克隆首跑：目录 gitignored 不存在时 shlock 建锁 ENOENT 被误读为锁被持而静默退出（PR#79 审查）；下方日志重定向同依赖此目录
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 # 抢锁；持锁进程已死则清锁重试一次（防 stale lock 卡死调度）
 if ! /usr/bin/shlock -f "$LOCK" -p $$; then

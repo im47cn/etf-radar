@@ -98,6 +98,34 @@ def test_case_d_in_buy_zone_on_pool_day() -> None:
     assert o.entry == 10.2
     assert o.r_multiple == 1.6667      # (12.2-10.2)/(10.2-9.0)
 
+# --- case D2: 突破后不足 EXIT_HORIZON 根 → r=None (前瞻未到期), ret_5d 有值仍输出 ---
+
+def test_breakout_exit_not_matured_r_none() -> None:
+    dates = _dates('2026-01-05', 12)  # 入池 + 次根突破 + 后续仅 10 根
+    closes = [9.8, 10.6, 10.7, 10.8, 10.9, 11.0, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7]
+
+    o = evaluate_candidate(_cand(dates[0]), _bars(dates, closes))
+
+    assert o.status == 'broke_out'
+    assert o.event_date == dates[1] and o.entry == 10.6
+    assert o.r_multiple is None   # 突破日后不足 20 根 → 前瞻未到期
+    assert o.ret_5d == 0.0566     # 11.2/10.6-1
+    assert o.ret_20d is None
+
+
+# --- case D3: entry-stop <= 0 (风险定义失效) → r=None, 收益口径不受影响 ---
+
+def test_r_none_when_stop_not_below_entry() -> None:
+    dates = _dates('2026-01-05', 26)
+    closes = [9.8, 9.7, 9.75, 9.8, 9.85, 10.6] + [round(10.6 + 0.12 * (k - 5), 2) for k in range(6, 26)]
+
+    o = evaluate_candidate(_cand(dates[0], stop=10.6), _bars(dates, closes))
+
+    assert o.status == 'broke_out'
+    assert o.entry == 10.6
+    assert o.r_multiple is None   # entry-stop == 0 → 分母 <=0
+    assert o.ret_5d == 0.0566 and o.ret_20d == 0.2264
+
 
 # --- case E: 窗口未走满 (可用 bar 不足) → pending ---
 

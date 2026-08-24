@@ -17,6 +17,7 @@ def build_snapshots_index(data_root: Path) -> dict[str, Any]:
     """扫 data_root/snapshots/<YYYY-MM-DD>/ 目录, 返回索引 dict.
 
     只收录目录名匹配 YYYY-MM-DD 且包含 themes.json 的快照。
+    entry 的 trading_path 为条件键: 仅快照目录含 trading.json 时出现 (旧快照无此键)。
     """
     snap_root = data_root / 'snapshots'
     snapshots: list[dict[str, str]] = []
@@ -32,10 +33,13 @@ def build_snapshots_index(data_root: Path) -> dict[str, Any]:
                 continue
             if not (d / 'themes.json').exists():
                 continue
-            snapshots.append({
+            entry: dict[str, str] = {
                 'date': d.name,
                 'themes_path': f'snapshots/{d.name}/themes.json',
-            })
+            }
+            if (d / 'trading.json').exists():
+                entry['trading_path'] = f'snapshots/{d.name}/trading.json'
+            snapshots.append(entry)
 
     return {
         'schema_version': '1.0',

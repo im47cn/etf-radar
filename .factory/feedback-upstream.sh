@@ -244,6 +244,13 @@ PR_URL="$(gh pr create --repo "$UPSTREAM_REPO" --head "$BRANCH" \
   --title "factory: 反哺 etf-radar 工厂改进（${N_TOTAL} commits）" \
   --body-file "$PR_BODY")" || die "gh pr create 失败（分支已推送: ${PUSH_URL} ${BRANCH}）"
 say "✓ 上游 PR: $PR_URL"
+# PR 落定后立即删本地裸分支（远端 PR 分支不受影响）：上游 bare 仓本地分支
+# 不随 PR 合并自动消失，feedback-upstream 又只 push 不清理——攒下的死引用
+# 会污染 for-each-ref / 补基判断，还可能与下次同名分支撞车（2026-08-24
+# 清理时发现 20260822 两支残留实证）。失败仅告警：远端分支与 PR 已成立，
+# 本地引用只是缓存，残留可人工删。
+"${GITUP[@]}" branch -qD "$BRANCH" >/dev/null 2>&1 \
+  || say "⚠ 本地分支 $BRANCH 删除失败（远端 PR 不受影响，可人工清理）"
 
 # --- 9. 账本回写（本仓 .factory/feedback-log.jsonl；提交但不推送） ---
 PR_NUM="${PR_URL##*/}"

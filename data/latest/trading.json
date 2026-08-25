@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-24T10:46:07.560443+00:00",
+  "generated_at": "2026-08-25T10:20:20.020485+00:00",
   "environment": {
     "regime": "neutral",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           false
         ],
-        "close": 4563.127
+        "close": 4552.033
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 7717.085
+        "close": 7710.937
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 3431.885
+        "close": 3397.515
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-08-21",
+      "as_of": "2026-08-24",
       "stale": false,
-      "ma20_pct": 0.538,
-      "ma60_pct": 0.391,
-      "ma120_pct": 0.194
+      "ma20_pct": 0.423,
+      "ma60_pct": 0.362,
+      "ma120_pct": 0.176
     },
     "source_status": {
       "indices": "ok",
@@ -72,39 +72,16 @@
   },
   "candidates": [
     {
-      "code": "601985",
-      "name": "中国核电",
-      "composite_score": 5.5,
-      "stage": 2,
-      "template_pass": 6,
-      "rs_pct": 76.1,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 5.4,
-        "quality": 0.227,
-        "volume_dryup": true
-      },
-      "pivot": 9.13,
-      "buy_zone_low": 9.13,
-      "buy_zone_high": 9.5865,
-      "stop": 8.71,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 0.69,
-      "board": "main",
-      "vol_forecast_ann": 0.1639
-    },
-    {
       "code": "600236",
       "name": "桂冠电力",
-      "composite_score": 4.9,
+      "composite_score": 4.7,
       "stage": 2,
       "template_pass": 6,
-      "rs_pct": 40.2,
+      "rs_pct": 29.1,
       "vcp": {
         "contractions": 3,
         "depth_pct": 28.3,
-        "quality": 0.37,
+        "quality": 0.3834,
         "volume_dryup": true
       },
       "pivot": 12.24,
@@ -113,16 +90,16 @@
       "stop": 11.2608,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -0.1,
+      "chg_pct": 0.0,
       "board": "main",
       "vol_forecast_ann": null
     }
   ],
   "universe_stats": {
-    "total": 5548,
-    "tradable": 2892,
-    "stage2": 538,
-    "vcp": 2,
-    "top": 2
+    "total": 5549,
+    "tradable": 2914,
+    "stage2": 567,
+    "vcp": 1,
+    "top": 1
   }
 }

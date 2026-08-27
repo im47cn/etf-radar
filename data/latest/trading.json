@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-26T10:36:21.442510+00:00",
+  "generated_at": "2026-08-27T20:19:16.463796+00:00",
   "environment": {
     "regime": "neutral",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           false
         ],
-        "close": 4590.794
+        "close": 4630.277
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 7770.535
+        "close": 7946.326
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 3414.883
+        "close": 3473.355
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-08-25",
-      "stale": false,
-      "ma20_pct": 0.534,
-      "ma60_pct": 0.456,
-      "ma120_pct": 0.202
+      "as_of": "2026-08-26",
+      "stale": true,
+      "ma20_pct": 0.539,
+      "ma60_pct": 0.482,
+      "ma120_pct": 0.207
     },
     "source_status": {
       "indices": "ok",
@@ -72,33 +72,33 @@
   },
   "candidates": [
     {
-      "code": "600236",
-      "name": "桂冠电力",
-      "composite_score": 5.0,
+      "code": "601088",
+      "name": "中国神华",
+      "composite_score": 6.0,
       "stage": 2,
       "template_pass": 6,
-      "rs_pct": 40.4,
+      "rs_pct": 72.8,
       "vcp": {
-        "contractions": 3,
-        "depth_pct": 28.3,
-        "quality": 0.3877,
+        "contractions": 2,
+        "depth_pct": 23.1,
+        "quality": 0.4112,
         "volume_dryup": true
       },
-      "pivot": 12.24,
-      "buy_zone_low": 12.24,
-      "buy_zone_high": 12.852,
-      "stop": 11.2608,
+      "pivot": 49.52,
+      "buy_zone_low": 49.52,
+      "buy_zone_high": 51.996,
+      "stop": 45.5584,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -0.51,
+      "chg_pct": 1.14,
       "board": "main",
-      "vol_forecast_ann": null
+      "vol_forecast_ann": 0.2572
     }
   ],
   "universe_stats": {
     "total": 5549,
     "tradable": 2921,
-    "stage2": 551,
+    "stage2": 615,
     "vcp": 1,
     "top": 1
   }

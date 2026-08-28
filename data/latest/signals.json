@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-28T20:44:03.255909+08:00",
+  "generated_at": "2026-08-28T21:19:01.632346+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -167,7 +167,7 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "divergence"
+        "long": "transmission"
       },
       "description": "美股有色金属 composite 78 动量观察中, 共振偏多（高置信）"
     },
@@ -446,25 +446,25 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "159995",
-      "mapping_score": 34,
+      "mapping_score": 45,
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
-        "long": "transmission"
+        "long": "resonance"
       }
     },
     {
       "theme_id": "semiconductor",
       "cn_code": "159516",
-      "mapping_score": 12,
+      "mapping_score": 27,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": "resonance",
-        "mid": null,
-        "long": "transmission"
+        "short": "transmission",
+        "mid": "transmission",
+        "long": "resonance"
       }
     },
     {
@@ -534,7 +534,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": "divergence"
       }
@@ -558,7 +558,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -596,7 +596,7 @@
       "votes": {
         "short": "resonance",
         "mid": "resonance",
-        "long": "divergence"
+        "long": "transmission"
       }
     },
     {
@@ -724,10 +724,10 @@
       "cn_code": "159928",
       "mapping_score": 0,
       "confidence": 60,
-      "signal": "divergence",
+      "signal": null,
       "votes": {
-        "short": null,
-        "mid": "divergence",
+        "short": "transmission",
+        "mid": null,
         "long": "divergence"
       }
     },
@@ -739,7 +739,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
+        "mid": "resonance",
         "long": "divergence"
       }
     },

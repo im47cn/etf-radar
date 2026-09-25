@@ -1,24 +1,24 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-08-27T20:19:16.463796+00:00",
+  "generated_at": "2026-09-25T05:54:56.315972+00:00",
   "environment": {
     "regime": "neutral",
     "indices": [
       {
         "code": "000300",
         "name": "沪深300",
-        "template_pass": 4,
+        "template_pass": 3,
         "criteria": [
           false,
           true,
-          true,
-          true,
+          false,
+          false,
           false,
           true,
           false,
-          false
+          true
         ],
-        "close": 4630.277
+        "close": 4439.144
       },
       {
         "code": "000905",
@@ -34,32 +34,32 @@
           false,
           true
         ],
-        "close": 7946.326
+        "close": 7624.066
       },
       {
         "code": "399006",
         "name": "创业板指",
-        "template_pass": 6,
+        "template_pass": 4,
         "criteria": [
           false,
           true,
           true,
-          true,
-          true,
+          false,
+          false,
           true,
           false,
           true
         ],
-        "close": 3473.355
+        "close": 3288.948
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-08-26",
+      "as_of": "2026-08-27",
       "stale": true,
-      "ma20_pct": 0.539,
-      "ma60_pct": 0.482,
-      "ma120_pct": 0.207
+      "ma20_pct": 0.582,
+      "ma60_pct": 0.512,
+      "ma120_pct": 0.24
     },
     "source_status": {
       "indices": "ok",
@@ -72,34 +72,57 @@
   },
   "candidates": [
     {
-      "code": "601088",
-      "name": "中国神华",
-      "composite_score": 6.0,
+      "code": "600566",
+      "name": "济川药业",
+      "composite_score": 5.9,
       "stage": 2,
       "template_pass": 6,
-      "rs_pct": 72.8,
+      "rs_pct": 74.7,
       "vcp": {
         "contractions": 2,
-        "depth_pct": 23.1,
-        "quality": 0.4112,
+        "depth_pct": 12.6,
+        "quality": 0.3399,
         "volume_dryup": true
       },
-      "pivot": 49.52,
-      "buy_zone_low": 49.52,
-      "buy_zone_high": 51.996,
-      "stop": 45.5584,
+      "pivot": 27.47,
+      "buy_zone_low": 27.47,
+      "buy_zone_high": 28.8435,
+      "stop": 25.2724,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": 1.14,
+      "chg_pct": -0.65,
       "board": "main",
-      "vol_forecast_ann": 0.2572
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600236",
+      "name": "桂冠电力",
+      "composite_score": 5.6,
+      "stage": 2,
+      "template_pass": 6,
+      "rs_pct": 51.3,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 23.6,
+        "quality": 0.4575,
+        "volume_dryup": true
+      },
+      "pivot": 12.09,
+      "buy_zone_low": 12.09,
+      "buy_zone_high": 12.6945,
+      "stop": 11.1228,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.54,
+      "board": "main",
+      "vol_forecast_ann": null
     }
   ],
   "universe_stats": {
-    "total": 5549,
-    "tradable": 2921,
-    "stage2": 615,
-    "vcp": 1,
-    "top": 1
+    "total": 5568,
+    "tradable": 2879,
+    "stage2": 600,
+    "vcp": 2,
+    "top": 2
   }
 }

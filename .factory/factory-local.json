@@ -56,6 +56,20 @@
         "name": "frontend 全量门",
         "tag": "frontend",
         "shell": "scripts/run_tests.sh --segment frontend"
+      },
+      {
+        "name": "factory 工具链测试",
+        "tag": "factory-tests",
+        "cwd": ".factory/tests",
+        "argv": [
+          "$PY",
+          "-m",
+          "pytest",
+          ".",
+          "-o",
+          "addopts=",
+          "-q"
+        ]
       }
     ]
   }

@@ -12,8 +12,10 @@
   告警 single-writer mode）——本仓只在一台机器跑工厂，无需仲裁层。
 - **Sourcery**：`tools/git/lefthook/sourcery-gate.sh` + `.sourcery.yaml`
   已移植（opt-in 闸；规则豁免清单本地化，去上游 `_vendored` 项）。
-- **并行门**：`parallel_gate` 两段（backend/frontend），段体收敛在
-  `scripts/run_tests.sh --segment`（单一真相源，JSON 只登记编排）。
+- **并行门**：`parallel_gate` 三段（backend/frontend/factory-tests——
+  .factory/tests 纳入全量门，pre-push 同口径条件触发），backend/frontend
+  段体收敛在 `scripts/run_tests.sh --segment`（单一真相源，JSON 只登记
+  编排）。
 - **日回归**：未启用（见 S2 节注记）；数据面新鲜度由仓库自有
   GitHub Actions health_monitor 生态负责。
 - **上游同步**：full 面经 `sync-from-upstream.sh --apply` 追平，锚点
@@ -537,7 +539,8 @@ bash .factory/feedback-upstream.sh             # 完整管线：pick→AI适配�
    diff-cover / tsc -b + eslint + vitest --coverage，与 pre-push、CI 同口径），
    `--evidence backend|frontend` 证据段模式（holdout 证据源）；2026-09-27
    起 backend/frontend 两段经并行门 fan-out。mutations kill rate 已在本仓
-   重证：6/6 拦截 + 1/1 负例放行（evidence-stamp 周界指纹绑定）。
+   重证：7/7 拦截（含 B-104 tests 门）+ 1/1 负例放行（evidence-stamp
+   周界指纹绑定）。
 4. **增量维护**：`sync-from-upstream.sh --apply` 追平 full 面（本文档头部
    锚点）；仓特定缺口（如本仓已采用的 sourcery 闸）手工补。
 

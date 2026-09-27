@@ -27,9 +27,10 @@ cd "$REPO"
 # 仅当本地领先 compare 的 commit 含 .py/.ts 变更时才跑对应 coverage (省时)
 PY=$(git diff --name-only "$COMPARE"...HEAD 2>/dev/null | grep '\.py$' || true)
 TS=$(git diff --name-only "$COMPARE"...HEAD 2>/dev/null | grep -E '\.(ts|tsx)$' || true)
+FACTORY=$(git diff --name-only "$COMPARE"...HEAD 2>/dev/null | grep '^\.factory/' || true)
 
-if [ -z "$PY" ] && [ -z "$TS" ]; then
-  echo "[diff-cover] 无 .py/.ts 变更, 跳过"
+if [ -z "$PY" ] && [ -z "$TS" ] && [ -z "$FACTORY" ]; then
+  echo "[diff-cover] 无 .py/.ts/.factory 变更, 跳过"
   exit 0
 fi
 
@@ -58,4 +59,10 @@ if [ -n "$TS" ]; then
   (cd backend && uv run --all-extras diff-cover "$REPO/frontend/coverage/lcov.info" --compare-branch="$COMPARE" --fail-under="$FAIL_UNDER")
 fi
 
-echo "✓ diff-cover 通过 (变更行覆盖 ≥${FAIL_UNDER}%)"
+# 工厂工具链测试（与 run_tests.sh factory-tests 段同口径；.factory 变更才跑）
+if [ -n "$FACTORY" ]; then
+  echo "▶ factory: 工具链测试 (.factory/tests)"
+  (cd backend && uv run --all-extras python -m pytest "$REPO/.factory/tests" -o addopts= -q)
+fi
+
+echo "✓ pre-push 全量门通过 (mypy+ruff+pytest+tsc+eslint+vitest+diff-cover${FACTORY:+ +factory-tests})"

@@ -64,6 +64,15 @@
       "replace": "# Changelog（工厂参与维护）",
       "gate": "guard",
       "expect_block": false
+    },
+    {
+      "id": "B-104",
+      "description": "行为破坏：评论出口防注入中和失效——[factory:rejected] 标记裸输出（TestNeutralizeMarker 红，上游 PR #20 回归锚点；本仓经 factory-tests 段拦截）",
+      "target": ".factory/factory_lib.py",
+      "find": "    while \"[factory:rejected]\" in text:",
+      "replace": "    while False:",
+      "gate": "tests",
+      "expect_block": true
     }
   ]
 }

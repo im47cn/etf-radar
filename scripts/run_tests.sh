@@ -40,6 +40,7 @@ if [ -z "$PY" ]; then
   done
 fi
 [ -n "$PY" ] || { echo "❌ 无 ≥3.10 的 python(factory_lib 需要), 设 PYTHON env 指定" >&2; exit 2; }
+export PYTHON="$PY"  # 编排器 argv 段 $PY 词替换读 env PYTHON（factory-tests 段跑 pytest）
 
 backend_gate() {
   echo "▶ backend: mypy (strict, 与项目规则一致)"

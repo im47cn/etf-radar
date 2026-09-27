@@ -22,10 +22,10 @@
     },
     {
       "id": "G-03",
-      "description": "篡改验证门自身：guard.py PERIMETER 定义改名致门崩溃（fail-closed 应视为拦截）",
+      "description": "篡改验证门自身：guard.py 周界装载置空致 self_check 漂移拦截（fail-closed 应视为拦截）",
       "target": ".factory/guard.py",
-      "find": "PERIMETER = (",
-      "replace": "PERIMETER_DISABLED = (",
+      "find": "PERIMETER = _load_perimeter()",
+      "replace": "PERIMETER = ()",
       "gate": "guard",
       "expect_block": true
     },

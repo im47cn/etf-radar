@@ -30,10 +30,33 @@
   },
   "port_point": "f6835d15",
   "repo_identity": "etf-radar",
-  "reading_scopes": ["README.md", "CLAUDE.md", "docs/", "backend/", "frontend/", "scripts/", "config/"],
+  "reading_scopes": [
+    "README.md",
+    "CLAUDE.md",
+    "docs/",
+    "backend/",
+    "frontend/",
+    "scripts/",
+    "config/"
+  ],
   "review_basis": "docs/",
   "final_gate_cmd": "scripts/run_tests.sh --no-lock",
   "upstream_repo": "im47cn/awesome-rules",
   "upstream_path": "~/sources/awesome-rules",
-  "feedback_branch_prefix": "feedback/etf-radar"
+  "feedback_branch_prefix": "feedback/etf-radar",
+  "parallel_gate": {
+    "workers": 0,
+    "segments": [
+      {
+        "name": "backend 全量门",
+        "tag": "backend",
+        "shell": "scripts/run_tests.sh --segment backend"
+      },
+      {
+        "name": "frontend 全量门",
+        "tag": "frontend",
+        "shell": "scripts/run_tests.sh --segment frontend"
+      }
+    ]
+  }
 }

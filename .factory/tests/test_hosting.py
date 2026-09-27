@@ -1021,16 +1021,22 @@ class TestRepoSplitRouting:
     「按 cwd 检测选错适配器」与「目录路径误当 slug 进 gh --repo」的
     共同单点。"""
 
-    def test_split_three_shapes(self, tmp_path):
+    def test_split_three_shapes(self, tmp_path, monkeypatch):
         d = str(tmp_path)
         assert hosting._repo_split(d) == (d, None)
+        # slug 形态需 FACTORY_HOSTING 锚定（#134）：未设即拒收
+        monkeypatch.delenv("FACTORY_HOSTING", raising=False)
+        with pytest.raises(hosting.HostingError, match="issue #134"):
+            hosting._repo_split("up/stream")
+        monkeypatch.setenv("FACTORY_HOSTING", "github")
         assert hosting._repo_split("up/stream") == (".", "up/stream")
         assert hosting._repo_split(None) == (".", None)
 
     def test_main_slug_repo_detects_dot_passes_slug(self, monkeypatch):
-        """slug 形态：平台检测落在 cwd（"."）；pr view 的 --repo 原样
-        进 ops（gh --repo up/stream 语义）。"""
+        """slug 形态（FACTORY_HOSTING 已锚定）：平台检测落在 cwd（"."）；
+        pr view 的 --repo 原样进 ops（gh --repo up/stream 语义）。"""
         seen = {}
+        monkeypatch.setenv("FACTORY_HOSTING", "github")
 
         class _Ad:
             def pr_view(self, p, repo=None):
@@ -1041,6 +1047,17 @@ class TestRepoSplitRouting:
             seen.__setitem__("local", local) or _Ad()))
         hosting.main(["pr", "view", "1", "--repo", "up/stream"])
         assert seen == {"local": ".", "repo": "up/stream"}
+
+    def test_main_slug_repo_without_hosting_fail_closed(self, monkeypatch, capsys):
+        """slug 形态且 FACTORY_HOSTING 未设：fail-closed exit 2（#134），
+        不得静默按 cwd remote 选适配器（Codeup 仓会被误判 GitHub）。"""
+        monkeypatch.delenv("FACTORY_HOSTING", raising=False)
+        monkeypatch.setattr(hosting, "current_adapter",
+                            lambda local: pytest.fail("不应走到适配器构造"))
+        with pytest.raises(SystemExit) as e:
+            hosting.main(["pr", "view", "1", "--repo", "up/stream"])
+        assert e.value.code == 2
+        assert "issue #134" in capsys.readouterr().err
 
     def test_main_dir_repo_detects_dir_ops_none(self, monkeypatch, tmp_path):
         """目录形态：检测用目录真实路径（远端解析/平台选择以其为准）；

@@ -41,6 +41,8 @@ Codeup 能力边界（ADR-008 证据，勿删）：
   (c) 无标签事件时间线 → label history 不可表达。fail-closed exit 2。
 
 CLI（bash 侧调用面；py 侧 import current_adapter）：
+  --repo R：仓库本地路径（目录形态，平台按该目录 remote 自解析）；slug
+  形态（owner/repo）须显式 FACTORY_HOSTING 锚定平台，否则 fail-closed（#134）
   hosting.py auth ok
   hosting.py label ensure <name> <color> <desc>
   hosting.py label history <pr>
@@ -1254,13 +1256,23 @@ def _repo_split(raw):
     - 本地目录形态（存在，含 "."）：探测/远端解析用真实路径（该目录
       remote 选平台、解析 slug），ops 收 slug=None——由目录 remote
       自解析（java#29 跨仓调用的本意；目录路径绝不进 gh --repo）。
-    - owner/repo slug 形态：探测回退 "."（按 cwd remote 选平台），
-      slug 原样透传给 ops（gh --repo <slug>）。
+    - owner/repo slug 形态：无 host 信息，平台检测只能落在 cwd remote——
+      cwd 与目标仓不一致时 Codeup 会被误判 GitHub（issue #134）。仅当
+      FACTORY_HOSTING 显式锚定平台时放行（slug 原样进 ops），否则
+      fail-closed 拒收。
     未传 --repo → (".", None)。
     """
     if raw is None:
         return ".", None
-    return (raw, None) if os.path.isdir(raw) else (".", raw)
+    if os.path.isdir(raw):
+        return raw, None
+    # 实时读 env（与 _detect_hosting 同、与模块常量 FACTORY_HOSTING 异）：
+    # monkeypatch 无需 reload 即可测
+    if not os.environ.get("FACTORY_HOSTING"):
+        raise HostingError(
+            "--repo slug 形态（owner/repo）无法判定托管平台（issue #134）："
+            "请传仓库本地路径，或显式设置 FACTORY_HOSTING 后再用 slug", code=2)
+    return ".", raw
 
 
 # ---------------------------------------------------------------------------

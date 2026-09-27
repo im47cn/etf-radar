@@ -26,7 +26,15 @@ HOST="python3 ${REPO}/.factory/hosting.py"   # 托管平台抽象（ADR-008）�
 DIR="${REPO}/.factory/artifacts/issue-${ISSUE}"
 BRANCH="factory/issue-${ISSUE}"
 WT="${REPO}/.factory/worktrees/issue-${ISSUE}"   # 链独立 worktree（多驱动隔离）
-BASE_BRANCH="${FACTORY_BASE_BRANCH:-main}"   # 两级回退：env → main（PR #61 Sourcery 意图；hosting 形态平台配置走 env，forge.json 中间级随 forge 退役）
+# 基线分支两级解析（issue #133）：env 显式 → origin 实际默认分支；两者皆无
+# 即 fail-closed 拒猜——固定回退 main 会绕过 hosting.py Codeup 拒猜不变量
+# （targetBranch 因仓而异，master 仓静默落错基线）。PR #61 的 env 级保留。
+# 分步而非 $(...) 内嵌：set -e 下替换失败会带 git rc 直接终止，|| 兜底接不住。
+BASE_BRANCH="${FACTORY_BASE_BRANCH:-}"
+if [ -z "${BASE_BRANCH}" ]; then
+  BASE_BRANCH="$(git -C "${REPO}" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||' || true)"
+fi
+[ -n "${BASE_BRANCH}" ] || { echo "[base] FACTORY_BASE_BRANCH 未配置且 origin/HEAD 默认分支不可读：拒猜基线，fail-closed 终止（issue #133）" >&2; exit 2; }
 # 链副作用共享库：issue 评论唯一出口 + 拒绝单一动作（契约见库头注释）
 source "${REPO}/.factory/factory-lib.sh"
 node_timeout() { python3 "${REPO}/.factory/factory_lib.py" timeout "$1"; }  # 分级预算：裁决器5m/工作节点15m/implement 30m

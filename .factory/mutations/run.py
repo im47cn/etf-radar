@@ -6,9 +6,9 @@
 
 两种门：
 - guard（篡改类）：guard.py --files 单文件，秒级。
-- tests（行为破坏类）：run_tests.sh --no-lock 全量测试门（8 套件 +
-  badcase 双通道；--no-lock 跳过 plugin_lock/md_link_check——它们是
-  blob 锁与链接门，不消费被注入的行为面），单条分钟级，输出带耗时。
+- tests（行为破坏类）：final_gate_cmd 全量测试门（各仓自定；本仓
+  多套件 + badcase 双通道，blob 锁/链接门不消费被注入的行为面故以
+  --no-lock 形参跳过），单条分钟级，输出带耗时。
 - docstring（文档契约类）：factory-local.json docstring_gate_cmd（可选门，
   缺省不启用；未配置时 docstring 缺陷 SKIP，不构成全绿）——删除公开/内部
   符号 docstring → 门应拦截（对外 API 100% + 内部 ≥80%），单条秒级。
@@ -244,7 +244,7 @@ def tracked_and_dirty(rel: str) -> bool:
 def run_gate(gate: str, target: str) -> int | None:
     """跑门返回退出码；超时返回 None（无效运行，见 judge）。
 
-    超时杀**整个进程组**（start_new_session + killpg）：run_tests.sh 会
+    超时杀**整个进程组**（start_new_session + killpg）：全量门会
     派生 pytest 孙进程，只杀门直子会留下孤儿继续读注入中的 target
     ——finally 还原字节与孤儿运行并发，污染后续缺陷轮（PR #33 审查）。
     """

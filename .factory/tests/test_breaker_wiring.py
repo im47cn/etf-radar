@@ -88,6 +88,9 @@ def _run(cmd: list[str], repo: Path, tmp_path: Path, *, with_stubs: bool,
     env = {"PATH": path, "HOME": os.environ.get("HOME", "/tmp"),
            "GH_REPO": "sandbox/repo", "SENTINEL_MARK": str(tmp_path / "sentinel"),
            "STUB_CALLS": str(tmp_path / "calls"),
+           # 沙箱仓无 origin remote，fix-issue 基线拒猜 fail-closed（#133）
+           # 会在熔断接线前拦截——显式注入 env 级基线，保持测试聚焦接线序
+           "FACTORY_BASE_BRANCH": "main",
            "GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_SYSTEM": "/dev/null"}
     # TZ 透传：_e() 用本进程 date.today() 写台账，breaker 子进程用其自身
     # date.today() 判「今日」——两边时区不一致时（本机 shell TZ=UTC 而系统

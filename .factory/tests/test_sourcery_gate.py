@@ -27,8 +27,18 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 FACTORY = Path(__file__).resolve().parents[1]          # .factory/
 GATE = FACTORY.parent / "tools/git/lefthook/sourcery-gate.sh"
+
+# 仓侧闸脚本在 .factory 周界外，DISTRIBUTION.json 无法分发——未采用
+# tools/git/lefthook 布局的下游仓整文件缺失，15 用例永红（2026-09-27
+# etf-radar 追平实证）。opt-in 闸本就是仓侧选择，缺脚本即跳过。
+pytestmark = pytest.mark.skipif(
+    not GATE.exists(),
+    reason="仓侧 opt-in 闸脚本缺失（tools/git/lefthook 布局未采用），跳过",
+)
 
 _SOURCERY_STUB = """#!/bin/sh
 echo "argc=$#" >> "$STUB_LOG"

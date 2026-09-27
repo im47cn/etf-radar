@@ -249,6 +249,13 @@ const HeroLogin = ({ copy }: { copy: GatedPage }) => {
     setMsg(error ? `失败：${error}` : '✓ 登录链接已发送，请检查邮箱（含垃圾邮件）');
   };
 
+  // OAuth 按钮的 error 也走 msg 通道: 否则 provider 未配置/redirect 被拒时静默无反馈
+  const handleOAuth = async (signIn: () => Promise<{ error: string | null }>) => {
+    setMsg(null);
+    const { error } = await signIn();
+    if (error) setMsg(`失败：${error}`);
+  };
+
   return (
     <Hero
       copy={copy}
@@ -275,13 +282,13 @@ const HeroLogin = ({ copy }: { copy: GatedPage }) => {
           <div className="text-center text-gray-400 my-2 text-xs">— 或 —</div>
           <div className="flex flex-col sm:flex-row gap-2">
             <button
-              onClick={signInWithGoogle}
+              onClick={() => handleOAuth(signInWithGoogle)}
               className="flex-1 px-4 py-2 border rounded text-sm hover:bg-gray-50"
             >
               使用 Google 登录
             </button>
             <button
-              onClick={signInWithGithub}
+              onClick={() => handleOAuth(signInWithGithub)}
               className="flex-1 px-4 py-2 border rounded text-sm hover:bg-gray-50"
             >
               使用 GitHub 登录

@@ -110,6 +110,38 @@ describe('FeatureGate 登录交互', () => {
     fireEvent.click(screen.getByRole('button', { name: /发送登录链接/ }));
     await vi.waitFor(() => expect(signInWithMagicLink).toHaveBeenCalledWith('test@example.com'));
   });
+
+  it('OAuth 登录失败时展示错误（不静默）', async () => {
+    vi.mocked(useSubscription).mockReturnValue({ state: 'non-member' } as never);
+    const signInWithGithub = vi.fn().mockResolvedValue({ error: null });
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider
+          value={
+            {
+              status: 'anonymous',
+              user: null,
+              signInWithMagicLink: vi.fn(),
+              signInWithGoogle: vi.fn().mockResolvedValue({ error: 'provider is not enabled' }),
+              signInWithGithub,
+            } as never
+          }
+        >
+          <FeatureGate copy="evidence" required="member">
+            <div>protected</div>
+          </FeatureGate>
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Google/ }));
+    await vi.waitFor(() =>
+      expect(screen.getByText(/失败：provider is not enabled/)).toBeInTheDocument(),
+    );
+    // GitHub 路径成功时不渲染错误
+    fireEvent.click(screen.getByRole('button', { name: /GitHub/ }));
+    await vi.waitFor(() => expect(signInWithGithub).toHaveBeenCalled());
+    expect(screen.queryByText(/^失败：/)).toBeNull();
+  });
 });
 
 describe('GATE_COPY', () => {

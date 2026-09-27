@@ -1,0 +1,32 @@
+# Sourcery 规则保留清单（显式化"评论清零"的边界；自 awesome-rules 移植，
+# .factory 工具链同步语义见 .factory/sync-from-upstream.sh Sourcery 回归闸）。
+# no-loop-in-tests / no-conditionals-in-tests —— 测试内循环/条件断言是惯用法，保留。
+# low-code-quality —— 长 main 顺序流程的聚合标签，保留。
+version: '1'
+
+ignore:
+- .git
+- env
+- .env
+- .tox
+- node_modules
+- vendor
+- venv
+- .venv
+- dist
+- target
+- coverage
+- StrykerOutput
+
+rule_settings:
+  enable:
+  - default
+  disable:
+  - no-loop-in-tests
+  - no-conditionals-in-tests
+  - low-code-quality
+  - dont-import-test-modules
+  rule_types:
+  - refactoring
+  - suggestion
+  - comment

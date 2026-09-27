@@ -2,26 +2,26 @@
 
 meta-test（test_table_full_coverage）强制 TRANSITIONS 每条边都有对应
 场景 fixture——新增转移漏写场景直接红，这是"转移实现一半"的结构性防御。
-运行：python3 -m pytest .factory/test_state.py -o addopts= -q
+运行：python3 -m pytest .factory/tests/test_state.py -o addopts= -q
+（.factory 目录经 tests/conftest.py 注入 sys.path，测试不自带 path hack）
 """
 import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent))
-import state  # noqa: E402
+import state  # noqa: E402  (conftest 已注入 .factory)
 
 F = state.plan_phase  # (issue, pr, events, current_pr_labels?) -> (phase, ops)
 
 
-def _issue(labels=(), state_="OPEN", comments=()):
-    return {"state": state_, "labels": [{"name": n} for n in labels],
+def _issue(labels=(), state_="open", comments=()):
+    return {"state": state_, "labels": list(labels),
             "comments": [{"body": b} for b in comments]}
 
 
-def _pr(decision=None, labels=(), body="Closes #9", state_="OPEN"):
-    return {"state": state_, "reviewDecision": decision, "body": body,
-            "labels": [{"name": n} for n in labels]}
+def _pr(decision=None, labels=(), body="Closes #9", state_="open"):
+    return {"state": state_, "review": decision or "pending", "body": body,
+            "labels": list(labels)}
 
 
 def _ops_set(ops):
@@ -33,6 +33,8 @@ SCENARIOS = {
     "triage_start": (_issue(["factory:triaging"]), None, None),
     "dispatch_claim": (_issue(["factory:accepted"]), None, None),   # claim 属 dispatcher
     "chain_fail": (_issue([]), None, None),                          # trap 清理后零标签
+    # R4 熔断（exit 5）：链死前命令式落标 needs-human（breaker_tripped 边）
+    "breaker_tripped": (_issue(["factory:needs-human"]), None, None),
     # rejected：链标记评论推导，清一切残留
     "triage_reject": (_issue(["factory:triaging"], comments=["[factory:rejected] 理由"]), None, None),
     # PR 打开 → in-review/needs-review（pr_open）
@@ -40,23 +42,24 @@ SCENARIOS = {
     "triage_accept": (_issue(["factory:in-review"]), _pr(), None),  # 稳态：链已过 triage+PR
     # 打回：needs-fix（第 1 轮）
     "changes_requested": (_issue(["factory:in-review"]),
-                          _pr("CHANGES_REQUESTED", ["factory:needs-review"]),
-                          [{"event": "labeled", "label": {"name": "factory:needs-fix"}}]),
+                          _pr("changes_requested", ["factory:needs-review"]),
+                          [{"op": "add", "label": "factory:needs-fix"}]),
     # 重派 = dispatcher 行为，sync 只确认 needs-fix 稳态
     "redispatch": (_issue(["factory:in-progress"]),
-                   _pr("CHANGES_REQUESTED", ["factory:needs-fix"]), None),
+                   _pr("changes_requested", ["factory:needs-fix"]), None),
     # 轮次耗尽 → needs-human
     "rounds_exhausted": (_issue(["factory:in-review"]),
-                         _pr("CHANGES_REQUESTED", ["factory:needs-fix"]),
-                         [{"event": "labeled", "label": {"name": "factory:needs-fix"}}] * 2),
+                         _pr("changes_requested", ["factory:needs-fix"]),
+                         [{"op": "add", "label": "factory:needs-fix"}] * 2),
     # 批准 → approved（merge 是 dispatcher 的 A5 门内行为）
     "approved": (_issue(["factory:in-review"]),
-                 _pr("APPROVED", ["factory:needs-review"]), None),
+                 _pr("approved", ["factory:needs-review"]), None),
     # auto_merge / human_takeover 是动作不是标签态；由 MERGED(=closed) 与人工
     # 手工操作表达，这里覆盖 closed 与 stale-PR 清理两面
-    "auto_merge": (_issue(["factory:in-review"], state_="CLOSED"), _pr(state_="MERGED"), None),
+    "auto_merge": (_issue(["factory:in-review"], state_="closed"), _pr(state_="merged"), None),
     "human_takeover": (_issue(["factory:in-review"]),
-                       _pr("CHANGES_REQUESTED", ["factory:needs-review", "factory:approved"]),
+                       _pr("changes_requested",
+                           ["factory:needs-review", "factory:approved"]),
                        None),  # 陈旧 approved 残留必须被清
 }
 
@@ -66,6 +69,7 @@ def test_phases():
         "triage_start": "labeled:['factory:triaging']",
         "dispatch_claim": "labeled:['factory:accepted']",
         "chain_fail": "idle",
+        "breaker_tripped": "idle",   # needs-human 非锁/队列，sync 无事可做（ops 钉死在专项测试）
         "triage_reject": "rejected",
         "pr_open": "in-review",
         "triage_accept": "in-review",
@@ -81,7 +85,7 @@ def test_phases():
         assert phase == expect[sid], f"{sid}: {phase!r} != {expect[sid]!r}"
 
     # 真实形态回归（#3）：rejected 标签 + 标记居中评论，且 issue 已人工关闭
-    issue3 = _issue(["factory:rejected"], state_="CLOSED",
+    issue3 = _issue(["factory:rejected"], state_="closed",
                     comments=["## 处置通报\n\n[factory:rejected] 钓鱼探针"])
     phase, ops = F(issue3, None, None)
     assert phase == "rejected" and ops == []
@@ -99,11 +103,11 @@ def test_ops_invariants():
 
 def test_closed_cleanup():
     """真实形态回归（#2）：merged 关闭后清流转标签，rejected 保留。"""
-    issue = _issue(["factory:in-review", "factory:accepted"], state_="CLOSED")
+    issue = _issue(["factory:in-review", "factory:accepted"], state_="closed")
     phase, ops = F(issue, None, None)
     assert phase == "closed"
     assert _ops_set(ops) == {("remove", "factory:in-review"), ("remove", "factory:accepted")}
-    rej = _issue(["factory:rejected"], state_="CLOSED")
+    rej = _issue(["factory:rejected"], state_="closed")
     assert F(rej, None, None) == ("closed", [])
 
 
@@ -122,11 +126,18 @@ def test_rounds_boundary():
     必须移除 needs-fix（否则标签滞留、事件不再触发、计数冻结）。
     MAX=2：第 1/2 次打回可修，第 3 次起 needs-human。"""
     issue = _issue(["factory:in-review"])
-    pr = _pr("CHANGES_REQUESTED", ["factory:needs-review"])
+    pr = _pr("changes_requested", ["factory:needs-review"])
     for n, want in [(0, "needs-fix"), (1, "needs-fix"), (2, "needs-human"), (9, "needs-human")]:
-        events = [{"event": "labeled", "label": {"name": "factory:needs-fix"}}] * n
+        events = [{"op": "add", "label": "factory:needs-fix"}] * n
         phase, _ = F(issue, pr, events)
         assert phase == want, f"rounds={n}: {phase} != {want}"
+
+def test_breaker_needs_human_stray_not_cleared():
+    """breaker_tripped 行为面：无 PR + issue 带 needs-human（链 exit 5 前
+    命令式落标）→ sync ops 为空。无 PR 分支只认 LOCKS|QUEUE|rejected，
+    stray needs-human 不清除——清除即回零标签态 → dispatch 重派 → 链再
+    熔断，死循环对人类重新隐形化。解除只走人工（human_takeover）。"""
+    assert F(_issue(["factory:needs-human"]), None, None) == ("idle", [])
 
 
 def test_table_full_coverage():
@@ -138,19 +149,20 @@ def test_table_full_coverage():
 
 
 def test_helpers():
-    ev = [{"event": "labeled", "label": {"name": "factory:needs-fix"}},
-          {"event": "labeled", "label": {"name": "factory:needs-review"}},
-          {"event": "unlabeled", "label": {"name": "factory:needs-fix"}}]
+    ev = [{"op": "add", "label": "factory:needs-fix"},
+          {"op": "add", "label": "factory:needs-review"},
+          {"op": "remove", "label": "factory:needs-fix"}]
     assert state._needs_fix_rounds(ev) == 1
     assert state._needs_fix_rounds(None) == 0
-    assert state._linked_issue(_pr()) == 9
+    assert state._linked_issue(_pr()) == "9"   # ADR-008：编号统一字符串（Codeup 序号 T-16）
     assert state._linked_issue({"body": None}) is None
     assert state._linked_issue({"body": "无关正文"}) is None
+    assert state._linked_issue({"body": "Closes #T-16"}) == "T-16"
 
 
 def test_cli_table_and_plan(tmp_path):
     import subprocess
-    d = pathlib.Path(__file__).parent
+    d = pathlib.Path(__file__).parent.parent  # state.py 在 .factory/（tests/ 随源走）
     out = subprocess.run([sys.executable, str(d / "state.py"), "table"],
                          capture_output=True, text=True, check=True).stdout
     assert out.splitlines()[0].startswith("id\tfrom\tevent\tto\towner")

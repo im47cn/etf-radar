@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""feedback.py — 反哺上游（awesome-rules）的纯函数决策层。
+"""feedback.py — 反哺上游的纯函数决策层（上游指针见 factory-local.json）。
 
 与 state.py 同构：bash（feedback-upstream.sh）编排 git/gh/omp，本模块承载
 全部判定逻辑，零 LLM、零副作用（append_ledger 是唯一写操作，由编排器调用）。
@@ -23,8 +23,26 @@ import re
 import subprocess
 import sys
 
-# 移植点：2026-08-21 自 awesome-rules 移植工厂（该提交本身是本仓特化，永不反哺）
-PORT_POINT = "f6835d15"
+# 移植点（每仓不同）：首次移植 .factory 的本仓提交——反哺扫描下界，
+# 该提交本身是本仓特化永不反哺。数据化到 factory-local.json（ADR-009
+# 同构：full 分发文件零本地化，仓特定数据不入代码）；fail-closed：
+# 缺键即崩，禁止静默回退默认值——硬编码默认正是 f6835d15 跨仓失效
+# 事故根源（下游 git log 128）。
+def _load_port_point():
+    cfg_path = pathlib.Path(__file__).resolve().parent / "factory-local.json"
+    try:
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        raise RuntimeError(f"factory-local.json 不可读: {e}") from e
+    pp = cfg.get("port_point")
+    if not isinstance(pp, str) or not pp.strip():
+        raise RuntimeError(
+            "factory-local.json 缺 port_point 键（本仓移植 .factory 的首提"
+            "SHA，反哺扫描下界）；fail-closed，禁止默认值")
+    return pp
+
+
+PORT_POINT = _load_port_point()
 
 # trailer 机制诞生前的可泛化提交（人工判定补录；反哺入账后由账本排除）
 BOOTSTRAP_CANDIDATES = {
@@ -107,7 +125,7 @@ def collect_pending(commits, ledger_shas, ledger_patch_ids=frozenset()):
 def superseded_map(commits, ledger_shas):
     """疑似已随演化反哺：pending 提交的文件集 ⊆ 某更晚已反哺提交的文件集。
 
-    SHA 语义缺口补丁（#66 实证）：反哺走 cherry-pick+适配演化，内容等价
+    SHA 语义缺口补丁（源仓#66 实证）：反哺走 cherry-pick+适配演化，内容等价
     但 SHA 不一的提交永久 pending，人工识别孪生不可持续。本函数只做确定性
     文件集覆盖判定，产出"疑似"清单供人工确认后 record 补录——不自动入账
     （文件集覆盖是强信号，非内容等价证明）。commits 为 git log 顺序（新→旧），
@@ -150,9 +168,33 @@ def closure_missing(candidates, upstream_factory_files):
                 missing.setdefault(ref, []).append(c["sha"][:9])
     return missing
 
+def adapt_manifest(pending_text, conflicted_shas):
+    """樱桃后候选清单 → manifest 条目（适配节点输入契约，feedback-adapt.md 消费）。
+
+    pending_text：shell 剔除 superseded 后的最终候选（sha\\tsubject 行，旧→新），
+    不在此重算——superseded 跳过是 shell 的人工确认决策（亮清单 + record 补录）。
+    conflicted_shas：cherry-pick 冲突集。clean 候选同样入清单——审查特化剥离
+    必跑，状态只是分流提示。patch 为 fb_dir 相对路径，与 patches/<sha9>.patch
+    写入位置对应（adapt-prep 子命令，2026-08-28 自 feedback-upstream.sh
+    内嵌 heredoc 下沉，铁律 4：git 子进程编排归 Python）。
+    """
+    conflicted = set(conflicted_shas)
+    items = []
+    for line in pending_text.splitlines():
+        sha, subject = line.split("\t", 1)
+        items.append(
+            {
+                "sha": sha,
+                "subject": subject,
+                "status": "conflicted" if sha in conflicted else "clean",
+                "patch": f"patches/{sha[:9]}.patch",
+            }
+        )
+    return items
+
 def load_ledger(path):
     """读账本 → 条目 dict 列表（sha 集合由调用方派生）。文件不存在视为空。
-    patch_id 持久化（PR#75 审查）：账本提交对象被 GC 后重算不可得，
+    patch_id 持久化（源仓 PR#75 审查）：账本提交对象被 GC 后重算不可得，
     账本是唯一可靠载体；旧条目无此字段 → 调用方退化为重算兜底。"""
     p = pathlib.Path(path)
     if not p.exists():
@@ -205,11 +247,11 @@ def classify_drift(diff_rq_output, upstream_path):
         if "Only in" in line:
             if any(x in line for x in DRIFT_EXCLUDES):
                 continue
-            if line.startswith("Only in %s" % upstream_path):
+            if line.startswith(f"Only in {upstream_path}"):
                 upstream_only.append(line)
             else:
                 local_only.append(line)
-        elif "differ" in line and not any(x in line for x in DRIFT_EXCLUDES):
+        elif "differ" in line and all(x not in line for x in DRIFT_EXCLUDES):
             differing.append(line)
     return {"upstream_only": upstream_only, "local_only": local_only,
             "differing": differing}
@@ -218,15 +260,12 @@ def classify_drift(diff_rq_output, upstream_path):
 def render_report(pending, drift):
     """dry-run / PR 描述共用的报告文本。"""
     lines = ["—— 待反哺候选（%d 个，cherry-pick 顺序）——" % len(pending)]
-    for c in pending:
-        lines.append("  %s  %s" % (c["sha"][:9], c["subject"]))
-    lines.append("")
-    lines.append("—— 上游漂移（仅报告，不自动吸收）——")
+    lines.extend(f'  {c["sha"][:9]}  {c["subject"]}' for c in pending)
+    lines.extend(("", "—— 上游漂移（仅报告，不自动吸收）——"))
     for kind, label in (("upstream_only", "上游独有"), ("differing", "两侧分歧")):
         items = drift.get(kind, [])
         lines.append("  [%s] %d 项" % (label, len(items)))
-        for item in items:
-            lines.append("    " + item)
+        lines.extend(f"    {item}" for item in items)
     if not drift.get("upstream_only") and not drift.get("differing"):
         lines.append("  （无）")
     return "\n".join(lines)
@@ -241,9 +280,18 @@ def status_line(pending_count):
 
 def _git_log_commits():
     out = subprocess.run(
-        ["git", "log", "--format=%H%x00%s%x00%b%x1e",
-         "%s..HEAD" % PORT_POINT, "--", ".factory"],
-        capture_output=True, text=True, check=True).stdout
+        [
+            "git",
+            "log",
+            "--format=%H%x00%s%x00%b%x1e",
+            f"{PORT_POINT}..HEAD",
+            "--",
+            ".factory",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
     return parse_git_log(out)
 
 
@@ -254,9 +302,19 @@ def _files_by_sha():
     若分隔符放段尾会把上一条的文件错配给下一条）；线性历史假设与
     cherry-pick 顺序契约一致。"""
     out = subprocess.run(
-        ["git", "log", "--format=%x1e%H", "--name-only",
-         "%s..HEAD" % PORT_POINT, "--", ".factory"],
-        capture_output=True, text=True, check=True).stdout
+        [
+            "git",
+            "log",
+            "--format=%x1e%H",
+            "--name-only",
+            f"{PORT_POINT}..HEAD",
+            "--",
+            ".factory",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
     files_by_sha = {}
     for record in out.split("\x1e"):
         lines = [ln for ln in record.strip("\n").split("\n") if ln.strip()]
@@ -270,8 +328,8 @@ def _files_by_sha():
 def _patch_id(sha):
     """提交 → patch-id（--stable，跨 rebase/amend 内容不变即同 id）。
     空 diff（纯 merge/空提交）返回 None——此类退化纯 SHA 匹配。
-    argv 直传不经 shell（PR#75 审查：注入面收口；--no-ext-diff 隔离
-    外部 diff 驱动配置，保住 --stable 的跨环境可比性）。"""
+    argv 直传不经 shell（源仓 PR#75 审查：注入面收口；--no-ext-diff
+    隔离外部 diff 驱动配置，保住 --stable 的跨环境可比性）。"""
     show = subprocess.run(
         ["git", "show", "--format=", "--no-ext-diff", sha],
         capture_output=True, text=True)
@@ -282,78 +340,139 @@ def _patch_id(sha):
         input=show.stdout, capture_output=True, text=True).stdout.strip()
     return out.split()[0] if out else None
 
-
-def main():
-    cmd = sys.argv[1] if len(sys.argv) > 1 else ""
-    here = pathlib.Path(__file__).parent
-    ledger_path = here / "feedback-log.jsonl"
+def _gather_commits():
+    """git log 提交链；files 合并（_files_by_sha 结果挂回提交，供 feedable/pending 判定）。"""
     commits = _git_log_commits()
     fbs = _files_by_sha()
-    commits = [dict(c, files=fbs.get(c["sha"], ())) for c in commits]
+    for c in commits:
+        c["files"] = fbs.get(c["sha"], set())
+    return commits
+
+
+def _build_pending(commits, ledger_path):
+    """账本加载 → patch-id 附件 → 待反哺候选；返回 (commits, ledger, pending)。"""
     entries = load_ledger(ledger_path)
     ledger = {e["sha"] for e in entries}
     # patch-id 只为触碰 feedable 资产的提交计算（候选判定必要条件，
-    # 全历史逐条子进程不可承受）；账本侧优先持久化值（PR#75 审查）
+    # 全历史逐条子进程不可承受）；账本侧优先持久化值（源仓 PR#75 审查）
     assets = feedable_assets(commits)
     commits = [dict(c, patch_id=_patch_id(c["sha"]) if set(c.get("files", ())) & assets else None)
                for c in commits]
     ledger_pids = ledger_patch_ids(entries)
     pending = collect_pending(commits, ledger, ledger_pids)
+    return commits, ledger, pending
+
+
+def _cmd_pending(pending):
+    """pending：待反哺候选清单（sha\tsubject，旧→新）。"""
+    for c in pending:
+        print("%s\t%s" % (c["sha"], c["subject"]))
+
+
+def _cmd_superseded(commits, ledger, pending):
+    # 疑似已随演化反哺（SHA 语义缺口）：sha\tsubject\t<=superseder_sha
+    smap = superseded_map(commits, ledger)
+    for c in pending:
+        if c["sha"] in smap:
+            print("%s\t%s\t<=%s" % (c["sha"], c["subject"], smap[c["sha"]]))
+
+
+def _cmd_closure(upstream, pending):
+    # closure <upstream-wt>: 樱桃前 fail-closed——候选引用的资产必须随行可达
+    out = subprocess.run(
+        ["git", "-C", upstream, "ls-files", "--", ".factory"],
+        capture_output=True, text=True, check=True).stdout
+    ups = [p[len(".factory/"):] for p in out.split()]
+    cands = []
+    for c in pending:
+        patch = subprocess.run(
+            ["git", "show", "--format=", c["sha"]],
+            capture_output=True, text=True, check=True).stdout
+        files = subprocess.run(
+            ["git", "show", "--name-only", "--format=", c["sha"]],
+            capture_output=True, text=True, check=True).stdout.split()
+        cands.append(dict(c, patch=patch, files=files))
+    if missing := closure_missing(cands, ups):
+        print("依赖闭包缺失（樱桃前 fail-closed）:")
+        for ref, shas in sorted(missing.items()):
+            print(f'  {ref}  ← {", ".join(shas)}')
+        print("处置: 该资产的引入提交补录 BOOTSTRAP_CANDIDATES，"
+              "或提交带 trailer 的资产变更后重跑")
+        sys.exit(1)
+    print("依赖闭包完备: %d 候选引用的 .factory 资产全部可达" % len(cands))
+
+
+def _cmd_adapt_prep(fb_dir, pending_text, conflicted_shas):
+    # adapt-prep <fb_dir> <pending> <conflicted_sha>... —— 写适配节点输入：
+    # patches/<sha9>.patch（git show --format=fuller 全文）+ manifest.json
+    fb_dir = pathlib.Path(fb_dir)
+    items = adapt_manifest(pending_text, conflicted_shas)
+    for it in items:
+        (fb_dir / it["patch"]).write_text(subprocess.run(
+            ["git", "show", "--format=fuller", it["sha"]],
+            capture_output=True, text=True, check=True).stdout,
+            encoding="utf-8")
+    (fb_dir / "manifest.json").write_text(
+        json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("适配输入就绪: %s（%d 候选，冲突 %d）" % (
+        fb_dir / "manifest.json", len(items),
+        sum(i["status"] == "conflicted" for i in items)))
+
+
+def _cmd_report(upstream, pending, here):
+    """report：漂移对比（diff -rq）+ 待反哺候选 → 报告文本。"""
+    diff = subprocess.run(
+        ["diff", "-rq", str(here), f"{upstream}/.factory"],
+        capture_output=True,
+        text=True,
+    ).stdout
+    print(render_report(pending, classify_drift(diff, f"{upstream}/.factory")))
+
+
+def _cmd_record(upstream_pr, args, ledger_path):
+    # ADR-009：账本的上游 repo 记 factory-local.json（fail-closed，禁止硬编码）
+    cfg = json.loads(pathlib.Path(__file__).parent.joinpath(
+        "factory-local.json").read_text(encoding="utf-8"))
+    upstream_repo = str(cfg["upstream_repo"])
+    for arg in args:
+        sha, subject = arg.split(":", 1)
+        append_ledger(ledger_path, sha, subject, upstream_pr,
+                      upstream_repo, patch_id=_patch_id(sha))
+    print(f"账本已更新: {ledger_path}")
+
+
+def _usage_exit():
+    """未知/缺失子命令 → 用法说明到 stderr，退出码 2。"""
+    print("用法: feedback.py pending|superseded|status|closure <upstream_wt>|"
+          "report <upstream_path>|adapt-prep <fb_dir> <pending> <conflicted>...|"
+          "record <pr> <sha>:<subject>...",
+          file=sys.stderr)
+    sys.exit(2)
+
+
+def main():
+    cmd = sys.argv[1] if len(sys.argv) > 1 else ""
+    here = pathlib.Path(__file__).parent
+    ledger_path = here / "feedback-log.jsonl"
+    commits = _gather_commits()
+    commits, ledger, pending = _build_pending(commits, ledger_path)
 
     if cmd == "pending":
-        for c in pending:
-            print("%s\t%s" % (c["sha"], c["subject"]))
+        _cmd_pending(pending)
     elif cmd == "superseded":
-        # 疑似已随演化反哺（SHA 语义缺口）：sha\tsubject\t<=superseder_sha
-        smap = superseded_map(commits, ledger)
-        for c in pending:
-            if c["sha"] in smap:
-                print("%s\t%s\t<=%s" % (c["sha"], c["subject"], smap[c["sha"]]))
+        _cmd_superseded(commits, ledger, pending)
     elif cmd == "closure":
-        # closure <upstream-wt>: 樱桃前 fail-closed——候选引用的资产必须随行可达
-        upstream = sys.argv[2]
-        out = subprocess.run(
-            ["git", "-C", upstream, "ls-files", "--", ".factory"],
-            capture_output=True, text=True, check=True).stdout
-        ups = [p[len(".factory/"):] for p in out.split()]
-        cands = []
-        for c in pending:
-            patch = subprocess.run(
-                ["git", "show", "--format=", c["sha"]],
-                capture_output=True, text=True, check=True).stdout
-            files = subprocess.run(
-                ["git", "show", "--name-only", "--format=", c["sha"]],
-                capture_output=True, text=True, check=True).stdout.split()
-            cands.append(dict(c, patch=patch, files=files))
-        missing = closure_missing(cands, ups)
-        if missing:
-            print("依赖闭包缺失（樱桃前 fail-closed）:")
-            for ref, shas in sorted(missing.items()):
-                print("  %s  ← %s" % (ref, ", ".join(shas)))
-            print("处置: 该资产的引入提交补录 BOOTSTRAP_CANDIDATES，"
-                  "或提交带 trailer 的资产变更后重跑")
-            sys.exit(1)
-        print("依赖闭包完备: %d 候选引用的 .factory 资产全部可达" % len(cands))
+        _cmd_closure(sys.argv[2], pending)
+    elif cmd == "adapt-prep":
+        _cmd_adapt_prep(sys.argv[2], sys.argv[3], sys.argv[4:])
     elif cmd == "status":
         print(status_line(len(pending)))
     elif cmd == "report":
-        upstream = sys.argv[2]
-        diff = subprocess.run(
-            ["diff", "-rq", str(here), "%s/.factory" % upstream],
-            capture_output=True, text=True).stdout
-        print(render_report(pending, classify_drift(diff, "%s/.factory" % upstream)))
+        _cmd_report(sys.argv[2], pending, here)
     elif cmd == "record":
-        upstream_pr = sys.argv[2]
-        for arg in sys.argv[3:]:
-            sha, subject = arg.split(":", 1)
-            append_ledger(ledger_path, sha, subject, upstream_pr,
-                          "im47cn/awesome-rules", patch_id=_patch_id(sha))
-        print("账本已更新: %s" % ledger_path)
+        _cmd_record(sys.argv[2], sys.argv[3:], ledger_path)
     else:
-        print("用法: feedback.py pending|superseded|status|closure <upstream_wt>|"
-              "report <upstream_path>|record <pr> <sha>:<subject>...",
-              file=sys.stderr)
-        sys.exit(2)
+        _usage_exit()
 
 
 if __name__ == "__main__":

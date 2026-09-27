@@ -3,13 +3,9 @@
 候选契约（feedable = trailer ∨ bootstrap）、账本排除、cherry-pick 顺序、
 漂移分类的上游侧判定、账本读写往返。CLI 子进程路径由真跑（dry-run +
 首次反哺）覆盖，此处只测纯函数。
-运行：python3 -m pytest .factory/test_feedback.py -o addopts= -q
+运行：python3 -m pytest .factory/tests -q（conftest 注入 .factory 到 sys.path）
 """
-import pathlib
-import sys
-
-sys.path.insert(0, str(pathlib.Path(__file__).parent))
-import feedback  # noqa: E402
+import feedback
 
 RS = "\x1e"
 
@@ -114,10 +110,11 @@ def test_collect_pending_empty_when_all_ledgered():
     commits = [_c("a" * 40, "Upstream-Feedback: yes", {".factory/a.sh"})]
     assert feedback.collect_pending(commits, {"a" * 40}) == []
 
+
 def test_collect_pending_patch_id_dedup_beats_sha_drift():
     """patch-id 去重：rebase/amend 后 SHA 变、内容不变 → 仍排除。
     2026-08-22 孪生 SHA 实证——SHA 去重随本地历史重写失效，已反哺内容
-    重新成为候选、重复反哺。"""
+    重新成为候选、重复反哺（etf-radar PR#75）。"""
     reborn = dict(_c("9" * 40, "Upstream-Feedback: yes", {".factory/a.sh"}),
                   patch_id="pid-1")
     assert feedback.collect_pending([reborn], set(), {"pid-1"}) == []
@@ -132,7 +129,6 @@ def test_collect_pending_patch_id_mismatch_keeps_candidate():
     noid = _c("8" * 40, "Upstream-Feedback: yes", {".factory/a.sh"})
     assert [c["sha"] for c in
             feedback.collect_pending([noid], set(), {"pid-1"})] == ["8" * 40]
-
 
 # ---- 账本读写往返 ----
 
@@ -151,7 +147,7 @@ def test_load_ledger_tolerates_corrupt_line(tmp_path):
 
 
 def test_ledger_persists_patch_id(tmp_path):
-    """PR#75：patch-id 落账本——记录时的计算结果随条目持久化。"""
+    """etf-radar PR#75：patch-id 落账本——记录时的计算结果随条目持久化。"""
     ledger = tmp_path / "feedback-log.jsonl"
     feedback.append_ledger(ledger, "a" * 40, "s", 7, "r", patch_id="pid-a")
     feedback.append_ledger(ledger, "b" * 40, "s2", 7, "r")  # None 也合法（空 diff/非资产）
@@ -160,8 +156,8 @@ def test_ledger_persists_patch_id(tmp_path):
 
 
 def test_stored_patch_id_survives_object_loss(tmp_path, monkeypatch):
-    """PR#75 核心：账本已有 patch_id 的条目不依赖对象重算——账本提交被
-    GC 后（重算 _patch_id 返回 None），持久化值仍参与去重。"""
+    """etf-radar PR#75 核心：账本已有 patch_id 的条目不依赖对象重算——账本
+    提交被 GC 后（重算 _patch_id 返回 None），持久化值仍参与去重。"""
     entries = [{"sha": "a" * 40, "patch_id": "pid-a"},
                {"sha": "b" * 40}]                       # 旧条目：无字段 → 重算兜底
     monkeypatch.setattr(feedback, "_patch_id", lambda sha: "pid-recalc")
@@ -169,18 +165,17 @@ def test_stored_patch_id_survives_object_loss(tmp_path, monkeypatch):
     monkeypatch.setattr(feedback, "_patch_id", lambda sha: None)   # 对象全丢
     assert feedback.ledger_patch_ids(entries) == {"pid-a"}
 
-
-# ---- 漂移分类 ----
-
 def test_classify_drift_sides_and_excludes():
     up = "/tmp/up/.factory"
-    out = "\n".join([
-        "Only in %s: cron-dispatch.sh" % up,
-        "Only in /tmp/etf/.factory: triage-batch.sh",
-        "Only in %s/artifacts: issue-2" % up,        # 运行时目录 → 排除
-        "Files %s/state.py and /tmp/etf/.factory/state.py differ" % up,
-        "Files %s/locks/x and /tmp/etf/.factory/locks/x differ" % up,  # 排除
-    ])
+    out = "\n".join(
+        [
+            f"Only in {up}: cron-dispatch.sh",
+            "Only in /tmp/etf/.factory: triage-batch.sh",
+            f"Only in {up}/artifacts: issue-2",
+            f"Files {up}/state.py and /tmp/etf/.factory/state.py differ",
+            f"Files {up}/locks/x and /tmp/etf/.factory/locks/x differ",
+        ]
+    )
     drift = feedback.classify_drift(out, up)
     assert len(drift["upstream_only"]) == 1
     assert len(drift["local_only"]) == 1
@@ -285,3 +280,55 @@ def test_superseded_prefix_ledger_sha_matches():
     r3 全量入账，r1 仅前缀入账——两者都算已反哺，pending 只剩 p/r2。"""
     commits, env = _sup_env()
     assert feedback.superseded_map(commits, {"1" * 8, "3" * 40}) == {env["p"]: env["r1"]}
+
+
+# ---- adapt_manifest：适配节点输入契约（manifest.json schema） ----
+
+def test_adapt_manifest_clean_and_conflicted_split():
+    a, b = "a" * 40, "b" * 40
+    items = feedback.adapt_manifest(
+        "%s\tfix(factory): 并发修复\n%s\tfix: 冲突候选" % (a, b), {b})
+    assert items == [
+        {
+            "sha": a,
+            "subject": "fix(factory): 并发修复",
+            "status": "clean",
+            "patch": f"patches/{a[:9]}.patch",
+        },
+        {
+            "sha": b,
+            "subject": "fix: 冲突候选",
+            "status": "conflicted",
+            "patch": f"patches/{b[:9]}.patch",
+        },
+    ]
+
+
+def test_adapt_manifest_takes_shell_filtered_pending_verbatim():
+    # superseded 由 shell 剔除后传入（2026-08-28 下沉时的取舍）——此处不
+    # 重算：重算会把被人工跳过的候选回流进适配节点
+    only = "c" * 40
+    items = feedback.adapt_manifest("%s\t仅存候选" % only, set())
+    assert [i["sha"] for i in items] == [only]
+    assert items[0]["status"] == "clean"
+
+
+def test_adapt_manifest_preserves_old_to_new_order():
+    shas = [c * 40 for c in "abc"]
+    text = "".join("%s\ts%s\n" % (s, i) for i, s in enumerate(shas))
+    assert [i["sha"] for i in feedback.adapt_manifest(text, set())] == shas
+
+def test_gather_commits_merges_files(monkeypatch):
+    """_files_by_sha 结果必须挂回 commits（feedable/pending 判定的 files 来源）。"""
+    commits = [{"sha": "a" * 40, "subject": "s", "feedable": True},
+               {"sha": "b" * 40, "subject": "t", "feedable": False}]
+    # b 不提供映射：.get(sha, set()) 空集回退必须被测到（python#26 审查
+    # 收口——夹具若给全映射，回归为直接索引 fbs[sha] 后 KeyError 不可见）
+    fbs = {"a" * 40: {"factory_lib.py"}}
+    monkeypatch.setattr(feedback, "_git_log_commits", lambda: commits)
+    monkeypatch.setattr(feedback, "_files_by_sha", lambda: fbs)
+    out = feedback._gather_commits()
+    assert out[0]["files"] == {"factory_lib.py"}
+    # 未触碰资产的提交 → 空集（feedable_assets/collect_pending 的 .get 契约）
+    assert out[1]["files"] == set()
+    assert out[1]["feedable"] is False

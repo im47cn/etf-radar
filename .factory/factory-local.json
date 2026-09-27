@@ -1,0 +1,39 @@
+{
+  "description": "工厂本地化配置（M4 本地化外置 + 拆分前置 ADR-009）：周界/判据措辞/门命令/prompt 仓库参数/上游指针是数据不是代码——guard.py / factory_lib.py / 链脚本 / prompts 因此零本地化、按 DISTRIBUTION.json full 分发；本文件每仓一份（skip 分发，永不跨仓覆盖）。fail-closed：缺失/损坏/缺键 = 使用方直接非零退出。周界仍须与 MISSION.md「周界（PERIMETER）」一致——guard.self_check 每次运行强制核对（MISSION 是真相源，本文件是机械化载体）；改本文件后必须重跑 .factory/mutations/run.py 重证 kill rate，evidence-stamp.json 指纹绑定会强制这一点（gauntlet factory-local-validity 层）。",
+  "perimeter": [
+    "MISSION.md",
+    "CLAUDE.md",
+    "AGENTS.md",
+    "docs/CONVENTIONS.md",
+    "docs/design/",
+    ".factory/",
+    "scripts/",
+    ".githooks/",
+    ".github/",
+    "data/",
+    "config/",
+    "supabase/",
+    "backend/pyproject.toml",
+    "backend/uv.lock",
+    "frontend/package.json",
+    "frontend/package-lock.json",
+    "package.json",
+    "package-lock.json",
+    ".gitignore",
+    ".mcp.json",
+    ".claude/"
+  ],
+  "reject_guidance": {
+    "a": "判据a（使命一致）：写明落点——backend 数据流水线（providers/scoring/output/etl 等）、frontend 页面与组件、既有测试、文档中的哪个文件/模块；",
+    "b": "判据b（可判定）：把完成标准写成可机械验证的形式——验收 = 具体测试/脚本的断言（mypy/pytest/tsc/eslint/vitest + diff-cover、guard、holdout 可客观判定），避免「持续 / 优化 / 修修」类开放措辞；",
+    "c": "判据c（不触周界）：触及 PERIMETER 的部分拆成独立 issue 走人类 PR（清单见 MISSION.md）；"
+  },
+  "port_point": "f6835d15",
+  "repo_identity": "etf-radar",
+  "reading_scopes": ["README.md", "CLAUDE.md", "docs/", "backend/", "frontend/", "scripts/", "config/"],
+  "review_basis": "docs/",
+  "final_gate_cmd": "scripts/run_tests.sh --no-lock",
+  "upstream_repo": "im47cn/awesome-rules",
+  "upstream_path": "~/sources/awesome-rules",
+  "feedback_branch_prefix": "feedback/etf-radar"
+}

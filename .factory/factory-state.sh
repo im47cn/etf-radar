@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# factory-state.sh — 标签同步器：GitHub 事实 → state.py plan → 应用。
+# factory-state.sh — 标签同步器：托管平台事实（hosting.py，ADR-008）→ state.py plan → 应用。
 #
 # 第一性原理（防"转移实现一半"）：issue/PR 的可观测状态不由链各步骤顺手
 # 写标签维护，而是本脚本从仓库可见事实（PR 存在性、reviewDecision、
@@ -12,16 +12,16 @@
 #   sync --all    同步所有带 factory:* 标签的 issue
 #   --plan        只打印计划操作，不执行
 set -u
-REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "不在 git 仓库" >&2; exit 2; }
+REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+  # 诊断附着（2026-08-27 bare 事故：笼统「不在 git 仓库」掩盖 core.bare=true 8 小时）
+  echo "不在 git 仓库（诊断: core.bare=$(git config core.bare 2>/dev/null || echo '?') .git=$([ -e .git ] && echo 存在 || echo 缺失)）" >&2
+  exit 2
+}
 FACTORY="$REPO/.factory"
-REPO_SLUG="${GH_REPO:-$(
-  # 双 remote 布局：origin pushurl 可能多条（codeup 镜像 + github），
-  # 逐条扫含 github.com 者（github remote 名优先）；443 端口形态兼容
-  { git -C "$REPO" remote get-url --all --push github 2>/dev/null
-    git -C "$REPO" remote get-url --all --push origin 2>/dev/null
-  } | grep -m1 'github\.com' | sed -E 's#^.*github\.com(:[0-9]+)?[/:]##; s#\.git$##'
-)}"
-[ -n "$REPO_SLUG" ] || { echo "无法确定 GitHub 仓库 slug（GH_REPO 或 github/origin remote）" >&2; exit 2; }
+HOST="python3 ${FACTORY}/hosting.py"
+# 平台选择与 slug/凭据解析收敛在 hosting.py（ADR-008）；入口一次性探测，
+# fail-fast 替代原 slug 预检
+${HOST} auth ok >/dev/null 2>&1 || { echo "托管平台不可用（hosting auth：gh 凭据或云效令牌）" >&2; exit 2; }
 
 TARGET=""; PLAN=0
 for a in "$@"; do
@@ -36,8 +36,8 @@ done
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 
 find_pr_for_issue() {  # <issue-number> → PR number（空=无）
-  gh pr list --repo "$REPO_SLUG" --state open --limit 100 \
-    --json number,body,reviewDecision,labels,state \
+  # 链约定：PR body 含 'Closes #N'（中立 body 由 hosting 归一，两端一致）
+  ${HOST} pr list --state open --limit 100 \
     | python3 -c '
 import json, re, sys
 n = int(sys.argv[1])
@@ -49,14 +49,12 @@ for pr in json.load(sys.stdin):
 
 sync_one() {  # <issue-number>
   local N="$1" P="" plan=""
-  gh issue view "$N" --repo "$REPO_SLUG" \
-    --json number,state,labels,comments > "$TMP/issue.json" 2>/dev/null \
+  ${HOST} issue view "$N" > "$TMP/issue.json" 2>/dev/null \
     || { echo "  issue #$N 不可读，跳过" >&2; return 0; }
   P="$(find_pr_for_issue "$N")"
   if [ -n "$P" ]; then
-    gh pr view "$P" --repo "$REPO_SLUG" \
-      --json number,state,reviewDecision,labels > "$TMP/pr.json"
-    gh api "repos/${REPO_SLUG}/issues/${P}/events" --paginate > "$TMP/events.json"
+    ${HOST} pr view "$P" > "$TMP/pr.json"
+    ${HOST} label history "$P" > "$TMP/events.json"
     plan="$(python3 "$FACTORY/state.py" plan \
       --issue "$TMP/issue.json" --pr "$TMP/pr.json" --events "$TMP/events.json")"
   else
@@ -78,11 +76,11 @@ for o in json.load(sys.stdin)["ops"]:
     print("%s\t%s\t%s" % (o["target"], o["op"], o["label"]))' \
     | while IFS=$'\t' read -r tgt op label; do
         if [ "$tgt" = issue ]; then
-          gh issue edit "$N" --repo "$REPO_SLUG" "--${op}-label" "$label" >/dev/null \
+          ${HOST} issue set-labels "$N" "--${op}" "$label" >/dev/null \
             && echo "  [label] issue $op $label" \
             || echo "  [label] issue $op $label 失败（仅告警）" >&2
         else
-          gh pr edit "$P" --repo "$REPO_SLUG" "--${op}-label" "$label" >/dev/null \
+          ${HOST} pr set-labels "$P" "--${op}" "$label" >/dev/null \
             && echo "  [label] pr $op $label" \
             || echo "  [label] pr $op $label 失败（仅告警）" >&2
         fi
@@ -90,13 +88,21 @@ for o in json.load(sys.stdin)["ops"]:
 }
 
 if [ "$TARGET" = "--all" ]; then
-  gh issue list --repo "$REPO_SLUG" --state all --limit 200 --json number,labels \
-    | python3 -c '
+  { ${HOST} issue list --state all --limit 200 \
+      | python3 -c '
 import json, sys
 for i in json.load(sys.stdin):
-    if any(l["name"].startswith("factory:") for l in i["labels"]):
-        print(i["number"])' \
-    | while read -r N; do sync_one "$N"; done
+    if any(l.startswith("factory:") for l in i["labels"]):
+        print(i["number"])'
+    # 零标签 issue 也会被 open PR 关联（链中途死亡 → trap 清标签但 PR 已建），
+    # 并入 open PR body 的 Closes 引用（hosting 归一），--all 才能收敛完整
+    ${HOST} pr list --state open --limit 100 \
+      | python3 -c '
+import json, re, sys
+for pr in json.load(sys.stdin):
+    for m in re.finditer(r"[Cc]loses #(\d+)\b", pr.get("body") or ""):
+        print(m.group(1))'; } \
+    | sort -un | while read -r N; do sync_one "$N"; done
 else
   sync_one "$TARGET"
 fi

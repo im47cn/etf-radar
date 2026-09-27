@@ -1,0 +1,10 @@
+# 物理隔离节点的 omp 配置覆盖层（CLI overlay，优先级高于全局配置）。
+# fix-issue.sh 的 run_triage / run_holdout 以 --config 注入本文件。
+#
+# 用途：全局开启 advisor 后，裁决器/验证器节点必须维持白名单输入隔离
+# （triage 只见 MISSION + issue 标题正文；holdout 只见标题 +
+# tests-output.txt）——审查者注入即是新的残留通道。本文件只关 advisor，
+# 不含其他键；工作节点（prime/plan/implement/review）不注入本文件，
+# 保留 advisor 的交付前审查。
+advisor:
+  enabled: false

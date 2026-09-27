@@ -11,10 +11,11 @@
 - TRANSITIONS 表是状态的唯一权威 spec；测试枚举表而非枚举代码，
   新增转移必须同时新增场景 fixture，否则 meta-test 失败。
 
-输入（gh JSON，stdin 或 --issue/--pr/--events 文件）：
-  issue: gh issue view N --json number,state,labels,comments
-  pr:    gh pr view P --json number,state,reviewDecision,labels
-  events: gh api repos/O/R/issues/P/events  （needs-fix 计数）
+输入（中立 schema，由 .factory/hosting.py 产出——平台差异已在该层归一，
+ADR-008；stdin 或 --issue/--pr/--events 文件）：
+  issue: hosting.py issue view N
+  pr:    hosting.py pr view P
+  events: hosting.py label history P  （needs-fix 计数：op=add 事件）
 输出：{"phase":..., "ops":[{"target":"issue|pr","op":"add|remove","label":...}]}
 CLI:
   state.py plan   [--issue F] [--pr F] [--events F]   # 纯计算，可测
@@ -34,6 +35,11 @@ TRANSITIONS = [
     ("triage_reject",           "triaging",   "verdict=reject",  "rejected",    "chain"),
     ("dispatch_claim",          "accepted",   "dispatcher抢占",  "in-progress", "dispatcher"),
     ("chain_fail",              "in-progress", "链失败(trap)",    "",            "dispatcher"),
+    # breaker_tripped：issue 侧 needs-human 是命令式落标（链 exit 5 前写，
+    # 熔断/门故障=机器无法继续需人工），sync 永不触碰——plan_phase 无 PR
+    # 分支只认 LOCKS|QUEUE|rejected，stray needs-human 不清除（fixture 钉死）；
+    # 解除仍走 human_takeover（人工删标/接管），无自动化出口。
+    ("breaker_tripped",         "in-progress", "R4熔断(exit 5)",  "needs-human", "chain"),
     ("pr_open",                 "in-progress", "PR创建",          "in-review",   "sync"),
     ("changes_requested",       "in-review",  "CHANGES_REQUESTED", "needs-fix", "sync"),
     ("redispatch",              "needs-fix",  "rounds<MAX重派",  "in-progress", "dispatcher"),
@@ -49,19 +55,21 @@ PR_SIDE = {"factory:needs-review", "factory:needs-fix", "factory:needs-human", "
 
 
 def _labels(obj):
-    return {l["name"] for l in (obj or {}).get("labels", [])}
+    return set((obj or {}).get("labels") or [])
 
 
 def _needs_fix_rounds(events):
-    return sum(1 for e in events or []
-               if e.get("event") == "labeled"
-               and (e.get("label") or {}).get("name") == "factory:needs-fix")
+    return sum(
+        e.get("op") == "add" and e.get("label") == "factory:needs-fix"
+        for e in events or []
+    )
 
 
 def _linked_issue(pr):
-    """链约定：PR body 含 'Closes #N'。"""
-    m = re.search(r"[Cc]loses #(\d+)", (pr or {}).get("body") or "")
-    return int(m.group(1)) if m else None
+    """链约定：PR body 含 'Closes #N'。N 为 GitHub 数字或 Codeup 序号
+    （T-16，ADR-008）——统一按字符串处理。"""
+    m = re.search(r"[Cc]loses #([\w][\w-]*)", (pr or {}).get("body") or "")
+    return m[1] if m else None
 
 
 def plan_phase(issue, pr, events, current_pr_labels=None):
@@ -90,14 +98,14 @@ def plan_phase(issue, pr, events, current_pr_labels=None):
             add("issue", "factory:rejected")
         return "rejected", ops
 
-    if (issue or {}).get("state") == "CLOSED":
+    if (issue or {}).get("state") == "closed":
         # 终态清理：merged/人工关闭后，流转标签是噪音（label 搜索会命中
         # 已完结 issue）；rejected 作为链裁决记录保留
         for l in sorted(issue_labels - {"factory:rejected"}):
             remove("issue", l)
         return "closed", ops
 
-    if not pr or pr.get("state") != "OPEN":
+    if not pr or pr.get("state") != "open":
         # 无 PR：锁与队列态是命令式声明，sync 不碰（rejected 仅报告）
         have = issue_labels & (LOCKS | QUEUE | {"factory:rejected"})
         return f"labeled:{sorted(have)}" if have else "idle", []
@@ -109,16 +117,16 @@ def plan_phase(issue, pr, events, current_pr_labels=None):
     if "factory:in-review" not in issue_labels:
         add("issue", "factory:in-review")
 
-    decision = pr.get("reviewDecision")
+    decision = pr.get("review")
     rounds = _needs_fix_rounds(events)
 
-    if decision == "APPROVED":
+    if decision == "approved":
         phase = "approved"
         for l in sorted(pr_labels - PR_SIDE - {"factory:approved"}):
             remove("pr", l)
         if "factory:approved" not in pr_labels:
             add("pr", "factory:approved")
-    elif decision == "CHANGES_REQUESTED":
+    elif decision == "changes_requested":
         if rounds >= MAX_FIX_ROUNDS:
             phase = "needs-human"
             for l in sorted(pr_labels - PR_SIDE - {"factory:needs-human"}):
@@ -153,9 +161,7 @@ def main():
     args = sys.argv[1:]
 
     def load(flag):
-        if flag in args:
-            return json.load(open(args[args.index(flag) + 1]))
-        return None
+        return json.load(open(args[args.index(flag) + 1])) if flag in args else None
 
     issue = load("--issue")
     if issue is None and not sys.stdin.isatty():

@@ -67,6 +67,7 @@ def load_universe(ohlcv_dir: Path) -> dict[str, StockBars]:
                 close=np.array([float(b['c']) for b in bars], dtype=np.float64),
                 volume=np.array([float(b['v']) for b in bars], dtype=np.float64),
                 amount=np.array([float(b.get('amt', 0.0)) for b in bars], dtype=np.float64),
+                dates=[str(b['d']) for b in bars],
             )
         except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as e:
             log.warning('trading ohlcv skip %s: %s', fp.name, e)

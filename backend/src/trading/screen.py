@@ -8,7 +8,7 @@ vol 缺失时其权重并入 RS; RS 基准缺失时剔除 RS 项、剩余权重�
 from __future__ import annotations
 
 from bisect import bisect_right
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -40,6 +40,8 @@ class StockBars:
     close: Array
     volume: Array
     amount: Array
+    # 末根 bar 日期 (ISO), 供停牌护栏比对全市场最新交易日; 空列表 = 未知, 不拦截 (兼容测试夹具)
+    dates: list[str] = field(default_factory=list)
 
 
 def is_st(name: str) -> bool:
@@ -101,9 +103,14 @@ def composite_score(
     return round(10.0 * num / denom, 1)
 
 
-def _is_tradable(bars: StockBars, name: str, board: str | None) -> bool:
-    """漏斗第 1 层: 板块/ST/上市时长/价格/流动性。"""
+def _is_tradable(bars: StockBars, name: str, board: str | None, market_date: str | None) -> bool:
+    """漏斗第 1 层: 板块/ST/上市时长/价格/流动性/停牌新鲜度。"""
     if board is None or is_st(name):
+        return False
+    # 停牌: 末根 bar 落后全市场最新交易日 (持仓侧同口径冻结, spec §1.8), 候选池拒收 ——
+    # 否则 r60/模板/VCP 全用停牌前数据, 日报可推「进买区」的不可买入股票。
+    # 基准取全市场 max(末根日期) 而非 now(): ohlcv 整体陈旧(周末/停更)时不误杀全市场。
+    if market_date and bars.dates and bars.dates[-1] < market_date:
         return False
     if len(bars.close) < MIN_LIST_BARS:
         return False
@@ -122,11 +129,12 @@ def screen_universe(
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """跑完整漏斗, 返回 (候选列表, 各层计数)。候选字段名与 §2.3 契约一致。"""
     stats = {'total': len(universe), 'tradable': 0, 'stage2': 0, 'vcp': 0, 'top': 0}
+    market_date = max((b.dates[-1] for b in universe.values() if b.dates), default=None)
     cands: list[dict[str, Any]] = []
     for code, bars in universe.items():
         name = names.get(code, code)
         board = board_of(code)
-        if not _is_tradable(bars, name, board):
+        if not _is_tradable(bars, name, board, market_date):
             continue
         stats['tradable'] += 1
         trend = compute_trend(bars.high, bars.low, bars.close, rs_pct.get(code))

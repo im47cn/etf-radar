@@ -41,9 +41,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          token: ${{ secrets.DATA_BOT_PAT }}
-          # 不把 PAT 持久化到 .git/config, 减少后续第三方步骤(uv sync/python)的凭据暴露面。
-          # push 由 Commit 步骤显式设置带 token 的 remote URL 完成。
+          # 2026-09-27: checkout 改用默认 GITHUB_TOKEN (本 workflow 已声明 contents: write)。
+          # 若沿用 DATA_BOT_PAT, PAT 失效(2026-08-29 停更 4 周根因)时本 job 在读代码前即死,
+          # 巡检+Server酱告警同灭。PAT 失效的代价降级为"补偿/heal push 不可用, 巡检告警仍活"。
+          # 不持久化凭据到 .git/config, push 由 Commit 步骤显式设置带 token 的 remote URL。
           persist-credentials: false
       - uses: actions/setup-python@v7
         with:

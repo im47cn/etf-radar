@@ -418,8 +418,10 @@ def run(data_root: Path, dry_run: bool) -> list[Finding]:
                 f"**{kind}** (severity={f['severity']}) 补偿 {MAX_ATTEMPTS} 次仍未恢复。\n\n"
                 f"- detail: {f['detail']}\n- remedy: {f['remedy_workflow']}\n- last: {entry['last_iso']}"
             )
-            send_alert(title, desp)
-            entry["alerted"] = True
+            # 投递失败(网络抖动/SENDKEY 失效, send_alert 仅返回 False 不抛)保持
+            # alerted=False, 下轮巡检重试 —— 单点投递失败不等于告警永久丢失。
+            if send_alert(title, desp):
+                entry["alerted"] = True
         # else: 已 alerted，不重复推
 
     _save_state(state_path, state)

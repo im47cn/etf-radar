@@ -19,7 +19,7 @@ from src.trading.actions_main import (
     run,
 )
 
-AS_OF = date(2026, 8, 20)  # 周四; 08-23 为周日 (周报)
+AS_OF = date(2026, 8, 20)  # 周四; 08-21 为周五 (周报, cron 仅 1-5 触发故周报挂周五)
 
 
 def trade_row(
@@ -187,9 +187,9 @@ def test_run_dry_run_daily_on_transition(data_root: Path, capsys: pytest.Capture
     assert '已进入买区 [11.00 - 11.50]，止损参考 10.20' in out
 
 
-def test_run_dry_run_sunday_weekly(data_root: Path, capsys: pytest.CaptureSelector) -> None:
-    sunday = date(2026, 8, 23)
-    run(data_root, dry_run=True, as_of=sunday, rest=FakeRest(DEFAULT_TRADES, []))
+def test_run_dry_run_friday_weekly(data_root: Path, capsys: pytest.CaptureSelector) -> None:
+    friday = date(2026, 8, 21)
+    run(data_root, dry_run=True, as_of=friday, rest=FakeRest(DEFAULT_TRADES, []))
     out = capsys.readouterr().out
     assert '交易周报' in out and '本周复盘' in out
 
@@ -490,14 +490,14 @@ def test_run_dry_run_degraded_no_alert(data_root: Path, capsys: pytest.CaptureSe
 
 
 def test_run_non_dry_sends_daily_and_weekly(data_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    # 周日 + 昨日 watch 迁移 -> 日报与周报都发
+    # 周五 + 昨日 watch 迁移 -> 日报与周报都发
     pushed: list[tuple[str, str]] = []
     monkeypatch.setattr(am, 'send_alert', lambda t, d: pushed.append((t, d)) or True)
     (data_root / 'latest' / am.STATE_FILENAME).write_text(
         json.dumps({'states': {'600519': 'watch'}, 'regime_history': {}}), encoding='utf-8'
     )
-    sunday = date(2026, 8, 23)
-    run(data_root, dry_run=False, as_of=sunday, rest=FakeRest(DEFAULT_TRADES, []))
+    friday = date(2026, 8, 21)
+    run(data_root, dry_run=False, as_of=friday, rest=FakeRest(DEFAULT_TRADES, []))
     titles = [t for t, _ in pushed]
     assert any('进入买区' in t for t in titles)
     assert any('交易周报' in t for t in titles)

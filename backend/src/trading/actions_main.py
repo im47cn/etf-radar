@@ -400,7 +400,7 @@ def run(
     daily = build_daily_message(trading_doc, prev_states, as_of)
     weekly = (
         build_weekly_message(trading_doc, stats, holdings, as_of)
-        if as_of.isoweekday() == 7
+        if as_of.isoweekday() == 5
         else None
     )
 

@@ -1,6 +1,9 @@
 """screen.py 单测: 筛选漏斗逐层 / RS 百分位 / 综合分权重 (spec §1.3/§1 综合分)."""
 from __future__ import annotations
 
+from dataclasses import replace
+from datetime import date, timedelta
+
 import numpy as np
 import pytest
 
@@ -182,3 +185,15 @@ def test_screen_limit_up_false_when_not_in_zone() -> None:
     top = cands[0]
     assert top['state'] == 'watch'
     assert top['limit_up_unexecutable'] is False
+
+def test_screen_excludes_suspended_stocks() -> None:
+    """停牌护栏: 末根 bar 落后全市场最新交易日的股票不入候选池 (与持仓侧 frozen 口径对称)."""
+    n = 60
+    fresh = candidate_bars()
+    fresh = replace(fresh, dates=[(date(2026, 6, 23) + timedelta(days=i)).isoformat() for i in range(n)])
+    suspended = candidate_bars()
+    suspended = replace(suspended, dates=[(date(2026, 4, 25) + timedelta(days=i)).isoformat() for i in range(n)])
+    names = {'600001': '正常股', '600002': '停牌股'}
+    rs = {'600001': 90.0, '600002': 90.0}
+    cands, _ = screen_universe({'600001': fresh, '600002': suspended}, names, rs, {})
+    assert [c['code'] for c in cands] == ['600001']

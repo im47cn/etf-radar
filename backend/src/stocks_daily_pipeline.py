@@ -177,8 +177,10 @@ def run_daily_pipeline(
     # 拉今日 spot（带重试）；重试耗尽则响亮失败（raise），不静默覆盖现有 indicators
     spot_df = _fetch_today_spot_with_retry()
 
+    # 停牌股新浪 spot 会返回 最新价=0, 直写会污染 close 序列并毒化 r60/GARCH:
+    # 过滤 0/负值, 该股今日走 _append_series 的「缺失保留原值」分支。
     today_close = {str(r['代码']): float(r['最新价']) for _, r in spot_df.iterrows()
-                   if pd.notna(r['最新价'])}
+                   if pd.notna(r['最新价']) and float(r['最新价']) > 0}
     today_volume = {str(r['代码']): int(r['成交量']) for _, r in spot_df.iterrows()
                     if pd.notna(r['成交量'])}
 

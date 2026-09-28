@@ -282,3 +282,38 @@ def test_daily_history_corrupted_shard_degrades(tmp_path: Path):
 
     ind = json.loads((out_dir / 'holdings_indicators.json').read_text())['stocks']['002129']
     assert ind['vol_forecast_ann'] is None
+
+
+def test_daily_filters_zero_price_suspended(tmp_path: Path):
+    """停牌股 spot 最新价=0: 不写入 close 序列 (该日保留 None), 不毒化收益/GARCH。"""
+    holdings_dir = tmp_path / 'holdings'
+    holdings_dir.mkdir()
+    (holdings_dir / 'a.json').write_text(json.dumps({
+        'etf_code': 'a', 'etf_name': 'a', 'disclosure_date': '2026-03-31',
+        'fetched_at': '2026-06-23T00:00:00+00:00',
+        'top_holdings': [{'code': '002129', 'name': 'TCL中环', 'weight': 8.5}],
+    }))
+    out_dir = tmp_path / 'stocks'
+    out_dir.mkdir()
+    (out_dir / 'ohlc').mkdir()
+    universe_codes = ['002129']
+    (out_dir / 'close_series.json').write_text(
+        json.dumps(_make_close_series(universe_codes, n_days=WINDOW_DAYS)))
+    (out_dir / 'volume_series.json').write_text(
+        json.dumps(_make_volume_series(universe_codes, n_days=WINDOW_DAYS)))
+
+    suspended_df = pd.DataFrame({
+        '代码': ['002129'],
+        '名称': ['TCL中环'],
+        '最新价': [0.0],
+        '成交量': [0],
+    })
+    with patch('src.stocks_daily_pipeline._fetch_today_spot', return_value=suspended_df):
+        run_daily_pipeline(
+            holdings_dir=holdings_dir, out_dir=out_dir, today=date(2026, 6, 25),
+        )
+
+    cs = json.loads((out_dir / 'close_series.json').read_text())
+    assert cs['dates'][-1] == '2026-06-25'
+    # 0 值被过滤: 当日缺失保留 None, 而非写入 0.0
+    assert cs['stocks']['002129'][-1] is None

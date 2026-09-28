@@ -54,9 +54,13 @@ def _write_ohlcv(root: Path, code: str, closes: list[float], name_vol: bool = Tr
     d = root / 'stocks' / 'ohlcv'
     d.mkdir(parents=True, exist_ok=True)
     vols = volumes(len(closes)) if name_vol else np.full(len(closes), 1e6)
+    # 末根对齐 D0+N_BAR_DAYS (生产 EOD 全市场末根同日; 停牌护栏按末根日期比对,
+    # 起点回推才能让不同长度序列共存而不被误判停牌)
+    end = D0 + timedelta(days=400)
     bars = [
         {
-            'd': (D0 + timedelta(days=i)).isoformat(), 'o': c, 'h': c * 1.001, 'l': c * 0.999,
+            'd': (end - timedelta(days=len(closes) - 1 - i)).isoformat(),
+            'o': c, 'h': c * 1.001, 'l': c * 0.999,
             'c': c, 'v': float(vols[i]), 'amt': 2e8,
         }
         for i, c in enumerate(closes)

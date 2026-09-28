@@ -395,3 +395,26 @@ def test_run_dry_run_no_side_effects(tmp_path, monkeypatch):
     assert dispatched == []
     assert alerted == []
     assert not (root / "health" / "heal_state.json").exists()
+
+
+def test_alert_delivery_failure_keeps_alerted_false_and_retries(tmp_path, monkeypatch):
+    """send_alert 投递失败(返回 False)时保持 alerted=False, 下一轮重试而非永久丢失。"""
+    root = _write_data_root(tmp_path, degraded=True)
+    dispatched = []
+    deliveries = []
+    monkeypatch.setattr(hm, "_query_runs", dict)
+    monkeypatch.setattr(hm, "_dispatch", lambda wf: bool(dispatched.append(wf)) or True)
+    # 前 MAX_ATTEMPTS 轮耗尽 dispatch 预算
+    for _ in range(hm.MAX_ATTEMPTS):
+        hm.run(root, dry_run=False)
+
+    # 第一轮告警投递失败
+    monkeypatch.setattr(hm, "send_alert", lambda title, desp: deliveries.append(title) or False)
+    hm.run(root, dry_run=False)
+    assert len(deliveries) == 1
+
+    # 投递失败未置 alerted -> 下一轮继续尝试, 成功后不再重复
+    monkeypatch.setattr(hm, "send_alert", lambda title, desp: deliveries.append(title) or True)
+    hm.run(root, dry_run=False)
+    hm.run(root, dry_run=False)
+    assert len(deliveries) == 2  # 失败 1 次 + 成功 1 次, 之后收敛

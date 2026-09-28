@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { LATEST_URLS, frameUrl } from '@/lib/dataUrls';
+import { LATEST_URLS, frameUrl, snapshotFileUrl } from '@/lib/dataUrls';
 
 // URL 契约测试 — 防止 publicDir 平铺结构与 fetch URL 前缀错配再次溜过 MSW 通配匹配.
 // 背景: vite.config.ts publicDir 把 ../data 内容平铺到 dist 根 (dist/latest/, dist/snapshots/),
@@ -34,6 +34,16 @@ describe('data URL contract', () => {
 
     it('不应产生连续双斜杠', () => {
       expect(frameUrl('snapshots/x/themes.json')).not.toMatch(/\/\/snapshots/);
+    });
+  });
+
+  describe('snapshotFileUrl — Phase 3 单日快照 (themes/signals)', () => {
+    it('以 BASE + snapshots/<date>/<file>.json 构造, 不能含 data/ 前缀', () => {
+      for (const file of ['themes', 'signals'] as const) {
+        const url = snapshotFileUrl('2026-06-23', file);
+        expect(url).toMatch(new RegExp(`/snapshots/2026-06-23/${file}\\.json$`));
+        expect(url).not.toContain('/data/');
+      }
     });
   });
 });

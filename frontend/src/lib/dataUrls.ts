@@ -22,6 +22,11 @@ export const LATEST_URLS = {
 // themes_path 形如 "snapshots/<date>/themes.json" (已含 snapshots/ 前缀, 由 backend 写入)
 export const frameUrl = (themesPath: string): string => `${BASE}${themesPath}`;
 
+// 单日快照文件 (themes/signals)。2026-09-27 收编: useEventsSnapshot 曾硬编码
+// /data/snapshots/ 前缀, 撞平铺结构生产 404 静默失效近 3 个月 (MSW 通配掩盖, 单测全绿)。
+export const snapshotFileUrl = (date: string, file: 'themes' | 'signals'): string =>
+  `${BASE}snapshots/${date}/${file}.json`;
+
 // holdings 季度数据（独立于 snapshots）
 export const HOLDINGS_URLS = {
   index: `${BASE}holdings/index.json`,

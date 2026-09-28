@@ -5,6 +5,7 @@ import type { Snapshot, ThemeSnapshotEntry } from '@/lib/portfolio/eventTypes';
 import type { SignalKind } from '@/lib/portfolio/types';
 import { computeQuadrant } from '@/lib/portfolio/rules';
 import { SnapshotThemesFileSchema } from '@/types/snapshots';
+import { snapshotFileUrl } from '@/lib/dataUrls';
 
 // signals.json 校验（与 backend 输出对齐）
 const SignalsFileSchema = z.object({
@@ -43,7 +44,7 @@ const fetcher = async ([themesUrl, signalsUrl]: FetcherKey): Promise<{
  */
 export function useEventsSnapshot(date: string | undefined): UseEventsSnapshotResult {
   const key: FetcherKey | null = date
-    ? [`/data/snapshots/${date}/themes.json`, `/data/snapshots/${date}/signals.json`]
+    ? [snapshotFileUrl(date, 'themes'), snapshotFileUrl(date, 'signals')]
     : null;
 
   const { data, error } = useSWR(key, fetcher, {

@@ -199,3 +199,14 @@ def test_screen_excludes_suspended_stocks() -> None:
     rs = {'600001': 90.0, '600002': 90.0}
     cands, _ = screen_universe({'600001': fresh, '600002': suspended}, names, rs, {})
     assert [c['code'] for c in cands] == ['600001']
+
+
+def test_screen_trend_none_excluded() -> None:
+    """trend None(均线 NaN, qfq 老股 ~0 价护栏同类场景)剔除: 不进漏斗后段。"""
+    cs = [float('nan')] * 200 + [10.0] * 60
+    weird = bars(cs, volumes(260))
+    cands, stats = screen_universe(
+        {'600010': weird}, {'600010': 'nan测试'}, {'600010': 90.0}, {}
+    )
+    assert cands == []
+    assert stats['tradable'] == 1 and stats['stage2'] == 0

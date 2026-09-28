@@ -119,7 +119,7 @@ describe('SignalNote', () => {
   it('resonance 高置信档显示幅度分层标签', () => {
     render(<SignalNote signal="resonance" direction="up" directionTier="high" />);
     expect(screen.getByText('偏多 ▲（高置信）')).toBeInTheDocument();
-    expect(screen.getByText(/\|动量\|≥1% 时数日内 A 股同向概率约 57%/)).toBeInTheDocument();
+    expect(screen.getByText(/\|动量\|≥1% 时数日内 A 股同向概率约 56.7%/)).toBeInTheDocument();
   });
 
   it('resonance 弱信号档灰显并提示随机性', () => {

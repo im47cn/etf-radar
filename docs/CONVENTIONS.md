@@ -27,6 +27,7 @@
 - 必须沿用 pipeline 的 chain 模式：`[Primary, Fallback...]` 列表，逐 provider 兜底，全部失败才记入 `failed[]`。
 - 触发条件：写或 review 任何 `*Provider().fetch_*` 调用时，确认上游是 list 而非单实例。
 - 教训：`backfill_snapshots.py` 原版只接单 `AkshareEmProvider`，2026-06-20 遇 em 服务 `RemoteDisconnected` 30/30 失败时无兜底，CN 数据全空（commit `1974737` 修复）。
+- **单源豁免（2026-09-27 裁决）**：域内确实只有一可用数据源时（如 holdings/stocks_history/metals 现状），允许单实例直调，但须满足两条：① 失败必须响亮——写入 `failed[]` 或 raise 使 job 红，禁止静默降级为空产物；② 注释标注「单源豁免 + 已知备源候选」（如新浪 spot ↔ 东财 spot_em）。一旦第二源可用（仓内已有或新增），立即升级为 chain，豁免失效。
 
 ## Schema 演进必须同时 hotfix 旧数据兼容
 

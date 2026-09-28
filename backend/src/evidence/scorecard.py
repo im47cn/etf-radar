@@ -1,7 +1,10 @@
 """信号计分卡: resonance/transmission 近端滚动胜率 vs 长期基线, 纯计算无 IO.
 
 已验证长期基线 (5 年样本外回测, 见 memory/resonance):
-- resonance 整体 55%, 高置信档 (|us_mom|≥1%) 57%, 弱档 (<0.3%) ≈48% ≈ 随机;
+# 口径出处 (2026-09-27 审查裁决): 整体 55% / high 档 57% 是预注册样本外验证段
+# (2024-26) 实测 55% / 56.7% 的取整点估计; 5 年全样本实测为 56.1% / 59.5%
+# (n=1865, 2026-09-28 load_signal_events+scorecard_rows 复算)。BASELINES 维持
+# 保守验证段口径不变 (行为零变更), 全样本值仅作参照记录。
 - transmission 长期 49% ≈ 基线, 无预测力 (仅展示"≈随机").
 事件口径: 信号日 t 的 theme_signals 事件, 方向 = theme.returns.r_1d 符号 (美股动量代理),
 结果 = 下一 snapshot 的 trigger_cn_etf 的 returns.r_1d 是否同向.

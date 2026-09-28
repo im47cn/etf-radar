@@ -12,7 +12,7 @@ const DIRECTION_LABEL: Record<Direction, string> = {
   down: '偏空 ▼',
 };
 
-// 幅度置信档标签 (样本外验证 2024-26 段): high=|美股动量|≥1% 同向 57% / low=<0.3% ≈随机
+// 幅度置信档标签 (样本外验证 2024-26 段): high=|美股动量|≥1% 同向 56.7% / low=<0.3% ≈随机
 const TIER_LABEL: Record<'high' | 'low', string> = {
   high: '高置信',
   low: '弱信号',
@@ -43,7 +43,7 @@ export const SignalNote = ({ signal, direction, directionTier }: SignalNoteProps
       {showDir ? (
         <div className="mt-1 text-xs text-gray-500">
           {directionTier === 'high'
-            ? '方向取美股动量；样本外验证 |动量|≥1% 时数日内 A 股同向概率约 57%（基线 49%）。'
+            ? '方向取美股动量；样本外验证 |动量|≥1% 时数日内 A 股同向概率约 56.7%（基线 49%）。'
             : directionTier === 'low'
               ? '方向取美股动量；样本外验证 |动量|<0.3% 时同向概率≈48%（≈随机），信号弱，仅供参考。'
               : '方向取美股动量；样本外验证数日内 A 股同向概率约 55%（基线 49%）。'}

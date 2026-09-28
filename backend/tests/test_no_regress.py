@@ -50,9 +50,18 @@ def test_missing_existing_date_passes():
     assert ok is True
 
 
-def test_missing_new_date_side_ignored():
-    # 新 meta 某侧缺失 → 该侧不参与判定, 另一侧回退仍拦。
+def test_missing_new_date_blocks():
+    # 新 meta 某侧缺失而现有有日期 → 判回退: 采集全挂的退化产物
+    # (该市场 date=None)不得覆盖 latest 里的上一好版本 (2026-09-27)。
     ok, reason = should_write_latest(
         _meta(None, '2026-07-06'), _meta('2026-07-08', '2026-07-07')
     )
-    assert ok is False and 'us' in reason
+    assert ok is False and 'cn:missing' in reason
+
+
+def test_both_sides_missing_passes():
+    # 现有该市场也无日期(从未成功/历史首写)→ 放行, 不形成永久死锁。
+    ok, reason = should_write_latest(
+        _meta('2026-07-08', None), _meta('2026-07-08', None)
+    )
+    assert ok is True and reason == 'ok'

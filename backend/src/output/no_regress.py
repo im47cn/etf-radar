@@ -19,9 +19,13 @@ def should_write_latest(
     Returns (ok, reason):
       - existing_meta 为 None/空(首次)→ (True, 'first')
       - 任一市场 new_date < existing_date(严格更旧)→ (False, 'regress:<market>')
+      - 现有有日期而新数据缺日期(None/'')→ (False, 'regress:<market>:missing')
       - 否则(同日或更新)→ (True, 'ok')
 
-    某侧 date 缺失(None/'')→ 该侧不参与判定(向后兼容, 保守放行)。
+    缺日期判回退(2026-09-27): 此前"保守放行"会让采集全挂的退化产物
+    (该市场 date=None)覆盖 latest 里的上一好版本并污染快照, 与本护栏
+    "latest 单调不倒退"的自我声明相悖。现有也无日期(历史首写/该市场
+    从未成功)时仍放行。代价: 单市场挂 → 整批写入冻结, 交 C1 哨兵告警。
     """
     if not existing_meta:
         return True, 'first'
@@ -29,6 +33,10 @@ def should_write_latest(
         key = f'{market}_data_date'
         new_d = new_meta.get(key)
         old_d = existing_meta.get(key)
-        if new_d and old_d and new_d < old_d:
+        if not old_d:
+            continue
+        if not new_d:
+            return False, f'regress:{market}:missing'
+        if new_d < old_d:
             return False, f'regress:{market}'
     return True, 'ok'

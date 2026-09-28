@@ -14,7 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from .trend import STAGE2_TEMPLATE_MIN, TEMPLATE_COUNT, compute_trend
+from .trend import TEMPLATE_COUNT, compute_trend
 from .vcp import find_vcp, is_one_word_limit_up
 
 Array = NDArray[np.float64]
@@ -138,8 +138,12 @@ def screen_universe(
             continue
         stats['tradable'] += 1
         trend = compute_trend(bars.high, bars.low, bars.close, rs_pct.get(code))
-        if trend is None or trend.pass_count < STAGE2_TEMPLATE_MIN:
-            continue  # 模板 >=6/8 即 Stage 2
+        if trend is None:
+            continue  # 均线非法(如 qfq 老股早期 ~0 价)无法评档
+        # 2026-09-28 裁决: 模板 >=6/8 硬过滤降为描述性 —— H2 预注册回测显示
+        # pass 池 20 日超额反而更差(方向反转, 同 leader 规则先例), 硬过滤系统性
+        # 排除实证更优的股票。低模板股保留进漏斗, composite_score 的模板 30%
+        # 权重 + Top 截断天然降权, stage/template_pass 字段如实披露档位。
         stats['stage2'] += 1
         vcp = find_vcp(bars.close, bars.volume)
         if vcp is None:

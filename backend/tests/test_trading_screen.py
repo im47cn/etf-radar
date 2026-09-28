@@ -104,7 +104,9 @@ def test_screen_funnel_layer_counts() -> None:
     universe, names = _universe()
     rs = {'600001': 90.0, '300009': 80.0, '600007': 10.0, '600008': 70.0}
     cands, stats = screen_universe(universe, names, rs, {})
-    assert stats == {'total': 9, 'tradable': 4, 'stage2': 3, 'vcp': 2, 'top': 2}
+    # 模板过滤已降为描述性 (2026-09-28): 下跌股 600007 也计入 stage2 层
+    # (trend 可评即入层), 在 VCP 层被剔 —— 层级计数语义随之放宽
+    assert stats == {'total': 9, 'tradable': 4, 'stage2': 4, 'vcp': 2, 'top': 2}
     assert [c['code'] for c in cands] == ['600001', '300009']  # 综合分降序
 
 

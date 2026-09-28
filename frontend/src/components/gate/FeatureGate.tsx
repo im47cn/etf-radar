@@ -194,6 +194,17 @@ const MemberCheck = ({ copy, children }: { copy: GatedPage; children: ReactNode 
   if (state === 'loading') {
     return <div className="p-8 text-center text-gray-500">加载中...</div>;
   }
+  if (state === 'error') {
+    // 订阅查询失败 ≠ 未订阅: 给付费会员可感知的错误提示, 而非误导升级页
+    return (
+      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg border shadow-sm text-center">
+        <div className="text-lg font-semibold text-red-600">订阅状态获取失败</div>
+        <p className="mt-2 text-sm text-gray-600">
+          已是会员？请刷新页面重试；若持续失败，请检查网络后稍后再试。
+        </p>
+      </div>
+    );
+  }
   if (state === 'member') return <>{children}</>;
   return <HeroUpgrade copy={copy} />;
 };

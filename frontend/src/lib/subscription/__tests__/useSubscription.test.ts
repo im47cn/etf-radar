@@ -64,6 +64,27 @@ describe('useSubscription', () => {
     await waitFor(() => expect(result.current.state).toBe('non-member'));
   });
 
+  it('查询错误 → error（不得降级为 non-member 静默锁会员）', async () => {
+    maybeSingleMock.mockResolvedValue({ data: null, error: new Error('network down') });
+    const { result } = renderHook(() => useSubscription());
+    await waitFor(() => expect(result.current.state).toBe('error'));
+    expect(result.current.plan).toBeNull();
+  });
+
+  it('行形状 schema 不符 → error', async () => {
+    maybeSingleMock.mockResolvedValue({ data: { id: 'not-a-sub' }, error: null });
+    const { result } = renderHook(() => useSubscription());
+    await waitFor(() => expect(result.current.state).toBe('error'));
+  });
+
+  it('查询 throw（网络异常）→ error 而非降级 non-member', async () => {
+    maybeSingleMock.mockRejectedValue(new Error('fetch failed'));
+    const { result } = renderHook(() => useSubscription());
+    await waitFor(() => expect(result.current.state).toBe('error'));
+    expect(result.current.plan).toBeNull();
+    expect(result.current.periodEnd).toBeNull();
+  });
+
   it('未登录 → non-member 且不查库', async () => {
     mockAuthState.user = null;
     mockAuthState.status = 'anonymous';

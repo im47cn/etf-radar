@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { stockOhlcUrl } from '@/lib/dataUrls';
 import type { StockOhlc } from '@/types/stockIndicators';
+import { StockOhlcSchema } from '@/types/stockIndicators';
 
 interface UseStockOhlcResult {
   data: StockOhlc | null;
@@ -35,12 +36,12 @@ export function useStockOhlc(code: string | null): UseStockOhlcResult {
     setError(null);
 
     fetch(stockOhlcUrl(code))
-      .then(res => {
+      .then(async res => {
         if (!res.ok) {
           if (res.status === 404) return null;
           throw new Error(`HTTP ${res.status}`);
         }
-        return res.json() as Promise<StockOhlc>;
+        return StockOhlcSchema.parse(await res.json());
       })
       .then(payload => {
         if (cancelled) return;

@@ -27,34 +27,43 @@ export function useSubscription(): UseSubscriptionResult {
       return;
     }
     setState('loading');
-    const { data, error } = await getSupabase()
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    try {
+      const { data, error } = await getSupabase()
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    if (error || !data) {
-      setPlan(null);
-      setPeriodEnd(null);
-      setState('non-member');
-      return;
-    }
-    const parsed = SubscriptionSchema.safeParse(data);
-    if (!parsed.success) {
-      setPlan(null);
-      setPeriodEnd(null);
-      setState('non-member');
-      return;
-    }
-    const sub = parsed.data;
-    if (isActive(sub.status, sub.current_period_end)) {
+      // 查询错误与「无订阅」必须可区分: 混同会让网络/RLS 故障时
+      // 生效会员被静默锁功能且无任何提示 (2026-09-27 审查 P1)。
+      if (error) {
+        setPlan(null);
+        setPeriodEnd(null);
+        setState('error');
+        return;
+      }
+      if (!data) {
+        setPlan(null);
+        setPeriodEnd(null);
+        setState('non-member');
+        return;
+      }
+      const parsed = SubscriptionSchema.safeParse(data);
+      if (!parsed.success) {
+        setPlan(null);
+        setPeriodEnd(null);
+        setState('error');
+        return;
+      }
+      const sub = parsed.data;
       setPlan(sub.plan);
       setPeriodEnd(sub.current_period_end);
-      setState('member');
-    } else {
-      setPlan(sub.plan);
-      setPeriodEnd(sub.current_period_end);
-      setState('non-member');
+      setState(isActive(sub.status, sub.current_period_end) ? 'member' : 'non-member');
+    } catch {
+      // 网络异常等 throw: 同样走 error 而非降级 non-member
+      setPlan(null);
+      setPeriodEnd(null);
+      setState('error');
     }
   }, [user]);
 

@@ -6,8 +6,9 @@ import type { StockOhlc } from '@/types/stockIndicators';
 const mockOhlc: StockOhlc = {
   code: '600519',
   name: '贵州茅台',
+  generated_at: '2026-06-25T00:00:00+00:00',
   bars: [{ date: '2026-01-01', o: 100, h: 110, l: 95, c: 105, v: 1000 }],
-} as StockOhlc;
+};
 
 describe('useStockOhlc', () => {
   beforeEach(() => {

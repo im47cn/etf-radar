@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LATEST_URLS } from '@/lib/dataUrls';
-import type { StocksSpotFile, StockSpot } from '@/types/holdings';
+import type { StockSpot } from '@/types/holdings';
+import { StocksSpotFileSchema } from '@/types/holdings';
 
 interface UseStocksSpotResult {
   spots: Record<string, StockSpot> | null;
@@ -14,7 +15,7 @@ export function useStocksSpot(): UseStocksSpotResult {
   useEffect(() => {
     let cancelled = false;
     fetch(LATEST_URLS.stocksSpot)
-      .then(res => (res.ok ? (res.json() as Promise<StocksSpotFile>) : null))
+      .then(async res => (res.ok ? StocksSpotFileSchema.parse(await res.json()) : null))
       .then(file => {
         if (cancelled) return;
         setSpots(file?.stocks ?? null);

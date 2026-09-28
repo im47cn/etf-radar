@@ -7,7 +7,35 @@
  * 注意：本文件类型名与 @/lib/portfolio/types 的 Holding（用户持仓）刻意不重名。
  */
 
+import { z } from 'zod';
 import type { StockIndicators } from './stockIndicators';
+
+// runtime 校验 schema (CLAUDE.md: 前端 zod 校验所有 JSON; 缺省字段走 nullish 兼容)
+export const EtfTopHoldingSchema = z.object({
+  code:   z.string(),
+  name:   z.string(),
+  weight: z.number(),
+});
+
+export const EtfHoldingsSnapshotSchema = z.object({
+  etf_code:        z.string(),
+  etf_name:        z.string(),
+  disclosure_date: z.string(),
+  fetched_at:      z.string(),
+  top_holdings:    z.array(EtfTopHoldingSchema),
+});
+
+export const StockSpotSchema = z.object({
+  name:  z.string(),
+  close: z.number(),
+  r_1d:  z.number().nullish().transform(v => v ?? null),
+});
+
+export const StocksSpotFileSchema = z.object({
+  schema_version: z.string(),
+  generated_at:   z.string(),
+  stocks:         z.record(z.string(), StockSpotSchema),
+});
 
 export interface EtfTopHolding {
   code: string;       // 6 位 A 股或 5 位港股

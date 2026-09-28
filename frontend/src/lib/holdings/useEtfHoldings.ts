@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { holdingsEtfUrl } from '@/lib/dataUrls';
 import type { EtfHoldingsSnapshot } from '@/types/holdings';
+import { EtfHoldingsSnapshotSchema } from '@/types/holdings';
 
 interface UseEtfHoldingsResult {
   data: EtfHoldingsSnapshot[];
@@ -30,7 +31,7 @@ export function useEtfHoldings(etfCodes: string[]): UseEtfHoldingsResult {
       etfCodes.map(async code => {
         const res = await fetch(holdingsEtfUrl(code));
         if (!res.ok) throw new Error(`${code}: HTTP ${res.status}`);
-        return (await res.json()) as EtfHoldingsSnapshot;
+        return EtfHoldingsSnapshotSchema.parse(await res.json());
       }),
     ).then(results => {
       if (cancelled) return;

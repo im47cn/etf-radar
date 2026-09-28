@@ -19,8 +19,10 @@ export const SubscriptionSchema = z.object({
 });
 export type Subscription = z.infer<typeof SubscriptionSchema>;
 
-// useSubscription 对外三态：loading（拉取中）/ member（生效会员）/ non-member（未订阅或已过期）
-export type SubscriptionState = 'loading' | 'member' | 'non-member';
+// useSubscription 对外四态：loading（拉取中）/ member（生效会员）/
+// non-member（未订阅或已过期）/ error（查询失败或行形状异常 —— 不得与未订阅混淆,
+// 否则基础设施故障时生效会员会被静默锁功能）
+export type SubscriptionState = 'loading' | 'member' | 'non-member' | 'error';
 
 export interface UseSubscriptionResult {
   state:     SubscriptionState;

@@ -146,6 +146,7 @@ export const MembershipPanel = () => {
           </span>
         )}
         {state === 'non-member' && <span className="text-gray-700">当前未订阅</span>}
+        {state === 'error' && <span className="text-red-600">订阅状态获取失败，请刷新重试</span>}
       </div>
 
       {state !== 'member' && (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { STOCKS_URLS } from '@/lib/dataUrls';
-import type { HoldingsIndicatorsFile, StockIndicators } from '@/types/stockIndicators';
+import type { StockIndicators } from '@/types/stockIndicators';
+import { HoldingsIndicatorsFileSchema } from '@/types/stockIndicators';
 
 interface UseStockIndicatorsResult {
   data: Map<string, StockIndicators>;
@@ -18,7 +19,7 @@ export function useStockIndicators(): UseStockIndicatorsResult {
   useEffect(() => {
     let cancelled = false;
     fetch(STOCKS_URLS.holdingsIndicators)
-      .then(res => {
+      .then(async res => {
         if (!res.ok) {
           if (res.status === 404) {
             // backfill 未跑过 / 数据缺失，静默返回空 Map
@@ -26,7 +27,7 @@ export function useStockIndicators(): UseStockIndicatorsResult {
           }
           throw new Error(`HTTP ${res.status}`);
         }
-        return res.json() as Promise<HoldingsIndicatorsFile>;
+        return HoldingsIndicatorsFileSchema.parse(await res.json());
       })
       .then(payload => {
         if (cancelled) return;

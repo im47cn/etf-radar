@@ -42,11 +42,11 @@ class WorkflowSchedule:
     - mode:
         'intraday' —— 盘中多班(如 cn-refresh):活跃窗口内最近 success createdAt 应在
                        max_age_hours 内,否则 missed。窗口外(收盘后/开盘前)不判。
-        'daily'    —— 日频单班:最近 success createdAt 应 ≥ 当日 daily_deadline_utc,
-                       否则 missed。
+        'daily'    —— 日频单班:最近 success createdAt 应 ≥ 最近已过期锚点
+                       (交易日 daily_deadline_utc+grace ≤ now 的最近一次),否则 missed。
     - latest_utc:(intraday)当日末班时刻;now 超过 latest_utc+grace(收盘后)或早于
                   earliest_utc+grace(开盘前)→ 不判 missed(当日工作已完成/未开始)。
-                  None 表示无上界(如 us-refresh 日频跨日,仅靠 max_age_hours)。
+                  None 表示无上界。
     """
 
     trading_gate: str
@@ -69,13 +69,15 @@ WORKFLOW_SCHEDULES: dict[str, WorkflowSchedule] = {
         latest_utc=time(7, 45),  # 15:45 BJT 末班;收盘后不再判 missed
     ),
     "us-refresh": WorkflowSchedule(
-        # us-refresh 日频、跨 UTC 日边界(22:30),故不设同日 earliest 门:
-        # 仅靠 max_age_hours=26h(日频+grace)判"距最近 success 过久"。
+        # us-refresh 日频、22:30(UTC) 跨日边界跑前一美股交易日收盘数据:
+        # daily 锚点=最近已过期的 22:30+grace, 上次 success 须 ≥ 锚点。
+        # (纯 age 判据 26h 不覆盖周末 70h 间隔 → 每周一 00:30 后必误报,
+        #  2026-09-28 00:32 实证误 dispatch, 审查 #2)
         trading_gate="us",
-        earliest_utc=time(0, 0),
-        grace_hours=0.0,
-        mode="intraday",
-        max_age_hours=26.0,
+        earliest_utc=time(22, 30),
+        grace_hours=2.0,
+        mode="daily",
+        daily_deadline_utc=time(22, 30),
     ),
     "stocks-daily": WorkflowSchedule(
         trading_gate="cn",
@@ -130,42 +132,57 @@ def _is_missed(
 
     仅在 gate 交易日、且已过当日 earliest+grace 后才判(避免过早/周末误报)。
     intraday 另设活跃窗口上界 latest_utc+grace:收盘后当日工作已完成 → 不判。
-    run_present=False(无任何 qualifying success run)时,窗口内一律判 missed。
+    daily 用"最近已过期锚点"(交易日 daily_deadline_utc+grace ≤ now 的最近一次):
+    锚点未过 any(如周一 00:30, 周五收盘数据的 70h 周末间隔未结束)→ 不判,
+    避免纯 age 判据的周末误报;上次 success ≥ 锚点 → 健康。
+    run_present=False(无任何 qualifying success run)时,已过期锚点后一律判 missed。
     run_present=True 但 createdAt 缺失/异常 → 保守不判(避免 gh 格式微调触发无谓补偿)。
     """
     today = now.date()
     if not _trading_gate_open(sched.trading_gate, today):
         return False
-    earliest_dt = datetime.combine(today, sched.earliest_utc, tzinfo=UTC)
-    deadline = earliest_dt + timedelta(hours=sched.grace_hours)
-    if now < deadline:
-        return False  # 尚未到应触发时点,不判 missed
-
-    # intraday 活跃窗口上界:超过末班+grace(收盘后)→ 当日工作已完成,不再判 missed。
-    if sched.mode == "intraday" and sched.latest_utc is not None:
-        latest_dt = datetime.combine(today, sched.latest_utc, tzinfo=UTC) + timedelta(
-            hours=sched.grace_hours
-        )
-        if now > latest_dt:
-            return False
-
-    if not run_present:
-        return True  # 窗口内无任何 qualifying success run → missed
-
-    created = _parse_created_at(run)
-    if created is None:
-        # success run 存在但 createdAt 缺失/格式异常 → 保守不判 missed,避免 gh
-        # 输出格式微调触发无谓补偿。
-        log.warning("_is_missed: run 缺有效 createdAt, 保守不判 missed: %r", run)
-        return False
 
     if sched.mode == "intraday":
+        earliest_dt = datetime.combine(today, sched.earliest_utc, tzinfo=UTC)
+        deadline = earliest_dt + timedelta(hours=sched.grace_hours)
+        if now < deadline:
+            return False  # 尚未到应触发时点,不判 missed
+        # 活跃窗口上界:超过末班+grace(收盘后)→ 当日工作已完成,不再判 missed。
+        if sched.latest_utc is not None:
+            latest_dt = datetime.combine(today, sched.latest_utc, tzinfo=UTC) + timedelta(
+                hours=sched.grace_hours
+            )
+            if now > latest_dt:
+                return False
+        if not run_present:
+            return True  # 窗口内无任何 qualifying success run → missed
+        created = _parse_created_at(run)
+        if created is None:
+            log.warning("_is_missed: run 缺有效 createdAt, 保守不判 missed: %r", run)
+            return False
         assert sched.max_age_hours is not None
         return (now - created) > timedelta(hours=sched.max_age_hours)
-    # daily:最近 success 应 ≥ 当日 deadline
+
+    # daily: 回看最近已过期锚点, 跨周末/节假日。
     assert sched.daily_deadline_utc is not None
-    day_deadline = datetime.combine(today, sched.daily_deadline_utc, tzinfo=UTC)
-    return created < day_deadline
+    anchor = None
+    d = today
+    for _ in range(10):  # 覆盖长假+周末
+        if _trading_gate_open(sched.trading_gate, d):
+            cand = datetime.combine(d, sched.daily_deadline_utc, tzinfo=UTC)
+            if cand + timedelta(hours=sched.grace_hours) <= now:
+                anchor = cand
+                break
+        d = d - timedelta(days=1)
+    if anchor is None:
+        return False  # 尚无已过期锚点(如周一 00:30 周末间隔未结束)
+    if not run_present:
+        return True
+    created = _parse_created_at(run)
+    if created is None:
+        log.warning("_is_missed: run 缺有效 createdAt, 保守不判 missed: %r", run)
+        return False
+    return created < anchor
 
 
 def evaluate(

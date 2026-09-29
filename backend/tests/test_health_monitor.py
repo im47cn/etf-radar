@@ -251,6 +251,54 @@ def test_us_refresh_within_26h_not_missed():
     assert "workflow_missed_or_failed" not in kinds
 
 
+def test_us_refresh_monday_morning_weekend_gap_not_missed():
+    """关键回归(审查#2, 2026-09-28 00:32 实证误 dispatch): 周一 00:31 UTC、
+    最近 success=周六 00:44(覆盖周五收盘, 周末 70h 间隔属正常)、
+    周一 22:30 锚点未过期 → 不判 missed。"""
+    runs = {"us-refresh": {"status": "completed", "conclusion": "success",
+                           "createdAt": "2026-09-26T00:44:00Z"}}
+    kinds = {
+        f["kind"]
+        for f in hm.evaluate(_healthy_meta(), _healthy_qc(), [], runs=runs, now=_utc(2026, 9, 28, 0, 31))
+    }
+    assert "workflow_missed_or_failed" not in kinds
+
+
+def test_us_refresh_monday_run_failed_detected_tuesday():
+    """周一 22:30 锚点过期后(周二 00:31)、最近 success 仍=周六(周一 run 失败)
+    → missed(补偿机制保持可检出)。"""
+    runs = {"us-refresh": {"status": "completed", "conclusion": "success",
+                           "createdAt": "2026-09-26T00:44:00Z"}}
+    findings = hm.evaluate(
+        _healthy_meta(), _healthy_qc(), [], runs=runs, now=_utc(2026, 9, 29, 0, 31)
+    )
+    f = next(f for f in findings if f["kind"] == "workflow_missed_or_failed")
+    assert f["remedy_workflow"] == "us-refresh"
+
+
+def test_us_refresh_no_run_with_passed_anchor_missed():
+    """daily: 锚点已过期但无任何 qualifying success run → missed。"""
+    runs = {"us-refresh": None}
+    findings = hm.evaluate(
+        _healthy_meta(), _healthy_qc(), [], runs=runs, now=_utc(2026, 9, 29, 0, 31)
+    )
+    assert any(
+        f["kind"] == "workflow_missed_or_failed" and f["remedy_workflow"] == "us-refresh"
+        for f in findings
+    )
+
+
+def test_daily_no_passed_anchor_not_missed(monkeypatch):
+    """daily: 长假后首个交易日、当日锚点未过期且回看全是休市日 → 无已过期锚点不判
+    (直接驱动 _is_missed, gate 用 monkeypatch 隔离真实节假日历)。"""
+    now = datetime(2026, 7, 8, 9, 0, tzinfo=UTC)
+    monkeypatch.setattr(hm, "is_us_trading_day", lambda d: d == now.date())
+    sched = hm.WORKFLOW_SCHEDULES["us-refresh"]
+    run = {"status": "completed", "conclusion": "success",
+           "createdAt": "2026-07-01T22:35:00Z"}  # 假期间最后一次 success
+    assert hm._is_missed(sched, run, now) is False
+
+
 # ----------------------------- 编排计数 -----------------------------
 def _write_data_root(tmp_path, *, degraded=True):
     latest = tmp_path / "latest"

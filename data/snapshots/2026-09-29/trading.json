@@ -1,0 +1,197 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-28T18:02:40.550154+00:00",
+  "environment": {
+    "regime": "defense",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 3,
+        "criteria": [
+          false,
+          true,
+          false,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 4340.755
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 4,
+        "criteria": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 7402.295
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 3,
+        "criteria": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 3139.825
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "as_of": "2026-09-25",
+      "stale": true,
+      "ma20_pct": 0.399,
+      "ma60_pct": 0.539,
+      "ma120_pct": 0.291
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [
+    {
+      "code": "600236",
+      "name": "桂冠电力",
+      "composite_score": 5.7,
+      "stage": 2,
+      "template_pass": 6,
+      "rs_pct": 58.2,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 23.6,
+        "quality": 0.4329,
+        "volume_dryup": true
+      },
+      "pivot": 12.09,
+      "buy_zone_low": 12.09,
+      "buy_zone_high": 12.6945,
+      "stop": 11.1228,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 1.3,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600009",
+      "name": "上海机场",
+      "composite_score": 3.1,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 56.6,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 9.3,
+        "quality": 0.2535,
+        "volume_dryup": true
+      },
+      "pivot": 24.65,
+      "buy_zone_low": 24.65,
+      "buy_zone_high": 25.8825,
+      "stop": 22.678,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.45,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600873",
+      "name": "梅花生物",
+      "composite_score": 2.6,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 52.0,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 13.6,
+        "quality": 0.1548,
+        "volume_dryup": true
+      },
+      "pivot": 8.44,
+      "buy_zone_low": 8.44,
+      "buy_zone_high": 8.862,
+      "stop": 7.7648,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.95,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "002049",
+      "name": "紫光国微",
+      "composite_score": 2.4,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 11.1,
+      "vcp": {
+        "contractions": 4,
+        "depth_pct": 32.7,
+        "quality": 0.4218,
+        "volume_dryup": true
+      },
+      "pivot": 87.09,
+      "buy_zone_low": 87.09,
+      "buy_zone_high": 91.4445,
+      "stop": 80.1228,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -3.25,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "300073",
+      "name": "当升科技",
+      "composite_score": 2.2,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 17.2,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 23.4,
+        "quality": 0.3269,
+        "volume_dryup": true
+      },
+      "pivot": 47.38,
+      "buy_zone_low": 47.38,
+      "buy_zone_high": 49.749,
+      "stop": 43.5896,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -2.91,
+      "board": "chinext",
+      "vol_forecast_ann": null
+    }
+  ],
+  "universe_stats": {
+    "total": 5568,
+    "tradable": 2862,
+    "stage2": 2862,
+    "vcp": 5,
+    "top": 5
+  }
+}

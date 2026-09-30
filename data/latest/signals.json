@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-30T09:24:05.410485+08:00",
+  "generated_at": "2026-09-30T14:36:59.909366+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -238,16 +238,16 @@
     },
     {
       "theme_id": "biotech",
-      "signal": null,
+      "signal": "transmission",
       "direction": "down",
       "direction_tier": "high",
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "159992",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       },
-      "description": "美股生物科技/创新药 composite 57 动量观察中"
+      "description": "美股 composite 57 领先, A股尚未同步"
     },
     {
       "theme_id": "aerospace_defense",
@@ -303,16 +303,16 @@
     },
     {
       "theme_id": "cn_consumer",
-      "signal": null,
+      "signal": "divergence",
       "direction": "down",
       "direction_tier": null,
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "510150",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "transmission",
+        "mid": "divergence",
+        "long": "divergence"
       },
-      "description": "美股大消费 composite 51 动量观察中"
+      "description": "美股A股短期方向不一致"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -664,9 +664,9 @@
       "cn_code": "512290",
       "mapping_score": 5,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
         "long": "resonance"
       }
@@ -676,11 +676,11 @@
       "cn_code": "159992",
       "mapping_score": 8,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": "divergence"
+        "short": "transmission",
+        "mid": "transmission",
+        "long": null
       }
     },
     {
@@ -726,8 +726,8 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": null,
-        "mid": "resonance",
+        "short": "transmission",
+        "mid": null,
         "long": "divergence"
       }
     },
@@ -736,10 +736,10 @@
       "cn_code": "510150",
       "mapping_score": 10,
       "confidence": 60,
-      "signal": null,
+      "signal": "divergence",
       "votes": {
-        "short": null,
-        "mid": "resonance",
+        "short": "transmission",
+        "mid": "divergence",
         "long": "divergence"
       }
     },

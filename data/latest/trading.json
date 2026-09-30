@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-29T16:20:38.817552+00:00",
+  "generated_at": "2026-09-30T16:34:32.661942+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 4345.209
+        "close": 4357.616
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 7439.627
+        "close": 7435.164
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 3142.563
+        "close": 3135.277
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-09-28",
+      "as_of": "2026-09-29",
       "stale": true,
-      "ma20_pct": 0.263,
-      "ma60_pct": 0.446,
-      "ma120_pct": 0.243
+      "ma20_pct": 0.325,
+      "ma60_pct": 0.482,
+      "ma120_pct": 0.269
     },
     "source_status": {
       "indices": "ok",
@@ -72,39 +72,16 @@
   },
   "candidates": [
     {
-      "code": "603995",
-      "name": "甬金股份",
-      "composite_score": 6.5,
-      "stage": 2,
-      "template_pass": 8,
-      "rs_pct": 74.2,
-      "vcp": {
-        "contractions": 3,
-        "depth_pct": 31.0,
-        "quality": 0.3225,
-        "volume_dryup": true
-      },
-      "pivot": 27.53,
-      "buy_zone_low": 27.53,
-      "buy_zone_high": 28.9065,
-      "stop": 25.3276,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 0.88,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
       "code": "600236",
       "name": "桂冠电力",
-      "composite_score": 5.4,
+      "composite_score": 5.3,
       "stage": 2,
       "template_pass": 6,
-      "rs_pct": 53.0,
+      "rs_pct": 48.3,
       "vcp": {
         "contractions": 3,
         "depth_pct": 24.1,
-        "quality": 0.3976,
+        "quality": 0.4036,
         "volume_dryup": true
       },
       "pivot": 12.09,
@@ -113,21 +90,21 @@
       "stop": 11.1228,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -1.92,
+      "chg_pct": 0.98,
       "board": "main",
       "vol_forecast_ann": null
     },
     {
       "code": "000651",
       "name": "格力电器",
-      "composite_score": 4.4,
+      "composite_score": 4.5,
       "stage": 1,
       "template_pass": 4,
-      "rs_pct": 63.2,
+      "rs_pct": 60.4,
       "vcp": {
         "contractions": 2,
         "depth_pct": 6.1,
-        "quality": 0.2171,
+        "quality": 0.2476,
         "volume_dryup": true
       },
       "pivot": 40.43,
@@ -136,44 +113,21 @@
       "stop": 37.98,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -0.78,
+      "chg_pct": 0.47,
       "board": "main",
       "vol_forecast_ann": 0.1775
     },
     {
-      "code": "600009",
-      "name": "上海机场",
-      "composite_score": 2.9,
-      "stage": 4,
-      "template_pass": 1,
-      "rs_pct": 49.4,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 9.3,
-        "quality": 0.2501,
-        "volume_dryup": true
-      },
-      "pivot": 24.65,
-      "buy_zone_low": 24.65,
-      "buy_zone_high": 25.8825,
-      "stop": 22.678,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 0.09,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
       "code": "600820",
       "name": "隧道股份",
-      "composite_score": 2.9,
+      "composite_score": 3.2,
       "stage": 4,
-      "template_pass": 1,
-      "rs_pct": 55.1,
+      "template_pass": 2,
+      "rs_pct": 56.7,
       "vcp": {
         "contractions": 2,
         "depth_pct": 8.6,
-        "quality": 0.2094,
+        "quality": 0.1917,
         "volume_dryup": true
       },
       "pivot": 5.69,
@@ -182,39 +136,62 @@
       "stop": 5.2348,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": 0.0,
+      "chg_pct": 1.92,
       "board": "main",
       "vol_forecast_ann": null
     },
     {
-      "code": "002049",
-      "name": "紫光国微",
-      "composite_score": 2.3,
+      "code": "600009",
+      "name": "上海机场",
+      "composite_score": 2.8,
       "stage": 4,
       "template_pass": 1,
-      "rs_pct": 7.3,
+      "rs_pct": 48.8,
       "vcp": {
-        "contractions": 4,
-        "depth_pct": 32.9,
-        "quality": 0.4259,
+        "contractions": 2,
+        "depth_pct": 9.3,
+        "quality": 0.2316,
         "volume_dryup": true
       },
-      "pivot": 87.09,
-      "buy_zone_low": 87.09,
-      "buy_zone_high": 91.4445,
-      "stop": 80.1228,
+      "pivot": 24.65,
+      "buy_zone_low": 24.65,
+      "buy_zone_high": 25.8825,
+      "stop": 22.678,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -0.38,
+      "chg_pct": 0.89,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "002643",
+      "name": "万润股份",
+      "composite_score": 2.1,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 2.5,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 34.8,
+        "quality": 0.4133,
+        "volume_dryup": true
+      },
+      "pivot": 19.14,
+      "buy_zone_low": 19.14,
+      "buy_zone_high": 20.097,
+      "stop": 17.6088,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -1.18,
       "board": "main",
       "vol_forecast_ann": null
     }
   ],
   "universe_stats": {
-    "total": 5570,
-    "tradable": 2840,
-    "stage2": 2840,
-    "vcp": 6,
-    "top": 6
+    "total": 5571,
+    "tradable": 2804,
+    "stage2": 2804,
+    "vcp": 5,
+    "top": 5
   }
 }

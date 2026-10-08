@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-09T01:10:33.724788+08:00",
+  "generated_at": "2026-10-09T06:00:51.472268+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -91,7 +91,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股新能源车 composite 30 动量观察中"
+      "description": "美股新能源车 composite 31 动量观察中"
     },
     {
       "theme_id": "cn_battery",
@@ -104,7 +104,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股锂电池 composite 42 动量观察中"
+      "description": "美股锂电池 composite 43 动量观察中"
     },
     {
       "theme_id": "cn_chemicals",
@@ -130,7 +130,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股机器人 composite 41 动量观察中"
+      "description": "美股机器人 composite 40 动量观察中"
     },
     {
       "theme_id": "gold",
@@ -169,7 +169,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股有色金属 composite 48 动量观察中"
+      "description": "美股有色金属 composite 47 动量观察中"
     },
     {
       "theme_id": "china_internet",
@@ -199,16 +199,16 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": "transmission",
-      "direction": "down",
-      "direction_tier": "low",
-      "trigger_cn_etf": "512800",
+      "signal": null,
+      "direction": "up",
+      "direction_tier": null,
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
+        "short": null,
+        "mid": null,
         "long": null
       },
-      "description": "美股 composite 39 领先, A股尚未同步"
+      "description": "美股银行 composite 44 动量观察中"
     },
     {
       "theme_id": "cn_insurance",
@@ -221,20 +221,20 @@
         "mid": null,
         "long": null
       },
-      "description": "美股保险 composite 59 动量观察中"
+      "description": "美股保险 composite 61 动量观察中"
     },
     {
       "theme_id": "solar_clean_energy",
       "signal": null,
-      "direction": "down",
-      "direction_tier": "high",
+      "direction": "up",
+      "direction_tier": "low",
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
         "mid": null,
         "long": null
       },
-      "description": "美股光伏/清洁能源 composite 15 动量观察中"
+      "description": "美股光伏/清洁能源 composite 23 动量观察中"
     },
     {
       "theme_id": "biotech",
@@ -247,13 +247,13 @@
         "mid": null,
         "long": null
       },
-      "description": "美股生物科技/创新药 composite 42 动量观察中"
+      "description": "美股生物科技/创新药 composite 43 动量观察中"
     },
     {
       "theme_id": "aerospace_defense",
       "signal": null,
       "direction": "down",
-      "direction_tier": "high",
+      "direction_tier": null,
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
@@ -434,7 +434,7 @@
     {
       "theme_id": "semiconductor",
       "cn_code": "512480",
-      "mapping_score": 40,
+      "mapping_score": 39,
       "confidence": 90,
       "signal": "transmission",
       "votes": {
@@ -506,7 +506,7 @@
     {
       "theme_id": "energy_oil",
       "cn_code": "162411",
-      "mapping_score": 27,
+      "mapping_score": 28,
       "confidence": 90,
       "signal": "resonance",
       "votes": {
@@ -602,7 +602,7 @@
     {
       "theme_id": "china_internet",
       "cn_code": "513050",
-      "mapping_score": 70,
+      "mapping_score": 69,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -628,9 +628,9 @@
       "cn_code": "512800",
       "mapping_score": 28,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": "transmission",
         "long": null
       }
@@ -638,7 +638,7 @@
     {
       "theme_id": "cn_insurance",
       "cn_code": "159851",
-      "mapping_score": 26,
+      "mapping_score": 27,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -662,7 +662,7 @@
     {
       "theme_id": "biotech",
       "cn_code": "512290",
-      "mapping_score": 1,
+      "mapping_score": 0,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -674,7 +674,7 @@
     {
       "theme_id": "biotech",
       "cn_code": "159992",
-      "mapping_score": 2,
+      "mapping_score": 3,
       "confidence": 90,
       "signal": null,
       "votes": {

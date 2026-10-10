@@ -1,10 +1,10 @@
 {
   "schema_version": "1.1",
   "last_full_refresh": {
-    "us": "2026-10-09T15:55:46.372895+08:00",
-    "cn": "2026-10-09T15:55:46.372895+08:00"
+    "us": "2026-10-10T09:50:51.388914+08:00",
+    "cn": "2026-10-10T09:50:51.388914+08:00"
   },
-  "last_intraday_refresh": "2026-10-09T15:55:46.372895+08:00",
+  "last_intraday_refresh": null,
   "providers": {
     "us": {
       "status": "ok",
@@ -17,6 +17,7 @@
   },
   "failed_symbols": [],
   "fallback_symbols": {
+    "159996": "akshare-sina",
     "161226": "akshare-sina",
     "162411": "akshare-sina",
     "510150": "akshare-sina",
@@ -47,14 +48,14 @@
   },
   "stale_minutes": 0,
   "calendar": {
-    "us_trading_today": true,
-    "cn_trading_today": true,
+    "us_trading_today": false,
+    "cn_trading_today": false,
     "us_session_active": false,
     "cn_session_active": false
   },
   "backfilled": false,
   "cn_data_date": "2026-10-09",
-  "us_data_date": "2026-10-08",
+  "us_data_date": "2026-10-09",
   "theme_kinds": {
     "mapped": 19,
     "cn_only": 12

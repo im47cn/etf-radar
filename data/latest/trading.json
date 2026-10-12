@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-09T16:35:02.617375+00:00",
+  "generated_at": "2026-10-12T19:32:03.984052+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 4317.255
+        "close": 4287.98
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 7251.006
+        "close": 7093.021
       },
       {
         "code": "399006",
@@ -50,13 +50,13 @@
           false,
           true
         ],
-        "close": 3043.335
+        "close": 2963.824
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
       "as_of": "2026-10-09",
-      "stale": false,
+      "stale": true,
       "ma20_pct": 0.398,
       "ma60_pct": 0.481,
       "ma120_pct": 0.286
@@ -70,59 +70,12 @@
       "vol": "ok"
     }
   },
-  "candidates": [
-    {
-      "code": "601038",
-      "name": "一拖股份",
-      "composite_score": 5.6,
-      "stage": 2,
-      "template_pass": 6,
-      "rs_pct": 86.0,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 15.7,
-        "quality": 0.1847,
-        "volume_dryup": true
-      },
-      "pivot": 14.95,
-      "buy_zone_low": 14.95,
-      "buy_zone_high": 15.6975,
-      "stop": 13.754,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": -0.15,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
-      "code": "603339",
-      "name": "四方科技",
-      "composite_score": 2.0,
-      "stage": 4,
-      "template_pass": 0,
-      "rs_pct": 16.2,
-      "vcp": {
-        "contractions": 3,
-        "depth_pct": 34.4,
-        "quality": 0.3741,
-        "volume_dryup": true
-      },
-      "pivot": 16.08,
-      "buy_zone_low": 16.08,
-      "buy_zone_high": 16.884,
-      "stop": 14.7936,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 0.0,
-      "board": "main",
-      "vol_forecast_ann": null
-    }
-  ],
+  "candidates": [],
   "universe_stats": {
     "total": 5572,
-    "tradable": 2828,
-    "stage2": 2828,
-    "vcp": 2,
-    "top": 2
+    "tradable": 2811,
+    "stage2": 2811,
+    "vcp": 0,
+    "top": 0
   }
 }

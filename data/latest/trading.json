@@ -1,16 +1,16 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-13T17:41:29.062482+00:00",
+  "generated_at": "2026-10-14T15:16:24.893136+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
       {
         "code": "000300",
         "name": "沪深300",
-        "template_pass": 3,
+        "template_pass": 2,
         "criteria": [
           false,
-          true,
+          false,
           false,
           false,
           false,
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 4275.68
+        "close": 4217.68
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 7085.088
+        "close": 6980.107
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 2958.344
+        "close": 2866.763
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
       "as_of": "2026-10-13",
       "stale": false,
-      "ma20_pct": 0.315,
-      "ma60_pct": 0.408,
-      "ma120_pct": 0.248
+      "ma20_pct": 0.343,
+      "ma60_pct": 0.425,
+      "ma120_pct": 0.266
     },
     "source_status": {
       "indices": "ok",
@@ -73,8 +73,8 @@
   "candidates": [],
   "universe_stats": {
     "total": 5573,
-    "tradable": 2805,
-    "stage2": 2805,
+    "tradable": 2789,
+    "stage2": 2789,
     "vcp": 0,
     "top": 0
   }

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-15T14:19:25.605379+08:00",
+  "generated_at": "2026-10-15T14:40:17.771392+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -199,16 +199,16 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": null,
+      "signal": "transmission",
       "direction": "down",
       "direction_tier": null,
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "512800",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       },
-      "description": "美股银行 composite 38 动量观察中"
+      "description": "美股 composite 38 领先, A股尚未同步"
     },
     {
       "theme_id": "cn_insurance",
@@ -440,7 +440,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": null
+        "long": "resonance"
       }
     },
     {
@@ -628,9 +628,9 @@
       "cn_code": "512800",
       "mapping_score": 18,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
         "long": null
       }
@@ -724,11 +724,11 @@
       "cn_code": "159928",
       "mapping_score": 3,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "divergence",
-        "long": "transmission"
+        "mid": null,
+        "long": "divergence"
       }
     },
     {

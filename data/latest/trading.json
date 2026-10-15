@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-14T15:16:24.893136+00:00",
+  "generated_at": "2026-10-15T14:44:34.920225+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,23 +18,23 @@
           false,
           true
         ],
-        "close": 4217.68
+        "close": 4166.012
       },
       {
         "code": "000905",
         "name": "中证500",
-        "template_pass": 4,
+        "template_pass": 3,
         "criteria": [
           false,
           true,
           true,
           false,
           false,
-          true,
+          false,
           false,
           true
         ],
-        "close": 6980.107
+        "close": 6769.251
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 2866.763
+        "close": 2783.175
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-10-13",
+      "as_of": "2026-10-14",
       "stale": false,
-      "ma20_pct": 0.343,
-      "ma60_pct": 0.425,
-      "ma120_pct": 0.266
+      "ma20_pct": 0.242,
+      "ma60_pct": 0.345,
+      "ma120_pct": 0.23
     },
     "source_status": {
       "indices": "ok",
@@ -72,9 +72,9 @@
   },
   "candidates": [],
   "universe_stats": {
-    "total": 5573,
-    "tradable": 2789,
-    "stage2": 2789,
+    "total": 5575,
+    "tradable": 2769,
+    "stage2": 2769,
     "vcp": 0,
     "top": 0
   }

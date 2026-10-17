@@ -33,6 +33,7 @@ module.exports = {
         'backend', 'frontend', 'ui',
         'signals', 'evidence', 'temperature', 'portfolio', 'membership',
         'radar', 'gate', 'core',
+        'factory', 'feedback', // .factory 工厂链与反馈账本域（issue #74：域已存在多日漏追加）
         'ci', 'deps', 'lint', 'scripts', 'hooks', 'vite',
         'docs', 'test',
       ],

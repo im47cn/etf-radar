@@ -5,7 +5,7 @@ requires-python = ">=3.11"
 dependencies = [
     "pandas>=3.0.6",
     "numpy>=1.26.0",
-    "pydantic>=2.14.0",
+    "pydantic>=2.14.1",
     "PyYAML>=6.0.3",
     "yfinance>=1.7.0",
     "akshare>=1.19.1",
@@ -20,7 +20,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=9.1.1",
-    "ruff>=0.16.10",
+    "ruff>=0.17.1",
     "mypy>=2.4.0",
     "responses>=0.26.3",
     "freezegun>=1.5.5",

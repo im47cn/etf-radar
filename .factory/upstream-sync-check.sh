@@ -25,7 +25,7 @@
 #
 # 退出码: 0 = 无漂移或 PR 已开（同步已推进，调用方当轮即止）
 #         1 = 漂移存在但推进失败（gauntlet 红/分支推失败）→ 人工介入
-#         2 = 用法/上游不可用/锁文件缺 upstream 字段
+#         2 = 用法/上游不可用/锁文件缺 upstream 字段/基线不可解析（#133）
 #         3 = 无凭据降级（本地已报告，无远端副作用）
 set -euo pipefail
 
@@ -36,6 +36,16 @@ REPO="$(git rev-parse --show-toplevel)"
 FACTORY="$REPO/.factory"
 HOST="python3 ${FACTORY}/hosting.py"
 LOCK="$FACTORY/upstream-lock.json"
+
+# 基线分支两级解析（与 fix-issue.sh 同不变量，issue #133 收口）：env 显式 →
+# origin 实际默认分支；两者皆无 fail-closed 拒猜——固定回退 main 在
+# master 仓上落错基线。分步执行：set -e 下 $(...) 内嵌失败带 git rc 直接
+# 终止（fix-issue #133 实测 rc=128），|| 兜底接不住。
+BASE_BRANCH="${FACTORY_BASE_BRANCH:-}"
+if [ -z "${BASE_BRANCH}" ]; then
+  BASE_BRANCH="$(git -C "${REPO}" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||' || true)"
+fi
+[ -n "${BASE_BRANCH}" ] || { echo "[base] FACTORY_BASE_BRANCH 未配置且 origin/HEAD 默认分支不可读：拒猜基线，fail-closed 终止（issue #133）" >&2; exit 2; }
 
 # 上游路径：锁文件 upstream 字段（M2 约定）> 环境变量 > 退出 2
 UP="$(python3 -c '
@@ -114,9 +124,9 @@ print(json.loads(open(sys.argv[1]).read())["anchor"][:9])' "$LOCK")"
   fi
   git commit -qm "chore(factory): 上游同步追平 ${ANCHOR}（M2 确定性 PR 流）"
   git push -q --no-verify origin "HEAD:refs/heads/${BR}"
-  # base 显式（PR #116）：同步基点为 main（factory-lock 锚点语义），不猜默认
-  PR_URL="$(${HOST} pr create --head "$BR" --title "factory: 上游同步追平（${ANCHOR}）" \
-    --base "${FACTORY_BASE_BRANCH:-main}" \
+  # base 显式（PR #116 拒猜 + #133 收口）：两级解析值，不猜默认
+  PR_URL="$(${HOST} pr create --head "$BR" --title "chore(factory): 上游同步追平（${ANCHOR}）" \
+    --base "${BASE_BRANCH}" \
     --label factory:needs-review \
     --body "M2 确定性 PR 流（设计 §11.2）：full 面漂移自动追平，机器执行、人工合并。
 

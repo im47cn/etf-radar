@@ -15,6 +15,16 @@ set -euo pipefail
 
 REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "不在仓库内" >&2; exit 2; }
 FACTORY="$REPO/.factory"
+# 账本读写锚定主树（同 fix-issue.sh 锁锚定语义；回退判空而非拼接兜底：
+# 空输出拼 "/.factory" 是非空死路径、回退永不触发——源仓#73 审查 F2）：
+# REPO=show-toplevel 在链 worktree 中解析为链树，账本随链分支删除即丢 →
+# collect_pending 回潮重复开 PR（源仓#73）。锚定求值失败退回 $FACTORY。
+MAIN_FACTORY="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null \
+  | sed 's#/\.git$##' || true)"
+MAIN_FACTORY="${MAIN_FACTORY:+$MAIN_FACTORY/.factory}"
+MAIN_FACTORY="${MAIN_FACTORY:-$FACTORY}"
+LEDGER="${MAIN_FACTORY}/feedback-log.jsonl"
+MAIN_WT="${MAIN_FACTORY%/.factory}"
 # ADR-009 引擎收口：omp_node 定义在 factory-lib.sh（本脚本只消费 omp_node；
 # issue_* 出口函数不用——ISSUE 未定义无碍，函数体不在此触发）
 source "${FACTORY}/factory-lib.sh"
@@ -36,12 +46,12 @@ say() { printf '%s\n' "$*"; }
 die() { printf '✗ %s\n' "$*" >&2; exit 1; }
 
 # --- 1. 待反哺候选（trailer ∨ bootstrap，− 账本；旧→新） ---
-PENDING="$(python3 "$FACTORY/feedback.py" pending)" || die "候选收集失败"
+PENDING="$(python3 "$FACTORY/feedback.py" pending --ledger "$LEDGER")" || die "候选收集失败"
 # --- 1.5 疑似已随演化反哺（SHA 语义缺口）：内容经 cherry-pick+适配演化
 #        反哺、SHA 未直樱桃的提交会永久 pending（源仓#66 实证，曾靠人工识别
 #        孪生补录）。确定性文件集覆盖判定 → 跳过 + 亮清单，人工确认后
 #        feedback.py record 补录清账（不自动入账：覆盖是强信号非等价证明）
-SUPERSEDED="$(python3 "$FACTORY/feedback.py" superseded)" || die "superseded 收集失败"
+SUPERSEDED="$(python3 "$FACTORY/feedback.py" superseded --ledger "$LEDGER")" || die "superseded 收集失败"
 if [ -n "$SUPERSEDED" ]; then
   say "疑似已随演化反哺 $(printf '%s\n' "$SUPERSEDED" | wc -l | tr -d ' ') 条（跳过；人工确认后 feedback.py record 补录）:"
   printf '%s\n' "$SUPERSEDED" | sed 's/^/  /'
@@ -127,7 +137,7 @@ say "上游 worktree: $WT 分支: $BRANCH (基点 $FREMOTE/main@${BASE:0:9})"
 
 # --- 3.5 漂移报告（上游独有/两侧分歧，仅报告不动作；对 worktree 检出内容，
 #     上游 bare 无工作树，2026-08-22 前的磁盘直比已不可行） ---
-python3 "$FACTORY/feedback.py" report "$WT"
+python3 "$FACTORY/feedback.py" report "$WT" --ledger "$LEDGER"
 [ "$DRY" = 1 ] && { say "[dry-run] 到此为止，未做任何变更"; exit 0; }
 
 # 跨仓对象：上游对象库没有本仓提交，cherry-pick 前临时挂源 remote 拉取
@@ -146,7 +156,7 @@ fi
 
 # --- 3.6 依赖闭包（fail-closed）：候选脚本引用的 .factory 资产必须
 #     上游已有 ∨ 候选随行；防 PR #18 只带主脚本、配套件断链复演 ---
-python3 "$FACTORY/feedback.py" closure "$WT"
+python3 "$FACTORY/feedback.py" closure "$WT" --ledger "$LEDGER"
 
 # --- 4. cherry-pick：clean 保真，conflicted 交适配节点 ---
 CONFLICTED=()
@@ -165,7 +175,7 @@ done <<< "$PENDING"
 # patches/<sha9>.patch + manifest.json 生成在 feedback.py adapt-prep
 # （2026-08-28 自此处 heredoc 下沉：git 子进程编排归 Python，铁律 4；
 # 亦是 killpg 门[只扫 *.py]与 pipe 门[只扫 *.sh]双盲缝隙的收口）
-python3 "$FACTORY/feedback.py" adapt-prep "$FB_DIR" "$PENDING" \
+python3 "$FACTORY/feedback.py" adapt-prep "$FB_DIR" "$PENDING" --ledger "$LEDGER" \
   ${CONFLICTED[@]+"${CONFLICTED[@]}"}
 PROMPT="$(cat "$FACTORY/prompts/feedback-adapt.md")
 
@@ -270,12 +280,25 @@ say "✓ 上游 PR: $PR_URL"
 "${GITUP[@]}" branch -qD "$BRANCH" >/dev/null 2>&1 \
   || say "⚠ 本地分支 $BRANCH 删除失败（远端 PR 不受影响，可人工清理）"
 
-# --- 9. 账本回写（本仓 .factory/feedback-log.jsonl；提交但不推送） ---
+# --- 9. 账本回写（主树 .factory/feedback-log.jsonl；提交但不推送） ---
+# 提交守卫（fail-safe：写盘必成，提交可延）：主树非 main（账本不随特性
+# 分支走，同回潮根因）或派发器锁被持（避开与链窗口竞争 main 前移）时不
+# 提交——账本已在盘，随下次人工提交；pathspec 形式防夹带主树其他变更。
 PR_NUM="${PR_URL##*/}"
 ARGS=(record "$PR_URL")
 while IFS=$'\t' read -r sha subject; do ARGS+=("$sha:$subject"); done <<< "$PENDING"
-python3 "$FACTORY/feedback.py" "${ARGS[@]}"
-git -C "$REPO" add .factory/feedback-log.jsonl
-git -C "$REPO" commit -q -m "chore(factory): 反哺账本 → ${UPSTREAM_REPO}#${PR_NUM}"
-say "✓ 账本已提交（未推送，随下次人工推送）: .factory/feedback-log.jsonl"
+python3 "$FACTORY/feedback.py" "${ARGS[@]}" --ledger "$LEDGER"
+if [ "$(git -C "$MAIN_WT" symbolic-ref --short HEAD 2>/dev/null)" = "main" ] \
+   && [ ! -e "${MAIN_FACTORY}/locks/dispatcher" ]; then
+  # -f：账本语义是跨仓跟踪资产（提交进 main 才不随分支丢），per-repo
+  # .gitignore 的「运行时产物」忽略条目不得拦下提交——裸 add 对 ignored
+  # 路径退出 1，set -e 下 PR 已开后崩（源仓#73 审查 F1，本仓 .gitignore
+  # 即忽略该文件）
+  git -C "$MAIN_WT" add -f .factory/feedback-log.jsonl
+  git -C "$MAIN_WT" commit -q -m "chore(factory): 反哺账本 → ${UPSTREAM_REPO}#${PR_NUM}" \
+    -- .factory/feedback-log.jsonl
+  say "✓ 账本已提交（未推送，随下次人工推送）: .factory/feedback-log.jsonl"
+else
+  say "⚠ 账本已落盘未提交（主树非 main 或派发器锁被持）: ${LEDGER}（请人工提交）"
+fi
 say "完成: ${PR_URL}（人工 review & merge）"

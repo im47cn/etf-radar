@@ -84,10 +84,14 @@ def synced(tmp_path: Path):
 
 
 class TestSyncRcContract:
-    def _run(self, dn: Path, *args: str) -> subprocess.CompletedProcess:
+    def _run(self, dn: Path, *args: str, extra_env: dict | None = None) -> subprocess.CompletedProcess:
+        # 夹具仓无 origin remote，基线拒猜 fail-closed（#133 收口）会提前
+        # exit 2——显式注入 env 级基线，保持测试聚焦 rc 契约矩阵
+        env = git_env({"FACTORY_BASE_BRANCH": "main"})
+        env.update(extra_env or {})
         return subprocess.run(
             ["bash", str(dn / ".factory/upstream-sync-check.sh"), *args],
-            cwd=dn, env=git_env(), capture_output=True, text=True,
+            cwd=dn, env=env, capture_output=True, text=True,
         )
 
     def test_clean_reports_no_action(self, synced):
@@ -115,6 +119,17 @@ class TestSyncRcContract:
         assert "仅 local 面漂移" not in proc.stdout
         lines = calls.read_text().splitlines()
         assert all("auth" in line for line in lines), f"rc=2 不得触发 issue/PR 流: {lines}"
+
+    def test_base_branch_fail_closed_without_origin_head(self, synced):
+        """#133 收口：无 env 且夹具仓无 origin/HEAD → 拒猜基线 exit 2，
+        先于任何远端副作用（fake hosting 仅见 auth 探测）。"""
+        _, dn, calls = synced
+        proc = self._run(dn, extra_env={"FACTORY_BASE_BRANCH": ""})
+        assert proc.returncode == 2
+        assert "issue #133" in proc.stderr
+        # 基线块先于凭据探测：零 hosting 调用（连 auth 探测都不触发）
+        assert not calls.exists(), \
+            f"基线 fail-closed 须先于任何 hosting 调用（含凭据探测）: {calls}"
 
     def test_full_drift_dryrun_exits_1(self, synced):
         """full 漂移 rc=1 语义不回归：--dry-run 报告并 exit 1（人工介入信号）。"""

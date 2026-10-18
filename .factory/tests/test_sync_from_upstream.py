@@ -183,7 +183,7 @@ class TestApplyCommit:
         proc = self._run(dn, str(up), "--apply", "--commit", "--anchor", "main")
         assert proc.returncode == 0, proc.stdout + proc.stderr
         assert _head_count(dn) == 2, "单提交落库（fixture 1 + 追平 1）"
-        assert _head_subject(dn) == f"factory: 上游同步追平（{anchor[:9]}）"
+        assert _head_subject(dn) == f"chore(factory): 上游同步追平（{anchor[:9]}）"
         ignore = dn / ".git-blame-ignore-revs"
         lines = ignore.read_text(encoding="utf-8").splitlines()
         assert lines and lines[0].startswith("#"), "带说明头"
@@ -229,7 +229,7 @@ class TestApplyCommit:
         proc = self._run(dn, str(up), "--apply", "--commit", "--anchor", "main")
         assert proc.returncode == 0, proc.stdout + proc.stderr
         assert _head_count(dn) == 3
-        assert _head_subject(dn) == f"factory: 上游同步追平（{anchor2[:9]}）"
+        assert _head_subject(dn) == f"chore(factory): 上游同步追平（{anchor2[:9]}）"
         lines = (dn / ".git-blame-ignore-revs").read_text(encoding="utf-8").splitlines()
         assert first_sync in lines, "滞后一条：本轮记上一轮追平提交"
 

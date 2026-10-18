@@ -17,7 +17,7 @@
 #   --repo <path>  目标仓（默认：当前目录所属仓）——中心仓巡检以此驱动
 #                  下游追平，始终执行中心版脚本，免疫下游副本滞后
 #   --commit       仅与 --apply 组合：追平产物+锚点+blame-ignore 以单提交
-#                  落库（factory: 上游同步追平（<sha9>）），落在当前分支不推送；
+#                  落库（chore(factory): 上游同步追平（<sha9>）），落在当前分支不推送；
 #                  提交无法含自身 SHA，blame-ignore 滞后一条（本次记上次）
 #
 # 退出码: 0=干净/已同步  1=有漂移（--check）或应用失败  2=用法/上游不可用
@@ -282,10 +282,10 @@ PY
       git -C "$REPO" add -- "$IGNORE"
       PREV_SYNC="$(git -C "$REPO" log -1 --format=%H -- "$LOCKFILE" 2>/dev/null || true)"
       if [ -n "$PREV_SYNC" ] && ! grep -q "^${PREV_SYNC}$" "$IGNORE" 2>/dev/null; then
-        printf '# factory: 上游同步追平（%s）\n%s\n' "${HEAD_SHA:0:9}" "$PREV_SYNC" >> "$IGNORE"
+        printf '# chore(factory): 上游同步追平（%s）\n%s\n' "${HEAD_SHA:0:9}" "$PREV_SYNC" >> "$IGNORE"
         git -C "$REPO" add -- "$IGNORE"
       fi
-      git -C "$REPO" commit -q -m "factory: 上游同步追平（${HEAD_SHA:0:9}）"
+      git -C "$REPO" commit -q -m "chore(factory): 上游同步追平（${HEAD_SHA:0:9}）"
       echo "已提交: $(git -C "$REPO" rev-parse --short HEAD)（当前分支，不推送）"
     fi
     # 无条件设置（幂等，绝对路径）：无变更分支此前直接跳过，文件在而

@@ -165,7 +165,7 @@ class TestPatrolExitCodes:
         assert "[已追平] ../dn-drift" in proc.stdout
         assert "[干净] ../dn-clean" in proc.stdout
         assert _rev(dn_drift, "log", "-1", "--format=%s") \
-            .startswith("factory: 上游同步追平（")
+            .startswith("chore(factory): 上游同步追平（")
         assert (dn_drift / ".git-blame-ignore-revs").exists()
         # 复查：全干净，且不产生新提交（空转链舰队级回归）
         n_drift = _rev(dn_drift, "rev-list", "--count", "HEAD")

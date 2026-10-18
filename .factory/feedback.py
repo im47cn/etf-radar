@@ -443,7 +443,7 @@ def _cmd_record(upstream_pr, args, ledger_path):
 
 def _usage_exit():
     """未知/缺失子命令 → 用法说明到 stderr，退出码 2。"""
-    print("用法: feedback.py pending|superseded|status|closure <upstream_wt>|"
+    print("用法: feedback.py [--ledger <path>] pending|superseded|status|closure <upstream_wt>|"
           "report <upstream_path>|adapt-prep <fb_dir> <pending> <conflicted>...|"
           "record <pr> <sha>:<subject>...",
           file=sys.stderr)
@@ -451,9 +451,17 @@ def _usage_exit():
 
 
 def main():
+    # --ledger <path> 账本显式路径（编排器传主树锚定值）：默认值跟随
+    # __file__，链 worktree 中被执行的是链树副本——账本随链分支删除即丢，
+    # collect_pending 回潮重复开 PR（源仓#73）。先剥旗标再分派，
+    # 各子命令的 sys.argv 位置读法不受旗标位置影响。
+    ledger_path = pathlib.Path(__file__).parent / "feedback-log.jsonl"
+    if "--ledger" in sys.argv:
+        i = sys.argv.index("--ledger")
+        ledger_path = pathlib.Path(sys.argv[i + 1])
+        del sys.argv[i:i + 2]
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     here = pathlib.Path(__file__).parent
-    ledger_path = here / "feedback-log.jsonl"
     commits = _gather_commits()
     commits, ledger, pending = _build_pending(commits, ledger_path)
 

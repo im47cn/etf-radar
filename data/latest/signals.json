@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-20T12:37:42.681292+08:00",
+  "generated_at": "2026-10-20T13:58:31.332562+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -199,16 +199,16 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": "transmission",
+      "signal": null,
       "direction": "down",
       "direction_tier": null,
-      "trigger_cn_etf": "512800",
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
-        "long": "transmission"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股 composite 41 领先, A股尚未同步"
+      "description": "美股银行 composite 41 动量观察中"
     },
     {
       "theme_id": "cn_insurance",
@@ -306,11 +306,11 @@
       "signal": "transmission",
       "direction": "up",
       "direction_tier": "high",
-      "trigger_cn_etf": "159936",
+      "trigger_cn_etf": "510150",
       "votes": {
         "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": "divergence"
       },
       "description": "美股 composite 82 领先, A股尚未同步"
     },
@@ -416,7 +416,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -440,7 +440,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -452,7 +452,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": null
+        "long": "transmission"
       }
     },
     {
@@ -496,11 +496,11 @@
       "cn_code": "588000",
       "mapping_score": 24,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": null,
         "mid": "transmission",
-        "long": "divergence"
+        "long": "transmission"
       }
     },
     {
@@ -546,7 +546,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -590,7 +590,7 @@
     {
       "theme_id": "cn_base_metals",
       "cn_code": "512400",
-      "mapping_score": 33,
+      "mapping_score": 34,
       "confidence": 60,
       "signal": null,
       "votes": {
@@ -628,11 +628,11 @@
       "cn_code": "512800",
       "mapping_score": 19,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "transmission",
-        "long": "transmission"
+        "long": null
       }
     },
     {
@@ -666,9 +666,9 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
-        "long": "divergence"
+        "long": null
       }
     },
     {
@@ -690,7 +690,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -724,11 +724,11 @@
       "cn_code": "159928",
       "mapping_score": 7,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
-        "long": "divergence"
+        "long": "transmission"
       }
     },
     {
@@ -736,10 +736,10 @@
       "cn_code": "510150",
       "mapping_score": 20,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": null,
+        "mid": "transmission",
         "long": "divergence"
       }
     },

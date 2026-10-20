@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-19T17:05:12.228461+00:00",
+  "environment": {
+    "regime": "defense",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 4174.535
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 3,
+        "criteria": [
+          false,
+          false,
+          true,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 6800.659
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 3,
+        "criteria": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 2746.291
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "as_of": "2026-10-16",
+      "stale": true,
+      "ma20_pct": 0.166,
+      "ma60_pct": 0.245,
+      "ma120_pct": 0.185
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [
+    {
+      "code": "603136",
+      "name": "天目湖",
+      "composite_score": 3.0,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 46.5,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 20.0,
+        "quality": 0.3099,
+        "volume_dryup": true
+      },
+      "pivot": 10.81,
+      "buy_zone_low": 10.81,
+      "buy_zone_high": 11.3505,
+      "stop": 9.9452,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -1.37,
+      "board": "main",
+      "vol_forecast_ann": null
+    }
+  ],
+  "universe_stats": {
+    "total": 5576,
+    "tradable": 2750,
+    "stage2": 2750,
+    "vcp": 1,
+    "top": 1
+  }
+}

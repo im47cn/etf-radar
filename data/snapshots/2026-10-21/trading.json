@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-20T15:02:53.980972+00:00",
+  "environment": {
+    "regime": "defense",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 4152.108
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 3,
+        "criteria": [
+          false,
+          false,
+          true,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 6841.439
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 3,
+        "criteria": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 2739.203
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "as_of": "2026-10-19",
+      "stale": false,
+      "ma20_pct": 0.171,
+      "ma60_pct": 0.215,
+      "ma120_pct": 0.175
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [
+    {
+      "code": "600830",
+      "name": "香溢融通",
+      "composite_score": 4.3,
+      "stage": 4,
+      "template_pass": 2,
+      "rs_pct": 62.0,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 18.4,
+        "quality": 0.4136,
+        "volume_dryup": true
+      },
+      "pivot": 10.16,
+      "buy_zone_low": 10.16,
+      "buy_zone_high": 10.668,
+      "stop": 9.3472,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.82,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600572",
+      "name": "康恩贝",
+      "composite_score": 3.4,
+      "stage": 3,
+      "template_pass": 3,
+      "rs_pct": 38.8,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 12.3,
+        "quality": 0.2724,
+        "volume_dryup": true
+      },
+      "pivot": 4.8,
+      "buy_zone_low": 4.8,
+      "buy_zone_high": 5.04,
+      "stop": 4.416,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.46,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "603222",
+      "name": "济民健康",
+      "composite_score": 2.3,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 13.8,
+      "vcp": {
+        "contractions": 4,
+        "depth_pct": 22.5,
+        "quality": 0.3826,
+        "volume_dryup": true
+      },
+      "pivot": 9.03,
+      "buy_zone_low": 9.03,
+      "buy_zone_high": 9.4815,
+      "stop": 8.3076,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 3.77,
+      "board": "main",
+      "vol_forecast_ann": null
+    }
+  ],
+  "universe_stats": {
+    "total": 5576,
+    "tradable": 2756,
+    "stage2": 2756,
+    "vcp": 3,
+    "top": 3
+  }
+}

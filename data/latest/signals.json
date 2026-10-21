@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-21T14:27:54.938992+08:00",
+  "generated_at": "2026-10-21T14:45:05.786802+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -43,16 +43,16 @@
     },
     {
       "theme_id": "ai_compute",
-      "signal": "transmission",
+      "signal": null,
       "direction": "down",
       "direction_tier": "high",
-      "trigger_cn_etf": "515980",
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": null
       },
-      "description": "美股 composite 63 领先, A股尚未同步"
+      "description": "美股AI算力 composite 63 动量观察中"
     },
     {
       "theme_id": "energy_oil",
@@ -61,7 +61,7 @@
       "direction_tier": null,
       "trigger_cn_etf": "162411",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       },
@@ -484,9 +484,9 @@
       "cn_code": "515980",
       "mapping_score": 31,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": "transmission"
       }
@@ -510,7 +510,7 @@
       "confidence": 90,
       "signal": "resonance",
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": "resonance",
         "long": "resonance"
       }
@@ -642,7 +642,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": null,
         "long": "divergence"
       }

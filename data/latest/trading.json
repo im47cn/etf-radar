@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-21T15:12:39.563243+00:00",
+  "generated_at": "2026-10-22T15:14:20.516437+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,23 +18,23 @@
           false,
           true
         ],
-        "close": 4111.933
+        "close": 4036.297
       },
       {
         "code": "000905",
         "name": "中证500",
-        "template_pass": 3,
+        "template_pass": 2,
         "criteria": [
           false,
           false,
           true,
           false,
           false,
-          true,
+          false,
           false,
           true
         ],
-        "close": 6840.563
+        "close": 6655.25
       },
       {
         "code": "399006",
@@ -50,15 +50,15 @@
           false,
           true
         ],
-        "close": 2694.713
+        "close": 2576.901
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-10-20",
+      "as_of": "2026-10-21",
       "stale": false,
-      "ma20_pct": 0.196,
-      "ma60_pct": 0.237,
+      "ma20_pct": 0.186,
+      "ma60_pct": 0.222,
       "ma120_pct": 0.188
     },
     "source_status": {
@@ -74,14 +74,14 @@
     {
       "code": "600830",
       "name": "香溢融通",
-      "composite_score": 4.5,
+      "composite_score": 3.7,
       "stage": 4,
-      "template_pass": 2,
-      "rs_pct": 65.8,
+      "template_pass": 1,
+      "rs_pct": 63.2,
       "vcp": {
         "contractions": 2,
-        "depth_pct": 18.4,
-        "quality": 0.4565,
+        "depth_pct": 20.5,
+        "quality": 0.3557,
         "volume_dryup": true
       },
       "pivot": 10.16,
@@ -90,7 +90,7 @@
       "stop": 9.3472,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": 0.59,
+      "chg_pct": -4.6,
       "board": "main",
       "vol_forecast_ann": null
     },
@@ -98,13 +98,13 @@
       "code": "600572",
       "name": "康恩贝",
       "composite_score": 3.5,
-      "stage": 3,
+      "stage": 4,
       "template_pass": 3,
-      "rs_pct": 44.3,
+      "rs_pct": 39.7,
       "vcp": {
-        "contractions": 2,
-        "depth_pct": 12.3,
-        "quality": 0.2719,
+        "contractions": 3,
+        "depth_pct": 13.1,
+        "quality": 0.3032,
         "volume_dryup": true
       },
       "pivot": 4.8,
@@ -113,30 +113,7 @@
       "stop": 4.416,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -0.46,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
-      "code": "603222",
-      "name": "济民健康",
-      "composite_score": 2.7,
-      "stage": 4,
-      "template_pass": 1,
-      "rs_pct": 30.3,
-      "vcp": {
-        "contractions": 4,
-        "depth_pct": 22.5,
-        "quality": 0.3644,
-        "volume_dryup": true
-      },
-      "pivot": 9.03,
-      "buy_zone_low": 9.03,
-      "buy_zone_high": 9.4815,
-      "stop": 8.3076,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 2.25,
+      "chg_pct": -2.8,
       "board": "main",
       "vol_forecast_ann": null
     },
@@ -146,11 +123,11 @@
       "composite_score": 2.4,
       "stage": 4,
       "template_pass": 1,
-      "rs_pct": 22.1,
+      "rs_pct": 23.4,
       "vcp": {
         "contractions": 2,
-        "depth_pct": 14.4,
-        "quality": 0.3443,
+        "depth_pct": 15.6,
+        "quality": 0.3196,
         "volume_dryup": true
       },
       "pivot": 6.87,
@@ -159,16 +136,16 @@
       "stop": 6.3204,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": 0.0,
+      "chg_pct": -1.86,
       "board": "main",
       "vol_forecast_ann": null
     }
   ],
   "universe_stats": {
-    "total": 5577,
-    "tradable": 2758,
-    "stage2": 2758,
-    "vcp": 4,
-    "top": 4
+    "total": 5578,
+    "tradable": 2751,
+    "stage2": 2751,
+    "vcp": 3,
+    "top": 3
   }
 }

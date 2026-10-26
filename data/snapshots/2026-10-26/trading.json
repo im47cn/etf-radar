@@ -1,0 +1,197 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-23T14:57:59.125185+00:00",
+  "environment": {
+    "regime": "defense",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 4105.329
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 3,
+        "criteria": [
+          false,
+          false,
+          true,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 6814.443
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 2684.097
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "as_of": "2026-10-22",
+      "stale": false,
+      "ma20_pct": 0.116,
+      "ma60_pct": 0.15,
+      "ma120_pct": 0.133
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [
+    {
+      "code": "600196",
+      "name": "复星医药",
+      "composite_score": 3.7,
+      "stage": 4,
+      "template_pass": 2,
+      "rs_pct": 47.0,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 13.0,
+        "quality": 0.3744,
+        "volume_dryup": true
+      },
+      "pivot": 24.84,
+      "buy_zone_low": 24.84,
+      "buy_zone_high": 26.082,
+      "stop": 22.8528,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 2.2,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600830",
+      "name": "香溢融通",
+      "composite_score": 3.7,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 63.4,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 20.5,
+        "quality": 0.3498,
+        "volume_dryup": true
+      },
+      "pivot": 10.16,
+      "buy_zone_low": 10.16,
+      "buy_zone_high": 10.668,
+      "stop": 9.3472,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 1.73,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600572",
+      "name": "康恩贝",
+      "composite_score": 3.6,
+      "stage": 4,
+      "template_pass": 3,
+      "rs_pct": 41.7,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 13.1,
+        "quality": 0.3185,
+        "volume_dryup": true
+      },
+      "pivot": 4.8,
+      "buy_zone_low": 4.8,
+      "buy_zone_high": 5.04,
+      "stop": 4.416,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 0.96,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600578",
+      "name": "京能电力",
+      "composite_score": 3.0,
+      "stage": 3,
+      "template_pass": 3,
+      "rs_pct": 10.2,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 23.2,
+        "quality": 0.4009,
+        "volume_dryup": true
+      },
+      "pivot": 6.59,
+      "buy_zone_low": 6.59,
+      "buy_zone_high": 6.9195,
+      "stop": 6.0628,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 0.0,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "301219",
+      "name": "腾远钴业",
+      "composite_score": 2.0,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 7.9,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 31.8,
+        "quality": 0.3412,
+        "volume_dryup": true
+      },
+      "pivot": 52.36,
+      "buy_zone_low": 52.36,
+      "buy_zone_high": 54.978,
+      "stop": 48.1712,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 2.75,
+      "board": "chinext",
+      "vol_forecast_ann": null
+    }
+  ],
+  "universe_stats": {
+    "total": 5579,
+    "tradable": 2787,
+    "stage2": 2787,
+    "vcp": 5,
+    "top": 5
+  }
+}

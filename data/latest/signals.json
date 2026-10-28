@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-28T23:55:28.653282+08:00",
+  "generated_at": "2026-10-29T00:24:22.824693+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -52,20 +52,20 @@
         "mid": null,
         "long": "transmission"
       },
-      "description": "美股 composite 71 领先, A股尚未同步"
+      "description": "美股 composite 70 领先, A股尚未同步"
     },
     {
       "theme_id": "energy_oil",
       "signal": "resonance",
       "direction": "up",
-      "direction_tier": "high",
+      "direction_tier": null,
       "trigger_cn_etf": "162411",
       "votes": {
         "short": "resonance",
         "mid": "resonance",
         "long": "resonance"
       },
-      "description": "美股原油/油气 composite 93 中长期走强, 共振偏多（高置信）"
+      "description": "美股原油/油气 composite 93 中长期走强, 共振偏多"
     },
     {
       "theme_id": "cn_coal",
@@ -84,20 +84,20 @@
       "theme_id": "new_energy_vehicle",
       "signal": null,
       "direction": "down",
-      "direction_tier": null,
+      "direction_tier": "low",
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
         "mid": null,
         "long": null
       },
-      "description": "美股新能源车 composite 25 动量观察中"
+      "description": "美股新能源车 composite 27 动量观察中"
     },
     {
       "theme_id": "cn_battery",
       "signal": null,
       "direction": "down",
-      "direction_tier": "high",
+      "direction_tier": null,
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
@@ -208,7 +208,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股银行 composite 57 动量观察中"
+      "description": "美股银行 composite 59 动量观察中"
     },
     {
       "theme_id": "cn_insurance",
@@ -241,7 +241,7 @@
       "signal": "transmission",
       "direction": "up",
       "direction_tier": "high",
-      "trigger_cn_etf": "512290",
+      "trigger_cn_etf": "159992",
       "votes": {
         "short": "transmission",
         "mid": "transmission",
@@ -273,7 +273,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股稀土/新材料 composite 13 动量观察中"
+      "description": "美股稀土/新材料 composite 16 动量观察中"
     },
     {
       "theme_id": "cn_rare_metals",
@@ -460,11 +460,11 @@
       "cn_code": "159516",
       "mapping_score": 7,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "resonance"
+        "long": "transmission"
       }
     },
     {
@@ -488,7 +488,7 @@
       "votes": {
         "short": "resonance",
         "mid": null,
-        "long": "transmission"
+        "long": "divergence"
       }
     },
     {
@@ -664,10 +664,10 @@
       "cn_code": "512290",
       "mapping_score": 7,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": null,
         "long": "divergence"
       }
     },
@@ -714,7 +714,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": null
       }
@@ -728,7 +728,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": "divergence"
       }
     },
     {

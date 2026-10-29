@@ -1,8 +1,8 @@
 {
   "schema_version": "1.1",
   "last_full_refresh": {
-    "us": "2026-10-29T22:08:49.414528+08:00",
-    "cn": "2026-10-29T22:08:49.414528+08:00"
+    "us": "2026-10-30T00:34:35.636577+08:00",
+    "cn": "2026-10-30T00:34:35.636577+08:00"
   },
   "last_intraday_refresh": null,
   "providers": {
@@ -11,12 +11,18 @@
       "name": "yfinance"
     },
     "cn": {
-      "status": "fallback",
+      "status": "stale",
       "name": "akshare-em"
     }
   },
   "failed_symbols": [],
   "fallback_symbols": {
+    "159995": "akshare-sina",
+    "159996": "akshare-sina",
+    "161226": "akshare-sina",
+    "162411": "akshare-sina",
+    "510150": "akshare-sina",
+    "512000": "akshare-sina",
     "512200": "akshare-sina",
     "512290": "akshare-sina",
     "512400": "akshare-sina",
@@ -41,7 +47,7 @@
     "562800": "akshare-sina",
     "588000": "akshare-sina"
   },
-  "stale_minutes": 0,
+  "stale_minutes": 1440,
   "calendar": {
     "us_trading_today": true,
     "cn_trading_today": true,

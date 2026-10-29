@@ -1,0 +1,174 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-28T16:37:07.487546+00:00",
+  "environment": {
+    "regime": "defense",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 4083.87
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 1,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 6640.89
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 2634.76
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "as_of": "2026-10-27",
+      "stale": true,
+      "ma20_pct": 0.151,
+      "ma60_pct": 0.144,
+      "ma120_pct": 0.135
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [
+    {
+      "code": "600551",
+      "name": "时代出版",
+      "composite_score": 5.4,
+      "stage": 1,
+      "template_pass": 4,
+      "rs_pct": 86.5,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 19.2,
+        "quality": 0.3243,
+        "volume_dryup": true
+      },
+      "pivot": 9.08,
+      "buy_zone_low": 9.08,
+      "buy_zone_high": 9.534,
+      "stop": 8.3536,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 1.45,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600578",
+      "name": "京能电力",
+      "composite_score": 3.6,
+      "stage": 3,
+      "template_pass": 3,
+      "rs_pct": 29.6,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 24.4,
+        "quality": 0.3928,
+        "volume_dryup": true
+      },
+      "pivot": 6.59,
+      "buy_zone_low": 6.59,
+      "buy_zone_high": 6.9195,
+      "stop": 6.0628,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 0.8,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "002739",
+      "name": "儒意电影",
+      "composite_score": 3.2,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 42.5,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 25.9,
+        "quality": 0.3942,
+        "volume_dryup": true
+      },
+      "pivot": 10.78,
+      "buy_zone_low": 10.78,
+      "buy_zone_high": 11.319,
+      "stop": 9.9176,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 0.24,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "002235",
+      "name": "安妮股份",
+      "composite_score": 2.2,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 23.1,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 33.6,
+        "quality": 0.2725,
+        "volume_dryup": true
+      },
+      "pivot": 10.43,
+      "buy_zone_low": 10.43,
+      "buy_zone_high": 10.9515,
+      "stop": 9.5956,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.43,
+      "board": "main",
+      "vol_forecast_ann": null
+    }
+  ],
+  "universe_stats": {
+    "total": 5579,
+    "tradable": 2771,
+    "stage2": 2771,
+    "vcp": 4,
+    "top": 4
+  }
+}

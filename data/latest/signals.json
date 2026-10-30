@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-30T10:03:42.819786+08:00",
+  "generated_at": "2026-10-30T14:59:30.909271+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -306,11 +306,11 @@
       "signal": "transmission",
       "direction": "down",
       "direction_tier": "low",
-      "trigger_cn_etf": "159936",
+      "trigger_cn_etf": "510150",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
-        "long": "transmission"
+        "long": "divergence"
       },
       "description": "美股 composite 70 领先, A股尚未同步"
     },
@@ -464,7 +464,7 @@
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "divergence"
       }
     },
     {
@@ -559,7 +559,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": "transmission",
+        "mid": null,
         "long": null
       }
     },
@@ -606,7 +606,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": null
       }
@@ -618,7 +618,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": null
       }
@@ -724,10 +724,10 @@
       "cn_code": "159928",
       "mapping_score": 15,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": null,
         "long": "divergence"
       }
     },
@@ -736,9 +736,9 @@
       "cn_code": "510150",
       "mapping_score": 34,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
         "long": "divergence"
       }

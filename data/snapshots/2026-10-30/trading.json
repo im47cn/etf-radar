@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-29T16:45:07.849004+00:00",
+  "environment": {
+    "regime": "defense",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 4041.838
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 1,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 6453.717
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 2517.588
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "as_of": "2026-10-28",
+      "stale": true,
+      "ma20_pct": 0.208,
+      "ma60_pct": 0.187,
+      "ma120_pct": 0.162
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [
+    {
+      "code": "600551",
+      "name": "时代出版",
+      "composite_score": 5.5,
+      "stage": 1,
+      "template_pass": 3,
+      "rs_pct": 87.0,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 19.2,
+        "quality": 0.4311,
+        "volume_dryup": true
+      },
+      "pivot": 9.08,
+      "buy_zone_low": 9.08,
+      "buy_zone_high": 9.534,
+      "stop": 8.3536,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -2.73,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600578",
+      "name": "京能电力",
+      "composite_score": 3.2,
+      "stage": 3,
+      "template_pass": 3,
+      "rs_pct": 17.8,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 24.4,
+        "quality": 0.3956,
+        "volume_dryup": true
+      },
+      "pivot": 6.59,
+      "buy_zone_low": 6.59,
+      "buy_zone_high": 6.9195,
+      "stop": 6.0628,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.4,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "002235",
+      "name": "安妮股份",
+      "composite_score": 2.4,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 35.1,
+      "vcp": {
+        "contractions": 3,
+        "depth_pct": 34.5,
+        "quality": 0.2487,
+        "volume_dryup": true
+      },
+      "pivot": 10.43,
+      "buy_zone_low": 10.43,
+      "buy_zone_high": 10.9515,
+      "stop": 9.5956,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -1.44,
+      "board": "main",
+      "vol_forecast_ann": null
+    }
+  ],
+  "universe_stats": {
+    "total": 5580,
+    "tradable": 2764,
+    "stage2": 2764,
+    "vcp": 3,
+    "top": 3
+  }
+}

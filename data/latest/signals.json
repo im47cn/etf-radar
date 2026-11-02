@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-02T13:49:30.312514+08:00",
+  "generated_at": "2026-11-02T16:08:18.790439+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -121,16 +121,16 @@
     },
     {
       "theme_id": "robotics",
-      "signal": "transmission",
+      "signal": null,
       "direction": "down",
       "direction_tier": "high",
-      "trigger_cn_etf": "159559",
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "transmission",
+        "short": null,
+        "mid": null,
         "long": null
       },
-      "description": "美股 composite 25 领先, A股尚未同步"
+      "description": "美股机器人 composite 25 动量观察中"
     },
     {
       "theme_id": "gold",
@@ -241,7 +241,7 @@
       "signal": "transmission",
       "direction": "up",
       "direction_tier": "high",
-      "trigger_cn_etf": "159992",
+      "trigger_cn_etf": "512290",
       "votes": {
         "short": "transmission",
         "mid": "transmission",
@@ -440,7 +440,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "divergence"
+        "long": "transmission"
       }
     },
     {
@@ -464,7 +464,7 @@
       "votes": {
         "short": null,
         "mid": null,
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -522,7 +522,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": null
       }
@@ -546,7 +546,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": null
       }
@@ -556,10 +556,10 @@
       "cn_code": "159559",
       "mapping_score": 40,
       "confidence": 90,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "transmission",
+        "mid": null,
         "long": null
       }
     },
@@ -664,10 +664,10 @@
       "cn_code": "512290",
       "mapping_score": 9,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": null,
+        "mid": "transmission",
         "long": "divergence"
       }
     },

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-02T20:03:43.343998+00:00",
+  "generated_at": "2026-11-03T17:42:10.564474+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 4016.918
+        "close": 4008.875
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 6420.227
+        "close": 6327.05
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 2458.698
+        "close": 2391.652
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-10-30",
+      "as_of": "2026-11-02",
       "stale": true,
-      "ma20_pct": 0.127,
-      "ma60_pct": 0.112,
-      "ma120_pct": 0.114
+      "ma20_pct": 0.198,
+      "ma60_pct": 0.153,
+      "ma120_pct": 0.152
     },
     "source_status": {
       "indices": "ok",
@@ -70,59 +70,12 @@
       "vol": "ok"
     }
   },
-  "candidates": [
-    {
-      "code": "002445",
-      "name": "中南文化",
-      "composite_score": 4.9,
-      "stage": 3,
-      "template_pass": 3,
-      "rs_pct": 90.6,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 18.6,
-        "quality": 0.2564,
-        "volume_dryup": true
-      },
-      "pivot": 3.71,
-      "buy_zone_low": 3.71,
-      "buy_zone_high": 3.8955,
-      "stop": 3.4132,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 3.97,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
-      "code": "002326",
-      "name": "永太科技",
-      "composite_score": 1.4,
-      "stage": 4,
-      "template_pass": 1,
-      "rs_pct": 9.3,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 34.3,
-        "quality": 0.1808,
-        "volume_dryup": true
-      },
-      "pivot": 21.29,
-      "buy_zone_low": 21.29,
-      "buy_zone_high": 22.3545,
-      "stop": 19.5868,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 1.57,
-      "board": "main",
-      "vol_forecast_ann": null
-    }
-  ],
+  "candidates": [],
   "universe_stats": {
-    "total": 5580,
-    "tradable": 2778,
-    "stage2": 2778,
-    "vcp": 2,
-    "top": 2
+    "total": 5581,
+    "tradable": 2795,
+    "stage2": 2795,
+    "vcp": 0,
+    "top": 0
   }
 }

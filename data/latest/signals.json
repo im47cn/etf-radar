@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-05T11:25:58.475333+08:00",
+  "generated_at": "2026-11-05T16:22:52.557378+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -199,16 +199,16 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": "resonance",
+      "signal": null,
       "direction": "up",
       "direction_tier": "high",
-      "trigger_cn_etf": "512800",
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
-        "mid": "resonance",
-        "long": "resonance"
+        "short": null,
+        "mid": null,
+        "long": null
       },
-      "description": "美股银行 composite 73 动量观察中, 共振偏多（高置信）"
+      "description": "美股银行 composite 73 动量观察中"
     },
     {
       "theme_id": "cn_insurance",
@@ -511,7 +511,7 @@
       "signal": null,
       "votes": {
         "short": null,
-        "mid": null,
+        "mid": "divergence",
         "long": "resonance"
       }
     },
@@ -546,7 +546,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -570,7 +570,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "resonance",
+        "short": null,
         "mid": null,
         "long": null
       }
@@ -628,10 +628,10 @@
       "cn_code": "512800",
       "mapping_score": 19,
       "confidence": 90,
-      "signal": "resonance",
+      "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": "resonance",
+        "mid": null,
         "long": "resonance"
       }
     },
@@ -724,9 +724,9 @@
       "cn_code": "159928",
       "mapping_score": 10,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": "resonance",
         "long": "divergence"
       }
@@ -738,7 +738,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
         "long": "divergence"
       }

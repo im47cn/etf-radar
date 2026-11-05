@@ -1,19 +1,19 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-05T06:34:59.567527+08:00",
+  "generated_at": "2026-11-05T10:39:09.727496+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
-      "signal": "transmission",
+      "signal": null,
       "direction": "down",
       "direction_tier": "high",
-      "trigger_cn_etf": "512760",
+      "trigger_cn_etf": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
-        "long": "transmission"
+        "long": null
       },
-      "description": "美股 composite 35 领先, A股尚未同步"
+      "description": "美股存储芯片 composite 35 动量观察中"
     },
     {
       "theme_id": "semiconductor",
@@ -30,16 +30,16 @@
     },
     {
       "theme_id": "cybersecurity",
-      "signal": null,
+      "signal": "transmission",
       "direction": "down",
       "direction_tier": "high",
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "512720",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
-        "long": null
+        "long": "transmission"
       },
-      "description": "美股网络安全 composite 55 动量观察中"
+      "description": "美股 composite 55 领先, A股尚未同步"
     },
     {
       "theme_id": "ai_compute",
@@ -121,16 +121,16 @@
     },
     {
       "theme_id": "robotics",
-      "signal": null,
+      "signal": "transmission",
       "direction": "down",
       "direction_tier": "high",
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "159559",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       },
-      "description": "美股机器人 composite 25 动量观察中"
+      "description": "美股 composite 25 领先, A股尚未同步"
     },
     {
       "theme_id": "gold",
@@ -199,16 +199,16 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": null,
+      "signal": "resonance",
       "direction": "up",
       "direction_tier": "high",
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "512800",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "transmission",
+        "mid": "resonance",
+        "long": "resonance"
       },
-      "description": "美股银行 composite 73 动量观察中"
+      "description": "美股银行 composite 73 动量观察中, 共振偏多（高置信）"
     },
     {
       "theme_id": "cn_insurance",
@@ -217,7 +217,7 @@
       "direction_tier": "high",
       "trigger_cn_etf": "159851",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": "transmission"
       },
@@ -238,16 +238,16 @@
     },
     {
       "theme_id": "biotech",
-      "signal": null,
+      "signal": "resonance",
       "direction": "up",
       "direction_tier": "high",
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "512290",
       "votes": {
-        "short": null,
-        "mid": null,
-        "long": null
+        "short": "resonance",
+        "mid": "resonance",
+        "long": "resonance"
       },
-      "description": "美股生物科技/创新药 composite 84 动量观察中"
+      "description": "美股生物科技/创新药 composite 84 中长期走强, 共振偏多（高置信）"
     },
     {
       "theme_id": "aerospace_defense",
@@ -412,11 +412,11 @@
       "cn_code": "512480",
       "mapping_score": 21,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "transmission"
+        "long": "divergence"
       }
     },
     {
@@ -424,11 +424,11 @@
       "cn_code": "512760",
       "mapping_score": 22,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "transmission"
+        "long": "divergence"
       }
     },
     {
@@ -464,7 +464,7 @@
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "resonance"
+        "long": null
       }
     },
     {
@@ -472,9 +472,9 @@
       "cn_code": "512720",
       "mapping_score": 34,
       "confidence": 60,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": "transmission"
       }
@@ -546,7 +546,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -556,10 +556,10 @@
       "cn_code": "159559",
       "mapping_score": 47,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
         "short": "transmission",
-        "mid": null,
+        "mid": "transmission",
         "long": null
       }
     },
@@ -594,7 +594,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": null,
         "mid": null,
         "long": null
       }
@@ -606,7 +606,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
         "long": null
       }
@@ -618,7 +618,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": "transmission",
+        "short": "resonance",
         "mid": null,
         "long": null
       }
@@ -628,10 +628,10 @@
       "cn_code": "512800",
       "mapping_score": 19,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": "transmission",
-        "mid": null,
+        "mid": "resonance",
         "long": "resonance"
       }
     },
@@ -642,7 +642,7 @@
       "confidence": 90,
       "signal": "transmission",
       "votes": {
-        "short": "resonance",
+        "short": "transmission",
         "mid": "transmission",
         "long": "transmission"
       }
@@ -664,11 +664,11 @@
       "cn_code": "512290",
       "mapping_score": 13,
       "confidence": 90,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": null
+        "mid": "resonance",
+        "long": "resonance"
       }
     },
     {
@@ -679,8 +679,8 @@
       "signal": null,
       "votes": {
         "short": "resonance",
-        "mid": "transmission",
-        "long": "divergence"
+        "mid": null,
+        "long": null
       }
     },
     {
@@ -726,7 +726,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "resonance",
         "long": "divergence"
       }
@@ -738,8 +738,8 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": "resonance",
-        "mid": "transmission",
+        "short": null,
+        "mid": null,
         "long": "divergence"
       }
     },

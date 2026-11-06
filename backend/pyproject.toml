@@ -3,12 +3,12 @@ name = "etf-radar-backend"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "pandas>=3.0.6",
+    "pandas>=3.1.0",
     "numpy>=1.26.0",
-    "pydantic>=2.14.0",
+    "pydantic>=2.14.2",
     "PyYAML>=6.0.3",
     "yfinance>=1.7.0",
-    "akshare>=1.19.1",
+    "akshare>=1.20.6",
     "chinese-calendar>=1.11.0",
     "pandas-market-calendars>=5.5.0",
     "scipy>=1.12.0",
@@ -19,9 +19,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=9.1.1",
-    "ruff>=0.16.10",
-    "mypy>=2.4.0",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+    "mypy>=2.4.1",
     "responses>=0.26.3",
     "freezegun>=1.5.5",
     "jsonschema>=4.21.0",

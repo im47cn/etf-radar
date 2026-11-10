@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-10T04:23:07.566275+08:00",
+  "generated_at": "2026-11-10T08:08:34.753402+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -13,7 +13,7 @@
         "mid": null,
         "long": "transmission"
       },
-      "description": "美股 composite 32 领先, A股尚未同步"
+      "description": "美股 composite 31 领先, A股尚未同步"
     },
     {
       "theme_id": "semiconductor",
@@ -26,20 +26,20 @@
         "mid": null,
         "long": null
       },
-      "description": "美股半导体 composite 47 动量观察中"
+      "description": "美股半导体 composite 45 动量观察中"
     },
     {
       "theme_id": "cybersecurity",
       "signal": null,
       "direction": "up",
-      "direction_tier": "high",
+      "direction_tier": null,
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
         "mid": null,
         "long": null
       },
-      "description": "美股网络安全 composite 61 动量观察中"
+      "description": "美股网络安全 composite 60 动量观察中"
     },
     {
       "theme_id": "ai_compute",
@@ -52,7 +52,7 @@
         "mid": null,
         "long": "transmission"
       },
-      "description": "美股 composite 57 领先, A股尚未同步"
+      "description": "美股 composite 56 领先, A股尚未同步"
     },
     {
       "theme_id": "energy_oil",
@@ -65,7 +65,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股原油/油气 composite 54 动量观察中"
+      "description": "美股原油/油气 composite 55 动量观察中"
     },
     {
       "theme_id": "cn_coal",
@@ -104,7 +104,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股锂电池 composite 29 动量观察中"
+      "description": "美股锂电池 composite 30 动量观察中"
     },
     {
       "theme_id": "cn_chemicals",
@@ -123,7 +123,7 @@
       "theme_id": "robotics",
       "signal": "transmission",
       "direction": "up",
-      "direction_tier": "high",
+      "direction_tier": null,
       "trigger_cn_etf": "159559",
       "votes": {
         "short": "transmission",
@@ -143,7 +143,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股黄金 composite 56 动量观察中"
+      "description": "美股黄金 composite 55 动量观察中"
     },
     {
       "theme_id": "silver",
@@ -156,7 +156,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股白银 composite 29 动量观察中"
+      "description": "美股白银 composite 28 动量观察中"
     },
     {
       "theme_id": "cn_base_metals",
@@ -169,13 +169,13 @@
         "mid": null,
         "long": null
       },
-      "description": "美股有色金属 composite 49 动量观察中"
+      "description": "美股有色金属 composite 50 动量观察中"
     },
     {
       "theme_id": "china_internet",
       "signal": null,
       "direction": "up",
-      "direction_tier": "high",
+      "direction_tier": null,
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
@@ -201,14 +201,14 @@
       "theme_id": "cn_banking",
       "signal": null,
       "direction": "up",
-      "direction_tier": "high",
+      "direction_tier": null,
       "trigger_cn_etf": null,
       "votes": {
         "short": null,
         "mid": null,
         "long": null
       },
-      "description": "美股银行 composite 66 动量观察中"
+      "description": "美股银行 composite 64 动量观察中"
     },
     {
       "theme_id": "cn_insurance",
@@ -221,7 +221,7 @@
         "mid": "transmission",
         "long": "transmission"
       },
-      "description": "美股 composite 73 领先, A股尚未同步"
+      "description": "美股 composite 72 领先, A股尚未同步"
     },
     {
       "theme_id": "solar_clean_energy",
@@ -234,7 +234,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股光伏/清洁能源 composite 45 动量观察中"
+      "description": "美股光伏/清洁能源 composite 44 动量观察中"
     },
     {
       "theme_id": "biotech",
@@ -260,7 +260,7 @@
         "mid": null,
         "long": null
       },
-      "description": "美股航天军工 composite 50 动量观察中"
+      "description": "美股航天军工 composite 49 动量观察中"
     },
     {
       "theme_id": "rare_earth",
@@ -312,7 +312,7 @@
         "mid": "transmission",
         "long": "transmission"
       },
-      "description": "美股 composite 77 领先, A股尚未同步"
+      "description": "美股 composite 79 领先, A股尚未同步"
     },
     {
       "theme_id": "cn_consumer_staples",
@@ -412,11 +412,11 @@
       "cn_code": "512480",
       "mapping_score": 6,
       "confidence": 60,
-      "signal": "transmission",
+      "signal": null,
       "votes": {
         "short": "transmission",
         "mid": null,
-        "long": "transmission"
+        "long": "divergence"
       }
     },
     {
@@ -440,7 +440,7 @@
       "votes": {
         "short": "resonance",
         "mid": null,
-        "long": "transmission"
+        "long": "divergence"
       }
     },
     {
@@ -546,7 +546,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -590,7 +590,7 @@
     {
       "theme_id": "cn_base_metals",
       "cn_code": "512400",
-      "mapping_score": 28,
+      "mapping_score": 29,
       "confidence": 60,
       "signal": null,
       "votes": {
@@ -626,7 +626,7 @@
     {
       "theme_id": "cn_banking",
       "cn_code": "512800",
-      "mapping_score": 10,
+      "mapping_score": 11,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -650,7 +650,7 @@
     {
       "theme_id": "solar_clean_energy",
       "cn_code": "515790",
-      "mapping_score": 16,
+      "mapping_score": 17,
       "confidence": 90,
       "signal": null,
       "votes": {
@@ -710,7 +710,7 @@
     {
       "theme_id": "rare_earth",
       "cn_code": "516780",
-      "mapping_score": 47,
+      "mapping_score": 48,
       "confidence": 90,
       "signal": null,
       "votes": {

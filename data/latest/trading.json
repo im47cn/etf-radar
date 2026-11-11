@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-10T17:34:00.853810+00:00",
+  "generated_at": "2026-11-11T17:58:12.819212+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 4059.111
+        "close": 4075.709
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 6645.887
+        "close": 6713.182
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 2494.397
+        "close": 2572.067
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-11-09",
-      "stale": true,
-      "ma20_pct": 0.338,
-      "ma60_pct": 0.212,
-      "ma120_pct": 0.198
+      "as_of": "2026-11-11",
+      "stale": false,
+      "ma20_pct": 0.577,
+      "ma60_pct": 0.265,
+      "ma120_pct": 0.249
     },
     "source_status": {
       "indices": "ok",
@@ -70,12 +70,59 @@
       "vol": "ok"
     }
   },
-  "candidates": [],
+  "candidates": [
+    {
+      "code": "002445",
+      "name": "中南文化",
+      "composite_score": 5.7,
+      "stage": 3,
+      "template_pass": 5,
+      "rs_pct": 91.6,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 18.6,
+        "quality": 0.2676,
+        "volume_dryup": true
+      },
+      "pivot": 3.71,
+      "buy_zone_low": 3.71,
+      "buy_zone_high": 3.8955,
+      "stop": 3.4132,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 0.6,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "000997",
+      "name": "新 大 陆",
+      "composite_score": 3.8,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 50.7,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 27.0,
+        "quality": 0.4799,
+        "volume_dryup": true
+      },
+      "pivot": 21.6,
+      "buy_zone_low": 21.6,
+      "buy_zone_high": 22.68,
+      "stop": 19.872,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.36,
+      "board": "main",
+      "vol_forecast_ann": null
+    }
+  ],
   "universe_stats": {
     "total": 5583,
-    "tradable": 2807,
-    "stage2": 2807,
-    "vcp": 0,
-    "top": 0
+    "tradable": 2753,
+    "stage2": 2753,
+    "vcp": 2,
+    "top": 2
   }
 }

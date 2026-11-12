@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-11T17:58:12.819212+00:00",
+  "generated_at": "2026-11-12T18:16:47.664816+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 4075.709
+        "close": 4043.925
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 6713.182
+        "close": 6604.153
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 2572.067
+        "close": 2509.429
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-11-11",
+      "as_of": "2026-11-12",
       "stale": false,
-      "ma20_pct": 0.577,
-      "ma60_pct": 0.265,
-      "ma120_pct": 0.249
+      "ma20_pct": 0.421,
+      "ma60_pct": 0.222,
+      "ma120_pct": 0.213
     },
     "source_status": {
       "indices": "ok",
@@ -72,39 +72,16 @@
   },
   "candidates": [
     {
-      "code": "002445",
-      "name": "中南文化",
-      "composite_score": 5.7,
-      "stage": 3,
-      "template_pass": 5,
-      "rs_pct": 91.6,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 18.6,
-        "quality": 0.2676,
-        "volume_dryup": true
-      },
-      "pivot": 3.71,
-      "buy_zone_low": 3.71,
-      "buy_zone_high": 3.8955,
-      "stop": 3.4132,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 0.6,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
       "code": "000997",
       "name": "新 大 陆",
-      "composite_score": 3.8,
+      "composite_score": 3.7,
       "stage": 4,
       "template_pass": 1,
-      "rs_pct": 50.7,
+      "rs_pct": 53.1,
       "vcp": {
         "contractions": 2,
         "depth_pct": 27.0,
-        "quality": 0.4799,
+        "quality": 0.4425,
         "volume_dryup": true
       },
       "pivot": 21.6,
@@ -113,15 +90,38 @@
       "stop": 19.872,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -0.36,
+      "chg_pct": -2.09,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "002595",
+      "name": "豪迈科技",
+      "composite_score": 3.0,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 25.4,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 30.0,
+        "quality": 0.4726,
+        "volume_dryup": true
+      },
+      "pivot": 53.73,
+      "buy_zone_low": 53.73,
+      "buy_zone_high": 56.4165,
+      "stop": 49.4316,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -1.96,
       "board": "main",
       "vol_forecast_ann": null
     }
   ],
   "universe_stats": {
     "total": 5583,
-    "tradable": 2753,
-    "stage2": 2753,
+    "tradable": 2808,
+    "stage2": 2808,
     "vcp": 2,
     "top": 2
   }

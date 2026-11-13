@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-13T08:07:12.441647+08:00",
+  "generated_at": "2026-11-13T10:44:23.494707+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -17,16 +17,16 @@
     },
     {
       "theme_id": "semiconductor",
-      "signal": null,
+      "signal": "resonance",
       "direction": "up",
       "direction_tier": "high",
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "159516",
       "votes": {
-        "short": null,
+        "short": "resonance",
         "mid": null,
-        "long": null
+        "long": "resonance"
       },
-      "description": "美股半导体 composite 60 动量观察中"
+      "description": "美股半导体 composite 60 动量观察中, 共振偏多（高置信）"
     },
     {
       "theme_id": "cybersecurity",
@@ -121,16 +121,16 @@
     },
     {
       "theme_id": "robotics",
-      "signal": null,
+      "signal": "transmission",
       "direction": "down",
       "direction_tier": "low",
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "159559",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       },
-      "description": "美股机器人 composite 31 动量观察中"
+      "description": "美股 composite 31 领先, A股尚未同步"
     },
     {
       "theme_id": "gold",
@@ -460,11 +460,11 @@
       "cn_code": "159516",
       "mapping_score": 8,
       "confidence": 60,
-      "signal": null,
+      "signal": "resonance",
       "votes": {
         "short": "resonance",
         "mid": null,
-        "long": "transmission"
+        "long": "resonance"
       }
     },
     {
@@ -556,9 +556,9 @@
       "cn_code": "159559",
       "mapping_score": 33,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
         "long": null
       }

@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-17T18:57:45.313597+00:00",
+  "environment": {
+    "regime": "defense",
+    "indices": [
+      {
+        "code": "000300",
+        "name": "沪深300",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "close": 3976.463
+      },
+      {
+        "code": "000905",
+        "name": "中证500",
+        "template_pass": 1,
+        "criteria": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 6283.012
+      },
+      {
+        "code": "399006",
+        "name": "创业板指",
+        "template_pass": 2,
+        "criteria": [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "close": 2292.204
+      }
+    ],
+    "breadth": {
+      "source": "market_temperature.json",
+      "as_of": "2026-11-17",
+      "stale": false,
+      "ma20_pct": 0.174,
+      "ma60_pct": 0.142,
+      "ma120_pct": 0.149
+    },
+    "source_status": {
+      "indices": "ok",
+      "rs_benchmark": "ok",
+      "spot": "ok",
+      "breadth": "ok",
+      "universe": "ok",
+      "vol": "ok"
+    }
+  },
+  "candidates": [
+    {
+      "code": "002011",
+      "name": "盾安环境",
+      "composite_score": 5.7,
+      "stage": 4,
+      "template_pass": 3,
+      "rs_pct": 91.7,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 29.9,
+        "quality": 0.4658,
+        "volume_dryup": true
+      },
+      "pivot": 14.76,
+      "buy_zone_low": 14.76,
+      "buy_zone_high": 15.498,
+      "stop": 13.5792,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -1.0,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "600031",
+      "name": "三一重工",
+      "composite_score": 5.1,
+      "stage": 4,
+      "template_pass": 3,
+      "rs_pct": 84.4,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 16.2,
+        "quality": 0.3642,
+        "volume_dryup": true
+      },
+      "pivot": 20.22,
+      "buy_zone_low": 20.22,
+      "buy_zone_high": 21.231,
+      "stop": 18.6024,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": -0.96,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "000997",
+      "name": "新 大 陆",
+      "composite_score": 4.0,
+      "stage": 4,
+      "template_pass": 1,
+      "rs_pct": 67.5,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 27.0,
+        "quality": 0.4105,
+        "volume_dryup": true
+      },
+      "pivot": 21.6,
+      "buy_zone_low": 21.6,
+      "buy_zone_high": 22.68,
+      "stop": 19.872,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 0.56,
+      "board": "main",
+      "vol_forecast_ann": null
+    }
+  ],
+  "universe_stats": {
+    "total": 5584,
+    "tradable": 2775,
+    "stage2": 2775,
+    "vcp": 3,
+    "top": 3
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-19T18:56:30.966296+00:00",
+  "generated_at": "2026-11-23T21:40:00.952626+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 3984.84
+        "close": 3958.294
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 6251.958
+        "close": 6128.992
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 2293.342
+        "close": 2280.204
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-11-19",
-      "stale": false,
-      "ma20_pct": 0.111,
-      "ma60_pct": 0.098,
-      "ma120_pct": 0.103
+      "as_of": "2026-11-20",
+      "stale": true,
+      "ma20_pct": 0.078,
+      "ma60_pct": 0.074,
+      "ma120_pct": 0.081
     },
     "source_status": {
       "indices": "ok",
@@ -72,39 +72,16 @@
   },
   "candidates": [
     {
-      "code": "300592",
-      "name": "华凯易佰",
-      "composite_score": 6.3,
-      "stage": 2,
-      "template_pass": 6,
-      "rs_pct": 82.7,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 29.3,
-        "quality": 0.3804,
-        "volume_dryup": true
-      },
-      "pivot": 20.99,
-      "buy_zone_low": 20.99,
-      "buy_zone_high": 22.0395,
-      "stop": 19.3108,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": -2.69,
-      "board": "chinext",
-      "vol_forecast_ann": null
-    },
-    {
       "code": "002011",
       "name": "盾安环境",
-      "composite_score": 6.0,
+      "composite_score": 5.9,
       "stage": 4,
       "template_pass": 3,
-      "rs_pct": 95.0,
+      "rs_pct": 94.9,
       "vcp": {
         "contractions": 2,
         "depth_pct": 29.9,
-        "quality": 0.5,
+        "quality": 0.4807,
         "volume_dryup": true
       },
       "pivot": 14.76,
@@ -113,21 +90,67 @@
       "stop": 13.5792,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": 1.57,
+      "chg_pct": 1.68,
       "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "000739",
+      "name": "普洛药业",
+      "composite_score": 5.8,
+      "stage": 3,
+      "template_pass": 5,
+      "rs_pct": 80.1,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 31.4,
+        "quality": 0.371,
+        "volume_dryup": true
+      },
+      "pivot": 27.61,
+      "buy_zone_low": 27.61,
+      "buy_zone_high": 28.9905,
+      "stop": 25.4012,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 2.16,
+      "board": "main",
+      "vol_forecast_ann": null
+    },
+    {
+      "code": "300592",
+      "name": "华凯易佰",
+      "composite_score": 5.8,
+      "stage": 2,
+      "template_pass": 6,
+      "rs_pct": 82.9,
+      "vcp": {
+        "contractions": 2,
+        "depth_pct": 34.0,
+        "quality": 0.2581,
+        "volume_dryup": true
+      },
+      "pivot": 20.99,
+      "buy_zone_low": 20.99,
+      "buy_zone_high": 22.0395,
+      "stop": 19.3108,
+      "state": "watch",
+      "limit_up_unexecutable": false,
+      "chg_pct": 2.96,
+      "board": "chinext",
       "vol_forecast_ann": null
     },
     {
       "code": "002312",
       "name": "川发龙蟒",
-      "composite_score": 3.7,
+      "composite_score": 3.5,
       "stage": 4,
       "template_pass": 1,
-      "rs_pct": 37.9,
+      "rs_pct": 42.1,
       "vcp": {
         "contractions": 2,
         "depth_pct": 32.4,
-        "quality": 0.5461,
+        "quality": 0.4595,
         "volume_dryup": true
       },
       "pivot": 9.49,
@@ -136,21 +159,21 @@
       "stop": 8.7308,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -1.33,
+      "chg_pct": 0.77,
       "board": "main",
       "vol_forecast_ann": null
     },
     {
       "code": "002171",
       "name": "楚江新材",
-      "composite_score": 3.2,
+      "composite_score": 2.7,
       "stage": 4,
       "template_pass": 1,
-      "rs_pct": 44.3,
+      "rs_pct": 42.6,
       "vcp": {
         "contractions": 2,
-        "depth_pct": 30.1,
-        "quality": 0.3624,
+        "depth_pct": 33.4,
+        "quality": 0.2704,
         "volume_dryup": true
       },
       "pivot": 11.31,
@@ -159,16 +182,16 @@
       "stop": 10.4052,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -1.0,
+      "chg_pct": 1.73,
       "board": "main",
       "vol_forecast_ann": null
     }
   ],
   "universe_stats": {
-    "total": 5584,
-    "tradable": 2740,
-    "stage2": 2740,
-    "vcp": 4,
-    "top": 4
+    "total": 5585,
+    "tradable": 2701,
+    "stage2": 2701,
+    "vcp": 5,
+    "top": 5
   }
 }

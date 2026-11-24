@@ -1,7 +1,22 @@
 {
-  "workflow_missed_or_failed:cn-eod-archive": {
+  "cn_provider_degraded:cn-refresh": {
     "attempts": 1,
-    "last_iso": "2026-11-23T21:12:07.119577+00:00",
+    "last_iso": "2026-11-24T05:53:35.993175+00:00",
+    "alerted": false
+  },
+  "data_stale:cn-refresh": {
+    "attempts": 1,
+    "last_iso": "2026-11-24T05:53:35.993175+00:00",
+    "alerted": false
+  },
+  "workflow_missed_or_failed:cn-refresh": {
+    "attempts": 1,
+    "last_iso": "2026-11-24T05:53:35.993175+00:00",
+    "alerted": false
+  },
+  "workflow_missed_or_failed:us-refresh": {
+    "attempts": 1,
+    "last_iso": "2026-11-24T05:53:35.993175+00:00",
     "alerted": false
   }
 }

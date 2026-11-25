@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-25T10:24:46.439727+08:00",
+  "generated_at": "2026-11-25T12:58:25.121775+08:00",
   "theme_signals": [
     {
       "theme_id": "storage_dram",
@@ -199,16 +199,16 @@
     },
     {
       "theme_id": "cn_banking",
-      "signal": null,
+      "signal": "transmission",
       "direction": "down",
       "direction_tier": null,
-      "trigger_cn_etf": null,
+      "trigger_cn_etf": "512800",
       "votes": {
-        "short": null,
-        "mid": null,
+        "short": "transmission",
+        "mid": "transmission",
         "long": null
       },
-      "description": "美股银行 composite 55 动量观察中"
+      "description": "美股 composite 55 领先, A股尚未同步"
     },
     {
       "theme_id": "cn_insurance",
@@ -414,7 +414,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -426,7 +426,7 @@
       "confidence": 60,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -438,7 +438,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -450,7 +450,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -546,7 +546,7 @@
       "confidence": 90,
       "signal": null,
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": null,
         "long": null
       }
@@ -590,7 +590,7 @@
     {
       "theme_id": "cn_base_metals",
       "cn_code": "512400",
-      "mapping_score": 37,
+      "mapping_score": 36,
       "confidence": 60,
       "signal": null,
       "votes": {
@@ -628,9 +628,9 @@
       "cn_code": "512800",
       "mapping_score": 9,
       "confidence": 90,
-      "signal": null,
+      "signal": "transmission",
       "votes": {
-        "short": null,
+        "short": "transmission",
         "mid": "transmission",
         "long": null
       }
@@ -667,8 +667,8 @@
       "signal": null,
       "votes": {
         "short": "transmission",
-        "mid": null,
-        "long": null
+        "mid": "resonance",
+        "long": "divergence"
       }
     },
     {

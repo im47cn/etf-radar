@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-24T20:50:34.908496+00:00",
+  "generated_at": "2026-11-25T19:55:56.922033+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 3963.823
+        "close": 3898.236
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 6112.435
+        "close": 5890.413
       },
       {
         "code": "399006",
@@ -50,16 +50,16 @@
           false,
           true
         ],
-        "close": 2278.994
+        "close": 2183.584
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
-      "as_of": "2026-11-23",
-      "stale": true,
-      "ma20_pct": 0.092,
-      "ma60_pct": 0.095,
-      "ma120_pct": 0.102
+      "as_of": "2026-11-25",
+      "stale": false,
+      "ma20_pct": 0.07,
+      "ma60_pct": 0.083,
+      "ma120_pct": 0.096
     },
     "source_status": {
       "indices": "ok",
@@ -72,39 +72,16 @@
   },
   "candidates": [
     {
-      "code": "002011",
-      "name": "盾安环境",
-      "composite_score": 6.0,
-      "stage": 4,
-      "template_pass": 4,
-      "rs_pct": 96.6,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 29.9,
-        "quality": 0.4072,
-        "volume_dryup": true
-      },
-      "pivot": 14.76,
-      "buy_zone_low": 14.76,
-      "buy_zone_high": 15.498,
-      "stop": 13.5792,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": 4.69,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
       "code": "000739",
       "name": "普洛药业",
-      "composite_score": 5.7,
+      "composite_score": 5.3,
       "stage": 3,
       "template_pass": 5,
-      "rs_pct": 84.2,
+      "rs_pct": 76.0,
       "vcp": {
         "contractions": 2,
-        "depth_pct": 31.4,
-        "quality": 0.3353,
+        "depth_pct": 33.3,
+        "quality": 0.275,
         "volume_dryup": true
       },
       "pivot": 27.61,
@@ -113,62 +90,16 @@
       "stop": 25.4012,
       "state": "watch",
       "limit_up_unexecutable": false,
-      "chg_pct": -1.19,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
-      "code": "002312",
-      "name": "川发龙蟒",
-      "composite_score": 3.3,
-      "stage": 4,
-      "template_pass": 1,
-      "rs_pct": 37.3,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 32.5,
-        "quality": 0.4461,
-        "volume_dryup": true
-      },
-      "pivot": 9.49,
-      "buy_zone_low": 9.49,
-      "buy_zone_high": 9.9645,
-      "stop": 8.7308,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": -1.54,
-      "board": "main",
-      "vol_forecast_ann": null
-    },
-    {
-      "code": "002171",
-      "name": "楚江新材",
-      "composite_score": 2.5,
-      "stage": 4,
-      "template_pass": 1,
-      "rs_pct": 34.7,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 33.4,
-        "quality": 0.271,
-        "volume_dryup": true
-      },
-      "pivot": 11.31,
-      "buy_zone_low": 11.31,
-      "buy_zone_high": 11.8755,
-      "stop": 10.4052,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": -1.31,
+      "chg_pct": -3.76,
       "board": "main",
       "vol_forecast_ann": null
     }
   ],
   "universe_stats": {
     "total": 5585,
-    "tradable": 2697,
-    "stage2": 2697,
-    "vcp": 4,
-    "top": 4
+    "tradable": 2611,
+    "stage2": 2611,
+    "vcp": 1,
+    "top": 1
   }
 }

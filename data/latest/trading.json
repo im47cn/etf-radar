@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-25T19:55:56.922033+00:00",
+  "generated_at": "2026-11-26T19:44:05.674081+00:00",
   "environment": {
     "regime": "defense",
     "indices": [
@@ -18,7 +18,7 @@
           false,
           true
         ],
-        "close": 3898.236
+        "close": 3900.548
       },
       {
         "code": "000905",
@@ -34,7 +34,7 @@
           false,
           true
         ],
-        "close": 5890.413
+        "close": 5863.336
       },
       {
         "code": "399006",
@@ -50,13 +50,13 @@
           false,
           true
         ],
-        "close": 2183.584
+        "close": 2189.823
       }
     ],
     "breadth": {
       "source": "market_temperature.json",
       "as_of": "2026-11-25",
-      "stale": false,
+      "stale": true,
       "ma20_pct": 0.07,
       "ma60_pct": 0.083,
       "ma120_pct": 0.096
@@ -70,36 +70,12 @@
       "vol": "ok"
     }
   },
-  "candidates": [
-    {
-      "code": "000739",
-      "name": "普洛药业",
-      "composite_score": 5.3,
-      "stage": 3,
-      "template_pass": 5,
-      "rs_pct": 76.0,
-      "vcp": {
-        "contractions": 2,
-        "depth_pct": 33.3,
-        "quality": 0.275,
-        "volume_dryup": true
-      },
-      "pivot": 27.61,
-      "buy_zone_low": 27.61,
-      "buy_zone_high": 28.9905,
-      "stop": 25.4012,
-      "state": "watch",
-      "limit_up_unexecutable": false,
-      "chg_pct": -3.76,
-      "board": "main",
-      "vol_forecast_ann": null
-    }
-  ],
+  "candidates": [],
   "universe_stats": {
     "total": 5585,
-    "tradable": 2611,
-    "stage2": 2611,
-    "vcp": 1,
-    "top": 1
+    "tradable": 2651,
+    "stage2": 2651,
+    "vcp": 0,
+    "top": 0
   }
 }
